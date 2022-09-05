@@ -50,7 +50,10 @@ public class ToTaskDataFilterTest
                                                     1,
                                                     "part1",
                                                     "applicationName",
-                                                    "applicationVersion");
+                                                    "applicationVersion",
+                                                    "applicationNamespace",
+                                                    "applicationService",
+                                                    "engineType");
 
   private readonly TaskData taskData_ = new("SessionId",
                                             "TaskCompletedId",

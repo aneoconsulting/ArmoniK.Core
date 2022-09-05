@@ -80,13 +80,22 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                       .SetIsRequired(true);
                                                    map.MapProperty(nameof(TaskOptions.ApplicationVersion))
                                                       .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.ApplicationService))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.ApplicationNamespace))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.EngineType))
+                                                      .SetIsRequired(true);
                                                    map.MapCreator(options => new TaskOptions(options.Options,
                                                                                              options.MaxDuration,
                                                                                              options.MaxRetries,
                                                                                              options.Priority,
                                                                                              options.PartitionId,
                                                                                              options.ApplicationName,
-                                                                                             options.ApplicationVersion));
+                                                                                             options.ApplicationVersion,
+                                                                                             options.ApplicationNamespace,
+                                                                                             options.ApplicationService,
+                                                                                             options.EngineType));
                                                  });
     }
   }

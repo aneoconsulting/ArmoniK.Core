@@ -46,7 +46,10 @@ public class ToSessionDataFieldTest
                                                     1,
                                                     "part1",
                                                     "applicationName",
-                                                    "applicationVersion");
+                                                    "applicationVersion",
+                                                    "applicationNamespace",
+                                                    "applicationService",
+                                                    "engineType");
 
   private readonly SessionData sessionData_ = new("SessionId",
                                                   SessionStatus.Running,

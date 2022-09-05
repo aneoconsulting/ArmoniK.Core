@@ -35,7 +35,10 @@ public record TaskOptions(IDictionary<string, string> Options,
                           int                         Priority,
                           string                      PartitionId,
                           string                      ApplicationName,
-                          string                      ApplicationVersion)
+                          string                      ApplicationVersion,
+                          string                      ApplicationNamespace,
+                          string                      ApplicationService,
+                          string                      EngineType)
 {
   public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
     => new()
@@ -48,8 +51,11 @@ public record TaskOptions(IDictionary<string, string> Options,
          {
            taskOption.Options,
          },
-         ApplicationName    = taskOption.ApplicationName,
-         ApplicationVersion = taskOption.ApplicationVersion,
+         ApplicationName      = taskOption.ApplicationName,
+         ApplicationVersion   = taskOption.ApplicationVersion,
+         ApplicationNamespace = taskOption.ApplicationNamespace,
+         ApplicationService   = taskOption.ApplicationService,
+         EngineType           = taskOption.EngineType,
        };
 
   public static implicit operator TaskOptions(Api.gRPC.V1.TaskOptions taskOption)
@@ -59,7 +65,10 @@ public record TaskOptions(IDictionary<string, string> Options,
            taskOption.Priority,
            taskOption.PartitionId,
            taskOption.ApplicationName,
-           taskOption.ApplicationVersion);
+           taskOption.ApplicationVersion,
+           taskOption.ApplicationNamespace,
+           taskOption.ApplicationService,
+           taskOption.EngineType);
 
   public static TaskOptions Merge(TaskOptions taskOption,
                                   TaskOptions defaultOption)
@@ -86,6 +95,15 @@ public record TaskOptions(IDictionary<string, string> Options,
                              : defaultOption.ApplicationName,
                            taskOption.ApplicationVersion != string.Empty
                              ? taskOption.ApplicationVersion
-                             : defaultOption.ApplicationVersion);
+                             : defaultOption.ApplicationVersion,
+                           taskOption.ApplicationNamespace != string.Empty
+                             ? taskOption.ApplicationNamespace
+                             : defaultOption.ApplicationNamespace,
+                           taskOption.ApplicationService != string.Empty
+                             ? taskOption.ApplicationService
+                             : defaultOption.ApplicationService,
+                           taskOption.EngineType != string.Empty
+                             ? taskOption.EngineType
+                             : defaultOption.EngineType);
   }
 }
