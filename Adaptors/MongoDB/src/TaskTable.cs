@@ -160,7 +160,7 @@ public class TaskTable : ITaskTable
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
-    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Canceled))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Canceled)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }
@@ -364,7 +364,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListTasksAsync(TaskFilter                                 filter,
-                                                       [EnumeratorCancellation] CancellationToken cancellationToken)
+                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
@@ -382,7 +382,7 @@ public class TaskTable : ITaskTable
   }
 
   public async Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                          CancellationToken cancellationToken)
+                                                          CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
@@ -648,7 +648,7 @@ public class TaskTable : ITaskTable
   }
 
   public async Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                          CancellationToken cancellationToken)
+                                                          CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetParentTaskIds)}");
     activity?.SetTag($"{nameof(GetParentTaskIds)}_TaskId",
@@ -671,7 +671,7 @@ public class TaskTable : ITaskTable
   }
 
   public async Task<string> RetryTask(TaskData          taskData,
-                                      CancellationToken cancellationToken)
+                                      CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(RetryTask)}");
 

@@ -86,6 +86,7 @@ public class TaskHandlerTest
                                                                 mockAgentHandler.Object,
                                                                 mockQueueMessageHandler.Object,
                                                                 new CancellationTokenSource());
+    Assert.IsNotNull(testServiceProvider.TaskHandler);
   }
 
   [Test]

@@ -36,18 +36,9 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class PushQueueStorage : IPushQueueStorage
 {
-  private static readonly MessageHandler DefaultMessage = new();
-
-  private static readonly KeyValuePair<MessageHandler, MessageHandler> DefaultPair = new(DefaultMessage,
-                                                                                         DefaultMessage);
-
   private readonly ConcurrentDictionary<string, MessageHandler> id2Handlers_ = new();
 
   private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
-
-  /// <inheritdoc />
-  public string PartitionId
-    => "";
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -98,8 +89,6 @@ public class PushQueueStorage : IPushQueueStorage
     public int Priority { get; init; }
 
     public bool IsVisible { get; set; }
-
-    public SemaphoreSlim Semaphore { get; } = new(1);
 
     public long Order { get; } = Interlocked.Increment(ref _count);
 
@@ -200,8 +189,6 @@ public class PushQueueStorage : IPushQueueStorage
                                                 null);
       }
 
-      // TODO: dispose semaphore ?
-      // Semaphore.Dispose();
       return ValueTask.CompletedTask;
     }
 
@@ -213,7 +200,7 @@ public class PushQueueStorage : IPushQueueStorage
       => $"Message#{Order}";
 
     /// <inheritdoc />
-    public string? TaskId { get; init; } = "";
+    public string TaskId { get; init; } = "";
 
     /// <inheritdoc />
     public QueueMessageStatus Status { get; set; }
@@ -223,8 +210,8 @@ public class PushQueueStorage : IPushQueueStorage
   {
     public static readonly IComparer<MessageHandler> Instance = new MessageComparer();
 
-    public int Compare(MessageHandler x,
-                       MessageHandler y)
+    public int Compare(MessageHandler? x,
+                       MessageHandler? y)
     {
       if (ReferenceEquals(x,
                           y))

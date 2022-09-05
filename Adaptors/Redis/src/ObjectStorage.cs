@@ -132,7 +132,7 @@ public class ObjectStorage : IObjectStorage
       throw new ObjectDataNotFoundException("Key not found");
     }
 
-    var valuesCount = int.Parse(value);
+    var valuesCount = int.Parse(value!);
 
     if (valuesCount == 0)
     {
@@ -144,7 +144,7 @@ public class ObjectStorage : IObjectStorage
                                         .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
                                         .ToList())
     {
-      yield return await chunkTask.ConfigureAwait(false);
+      yield return (await chunkTask.ConfigureAwait(false))!;
     }
   }
 
