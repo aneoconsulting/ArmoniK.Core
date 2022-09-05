@@ -107,7 +107,8 @@ public class TaskHandlerTest
     Assert.IsFalse(acquired);
   }
 
-  private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string sessionId)> InitProviderRunnableTask(TestTaskHandlerProvider testServiceProvider)
+  private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string sessionId)> InitProviderRunnableTask(
+    TestTaskHandlerProvider testServiceProvider)
   {
     var taskRequests = new List<TaskRequest>();
     taskRequests.Add(new TaskRequest(new List<string>
@@ -212,7 +213,7 @@ public class TaskHandlerTest
     requests.RemoveAt(0);
 
     var taskErrorId = requests.First()
-                                      .Id;
+                              .Id;
 
     var taskErrorData = await testServiceProvider.TaskTable.ReadTaskAsync(taskErrorId,
                                                                           CancellationToken.None)
@@ -251,7 +252,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -282,7 +283,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (taskId, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                   .ConfigureAwait(false);
+                                      .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CancelSession(sessionId,
                                                       CancellationToken.None)
@@ -351,7 +352,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (_, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+                                 .ConfigureAwait(false);
 
     var taskData = new TaskData(sessionId,
                                 Guid.NewGuid()
@@ -611,7 +612,8 @@ public class TaskHandlerTest
 
     public Task<string> RetryTask(TaskData          taskData,
                                   CancellationToken cancellationToken)
-      => Task.FromResult(Guid.NewGuid().ToString());
+      => Task.FromResult(Guid.NewGuid()
+                             .ToString());
 
     public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
                                           CancellationToken   cancellationToken = default)
@@ -718,7 +720,7 @@ public class TaskHandlerTest
                                                                 new WaitSessionTable(delaySessionTable));
 
     var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -748,7 +750,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (taskId, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                   .ConfigureAwait(false);
+                                      .ConfigureAwait(false);
 
     await testServiceProvider.SessionTable.CancelSessionAsync(sessionId,
                                                               CancellationToken.None)
@@ -783,7 +785,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (_, taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -910,7 +912,7 @@ public class TaskHandlerTest
                                                                 cancellationTokenSource);
 
     var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -958,7 +960,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -1005,7 +1007,7 @@ public class TaskHandlerTest
                                                                 new CancellationTokenSource());
 
     var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
