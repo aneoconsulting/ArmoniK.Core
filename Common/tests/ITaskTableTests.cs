@@ -55,16 +55,6 @@ public class TaskTableTestBase
 
     if (RunTests)
     {
-      var options = new TaskOptions(new Dictionary<string, string>(),
-                                    TimeSpan.MaxValue,
-                                    5,
-                                    1,
-                                    "part1",
-                                    "applicationName",
-                                    "applicationVersion",
-                                    "applicationNamespace",
-                                    "applicationService",
-                                    "engineType");
       TaskTable!.CreateTasks(new[]
                              {
                                new TaskData("SessionId",
@@ -85,7 +75,7 @@ public class TaskTableTestBase
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Completed,
-                                            options,
+                                            options_,
                                             new Output(true,
                                                        "")),
                                new TaskData("SessionId",
@@ -106,7 +96,7 @@ public class TaskTableTestBase
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Creating,
-                                            options,
+                                            options_,
                                             new Output(false,
                                                        "")),
                                new TaskData("SessionId",
@@ -127,7 +117,7 @@ public class TaskTableTestBase
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Processing,
-                                            options,
+                                            options_,
                                             new Output(false,
                                                        "")),
                                new TaskData("SessionId",
@@ -148,7 +138,7 @@ public class TaskTableTestBase
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Processing,
-                                            options,
+                                            options_,
                                             new Output(false,
                                                        "")),
                                new TaskData("SessionId",
@@ -169,7 +159,7 @@ public class TaskTableTestBase
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Submitted,
-                                            options with
+                                            options_ with
                                             {
                                               PartitionId = "part2",
                                             },
@@ -193,7 +183,7 @@ public class TaskTableTestBase
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Error,
-                                            options,
+                                            options_,
                                             new Output(false,
                                                        "sad task")),
                              })
@@ -207,6 +197,25 @@ public class TaskTableTestBase
     TaskTable = null;
     RunTests  = false;
   }
+
+  private readonly TaskOptions options_ = new(new Dictionary<string, string>
+                                              {
+                                                {
+                                                  "key1", "val1"
+                                                },
+                                                {
+                                                  "key2", "val2"
+                                                },
+                                              },
+                                              TimeSpan.MaxValue,
+                                              5,
+                                              1,
+                                              "part1",
+                                              "applicationName",
+                                              "applicationVersion",
+                                              "applicationNamespace",
+                                              "applicationService",
+                                              "engineType");
 
   /* Interface to test */
   protected ITaskTable? TaskTable;
@@ -232,6 +241,30 @@ public class TaskTableTestBase
 
       Assert.AreEqual("TaskCompletedId",
                       result.TaskId);
+    }
+  }
+
+  [Test]
+  public async Task OptionsAreEqual()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable!.ReadTaskAsync("TaskCompletedId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual(options_.Options,
+                      result.Options.Options);
+
+      var optDic = new Dictionary<string, string>();
+      Assert.AreEqual(options_ with
+                      {
+                        Options = optDic,
+                      },
+                      result.Options with
+                      {
+                        Options = optDic,
+                      });
     }
   }
 
