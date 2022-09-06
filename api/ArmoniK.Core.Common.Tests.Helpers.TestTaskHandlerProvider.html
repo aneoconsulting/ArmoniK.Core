@@ -90,18 +90,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.%23ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler%2CArmoniK.Core.Common.Pollster.IAgentHandler%2CArmoniK.Core.Common.Storage.IQueueMessageHandler)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_CancellationTokenSource_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_ISessionTable_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.%23ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler%2CArmoniK.Core.Common.Pollster.IAgentHandler%2CArmoniK.Core.Common.Storage.IQueueMessageHandler%2CCancellationTokenSource%2CArmoniK.Core.Common.Storage.ITaskTable%2CArmoniK.Core.Common.Storage.ISessionTable)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L69">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L70">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler)">TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler)</h4>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_CancellationTokenSource_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_ISessionTable_" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,CancellationTokenSource,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.ISessionTable)">TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler, CancellationTokenSource, ITaskTable, ISessionTable)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler, IAgentHandler agentHandler, IQueueMessageHandler queueStorage)</code></pre>
+    <pre><code class="lang-csharp hljs">public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler, IAgentHandler agentHandler, IQueueMessageHandler queueStorage, CancellationTokenSource cancellationTokenSource, ITaskTable inputTaskTable = null, ISessionTable inputSessionTable = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -128,6 +128,21 @@
         <td><span class="parametername">queueStorage</span></td>
         <td></td>
       </tr>
+      <tr>
+        <td><span class="xref">CancellationTokenSource</span></td>
+        <td><span class="parametername">cancellationTokenSource</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.ITaskTable.html">ITaskTable</a></td>
+        <td><span class="parametername">inputTaskTable</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.ISessionTable.html">ISessionTable</a></td>
+        <td><span class="parametername">inputSessionTable</span></td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <h3 id="fields">Fields
@@ -137,7 +152,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_PartitionTable.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L60">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L61">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_PartitionTable" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable">PartitionTable</h4>
   <div class="markdown level1 summary"></div>
@@ -163,10 +178,39 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Submitter.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_SessionTable.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.SessionTable%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L64">View Source</a>
+  </span>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_SessionTable" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.SessionTable">SessionTable</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly ISessionTable SessionTable</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.ISessionTable.html">ISessionTable</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Submitter.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L65">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Submitter" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter">Submitter</h4>
   <div class="markdown level1 summary"></div>
@@ -195,7 +239,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_TaskHandler.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskHandler%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L65">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L66">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_TaskHandler" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskHandler">TaskHandler</h4>
   <div class="markdown level1 summary"></div>
@@ -224,7 +268,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_TaskTable.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L66">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L67">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_TaskTable" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable">TaskTable</h4>
   <div class="markdown level1 summary"></div>
@@ -255,7 +299,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Dispose.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L154">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/TestTaskHandlerProvider.cs/#L174">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Dispose_" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose*"></a>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Dispose" data-uid="ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose">Dispose()</h4>

@@ -8239,6 +8239,31 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
   nameWithType: InitWorker.WorkerCheckRetries
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster
+  name: Pollster
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html
+  commentId: T:ArmoniK.Core.Common.Injection.Options.Pollster
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster
+  nameWithType: Pollster
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay
+  name: GraceDelay
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_GraceDelay
+  commentId: P:ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay
+  nameWithType: Pollster.GraceDelay
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay*
+  name: GraceDelay
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_GraceDelay_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay
+  nameWithType: Pollster.GraceDelay
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.SettingSection
+  name: SettingSection
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_SettingSection
+  commentId: F:ArmoniK.Core.Common.Injection.Options.Pollster.SettingSection
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.SettingSection
+  nameWithType: Pollster.SettingSection
 - uid: ArmoniK.Core.Common.Injection.Options.Submitter
   name: Submitter
   href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html
@@ -8736,15 +8761,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.Pollster
   fullName: ArmoniK.Core.Common.Pollster.Pollster
   nameWithType: Pollster
-- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IPullQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
-  name: Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
-  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IPullQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ComputePlane_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_
-  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IPullQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
-  name.vb: Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
-  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IPullQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
-  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IPullQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
-  nameWithType: Pollster.Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
-  nameWithType.vb: Pollster.Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IPullQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,ArmoniK.Core.Common.Injection.Options.Pollster,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
+  name: Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, Pollster, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IPullQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ComputePlane_ArmoniK_Core_Common_Injection_Options_Pollster_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_
+  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IPullQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,ArmoniK.Core.Common.Injection.Options.Pollster,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
+  name.vb: Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, Pollster, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IPullQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, ArmoniK.Core.Common.Injection.Options.Pollster, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
+  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IPullQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, ArmoniK.Core.Common.Injection.Options.Pollster, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
+  nameWithType: Pollster.Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, Pollster, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  nameWithType.vb: Pollster.Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, Pollster, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
 - uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor*
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_
@@ -8790,12 +8815,12 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.TaskHandler
   fullName: ArmoniK.Core.Common.Pollster.TaskHandler
   nameWithType: TaskHandler
-- uid: ArmoniK.Core.Common.Pollster.TaskHandler.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,System.String,ActivitySource,ArmoniK.Core.Common.Pollster.IAgentHandler,ILogger)
-  name: TaskHandler(ISessionTable, ITaskTable, IResultTable, ISubmitter, DataPrefetcher, IWorkerStreamHandler, IQueueMessageHandler, ITaskProcessingChecker, String, ActivitySource, IAgentHandler, ILogger)
-  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_System_String_ActivitySource_ArmoniK_Core_Common_Pollster_IAgentHandler_ILogger_
-  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,System.String,ActivitySource,ArmoniK.Core.Common.Pollster.IAgentHandler,ILogger)
-  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.TaskHandler(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, System.String, ActivitySource, ArmoniK.Core.Common.Pollster.IAgentHandler, ILogger)
-  nameWithType: TaskHandler.TaskHandler(ISessionTable, ITaskTable, IResultTable, ISubmitter, DataPrefetcher, IWorkerStreamHandler, IQueueMessageHandler, ITaskProcessingChecker, String, ActivitySource, IAgentHandler, ILogger)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,System.String,ActivitySource,ArmoniK.Core.Common.Pollster.IAgentHandler,ILogger,ArmoniK.Core.Common.Injection.Options.Pollster,CancellationTokenSource)
+  name: TaskHandler(ISessionTable, ITaskTable, IResultTable, ISubmitter, DataPrefetcher, IWorkerStreamHandler, IQueueMessageHandler, ITaskProcessingChecker, String, ActivitySource, IAgentHandler, ILogger, Pollster, CancellationTokenSource)
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_System_String_ActivitySource_ArmoniK_Core_Common_Pollster_IAgentHandler_ILogger_ArmoniK_Core_Common_Injection_Options_Pollster_CancellationTokenSource_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,System.String,ActivitySource,ArmoniK.Core.Common.Pollster.IAgentHandler,ILogger,ArmoniK.Core.Common.Injection.Options.Pollster,CancellationTokenSource)
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.TaskHandler(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, System.String, ActivitySource, ArmoniK.Core.Common.Pollster.IAgentHandler, ILogger, ArmoniK.Core.Common.Injection.Options.Pollster, CancellationTokenSource)
+  nameWithType: TaskHandler.TaskHandler(ISessionTable, ITaskTable, IResultTable, ISubmitter, DataPrefetcher, IWorkerStreamHandler, IQueueMessageHandler, ITaskProcessingChecker, String, ActivitySource, IAgentHandler, ILogger, Pollster, CancellationTokenSource)
 - uid: ArmoniK.Core.Common.Pollster.TaskHandler.#ctor*
   name: TaskHandler
   href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler__ctor_
@@ -8803,12 +8828,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.TaskHandler.TaskHandler
   nameWithType: TaskHandler.TaskHandler
-- uid: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask(CancellationToken)
-  name: AcquireTask(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_AcquireTask_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask(CancellationToken)
-  nameWithType: TaskHandler.AcquireTask(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask
+  name: AcquireTask()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_AcquireTask
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask()
+  nameWithType: TaskHandler.AcquireTask()
 - uid: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask*
   name: AcquireTask
   href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_AcquireTask_
@@ -8829,12 +8854,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync
   nameWithType: TaskHandler.DisposeAsync
-- uid: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask(CancellationToken)
-  name: ExecuteTask(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_ExecuteTask_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask(CancellationToken)
-  nameWithType: TaskHandler.ExecuteTask(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask
+  name: ExecuteTask()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_ExecuteTask
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask()
+  nameWithType: TaskHandler.ExecuteTask()
 - uid: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask*
   name: ExecuteTask
   href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_ExecuteTask_
@@ -8855,12 +8880,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask
   nameWithType: TaskHandler.GetAcquiredTask
-- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing(CancellationToken)
-  name: PostProcessing(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PostProcessing_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing(CancellationToken)
-  nameWithType: TaskHandler.PostProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing
+  name: PostProcessing()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PostProcessing
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing()
+  nameWithType: TaskHandler.PostProcessing()
 - uid: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing*
   name: PostProcessing
   href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PostProcessing_
@@ -8868,12 +8893,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing
   nameWithType: TaskHandler.PostProcessing
-- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing(CancellationToken)
-  name: PreProcessing(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PreProcessing_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing(CancellationToken)
-  nameWithType: TaskHandler.PreProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing
+  name: PreProcessing()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PreProcessing
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing()
+  nameWithType: TaskHandler.PreProcessing()
 - uid: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing*
   name: PreProcessing
   href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PreProcessing_
@@ -14687,6 +14712,62 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Submitter
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Submitter
   nameWithType: TestPollingAgentProvider.Submitter
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider
+  name: TestPollsterProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider
+  nameWithType: TestPollsterProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IPullQueueStorage)
+  name: TestPollsterProvider(IWorkerStreamHandler, IAgentHandler, IPullQueueStorage)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IPullQueueStorage_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IPullQueueStorage)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.TestPollsterProvider(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler, ArmoniK.Core.Common.Storage.IPullQueueStorage)
+  nameWithType: TestPollsterProvider.TestPollsterProvider(IWorkerStreamHandler, IAgentHandler, IPullQueueStorage)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.#ctor*
+  name: TestPollsterProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.TestPollsterProvider
+  nameWithType: TestPollsterProvider.TestPollsterProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Dispose()
+  nameWithType: TestPollsterProvider.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Dispose
+  nameWithType: TestPollsterProvider.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.PartitionTable
+  name: PartitionTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider_PartitionTable
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.PartitionTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.PartitionTable
+  nameWithType: TestPollsterProvider.PartitionTable
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Pollster
+  name: Pollster
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider_Pollster
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Pollster
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Pollster
+  nameWithType: TestPollsterProvider.Pollster
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Submitter
+  name: Submitter
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider_Submitter
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Submitter
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.Submitter
+  nameWithType: TestPollsterProvider.Submitter
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.TaskTable
+  name: TaskTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollsterProvider_TaskTable
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.TaskTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollsterProvider.TaskTable
+  nameWithType: TestPollsterProvider.TaskTable
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext
   name: TestServerCallContext
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html
@@ -14903,12 +14984,12 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider
   nameWithType: TestTaskHandlerProvider
-- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler)
-  name: TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TestTaskHandlerProvider(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler, ArmoniK.Core.Common.Storage.IQueueMessageHandler)
-  nameWithType: TestTaskHandlerProvider.TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,CancellationTokenSource,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.ISessionTable)
+  name: TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler, CancellationTokenSource, ITaskTable, ISessionTable)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_CancellationTokenSource_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_ISessionTable_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,CancellationTokenSource,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.ISessionTable)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TestTaskHandlerProvider(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler, ArmoniK.Core.Common.Storage.IQueueMessageHandler, CancellationTokenSource, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.ISessionTable)
+  nameWithType: TestTaskHandlerProvider.TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler, CancellationTokenSource, ITaskTable, ISessionTable)
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor*
   name: TestTaskHandlerProvider
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_
@@ -14935,6 +15016,12 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable
   nameWithType: TestTaskHandlerProvider.PartitionTable
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.SessionTable
+  name: SessionTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_SessionTable
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.SessionTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.SessionTable
+  nameWithType: TestTaskHandlerProvider.SessionTable
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter
   name: Submitter
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Submitter
@@ -16141,12 +16228,260 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.TearDown
   nameWithType: DataPrefetcherTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest
+  name: PollsterTest
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.PollsterTest
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest
+  nameWithType: PollsterTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed(System.Double)
+  name: ExecuteTaskShouldSucceed(Double)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTaskShouldSucceed_System_Double_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed(System.Double)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed(System.Double)
+  nameWithType: PollsterTest.ExecuteTaskShouldSucceed(Double)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed*
+  name: ExecuteTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed
+  nameWithType: PollsterTest.ExecuteTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster
+  name: InitializePollster()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitializePollster
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster()
+  nameWithType: PollsterTest.InitializePollster()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster*
+  name: InitializePollster
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitializePollster_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster
+  nameWithType: PollsterTest.InitializePollster
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster
+  name: RunThenCancelPollster()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_RunThenCancelPollster
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster()
+  nameWithType: PollsterTest.RunThenCancelPollster()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster*
+  name: RunThenCancelPollster
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_RunThenCancelPollster_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster
+  nameWithType: PollsterTest.RunThenCancelPollster
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.SetUp
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.SetUp()
+  nameWithType: PollsterTest.SetUp()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.SetUp
+  nameWithType: PollsterTest.SetUp
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown()
+  nameWithType: PollsterTest.TearDown()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown
+  nameWithType: PollsterTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe
+  name: PollsterTest.WaitAsyncPipe
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe
+  nameWithType: PollsterTest.WaitAsyncPipe
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.#ctor(System.Double)
+  name: WaitAsyncPipe(Double)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe__ctor_System_Double_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.#ctor(System.Double)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WaitAsyncPipe(System.Double)
+  nameWithType: PollsterTest.WaitAsyncPipe.WaitAsyncPipe(Double)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.#ctor*
+  name: WaitAsyncPipe
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WaitAsyncPipe
+  nameWithType: PollsterTest.WaitAsyncPipe.WaitAsyncPipe
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.CompleteAsync
+  name: CompleteAsync()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_CompleteAsync
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.CompleteAsync
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.CompleteAsync()
+  nameWithType: PollsterTest.WaitAsyncPipe.CompleteAsync()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.CompleteAsync*
+  name: CompleteAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_CompleteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.CompleteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.CompleteAsync
+  nameWithType: PollsterTest.WaitAsyncPipe.CompleteAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.ReadAsync(CancellationToken)
+  name: ReadAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_ReadAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.ReadAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.ReadAsync(CancellationToken)
+  nameWithType: PollsterTest.WaitAsyncPipe.ReadAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.ReadAsync*
+  name: ReadAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_ReadAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.ReadAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.ReadAsync
+  nameWithType: PollsterTest.WaitAsyncPipe.ReadAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(IEnumerable{ProcessRequest})
+  name: WriteAsync(IEnumerable<ProcessRequest>)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_WriteAsync_IEnumerable_ProcessRequest__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(IEnumerable{ProcessRequest})
+  name.vb: WriteAsync(IEnumerable(Of ProcessRequest))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(IEnumerable<ProcessRequest>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(IEnumerable(Of ProcessRequest))
+  nameWithType: PollsterTest.WaitAsyncPipe.WriteAsync(IEnumerable<ProcessRequest>)
+  nameWithType.vb: PollsterTest.WaitAsyncPipe.WriteAsync(IEnumerable(Of ProcessRequest))
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(ProcessRequest)
+  name: WriteAsync(ProcessRequest)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_WriteAsync_ProcessRequest_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(ProcessRequest)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync(ProcessRequest)
+  nameWithType: PollsterTest.WaitAsyncPipe.WriteAsync(ProcessRequest)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync*
+  name: WriteAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitAsyncPipe_WriteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.WriteAsync
+  nameWithType: PollsterTest.WaitAsyncPipe.WriteAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler
+  name: PollsterTest.WaitWorkerStreamHandler
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler
+  nameWithType: PollsterTest.WaitWorkerStreamHandler
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.#ctor(System.Double)
+  name: WaitWorkerStreamHandler(Double)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler__ctor_System_Double_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.#ctor(System.Double)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.WaitWorkerStreamHandler(System.Double)
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.WaitWorkerStreamHandler(Double)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.#ctor*
+  name: WaitWorkerStreamHandler
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.WaitWorkerStreamHandler
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.WaitWorkerStreamHandler
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Check
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Check
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Dispose()
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Dispose
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Dispose
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Init(CancellationToken)
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Init
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Init
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Pipe
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Pipe
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Pipe
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Pipe
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.Pipe
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.Pipe
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  name: StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing*
+  name: StartTaskProcessing
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_WaitWorkerStreamHandler_StartTaskProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing
+  nameWithType: PollsterTest.WaitWorkerStreamHandler.StartTaskProcessing
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest
   name: TaskHandlerTest
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html
   commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest
   nameWithType: TaskHandlerTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireCancelingTaskShouldFail
+  name: AcquireCancelingTaskShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireCancelingTaskShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireCancelingTaskShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireCancelingTaskShouldFail()
+  nameWithType: TaskHandlerTest.AcquireCancelingTaskShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireCancelingTaskShouldFail*
+  name: AcquireCancelingTaskShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireCancelingTaskShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireCancelingTaskShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireCancelingTaskShouldFail
+  nameWithType: TaskHandlerTest.AcquireCancelingTaskShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireErrorTaskShouldFail
+  name: AcquireErrorTaskShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireErrorTaskShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireErrorTaskShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireErrorTaskShouldFail()
+  nameWithType: TaskHandlerTest.AcquireErrorTaskShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireErrorTaskShouldFail*
+  name: AcquireErrorTaskShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireErrorTaskShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireErrorTaskShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireErrorTaskShouldFail
+  nameWithType: TaskHandlerTest.AcquireErrorTaskShouldFail
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail
   name: AcquireNotReadyTaskShouldFail()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireNotReadyTaskShouldFail
@@ -16160,6 +16495,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail
   nameWithType: TaskHandlerTest.AcquireNotReadyTaskShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireStatusShouldFail(ArmoniK.Api.gRPC.V1.TaskStatus)
+  name: AcquireStatusShouldFail(TaskStatus)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireStatusShouldFail_ArmoniK_Api_gRPC_V1_TaskStatus_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireStatusShouldFail(ArmoniK.Api.gRPC.V1.TaskStatus)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireStatusShouldFail(ArmoniK.Api.gRPC.V1.TaskStatus)
+  nameWithType: TaskHandlerTest.AcquireStatusShouldFail(TaskStatus)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireStatusShouldFail*
+  name: AcquireStatusShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireStatusShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireStatusShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireStatusShouldFail
+  nameWithType: TaskHandlerTest.AcquireStatusShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail
+  name: AcquireTaskFromCancelledSessionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskFromCancelledSessionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail()
+  nameWithType: TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail*
+  name: AcquireTaskFromCancelledSessionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskFromCancelledSessionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail
+  nameWithType: TaskHandlerTest.AcquireTaskFromCancelledSessionShouldFail
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail
   name: AcquireTaskShouldFail()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskShouldFail
@@ -16186,6 +16547,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed
   nameWithType: TaskHandlerTest.AcquireTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod,System.Int32,System.Int32)
+  name: AcquireTaskWithCancellationWaitTaskTableShouldFail(TaskHandlerTest.WaitTaskTable.WaitMethod, Int32, Int32)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskWithCancellationWaitTaskTableShouldFail_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_WaitMethod_System_Int32_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod,System.Int32,System.Int32)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod, System.Int32, System.Int32)
+  nameWithType: TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail(TaskHandlerTest.WaitTaskTable.WaitMethod, Int32, Int32)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail*
+  name: AcquireTaskWithCancellationWaitTaskTableShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskWithCancellationWaitTaskTableShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
+  nameWithType: TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
   name: ExecuteTaskShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskShouldSucceed
@@ -16199,6 +16573,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
   nameWithType: TaskHandlerTest.ExecuteTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed(IWorkerStreamHandler)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(IWorkerStreamHandler)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed*
+  name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
+  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
   name: ExecuteTaskWithResultsShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithResultsShouldSucceed
@@ -16251,6 +16638,630 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown
   nameWithType: TaskHandlerTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut
+  name: TestCaseOuptut
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestCaseOuptut
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut
+  nameWithType: TaskHandlerTest.TestCaseOuptut
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut*
+  name: TestCaseOuptut
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestCaseOuptut_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut
+  nameWithType: TaskHandlerTest.TestCaseOuptut
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException
+  name: TaskHandlerTest.TestRpcException
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException
+  nameWithType: TaskHandlerTest.TestRpcException
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor
+  name: TestRpcException()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestRpcException__ctor
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.TestRpcException()
+  nameWithType: TaskHandlerTest.TestRpcException.TestRpcException()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor(Metadata)
+  name: TestRpcException(Metadata)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestRpcException__ctor_Metadata_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor(Metadata)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.TestRpcException(Metadata)
+  nameWithType: TaskHandlerTest.TestRpcException.TestRpcException(Metadata)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor(Metadata,System.String)
+  name: TestRpcException(Metadata, String)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestRpcException__ctor_Metadata_System_String_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor(Metadata,System.String)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.TestRpcException(Metadata, System.String)
+  nameWithType: TaskHandlerTest.TestRpcException.TestRpcException(Metadata, String)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor(System.String)
+  name: TestRpcException(String)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestRpcException__ctor_System_String_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor(System.String)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.TestRpcException(System.String)
+  nameWithType: TaskHandlerTest.TestRpcException.TestRpcException(String)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor*
+  name: TestRpcException
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestRpcException__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.TestRpcException
+  nameWithType: TaskHandlerTest.TestRpcException.TestRpcException
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable
+  name: TaskHandlerTest.WaitSessionTable
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable
+  nameWithType: TaskHandlerTest.WaitSessionTable
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.#ctor(System.Int32)
+  name: WaitSessionTable(Int32)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable__ctor_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.#ctor(System.Int32)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.WaitSessionTable(System.Int32)
+  nameWithType: TaskHandlerTest.WaitSessionTable.WaitSessionTable(Int32)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.#ctor*
+  name: WaitSessionTable
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.WaitSessionTable
+  nameWithType: TaskHandlerTest.WaitSessionTable.WaitSessionTable
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.CancelSessionAsync(System.String,CancellationToken)
+  name: CancelSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_CancelSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.CancelSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.CancelSessionAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.CancelSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.CancelSessionAsync*
+  name: CancelSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_CancelSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.CancelSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.CancelSessionAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.CancelSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: TaskHandlerTest.WaitSessionTable.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Check
+  nameWithType: TaskHandlerTest.WaitSessionTable.Check
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.DeleteSessionAsync(System.String,CancellationToken)
+  name: DeleteSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_DeleteSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.DeleteSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.DeleteSessionAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.DeleteSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.DeleteSessionAsync*
+  name: DeleteSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_DeleteSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.DeleteSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.DeleteSessionAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.DeleteSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync(System.String,CancellationToken)
+  name: GetDefaultTaskOptionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_GetDefaultTaskOptionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync*
+  name: GetDefaultTaskOptionAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_GetDefaultTaskOptionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.GetDefaultTaskOptionAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetSessionAsync(System.String,CancellationToken)
+  name: GetSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_GetSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetSessionAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.GetSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetSessionAsync*
+  name: GetSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_GetSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.GetSessionAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.GetSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Init(CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Init
+  nameWithType: TaskHandlerTest.WaitSessionTable.Init
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync(System.String,CancellationToken)
+  name: IsSessionCancelledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_IsSessionCancelledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync*
+  name: IsSessionCancelledAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_IsSessionCancelledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.IsSessionCancelledAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  name: ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_ListSessionsAsync_ListSessionsRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync*
+  name: ListSessionsAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_ListSessionsAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.ListSessionsAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.ListSessionsAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_Logger
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Logger
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Logger
+  nameWithType: TaskHandlerTest.WaitSessionTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_Logger_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.Logger
+  nameWithType: TaskHandlerTest.WaitSessionTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_SetSessionDataAsync_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name.vb: SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync(IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync(IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitSessionTable.SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.WaitSessionTable.SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync*
+  name: SetSessionDataAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitSessionTable_SetSessionDataAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitSessionTable.SetSessionDataAsync
+  nameWithType: TaskHandlerTest.WaitSessionTable.SetSessionDataAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable
+  name: TaskHandlerTest.WaitTaskTable
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable
+  nameWithType: TaskHandlerTest.WaitTaskTable
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.#ctor(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod,System.Int32)
+  name: WaitTaskTable(TaskHandlerTest.WaitTaskTable.WaitMethod, Int32)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable__ctor_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_WaitMethod_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.#ctor(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod,System.Int32)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitTaskTable(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod, System.Int32)
+  nameWithType: TaskHandlerTest.WaitTaskTable.WaitTaskTable(TaskHandlerTest.WaitTaskTable.WaitMethod, Int32)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.#ctor*
+  name: WaitTaskTable
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitTaskTable
+  nameWithType: TaskHandlerTest.WaitTaskTable.WaitTaskTable
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  name: AcquireTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_AcquireTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.AcquireTask(System.String, System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.AcquireTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.AcquireTask*
+  name: AcquireTask
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_AcquireTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.AcquireTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.AcquireTask
+  nameWithType: TaskHandlerTest.WaitTaskTable.AcquireTask
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CancelSessionAsync(System.String,CancellationToken)
+  name: CancelSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CancelSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CancelSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CancelSessionAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.CancelSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CancelSessionAsync*
+  name: CancelSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CancelSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CancelSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CancelSessionAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.CancelSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: TaskHandlerTest.WaitTaskTable.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Check
+  nameWithType: TaskHandlerTest.WaitTaskTable.Check
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  name: CountAllTasksAsync(TaskStatus, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountAllTasksAsync_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountAllTasksAsync(TaskStatus, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountAllTasksAsync*
+  name: CountAllTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountAllTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountAllTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountAllTasksAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountAllTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync(CancellationToken)
+  name: CountPartitionTasksAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountPartitionTasksAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync(CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync*
+  name: CountPartitionTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountPartitionTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(TaskFilter,CancellationToken)
+  name: CountTasksAsync(TaskFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountTasksAsync_TaskFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(TaskFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(TaskFilter, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountTasksAsync(TaskFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync*
+  name: CountTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
+  name: CreateTasks(IEnumerable<TaskData>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CreateTasks_IEnumerable_ArmoniK_Core_Common_Storage_TaskData__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
+  name.vb: CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks(IEnumerable<ArmoniK.Core.Common.Storage.TaskData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskData), CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.WaitTaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks*
+  name: CreateTasks
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CreateTasks_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CreateTasks
+  nameWithType: TaskHandlerTest.WaitTaskTable.CreateTasks
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.DeleteTaskAsync(System.String,CancellationToken)
+  name: DeleteTaskAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_DeleteTaskAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.DeleteTaskAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.DeleteTaskAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.DeleteTaskAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.DeleteTaskAsync*
+  name: DeleteTaskAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_DeleteTaskAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.DeleteTaskAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.DeleteTaskAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.DeleteTaskAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation(IEnumerable{System.String},CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_FinalizeTaskCreation_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation(IEnumerable{System.String},CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation*
+  name: FinalizeTaskCreation
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_FinalizeTaskCreation_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation
+  nameWithType: TaskHandlerTest.WaitTaskTable.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds(System.String,CancellationToken)
+  name: GetParentTaskIds(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetParentTaskIds_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetParentTaskIds(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds*
+  name: GetParentTaskIds
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetParentTaskIds_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetParentTaskIds
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)
+  name: GetTaskExpectedOutputKeys(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskExpectedOutputKeys_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys*
+  name: GetTaskExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput(System.String,CancellationToken)
+  name: GetTaskOutput(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskOutput_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskOutput(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput*
+  name: GetTaskOutput
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskOutput_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskOutput
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name: GetTaskStatus(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTaskStatus(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus*
+  name: GetTaskStatus
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskStatus_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskStatus
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Init(CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Init
+  nameWithType: TaskHandlerTest.WaitTaskTable.Init
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync(System.String,CancellationToken)
+  name: IsTaskCancelledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_IsTaskCancelledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync*
+  name: IsTaskCancelledAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_IsTaskCancelledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.IsTaskCancelledAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  name: ListTasksAsync(ListTasksRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ListTasksAsync_ListTasksRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync(TaskFilter,CancellationToken)
+  name: ListTasksAsync(TaskFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ListTasksAsync_TaskFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync(TaskFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync(TaskFilter, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.ListTasksAsync(TaskFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync*
+  name: ListTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ListTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ListTasksAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.ListTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_Logger
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Logger
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Logger
+  nameWithType: TaskHandlerTest.WaitTaskTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_Logger_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.Logger
+  nameWithType: TaskHandlerTest.WaitTaskTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMax
+  name: PollingDelayMax
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_PollingDelayMax
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMax
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMax
+  nameWithType: TaskHandlerTest.WaitTaskTable.PollingDelayMax
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMax*
+  name: PollingDelayMax
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_PollingDelayMax_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMax
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMax
+  nameWithType: TaskHandlerTest.WaitTaskTable.PollingDelayMax
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMin
+  name: PollingDelayMin
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_PollingDelayMin
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMin
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMin
+  nameWithType: TaskHandlerTest.WaitTaskTable.PollingDelayMin
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMin*
+  name: PollingDelayMin
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_PollingDelayMin_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMin
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.PollingDelayMin
+  nameWithType: TaskHandlerTest.WaitTaskTable.PollingDelayMin
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReadTaskAsync(System.String,CancellationToken)
+  name: ReadTaskAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ReadTaskAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReadTaskAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReadTaskAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.ReadTaskAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReadTaskAsync*
+  name: ReadTaskAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ReadTaskAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReadTaskAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReadTaskAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.ReadTaskAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  name: ReleaseTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ReleaseTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReleaseTask(System.String, System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.ReleaseTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReleaseTask*
+  name: ReleaseTask
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_ReleaseTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReleaseTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.ReleaseTask
+  nameWithType: TaskHandlerTest.WaitTaskTable.ReleaseTask
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  name: RetryTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.RetryTask(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.RetryTask*
+  name: RetryTask
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_RetryTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.RetryTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.RetryTask
+  nameWithType: TaskHandlerTest.WaitTaskTable.RetryTask
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  name: SetTaskCanceledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_SetTaskCanceledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync*
+  name: SetTaskCanceledAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_SetTaskCanceledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.SetTaskCanceledAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
+  name: SetTaskErrorAsync(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_SetTaskErrorAsync_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync(System.String, System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync*
+  name: SetTaskErrorAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_SetTaskErrorAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.SetTaskErrorAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync(System.String,CancellationToken)
+  name: SetTaskSuccessAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_SetTaskSuccessAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync*
+  name: SetTaskSuccessAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_SetTaskSuccessAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.SetTaskSuccessAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.StartTask(System.String,CancellationToken)
+  name: StartTask(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_StartTask_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.StartTask(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.StartTask(System.String, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.StartTask(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.StartTask*
+  name: StartTask
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_StartTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.StartTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.StartTask
+  nameWithType: TaskHandlerTest.WaitTaskTable.StartTask
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync(TaskFilter,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  name: UpdateAllTaskStatusAsync(TaskFilter, TaskStatus, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_UpdateAllTaskStatusAsync_TaskFilter_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync(TaskFilter,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync(TaskFilter, ArmoniK.Api.gRPC.V1.TaskStatus, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync(TaskFilter, TaskStatus, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync*
+  name: UpdateAllTaskStatusAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_UpdateAllTaskStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.UpdateAllTaskStatusAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  name: UpdateTaskStatusAsync(String, TaskStatus, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_UpdateTaskStatusAsync_System_String_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync(System.String, ArmoniK.Api.gRPC.V1.TaskStatus, CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync(String, TaskStatus, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync*
+  name: UpdateTaskStatusAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_UpdateTaskStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync
+  nameWithType: TaskHandlerTest.WaitTaskTable.UpdateTaskStatusAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod
+  name: TaskHandlerTest.WaitTaskTable.WaitMethod
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod
+  nameWithType: TaskHandlerTest.WaitTaskTable.WaitMethod
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.Acquire
+  name: Acquire
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_WaitMethod_Acquire
+  commentId: F:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.Acquire
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.Acquire
+  nameWithType: TaskHandlerTest.WaitTaskTable.WaitMethod.Acquire
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.Read
+  name: Read
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_WaitMethod_Read
+  commentId: F:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.Read
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.WaitMethod.Read
+  nameWithType: TaskHandlerTest.WaitTaskTable.WaitMethod.Read
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase
   name: ResultTableTestBase
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html
