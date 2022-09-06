@@ -50,34 +50,27 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class TestTaskHandlerProvider : IDisposable
+public class TestPollsterProvider : IDisposable
 {
-  private const           string                  DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource          ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication          app_;
-  private readonly        CancellationTokenSource cancellationTokenSource_;
-  private readonly        IMongoClient            client_;
-  private readonly        LoggerFactory           loggerFactory_;
-  public readonly         IPartitionTable         PartitionTable;
-  private readonly        IResultTable            resultTable_;
-  private readonly        MongoDbRunner           runner_;
-  public readonly         ISessionTable           SessionTable;
-  public readonly         ISubmitter              Submitter;
-  public readonly         TaskHandler             TaskHandler;
-  public readonly         ITaskTable              TaskTable;
+  private const           string                   DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
+  private readonly        WebApplication           app_;
+  private readonly        IMongoClient             client_;
+  public readonly         IPartitionTable          PartitionTable;
+  private readonly        IResultTable             resultTable_;
+  private readonly        MongoDbRunner            runner_;
+  private readonly        ISessionTable            sessionTable_;
+  public readonly         ISubmitter               Submitter;
+  public readonly         ITaskTable               TaskTable;
+  public                  Common.Pollster.Pollster Pollster;
 
 
-  public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
-                                 IAgentHandler           agentHandler,
-                                 IQueueMessageHandler    queueStorage,
-                                 CancellationTokenSource cancellationTokenSource,
-                                 ITaskTable?             inputTaskTable    = null,
-                                 ISessionTable?          inputSessionTable = null)
+  public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
+                              IAgentHandler        agentHandler,
+                              IPullQueueStorage    pullQueueStorage)
   {
-    cancellationTokenSource_ = cancellationTokenSource;
-    var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
-                                  logger: logger);
+                                  logger: NullLogger.Instance);
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
@@ -115,43 +108,31 @@ public class TestTaskHandlerProvider : IDisposable
 
     Console.WriteLine(minimalConfig.ToJson());
 
-    loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
-
     var builder = WebApplication.CreateBuilder();
 
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
+    builder.Logging.ClearProviders();
+    builder.Logging.AddProvider(new ConsoleForwardingLoggerProvider());
+
     builder.Services.AddMongoStorages(builder.Configuration,
-                                      logger)
+                                      NullLogger.Instance)
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_)
-           .AddLogging()
-           .AddSingleton(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
-           .AddOption<Injection.Options.Pollster>(builder.Configuration,
-                                                  Injection.Options.Pollster.SettingSection)
-           .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
-           .AddSingleton<TaskHandler>()
            .AddSingleton<DataPrefetcher>()
+           .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
+           .AddOption<Injection.Options.Pollster>(builder.Configuration,
+                                                  Injection.Options.Pollster.SettingSection)
            .AddSingleton(workerStreamHandler)
            .AddSingleton(agentHandler)
-           .AddSingleton(queueStorage);
+           .AddSingleton(pullQueueStorage);
 
-    if (inputTaskTable is not null)
-    {
-      builder.Services.AddSingleton(inputTaskTable);
-    }
-
-    if (inputSessionTable is not null)
-    {
-      builder.Services.AddSingleton(inputSessionTable);
-    }
 
     var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
     var computePlanOptions   = computePlanComponent.Get<ComputePlane>();
@@ -163,22 +144,18 @@ public class TestTaskHandlerProvider : IDisposable
     resultTable_   = app_.Services.GetRequiredService<IResultTable>();
     TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
     PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    SessionTable   = app_.Services.GetRequiredService<ISessionTable>();
+    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
     Submitter      = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
+    Pollster       = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
 
-    SessionTable.Init(CancellationToken.None)
-                .Wait();
+    sessionTable_.Init(CancellationToken.None)
+                 .Wait();
   }
 
   public void Dispose()
   {
     ((IDisposable)app_)?.Dispose();
-    loggerFactory_?.Dispose();
     runner_?.Dispose();
-    TaskHandler.DisposeAsync()
-               .AsTask()
-               .Wait();
     GC.SuppressFinalize(this);
   }
 }

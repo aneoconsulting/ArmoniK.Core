@@ -41,7 +41,7 @@ internal class ConsoleForwardingLoggerProvider : ILoggerProvider
                                                 {
                                                   if (logLevel >= minLogLevel)
                                                   {
-                                                    Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                                    Console.WriteLine($"{logLevel} : {DateTime.Now}  =>  {category} \n {message} \n {exception}");
                                                   }
                                                 });
 

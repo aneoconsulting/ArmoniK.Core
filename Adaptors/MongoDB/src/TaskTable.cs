@@ -588,9 +588,9 @@ public class TaskTable : ITaskTable
                                                                                                           TaskStatus.Dispatched,
                                                                                                         }));
 
-    Logger.LogDebug("Release task {task} on {podName}",
-                    taskId,
-                    ownerPodId);
+    Logger.LogInformation("Release task {task} on {podName}",
+                          taskId,
+                          ownerPodId);
     var res = await taskCollection.FindOneAndUpdateAsync(filter,
                                                          updateDefinition,
                                                          new FindOneAndUpdateOptions<TaskData>
