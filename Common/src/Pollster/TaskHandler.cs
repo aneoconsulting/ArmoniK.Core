@@ -49,27 +49,27 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class TaskHandler : IAsyncDisposable
 {
-  private readonly ActivitySource                              activitySource_;
-  private readonly IAgentHandler                               agentHandler_;
-  private readonly CancellationTokenSource                     cancellationTokenSource_;
-  private readonly DataPrefetcher                              dataPrefetcher_;
-  private readonly ILogger                                     logger_;
-  private readonly IQueueMessageHandler                        messageHandler_;
-  private readonly string                                      ownerPodId_;
-  private readonly IResultTable                                resultTable_;
-  private readonly ISessionTable                               sessionTable_;
-  private readonly ISubmitter                                  submitter_;
-  private readonly ITaskProcessingChecker                      taskProcessingChecker_;
-  private readonly ITaskTable                                  taskTable_;
-  private readonly string                                      token_;
+  private readonly ActivitySource          activitySource_;
+  private readonly IAgentHandler           agentHandler_;
+  private readonly CancellationTokenSource cancellationTokenSource_;
+  private readonly DataPrefetcher          dataPrefetcher_;
+  private readonly ILogger                 logger_;
+  private readonly IQueueMessageHandler    messageHandler_;
+  private readonly string                  ownerPodId_;
+  private readonly IResultTable            resultTable_;
+  private readonly ISessionTable           sessionTable_;
+  private readonly ISubmitter              submitter_;
+  private readonly ITaskProcessingChecker  taskProcessingChecker_;
+  private readonly ITaskTable              taskTable_;
+  private readonly string                  token_;
+#pragma warning disable CA2213 // Disposable fields should be disposed, here GC should be able to take care of this
+  private readonly CancellationTokenSource workerConnectionCts_;
+#pragma warning restore CA2213 // Disposable fields should be disposed
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private          IAgent?                                     agent_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
-#pragma warning disable CA2213 // Disposable fields should be disposed, here GC should be able to take care of this
-  private readonly CancellationTokenSource                     workerConnectionCts_;
-#pragma warning restore CA2213 // Disposable fields should be disposed
 
   public TaskHandler(ISessionTable              sessionTable,
                      ITaskTable                 taskTable,
