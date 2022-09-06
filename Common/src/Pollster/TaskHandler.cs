@@ -67,7 +67,9 @@ public class TaskHandler : IAsyncDisposable
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
-  private          CancellationTokenSource?                    workerConnectionCts_;
+#pragma warning disable CA2213 // Disposable fields should be disposed, here GC should be able to take care of this
+  private readonly CancellationTokenSource                     workerConnectionCts_;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
   public TaskHandler(ISessionTable              sessionTable,
                      ITaskTable                 taskTable,
@@ -107,7 +109,7 @@ public class TaskHandler : IAsyncDisposable
                                             {
                                               logger_.LogWarning("Cancellation triggered, waiting {timeBeforeCancellation} before cancelling task",
                                                                  pollsterOptions.GraceDelay);
-                                              workerConnectionCts_?.CancelAfter(pollsterOptions.GraceDelay);
+                                              workerConnectionCts_.CancelAfter(pollsterOptions.GraceDelay);
                                             });
   }
 
@@ -122,9 +124,6 @@ public class TaskHandler : IAsyncDisposable
                      messageHandler_.Status);
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
-
-    workerConnectionCts_?.Dispose();
-    workerConnectionCts_ = null;
     agent_?.Dispose();
   }
 

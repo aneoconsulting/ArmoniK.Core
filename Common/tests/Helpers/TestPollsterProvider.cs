@@ -56,7 +56,6 @@ public class TestPollsterProvider : IDisposable
   private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   private readonly        WebApplication           app_;
   private readonly        IMongoClient             client_;
-  private readonly        ILoggerFactory           loggerFactory_;
   public readonly         IPartitionTable          PartitionTable;
   private readonly        IResultTable             resultTable_;
   private readonly        MongoDbRunner            runner_;
@@ -156,7 +155,6 @@ public class TestPollsterProvider : IDisposable
   public void Dispose()
   {
     ((IDisposable)app_)?.Dispose();
-    loggerFactory_?.Dispose();
     runner_?.Dispose();
     GC.SuppressFinalize(this);
   }
