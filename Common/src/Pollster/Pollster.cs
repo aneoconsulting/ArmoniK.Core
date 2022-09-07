@@ -143,8 +143,6 @@ public class Pollster
                                                            ("messageHandler", message.MessageId),
                                                            ("taskId", message.TaskId),
                                                            ("ownerPodId", ownerPodId_));
-          TaskProcessing = "";
-
           using var activity = activitySource_.StartActivity("ProcessQueueMessage");
           activity?.SetBaggage("TaskId",
                                message.TaskId);
@@ -206,6 +204,10 @@ public class Pollster
                              "Error with messageHandler {messageId}",
                              message.MessageId);
             combinedCts.Cancel();
+          }
+          finally
+          {
+            TaskProcessing = "";
           }
         }
       }
