@@ -207,7 +207,7 @@ public class Pollster
           }
           finally
           {
-            TaskProcessing = "";
+            TaskProcessing = string.Empty;
           }
         }
       }
