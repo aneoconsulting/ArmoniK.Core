@@ -119,12 +119,16 @@ public class Pollster
                     .ConfigureAwait(false);
   }
 
+
   public async Task MainLoop(CancellationToken cancellationToken)
   {
     await Init(cancellationToken)
       .ConfigureAwait(false);
 
     cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
+    using var graceDelayCancellationTokenSource = new GraceDelayCancellationTokenSource(CancellationTokenSource.CreateLinkedTokenSource(cancellationToken),
+                                                                                        pollsterOptions_.GraceDelay);
+
     try
     {
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
@@ -151,9 +155,6 @@ public class Pollster
 
           logger_.LogDebug("Start a new Task to process the messageHandler");
 
-          var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
-                                                                            cancellationToken);
-
           try
           {
             await using var taskHandler = new TaskHandler(sessionTable_,
@@ -168,8 +169,7 @@ public class Pollster
                                                           activitySource_,
                                                           agentHandler_,
                                                           logger_,
-                                                          pollsterOptions_,
-                                                          combinedCts);
+                                                          graceDelayCancellationTokenSource);
 
             var precondition = await taskHandler.AcquireTask()
                                                 .ConfigureAwait(false);
@@ -190,12 +190,6 @@ public class Pollster
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
-
-              if (combinedCts.IsCancellationRequested)
-              {
-                logger_.LogWarning("Cancellation triggered, no more messages will be fetched");
-                return;
-              }
             }
           }
           catch (Exception e)
@@ -203,7 +197,6 @@ public class Pollster
             logger_.LogError(e,
                              "Error with messageHandler {messageId}",
                              message.MessageId);
-            combinedCts.Cancel();
           }
           finally
           {

@@ -37,6 +37,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -49,42 +50,39 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class TaskHandler : IAsyncDisposable
 {
-  private readonly ActivitySource          activitySource_;
-  private readonly IAgentHandler           agentHandler_;
-  private readonly CancellationTokenSource cancellationTokenSource_;
-  private readonly DataPrefetcher          dataPrefetcher_;
-  private readonly ILogger                 logger_;
-  private readonly IQueueMessageHandler    messageHandler_;
-  private readonly string                  ownerPodId_;
-  private readonly IResultTable            resultTable_;
-  private readonly ISessionTable           sessionTable_;
-  private readonly ISubmitter              submitter_;
-  private readonly ITaskProcessingChecker  taskProcessingChecker_;
-  private readonly ITaskTable              taskTable_;
-  private readonly string                  token_;
-#pragma warning disable CA2213 // Disposable fields should be disposed, here GC should be able to take care of this
-  private readonly CancellationTokenSource workerConnectionCts_;
-#pragma warning restore CA2213 // Disposable fields should be disposed
+  private readonly ActivitySource                              activitySource_;
+  private readonly IAgentHandler                               agentHandler_;
+  private readonly CancellationTokenSource                     cancellationTokenSource_;
+  private readonly DataPrefetcher                              dataPrefetcher_;
+  private readonly ILogger                                     logger_;
+  private readonly IQueueMessageHandler                        messageHandler_;
+  private readonly string                                      ownerPodId_;
+  private readonly IResultTable                                resultTable_;
+  private readonly ISessionTable                               sessionTable_;
+  private readonly ISubmitter                                  submitter_;
+  private readonly ITaskProcessingChecker                      taskProcessingChecker_;
+  private readonly ITaskTable                                  taskTable_;
+  private readonly string                                      token_;
+  private readonly CancellationTokenSource                     workerConnectionCts_;
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private          IAgent?                                     agent_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
 
-  public TaskHandler(ISessionTable              sessionTable,
-                     ITaskTable                 taskTable,
-                     IResultTable               resultTable,
-                     ISubmitter                 submitter,
-                     DataPrefetcher             dataPrefetcher,
-                     IWorkerStreamHandler       workerStreamHandler,
-                     IQueueMessageHandler       messageHandler,
-                     ITaskProcessingChecker     taskProcessingChecker,
-                     string                     ownerPodId,
-                     ActivitySource             activitySource,
-                     IAgentHandler              agentHandler,
-                     ILogger                    logger,
-                     Injection.Options.Pollster pollsterOptions,
-                     CancellationTokenSource    cancellationTokenSource)
+  public TaskHandler(ISessionTable                     sessionTable,
+                     ITaskTable                        taskTable,
+                     IResultTable                      resultTable,
+                     ISubmitter                        submitter,
+                     DataPrefetcher                    dataPrefetcher,
+                     IWorkerStreamHandler              workerStreamHandler,
+                     IQueueMessageHandler              messageHandler,
+                     ITaskProcessingChecker            taskProcessingChecker,
+                     string                            ownerPodId,
+                     ActivitySource                    activitySource,
+                     IAgentHandler                     agentHandler,
+                     ILogger                           logger,
+                     GraceDelayCancellationTokenSource graceDelayCancellationTokenSource)
   {
     sessionTable_            = sessionTable;
     taskTable_               = taskTable;
@@ -97,20 +95,15 @@ public class TaskHandler : IAsyncDisposable
     activitySource_          = activitySource;
     agentHandler_            = agentHandler;
     logger_                  = logger;
-    cancellationTokenSource_ = cancellationTokenSource;
+    cancellationTokenSource_ = graceDelayCancellationTokenSource.Token0;
     ownerPodId_              = ownerPodId;
     taskData_                = null;
     sessionData_             = null;
     token_ = Guid.NewGuid()
                  .ToString();
 
-    workerConnectionCts_ = new CancellationTokenSource();
-    cancellationTokenSource_.Token.Register(() =>
-                                            {
-                                              logger_.LogWarning("Cancellation triggered, waiting {timeBeforeCancellation} before cancelling task",
-                                                                 pollsterOptions.GraceDelay);
-                                              workerConnectionCts_.CancelAfter(pollsterOptions.GraceDelay);
-                                            });
+    workerConnectionCts_ = graceDelayCancellationTokenSource.Token1;
+    workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting before cancelling task"));
   }
 
 
@@ -473,7 +466,7 @@ public class TaskHandler : IAsyncDisposable
                     .ConfigureAwait(false);
 
     workerStreamHandler_.StartTaskProcessing(taskData_,
-                                             workerConnectionCts_!.Token);
+                                             workerConnectionCts_.Token);
     if (workerStreamHandler_.Pipe is null)
     {
       throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
@@ -524,7 +517,7 @@ public class TaskHandler : IAsyncDisposable
     {
       // at this point worker requests should have ended
       logger_.LogDebug("Waiting for task output");
-      var reply = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_!.Token)
+      var reply = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_.Token)
                                             .ConfigureAwait(false);
 
       logger_.LogDebug("Stop agent server");
@@ -557,7 +550,7 @@ public class TaskHandler : IAsyncDisposable
                                         taskData_,
                                         QueueMessageStatus.Cancelled,
                                         true,
-                                        workerConnectionCts_!.Token)
+                                        cancellationTokenSource_.Token)
         .ConfigureAwait(false);
       return;
     }
@@ -570,7 +563,7 @@ public class TaskHandler : IAsyncDisposable
                                         taskData_,
                                         QueueMessageStatus.Processed,
                                         false,
-                                        workerConnectionCts_!.Token)
+                                        cancellationTokenSource_.Token)
         .ConfigureAwait(false);
 
       return;

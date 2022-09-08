@@ -36,6 +36,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -55,7 +56,6 @@ public class TestTaskHandlerProvider : IDisposable
   private const           string                  DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource          ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
   private readonly        WebApplication          app_;
-  private readonly        CancellationTokenSource cancellationTokenSource_;
   private readonly        IMongoClient            client_;
   private readonly        LoggerFactory           loggerFactory_;
   public readonly         IPartitionTable         PartitionTable;
@@ -74,7 +74,6 @@ public class TestTaskHandlerProvider : IDisposable
                                  ITaskTable?             inputTaskTable    = null,
                                  ISessionTable?          inputSessionTable = null)
   {
-    cancellationTokenSource_ = cancellationTokenSource;
     var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: logger);
@@ -122,6 +121,9 @@ public class TestTaskHandlerProvider : IDisposable
 
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
+    var pollsterOptions = builder.Configuration.GetRequiredSection(Injection.Options.Pollster.SettingSection)
+                                 .Get<Injection.Options.Pollster>();
+
     builder.Services.AddMongoStorages(builder.Configuration,
                                       logger)
            .AddSingleton(ActivitySource)
@@ -131,9 +133,9 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
-           .AddOption<Injection.Options.Pollster>(builder.Configuration,
-                                                  Injection.Options.Pollster.SettingSection)
+           .AddSingleton(pollsterOptions)
            .AddSingleton(cancellationTokenSource)
+           .AddSingleton(new GraceDelayCancellationTokenSource(cancellationTokenSource, pollsterOptions.GraceDelay))
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<TaskHandler>()
