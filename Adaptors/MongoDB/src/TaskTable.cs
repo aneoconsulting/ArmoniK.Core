@@ -600,6 +600,9 @@ public class TaskTable : ITaskTable
                                                          cancellationToken)
                                   .ConfigureAwait(false);
 
+    Logger.LogDebug("Released task {taskData}",
+                    res);
+
     return res ?? await ReadTaskAsync(taskId,
                                       cancellationToken)
              .ConfigureAwait(false);
