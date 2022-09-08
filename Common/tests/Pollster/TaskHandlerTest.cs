@@ -893,12 +893,15 @@ public class TaskHandlerTest
   {
     get
     {
+      // trigger error before cancellation so it is a legitimate error and therefor should be considered as such
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns(TaskStatus.Error)
-                                                                                   .SetArgDisplayNames("ExceptionError");
+                                                                                   .SetArgDisplayNames("ExceptionError"); // error
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns(TaskStatus.Error)
+                                                                                          .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
+
+      // trigger error after cancellation and therefore should be considered as cancelled task and resend into queue
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(3000)).Returns(TaskStatus.Submitted)
                                                                                       .SetArgDisplayNames("ExceptionTaskCancellation");
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns(TaskStatus.Error)
-                                                                                          .SetArgDisplayNames("RpcExceptionResubmit");
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(3000)).Returns(TaskStatus.Submitted)
                                                                                              .SetArgDisplayNames("RpcExceptionTaskCancellation");
     }
@@ -939,7 +942,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.ExecuteTask()
                              .ConfigureAwait(false);
 
-    cancellationTokenSource.Cancel();
+    cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(1500));
 
     await testServiceProvider.TaskHandler.PostProcessing()
                              .ConfigureAwait(false);
