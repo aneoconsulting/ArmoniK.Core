@@ -204,6 +204,10 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
     Assert.True(source.Token.IsCancellationRequested);
+    Assert.AreEqual(string.Empty,
+                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.AreSame(string.Empty,
+                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   public class WaitWorkerStreamHandler : IWorkerStreamHandler
@@ -309,5 +313,9 @@ public class PollsterTest
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
+    Assert.AreEqual(string.Empty,
+                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.AreSame(string.Empty,
+                   testServiceProvider.Pollster.TaskProcessing);
   }
 }
