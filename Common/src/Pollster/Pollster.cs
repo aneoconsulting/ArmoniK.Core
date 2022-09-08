@@ -215,7 +215,9 @@ public class Pollster
       logger_.LogCritical(e,
                           "Error in pollster");
     }
-
-    lifeTime_.StopApplication();
+    finally
+    {
+      logger_.LogWarning("End of Pollster main loop");
+    }
   }
 }
