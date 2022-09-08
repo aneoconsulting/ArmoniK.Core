@@ -125,8 +125,13 @@ public class Pollster
     await Init(cancellationToken)
       .ConfigureAwait(false);
 
-    cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
-    using var graceDelayCancellationTokenSource = new GraceDelayCancellationTokenSource(CancellationTokenSource.CreateLinkedTokenSource(cancellationToken),
+    var cts = new CancellationTokenSource();
+    cancellationToken.Register(() =>
+                               {
+                                 logger_.LogError("Global cancellation has been triggered.");
+                                 cts.Cancel();
+                               });
+    using var graceDelayCancellationTokenSource = new GraceDelayCancellationTokenSource(cts,
                                                                                         pollsterOptions_.GraceDelay);
 
     try
