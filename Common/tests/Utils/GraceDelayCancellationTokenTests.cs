@@ -115,4 +115,29 @@ public class GraceDelayCancellationTokenTests
     source_!.Cancel();
     Assert.IsTrue(source_.IsCancellationRequested);
   }
+
+
+  [Test]
+  public void DisposedRegisteredLambdaShouldNotBeCalled()
+  {
+    var i = 0;
+    gdcts_!.Token0.Token.Register(() => i++);
+
+    var gdcts2 = new GraceDelayCancellationTokenSource(source_!,
+                                                   TimeSpan.FromMilliseconds(100),
+                                                   TimeSpan.FromSeconds(1));
+    gdcts2.Token0.Token.Register(() => i++);
+    gdcts2.Token0.Token.Register(() => i++);
+    gdcts2.Dispose();
+
+    var gdcts3 = new GraceDelayCancellationTokenSource(source_!,
+                                                       TimeSpan.FromMilliseconds(100),
+                                                       TimeSpan.FromSeconds(1));
+    gdcts3.Token0.Token.Register(() => i++);
+    gdcts3.Dispose();
+
+    source_!.Cancel();
+    Assert.AreEqual(1,
+                    i);
+  }
 }

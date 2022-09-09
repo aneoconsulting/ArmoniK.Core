@@ -131,9 +131,6 @@ public class Pollster
                                  logger_.LogError("Global cancellation has been triggered.");
                                  cts.Cancel();
                                });
-    using var graceDelayCancellationTokenSource = new GraceDelayCancellationTokenSource(cts,
-                                                                                        pollsterOptions_.GraceDelay);
-
     try
     {
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
@@ -162,6 +159,9 @@ public class Pollster
 
           try
           {
+            using var graceDelayCancellationTokenSource = new GraceDelayCancellationTokenSource(cts,
+                                                                                                pollsterOptions_.GraceDelay);
+
             await using var taskHandler = new TaskHandler(sessionTable_,
                                                           taskTable_,
                                                           resultTable_,

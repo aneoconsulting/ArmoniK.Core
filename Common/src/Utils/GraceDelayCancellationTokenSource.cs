@@ -29,13 +29,12 @@ namespace ArmoniK.Core.Common.Utils;
 
 public sealed class GraceDelayCancellationTokenSource : IDisposable
 {
-  private readonly object   lock_ = new();
-  private readonly TimeSpan t1_;
-  private readonly TimeSpan t2_;
-  private readonly TimeSpan t3_;
-  private readonly TimeSpan t4_;
-  private readonly TimeSpan t5_;
-  private          bool     disposed_;
+  private readonly TimeSpan                      t1_;
+  private readonly TimeSpan                      t2_;
+  private readonly TimeSpan                      t3_;
+  private readonly TimeSpan                      t4_;
+  private readonly TimeSpan                      t5_;
+  private readonly CancellationTokenRegistration reg_;
 
   public GraceDelayCancellationTokenSource(CancellationTokenSource source,
                                            TimeSpan                t1,
@@ -44,12 +43,12 @@ public sealed class GraceDelayCancellationTokenSource : IDisposable
                                            TimeSpan                t4 = default,
                                            TimeSpan                t5 = default)
   {
-    t1_ = t1;
-    t2_ = t2;
-    t3_ = t3;
-    t4_ = t4;
-    t5_ = t5;
-    source.Token.Register(CancellationTrigger);
+    t1_  = t1;
+    t2_  = t2;
+    t3_  = t3;
+    t4_  = t4;
+    t5_  = t5;
+    reg_ = source.Token.Register(CancellationTrigger);
   }
 
   public CancellationTokenSource Token0 { get; } = new();
@@ -63,39 +62,22 @@ public sealed class GraceDelayCancellationTokenSource : IDisposable
   {
     GC.SuppressFinalize(this);
 
-    lock (lock_)
-    {
-      if (disposed_)
-      {
-        return;
-      }
-
-      Token0.Dispose();
-      Token1.Dispose();
-      Token2.Dispose();
-      Token3.Dispose();
-      Token4.Dispose();
-      Token5.Dispose();
-      disposed_ = true;
-    }
+    reg_.Unregister();
+    Token0.Dispose();
+    Token1.Dispose();
+    Token2.Dispose();
+    Token3.Dispose();
+    Token4.Dispose();
+    Token5.Dispose();
   }
-
 
   private void CancellationTrigger()
   {
-    lock (lock_)
-    {
-      if (disposed_)
-      {
-        return;
-      }
-
-      Token0.Cancel();
-      Token1.CancelAfter(t1_);
-      Token2.CancelAfter(t2_);
-      Token3.CancelAfter(t3_);
-      Token4.CancelAfter(t4_);
-      Token5.CancelAfter(t5_);
-    }
+    Token0.Cancel();
+    Token1.CancelAfter(t1_);
+    Token2.CancelAfter(t2_);
+    Token3.CancelAfter(t3_);
+    Token4.CancelAfter(t4_);
+    Token5.CancelAfter(t5_);
   }
 }
