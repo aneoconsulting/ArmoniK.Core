@@ -72,7 +72,8 @@ public static class Program
 
     try
     {
-      builder.Host.UseSerilog(logger.GetSerilogConf());
+      builder.Host.UseSerilog(logger.GetSerilogConf())
+             .ConfigureHostOptions(options => options.ShutdownTimeout = TimeSpan.MaxValue);
 
       builder.Services.AddLogging(logger.Configure)
              .AddArmoniKWorkerConnection(builder.Configuration)
