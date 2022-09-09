@@ -29,21 +29,28 @@ namespace ArmoniK.Core.Common.Utils;
 
 public sealed class GraceDelayCancellationTokenSource : IDisposable
 {
+  private readonly object   lock_ = new();
+  private readonly TimeSpan t1_;
+  private readonly TimeSpan t2_;
+  private readonly TimeSpan t3_;
+  private readonly TimeSpan t4_;
+  private readonly TimeSpan t5_;
+  private          bool     disposed_;
+
   public GraceDelayCancellationTokenSource(CancellationTokenSource source,
                                            TimeSpan                t1,
                                            TimeSpan                t2 = default,
                                            TimeSpan                t3 = default,
                                            TimeSpan                t4 = default,
                                            TimeSpan                t5 = default)
-    => source.Token.Register(() =>
-                             {
-                               Token0.Cancel();
-                               Token1.CancelAfter(t1);
-                               Token2.CancelAfter(t2);
-                               Token3.CancelAfter(t3);
-                               Token4.CancelAfter(t4);
-                               Token5.CancelAfter(t5);
-                             });
+  {
+    t1_ = t1;
+    t2_ = t2;
+    t3_ = t3;
+    t4_ = t4;
+    t5_ = t5;
+    source.Token.Register(CancellationTrigger);
+  }
 
   public CancellationTokenSource Token0 { get; } = new();
   public CancellationTokenSource Token1 { get; } = new();
@@ -54,13 +61,41 @@ public sealed class GraceDelayCancellationTokenSource : IDisposable
 
   public void Dispose()
   {
-    Token0.Dispose();
-    Token1.Dispose();
-    Token2.Dispose();
-    Token3.Dispose();
-    Token4.Dispose();
-    Token5.Dispose();
-
     GC.SuppressFinalize(this);
+
+    lock (lock_)
+    {
+      if (disposed_)
+      {
+        return;
+      }
+
+      Token0.Dispose();
+      Token1.Dispose();
+      Token2.Dispose();
+      Token3.Dispose();
+      Token4.Dispose();
+      Token5.Dispose();
+      disposed_ = true;
+    }
+  }
+
+
+  private void CancellationTrigger()
+  {
+    lock (lock_)
+    {
+      if (disposed_)
+      {
+        return;
+      }
+
+      Token0.Cancel();
+      Token1.CancelAfter(t1_);
+      Token2.CancelAfter(t2_);
+      Token3.CancelAfter(t3_);
+      Token4.CancelAfter(t4_);
+      Token5.CancelAfter(t5_);
+    }
   }
 }

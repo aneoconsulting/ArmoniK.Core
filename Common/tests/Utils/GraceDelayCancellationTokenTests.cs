@@ -106,4 +106,13 @@ public class GraceDelayCancellationTokenTests
     Assert.IsTrue(gdcts_.Token4.IsCancellationRequested);
     Assert.IsTrue(gdcts_.Token5.IsCancellationRequested);
   }
+
+  [Test]
+  public void DisposeShouldNotHaveIssue()
+  {
+    gdcts_!.Dispose();
+    gdcts_ = null;
+    source_!.Cancel();
+    Assert.IsTrue(source_.IsCancellationRequested);
+  }
 }
