@@ -103,7 +103,9 @@ public class TaskHandler : IAsyncDisposable
                  .ToString();
 
     workerConnectionCts_ = graceDelayCancellationTokenSource.Token1;
-    workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting before cancelling task"));
+
+    cancellationTokenSource_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting before cancelling task"));
+    workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
   }
 
 
