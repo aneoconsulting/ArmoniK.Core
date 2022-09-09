@@ -594,7 +594,7 @@ public class TaskTable : ITaskTable
     Logger.LogDebug("Released task {taskData}",
                     res);
 
-    if (Logger.IsEnabled(LogLevel.Debug))
+    if (Logger.IsEnabled(LogLevel.Debug) && res is null)
     {
       Logger.LogDebug("Released task (old) {taskData}",
                       await ReadTaskAsync(taskId,
