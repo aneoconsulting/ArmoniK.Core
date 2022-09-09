@@ -124,8 +124,8 @@ public class GraceDelayCancellationTokenTests
     gdcts_!.Token0.Token.Register(() => i++);
 
     var gdcts2 = new GraceDelayCancellationTokenSource(source_!,
-                                                   TimeSpan.FromMilliseconds(100),
-                                                   TimeSpan.FromSeconds(1));
+                                                       TimeSpan.FromMilliseconds(100),
+                                                       TimeSpan.FromSeconds(1));
     gdcts2.Token0.Token.Register(() => i++);
     gdcts2.Token0.Token.Register(() => i++);
     gdcts2.Dispose();

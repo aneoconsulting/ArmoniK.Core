@@ -29,12 +29,12 @@ namespace ArmoniK.Core.Common.Utils;
 
 public sealed class GraceDelayCancellationTokenSource : IDisposable
 {
+  private readonly CancellationTokenRegistration reg_;
   private readonly TimeSpan                      t1_;
   private readonly TimeSpan                      t2_;
   private readonly TimeSpan                      t3_;
   private readonly TimeSpan                      t4_;
   private readonly TimeSpan                      t5_;
-  private readonly CancellationTokenRegistration reg_;
 
   public GraceDelayCancellationTokenSource(CancellationTokenSource source,
                                            TimeSpan                t1,
