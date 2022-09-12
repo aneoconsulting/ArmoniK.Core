@@ -36,7 +36,6 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -121,9 +120,6 @@ public class TestTaskHandlerProvider : IDisposable
 
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
-    var pollsterOptions = builder.Configuration.GetRequiredSection(Injection.Options.Pollster.SettingSection)
-                                 .Get<Injection.Options.Pollster>();
-
     builder.Services.AddMongoStorages(builder.Configuration,
                                       logger)
            .AddSingleton(ActivitySource)
@@ -133,10 +129,9 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
-           .AddSingleton(pollsterOptions)
+           .AddOption<Injection.Options.Pollster>(builder.Configuration,
+                                                  Injection.Options.Pollster.SettingSection)
            .AddSingleton(cancellationTokenSource)
-           .AddSingleton(new GraceDelayCancellationTokenSource(cancellationTokenSource,
-                                                               pollsterOptions.GraceDelay))
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<TaskHandler>()

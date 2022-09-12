@@ -37,7 +37,6 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -57,6 +56,7 @@ public class TaskHandler : IAsyncDisposable
   private readonly ILogger                                     logger_;
   private readonly IQueueMessageHandler                        messageHandler_;
   private readonly string                                      ownerPodId_;
+  private readonly CancellationTokenRegistration               reg1_;
   private readonly IResultTable                                resultTable_;
   private readonly ISessionTable                               sessionTable_;
   private readonly ISubmitter                                  submitter_;
@@ -70,19 +70,20 @@ public class TaskHandler : IAsyncDisposable
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
 
-  public TaskHandler(ISessionTable                     sessionTable,
-                     ITaskTable                        taskTable,
-                     IResultTable                      resultTable,
-                     ISubmitter                        submitter,
-                     DataPrefetcher                    dataPrefetcher,
-                     IWorkerStreamHandler              workerStreamHandler,
-                     IQueueMessageHandler              messageHandler,
-                     ITaskProcessingChecker            taskProcessingChecker,
-                     string                            ownerPodId,
-                     ActivitySource                    activitySource,
-                     IAgentHandler                     agentHandler,
-                     ILogger                           logger,
-                     GraceDelayCancellationTokenSource graceDelayCancellationTokenSource)
+  public TaskHandler(ISessionTable              sessionTable,
+                     ITaskTable                 taskTable,
+                     IResultTable               resultTable,
+                     ISubmitter                 submitter,
+                     DataPrefetcher             dataPrefetcher,
+                     IWorkerStreamHandler       workerStreamHandler,
+                     IQueueMessageHandler       messageHandler,
+                     ITaskProcessingChecker     taskProcessingChecker,
+                     string                     ownerPodId,
+                     ActivitySource             activitySource,
+                     IAgentHandler              agentHandler,
+                     ILogger                    logger,
+                     Injection.Options.Pollster pollsterOptions,
+                     CancellationTokenSource    cancellationTokenSource)
   {
     sessionTable_            = sessionTable;
     taskTable_               = taskTable;
@@ -95,16 +96,21 @@ public class TaskHandler : IAsyncDisposable
     activitySource_          = activitySource;
     agentHandler_            = agentHandler;
     logger_                  = logger;
-    cancellationTokenSource_ = graceDelayCancellationTokenSource.Token0;
+    cancellationTokenSource_ = cancellationTokenSource;
     ownerPodId_              = ownerPodId;
     taskData_                = null;
     sessionData_             = null;
     token_ = Guid.NewGuid()
                  .ToString();
 
-    workerConnectionCts_ = graceDelayCancellationTokenSource.Token1;
+    workerConnectionCts_ = new CancellationTokenSource();
 
-    cancellationTokenSource_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting before cancelling task"));
+    reg1_ = cancellationTokenSource_.Token.Register(() =>
+                                                    {
+                                                      logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
+                                                                         pollsterOptions.GraceDelay);
+                                                      workerConnectionCts_.CancelAfter(pollsterOptions.GraceDelay);
+                                                    });
     workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
   }
 
@@ -119,6 +125,10 @@ public class TaskHandler : IAsyncDisposable
                      messageHandler_.Status);
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
+    reg1_.Unregister();
+    await reg1_.DisposeAsync()
+               .ConfigureAwait(false);
+    workerConnectionCts_.Dispose();
     agent_?.Dispose();
   }
 

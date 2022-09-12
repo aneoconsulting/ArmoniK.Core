@@ -159,9 +159,6 @@ public class Pollster
 
           try
           {
-            using var graceDelayCancellationTokenSource = new GraceDelayCancellationTokenSource(cts,
-                                                                                                pollsterOptions_.GraceDelay);
-
             await using var taskHandler = new TaskHandler(sessionTable_,
                                                           taskTable_,
                                                           resultTable_,
@@ -174,7 +171,8 @@ public class Pollster
                                                           activitySource_,
                                                           agentHandler_,
                                                           logger_,
-                                                          graceDelayCancellationTokenSource);
+                                                          pollsterOptions_,
+                                                          cts);
 
             var precondition = await taskHandler.AcquireTask()
                                                 .ConfigureAwait(false);
