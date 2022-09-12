@@ -150,14 +150,15 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(Permissions.Submitter,
                       nameof(CreateSession))]
-  public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
-                                                         ServerCallContext    context)
+  public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
+                                                               ServerCallContext    context)
   {
     try
     {
-      return submitter_.CreateSession(request.PartitionIds,
-                                      request.DefaultTaskOption,
-                                      context.CancellationToken);
+      return await submitter_.CreateSession(request.PartitionIds,
+                                            request.DefaultTaskOption,
+                                            context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (PartitionNotFoundException e)
     {
@@ -336,13 +337,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(Permissions.Submitter,
                       nameof(CountTasks))]
-  public override Task<Count> CountTasks(TaskFilter        request,
-                                         ServerCallContext context)
+  public override async Task<Count> CountTasks(TaskFilter        request,
+                                               ServerCallContext context)
   {
     try
     {
-      return submitter_.CountTasks(request,
-                                   context.CancellationToken);
+      return await submitter_.CountTasks(request,
+                                         context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (ArmoniKException e)
     {
@@ -414,13 +416,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(Permissions.Submitter,
                       nameof(WaitForCompletion))]
-  public override Task<Count> WaitForCompletion(WaitRequest       request,
-                                                ServerCallContext context)
+  public override async Task<Count> WaitForCompletion(WaitRequest       request,
+                                                      ServerCallContext context)
   {
     try
     {
-      return submitter_.WaitForCompletion(request,
-                                          context.CancellationToken);
+      return await submitter_.WaitForCompletion(request,
+                                                context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
     {
@@ -447,13 +450,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(TryGetTaskOutput))]
-  public override Task<Output> TryGetTaskOutput(TaskOutputRequest request,
-                                                ServerCallContext context)
+  public override async Task<Output> TryGetTaskOutput(TaskOutputRequest request,
+                                                      ServerCallContext context)
   {
     try
     {
-      return submitter_.TryGetTaskOutputAsync(request,
-                                              context.CancellationToken);
+      return await submitter_.TryGetTaskOutputAsync(request,
+                                                    context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
     {
@@ -487,13 +491,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(WaitForAvailability))]
-  public override Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
-                                                              ServerCallContext context)
+  public override async Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
+                                                                    ServerCallContext context)
   {
     try
     {
-      return submitter_.WaitForAvailabilityAsync(request,
-                                                 context.CancellationToken);
+      return await submitter_.WaitForAvailabilityAsync(request,
+                                                       context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
     {
@@ -527,13 +532,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(GetTaskStatus))]
-  public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
-                                                         ServerCallContext    context)
+  public override async Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
+                                                               ServerCallContext    context)
   {
     try
     {
-      return submitter_.GetTaskStatusAsync(request,
-                                           context.CancellationToken);
+      return await submitter_.GetTaskStatusAsync(request,
+                                                 context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
     {
@@ -560,13 +566,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(GetResultStatus))]
-  public override Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
-                                                             ServerCallContext      context)
+  public override async Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
+                                                                   ServerCallContext      context)
   {
     try
     {
-      return submitter_.GetResultStatusAsync(request,
-                                             context.CancellationToken);
+      return await submitter_.GetResultStatusAsync(request,
+                                                   context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (ResultNotFoundException e)
     {
@@ -593,13 +600,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(ListTasks))]
-  public override Task<TaskIdList> ListTasks(TaskFilter        request,
-                                             ServerCallContext context)
+  public override async Task<TaskIdList> ListTasks(TaskFilter        request,
+                                                   ServerCallContext context)
   {
     try
     {
-      return submitter_.ListTasksAsync(request,
-                                       context.CancellationToken);
+      return await submitter_.ListTasksAsync(request,
+                                             context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
     {
@@ -626,13 +634,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(ListSessions))]
-  public override Task<SessionIdList> ListSessions(SessionFilter     request,
-                                                   ServerCallContext context)
+  public override async Task<SessionIdList> ListSessions(SessionFilter     request,
+                                                         ServerCallContext context)
   {
     try
     {
-      return submitter_.ListSessionsAsync(request,
-                                          context.CancellationToken);
+      return await submitter_.ListSessionsAsync(request,
+                                                context.CancellationToken)
+                             .ConfigureAwait(false);
     }
     catch (SessionNotFoundException e)
     {

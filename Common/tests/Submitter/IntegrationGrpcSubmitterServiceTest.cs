@@ -428,6 +428,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                   nameof(TestCasesOutputResultDataNotFoundInternal))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
                   nameof(TestCasesOutputTaskNotFoundInternal))]
+  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
+                  nameof(TestCasesOutputPartitionNotFoundInvalid))]
   public async Task<StatusCode?> CreateSessionThrowsException(Exception           exception,
                                                               SubmitterMockOutput output)
   {
@@ -886,6 +888,18 @@ internal class IntegrationGrpcSubmitterServiceTest
       {
         yield return new TestCaseData(new ObjectDataNotFoundException(),
                                       output).Returns(StatusCode.Internal);
+      }
+    }
+  }
+
+  public static IEnumerable TestCasesOutputPartitionNotFoundInvalid
+  {
+    get
+    {
+      foreach (var output in Enum.GetValues(typeof(SubmitterMockOutput)))
+      {
+        yield return new TestCaseData(new PartitionNotFoundException(),
+                                      output).Returns(StatusCode.InvalidArgument);
       }
     }
   }
