@@ -51,6 +51,7 @@ namespace ArmoniK.Core.Common.Pollster;
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
   private readonly WebApplication        app_;
+  private readonly ComputePlane          computePlanOptions_;
   private readonly ILogger<AgentHandler> logger_;
   private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly GrpcAgentService      service_;
@@ -70,6 +71,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
                       IObjectStorageFactory objectStorageFactory,
                       ILogger<AgentHandler> logger)
   {
+    computePlanOptions_   = computePlanOptions;
     submitter_            = submitter;
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
@@ -163,6 +165,13 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   }
 
   public async ValueTask DisposeAsync()
-    => await app_.DisposeAsync()
-                 .ConfigureAwait(false);
+  {
+    await app_.DisposeAsync()
+              .ConfigureAwait(false);
+
+    if (File.Exists(computePlanOptions_.AgentChannel.Address))
+    {
+      File.Delete(computePlanOptions_.AgentChannel.Address);
+    }
+  }
 }
