@@ -146,104 +146,100 @@ internal class IntegrationGrpcSubmitterServiceTest
                     result.TypeCase);
   }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-  // we need this async because only with async methods, the exceptions are not properly catched by gRPC
-  // and the error codes are not the ones we specified
   public class AsyncThrowExceptionSubmitter<T> : ISubmitter
     where T : Exception, new()
   {
-    public async Task CancelSession(string            sessionId,
-                                    CancellationToken cancellationToken)
-      => throw new T();
+    public Task CancelSession(string            sessionId,
+                              CancellationToken cancellationToken)
+      => Task.FromException(new T());
 
-    public async Task CancelTasks(TaskFilter        request,
+    public Task CancelTasks(TaskFilter        request,
+                            CancellationToken cancellationToken)
+      => Task.FromException(new T());
+
+    public Task<Count> CountTasks(TaskFilter        request,
                                   CancellationToken cancellationToken)
-      => throw new T();
+      => Task.FromException<Count>(new T());
 
-    public async Task<Count> CountTasks(TaskFilter        request,
-                                        CancellationToken cancellationToken)
-      => throw new T();
+    public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
+                                                  TaskOptions       defaultTaskOptions,
+                                                  CancellationToken cancellationToken)
+      => Task.FromException<CreateSessionReply>(new T());
 
-    public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
-                                                        TaskOptions       defaultTaskOptions,
-                                                        CancellationToken cancellationToken)
-      => throw new T();
+    public Task<(IEnumerable<TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                                      sessionId,
+                                                                                                   string                                      parentTaskId,
+                                                                                                   TaskOptions                                 options,
+                                                                                                   IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
+                                                                                                   CancellationToken                           cancellationToken)
+      => Task.FromException<(IEnumerable<TaskRequest>, int, string)>(new T());
 
-    public async Task<(IEnumerable<TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                                      sessionId,
-                                                                                                         string                                      parentTaskId,
-                                                                                                         TaskOptions                                 options,
-                                                                                                         IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                                                         CancellationToken                           cancellationToken)
-      => throw new T();
+    public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
+                                     int                      priority,
+                                     string                   partitionId,
+                                     string                   sessionId,
+                                     string                   parentTaskId,
+                                     CancellationToken        cancellationToken)
+      => Task.FromException(new T());
 
-    public async Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
-                                           int                      priority,
-                                           string                   partitionId,
-                                           string                   sessionId,
-                                           string                   parentTaskId,
-                                           CancellationToken        cancellationToken)
-      => throw new T();
+    public Task StartTask(string            taskId,
+                          CancellationToken cancellationToken = default)
+      => Task.FromException(new T());
 
-    public async Task StartTask(string            taskId,
-                                CancellationToken cancellationToken = default)
-      => throw new T();
+    public Task<Configuration> GetServiceConfiguration(Empty             request,
+                                                       CancellationToken cancellationToken)
+      => Task.FromException<Configuration>(new T());
 
-    public async Task<Configuration> GetServiceConfiguration(Empty             request,
-                                                             CancellationToken cancellationToken)
-      => throw new T();
+    public Task TryGetResult(ResultRequest                    request,
+                             IServerStreamWriter<ResultReply> responseStream,
+                             CancellationToken                cancellationToken)
+      => Task.FromException(new T());
 
-    public async Task TryGetResult(ResultRequest                    request,
-                                   IServerStreamWriter<ResultReply> responseStream,
-                                   CancellationToken                cancellationToken)
-      => throw new T();
+    public Task<Count> WaitForCompletion(WaitRequest       request,
+                                         CancellationToken cancellationToken)
+      => Task.FromException<Count>(new T());
 
-    public async Task<Count> WaitForCompletion(WaitRequest       request,
-                                               CancellationToken cancellationToken)
-      => throw new T();
+    public Task UpdateTaskStatusAsync(string            id,
+                                      TaskStatus        status,
+                                      CancellationToken cancellationToken = default)
+      => Task.FromException(new T());
 
-    public async Task UpdateTaskStatusAsync(string            id,
-                                            TaskStatus        status,
-                                            CancellationToken cancellationToken = default)
-      => throw new T();
+    public Task CompleteTaskAsync(TaskData          taskData,
+                                  bool              resubmit,
+                                  Output            output,
+                                  CancellationToken cancellationToken = default)
+      => Task.FromException(new T());
 
-    public async Task CompleteTaskAsync(TaskData          taskData,
-                                        bool              resubmit,
-                                        Output            output,
-                                        CancellationToken cancellationToken = default)
-      => throw new T();
+    public Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
+                                              CancellationToken contextCancellationToken)
+      => Task.FromException<Output>(new T());
 
-    public async Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
-                                                    CancellationToken contextCancellationToken)
-      => throw new T();
+    public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
+                                                            CancellationToken contextCancellationToken)
+      => Task.FromException<AvailabilityReply>(new T());
 
-    public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
-                                                                  CancellationToken contextCancellationToken)
-      => throw new T();
+    public Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                                       CancellationToken    contextCancellationToken)
+      => Task.FromException<GetTaskStatusReply>(new T());
 
-    public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                                             CancellationToken    contextCancellationToken)
-      => throw new T();
+    public Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
+                                                           CancellationToken      contextCancellationToken)
+      => Task.FromException<GetResultStatusReply>(new T());
 
-    public async Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                                 CancellationToken      contextCancellationToken)
-      => throw new T();
+    public Task<TaskIdList> ListTasksAsync(TaskFilter        request,
+                                           CancellationToken contextCancellationToken)
+      => Task.FromException<TaskIdList>(new T());
 
-    public async Task<TaskIdList> ListTasksAsync(TaskFilter        request,
+    public Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
                                                  CancellationToken contextCancellationToken)
-      => throw new T();
+      => Task.FromException<SessionIdList>(new T());
 
-    public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                                       CancellationToken contextCancellationToken)
-      => throw new T();
-
-    public async Task SetResult(string                                 sessionId,
-                                string                                 ownerTaskId,
-                                string                                 key,
-                                IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
-                                CancellationToken                      cancellationToken)
-      => throw new T();
+    public Task SetResult(string                                 sessionId,
+                          string                                 ownerTaskId,
+                          string                                 key,
+                          IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                          CancellationToken                      cancellationToken)
+      => Task.FromException(new T());
   }
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
   public class ThrowExceptionSubmitter<T> : ISubmitter
     where T : Exception, new()
