@@ -40,4 +40,9 @@ public class Pollster
   ///   Grace delay before the pollster cancels the task and put the message back into the queue
   /// </summary>
   public TimeSpan GraceDelay { get; set; } = TimeSpan.FromSeconds(5);
+
+  /// <summary>
+  ///   Timeout passed to IHost.StopAsync that will shutdown the application
+  /// </summary>
+  public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromDays(1);
 }
