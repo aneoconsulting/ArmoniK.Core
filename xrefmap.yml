@@ -8264,6 +8264,19 @@ references:
   commentId: F:ArmoniK.Core.Common.Injection.Options.Pollster.SettingSection
   fullName: ArmoniK.Core.Common.Injection.Options.Pollster.SettingSection
   nameWithType: Pollster.SettingSection
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.ShutdownTimeout
+  name: ShutdownTimeout
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_ShutdownTimeout
+  commentId: P:ArmoniK.Core.Common.Injection.Options.Pollster.ShutdownTimeout
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.ShutdownTimeout
+  nameWithType: Pollster.ShutdownTimeout
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.ShutdownTimeout*
+  name: ShutdownTimeout
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_ShutdownTimeout_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.Pollster.ShutdownTimeout
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.ShutdownTimeout
+  nameWithType: Pollster.ShutdownTimeout
 - uid: ArmoniK.Core.Common.Injection.Options.Submitter
   name: Submitter
   href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html

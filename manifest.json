@@ -813,7 +813,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html",
-          "hash": "he1+VIHI+QG1FVkbFniXcPjVQ7MTsBBSQJ8/8Daq5NQ="
+          "hash": "uFzNlU5I5o2gZVHcyEhQWUtlbSPozzjgV8DbtBuFYxA="
         }
       },
       "is_incremental": false,
@@ -1413,7 +1413,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Injection.Options.Pollster.html",
-          "hash": "HiY9Xm1Qi3CfDrouwYFLFUwAUR45KhdkCfUItsymbuU="
+          "hash": "N4UF9TaUddqxetf9G6SSl9HoXvEYf9zBMbDQPO45zcw="
         }
       },
       "is_incremental": false,
@@ -1485,7 +1485,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.AgentHandler.html",
-          "hash": "ICbbHuo52AiFPFy0MXiFKfzutgdxP21+pKacusw8CZI="
+          "hash": "RwGUzUsIvuiPwXlvGazP7sVg3BuOUoIBbewfnbjrEbE="
         }
       },
       "is_incremental": false,
@@ -1533,7 +1533,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.Pollster.html",
-          "hash": "m5H2fmPm0C16BHxAZJfDq4NytXuSBw82IfkTAZetO4o="
+          "hash": "8x5NkvHeBDsdc4LynqGaD16fWt1L4Vgvhw+agzpoILM="
         }
       },
       "is_incremental": false,
@@ -1545,7 +1545,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.TaskHandler.html",
-          "hash": "jRdIjK5Ncja1223kg9AAe63DlLMaGbfrxMAQSnI/boo="
+          "hash": "M7Dv1GNbHNL7rvO0/6cyBqr4KQAUu+k+ADL6T/6a/b0="
         }
       },
       "is_incremental": false,
@@ -2493,7 +2493,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html",
-          "hash": "lNAnysGsKZtP8jtu1szDcVrM0Zw521plK4v+1KB6+9Q="
+          "hash": "4bF9AUYfArdDPxQ+AcPA9a/buRKDAysH1V3AMtnVbcE="
         }
       },
       "is_incremental": false,
@@ -2733,7 +2733,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html",
-          "hash": "4FOAcbejwZMrXMamYNbovOtCn05FG8D+bV6AvkKdQHk="
+          "hash": "bMAcfkHtXbfv9XHpLGX9eruEV3OG0hb2vNLWtWBAbtg="
         }
       },
       "is_incremental": false,
