@@ -72,8 +72,11 @@ public static class Program
 
     try
     {
+      var pollsterOptions = builder.Configuration.GetSection(Pollster.SettingSection)
+                                   .Get<Pollster>() ?? new Pollster();
+
       builder.Host.UseSerilog(logger.GetSerilogConf())
-             .ConfigureHostOptions(options => options.ShutdownTimeout = TimeSpan.FromDays(1));
+             .ConfigureHostOptions(options => options.ShutdownTimeout = pollsterOptions.ShutdownTimeout);
 
       builder.Services.AddLogging(logger.Configure)
              .AddArmoniKWorkerConnection(builder.Configuration)
@@ -89,8 +92,7 @@ public static class Program
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
-             .AddInitializedOption<Pollster>(builder.Configuration,
-                                             Pollster.SettingSection)
+             .AddSingleton(pollsterOptions)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
