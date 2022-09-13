@@ -52,19 +52,18 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string                  DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource          ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication          app_;
-  private readonly        CancellationTokenSource cancellationTokenSource_;
-  private readonly        IMongoClient            client_;
-  private readonly        LoggerFactory           loggerFactory_;
-  public readonly         IPartitionTable         PartitionTable;
-  private readonly        IResultTable            resultTable_;
-  private readonly        MongoDbRunner           runner_;
-  public readonly         ISessionTable           SessionTable;
-  public readonly         ISubmitter              Submitter;
-  public readonly         TaskHandler             TaskHandler;
-  public readonly         ITaskTable              TaskTable;
+  private const           string          DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication  app_;
+  private readonly        IMongoClient    client_;
+  private readonly        LoggerFactory   loggerFactory_;
+  public readonly         IPartitionTable PartitionTable;
+  private readonly        IResultTable    resultTable_;
+  private readonly        MongoDbRunner   runner_;
+  public readonly         ISessionTable   SessionTable;
+  public readonly         ISubmitter      Submitter;
+  public readonly         TaskHandler     TaskHandler;
+  public readonly         ITaskTable      TaskTable;
 
 
   public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
@@ -74,7 +73,6 @@ public class TestTaskHandlerProvider : IDisposable
                                  ITaskTable?             inputTaskTable    = null,
                                  ISessionTable?          inputSessionTable = null)
   {
-    cancellationTokenSource_ = cancellationTokenSource;
     var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: logger);

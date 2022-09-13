@@ -51,6 +51,7 @@ namespace ArmoniK.Core.Common.Pollster;
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
   private readonly WebApplication        app_;
+  private readonly ComputePlane          computePlaneOptions_;
   private readonly ILogger<AgentHandler> logger_;
   private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly GrpcAgentService      service_;
@@ -60,29 +61,30 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   ///   Initializes a new instance
   /// </summary>
   /// <param name="loggerInit">Logger initializer used to configure the loggers needed by the worker</param>
-  /// <param name="computePlanOptions">Options needed for the creation of the servers</param>
+  /// <param name="computePlaneOptions">Options needed for the creation of the servers</param>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit            loggerInit,
-                      ComputePlane          computePlanOptions,
+                      ComputePlane          computePlaneOptions,
                       ISubmitter            submitter,
                       IObjectStorageFactory objectStorageFactory,
                       ILogger<AgentHandler> logger)
   {
+    computePlaneOptions_  = computePlaneOptions;
     submitter_            = submitter;
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
 
     try
     {
-      if (computePlanOptions.AgentChannel?.Address == null)
+      if (computePlaneOptions.AgentChannel?.Address == null)
       {
-        throw new ArgumentNullException(nameof(computePlanOptions.AgentChannel));
+        throw new ArgumentNullException(nameof(computePlaneOptions.AgentChannel));
       }
 
       logger.LogDebug("Agent address is {address}",
-                      computePlanOptions.AgentChannel.Address);
+                      computePlaneOptions.AgentChannel.Address);
 
       var builder = WebApplication.CreateBuilder();
 
@@ -94,12 +96,12 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
 
       builder.WebHost.ConfigureKestrel(options =>
                                        {
-                                         if (File.Exists(computePlanOptions.AgentChannel.Address))
+                                         if (File.Exists(computePlaneOptions.AgentChannel.Address))
                                          {
-                                           File.Delete(computePlanOptions.AgentChannel.Address);
+                                           File.Delete(computePlaneOptions.AgentChannel.Address);
                                          }
 
-                                         options.ListenUnixSocket(computePlanOptions.AgentChannel.Address,
+                                         options.ListenUnixSocket(computePlaneOptions.AgentChannel.Address,
                                                                   listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
                                        });
 
@@ -163,6 +165,13 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   }
 
   public async ValueTask DisposeAsync()
-    => await app_.DisposeAsync()
-                 .ConfigureAwait(false);
+  {
+    await app_.DisposeAsync()
+              .ConfigureAwait(false);
+
+    if (File.Exists(computePlaneOptions_.AgentChannel.Address))
+    {
+      File.Delete(computePlaneOptions_.AgentChannel.Address);
+    }
+  }
 }

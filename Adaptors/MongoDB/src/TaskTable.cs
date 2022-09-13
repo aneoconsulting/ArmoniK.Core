@@ -577,16 +577,7 @@ public class TaskTable : ITaskTable
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Submitted);
 
-    var filter = new FilterDefinitionBuilder<TaskData>().And(new FilterDefinitionBuilder<TaskData>().Eq(x => x.OwnerPodId,
-                                                                                                        ownerPodId),
-                                                             new FilterDefinitionBuilder<TaskData>().Eq(x => x.TaskId,
-                                                                                                        taskId),
-                                                             new FilterDefinitionBuilder<TaskData>().In(x => x.Status,
-                                                                                                        new[]
-                                                                                                        {
-                                                                                                          TaskStatus.Processing,
-                                                                                                          TaskStatus.Dispatched,
-                                                                                                        }));
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == ownerPodId);
 
     Logger.LogInformation("Release task {task} on {podName}",
                           taskId,
@@ -599,6 +590,17 @@ public class TaskTable : ITaskTable
                                                          },
                                                          cancellationToken)
                                   .ConfigureAwait(false);
+
+    Logger.LogDebug("Released task {taskData}",
+                    res);
+
+    if (Logger.IsEnabled(LogLevel.Debug) && res is null)
+    {
+      Logger.LogDebug("Released task (old) {taskData}",
+                      await ReadTaskAsync(taskId,
+                                          cancellationToken)
+                        .ConfigureAwait(false));
+    }
 
     return res ?? await ReadTaskAsync(taskId,
                                       cancellationToken)
