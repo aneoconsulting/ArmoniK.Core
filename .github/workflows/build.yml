@@ -5,7 +5,6 @@ on:
     branches-ignore:
       - release
     paths-ignore:
-      - .github/workflows/make-release.yml
       - .github/workflows/manual-integration-test.yml
     tags-ignore: [ '**' ]
 
