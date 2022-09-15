@@ -218,7 +218,6 @@ public static class IResultTableExt
   {
     try
     {
-
       return await resultTable.GetResults(sessionId,
                                           new[]
                                           {

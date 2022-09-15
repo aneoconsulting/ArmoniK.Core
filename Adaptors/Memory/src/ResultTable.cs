@@ -141,8 +141,8 @@ public class ResultTable : IResultTable
   public IAsyncEnumerable<Result> GetResults(string              sessionId,
                                              IEnumerable<string> keys,
                                              CancellationToken   cancellationToken = default)
-    => results_[sessionId].Values
-       .Where(r => keys.Contains(r.Name))
+    => results_[sessionId]
+       .Values.Where(r => keys.Contains(r.Name))
        .ToAsyncEnumerable();
 
   /// <inheritdoc />
