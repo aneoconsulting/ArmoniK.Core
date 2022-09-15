@@ -191,45 +191,40 @@ public interface IResultTable : IInitializable
                         CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
-  /// </summary>
-  /// <param name="Keys">Ids of the results that will change owner</param>
-  /// <param name="NewTaskId">Task id of the new owner</param>
-  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
-                                             string              NewTaskId);
-}
-
-public static class IResultTableExt
-{
-  /// <summary>
   ///   Get the result from its id
   /// </summary>
-  /// <param name="resultTable"></param>
   /// <param name="sessionId">id of the session containing the result</param>
   /// <param name="key">id of the result to be retrieved</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Result metadata from the database
   /// </returns>
-  public static async Task<Result> GetResult(this IResultTable resultTable,
-                                             string            sessionId,
-                                             string            key,
-                                             CancellationToken cancellationToken = default)
+  public async Task<Result> GetResult(string            sessionId,
+                                      string            key,
+                                      CancellationToken cancellationToken = default)
   {
     try
     {
-      return await resultTable.GetResults(sessionId,
-                                          new[]
-                                          {
-                                            key,
-                                          },
-                                          cancellationToken)
-                              .SingleAsync(cancellationToken)
-                              .ConfigureAwait(false);
+      return await GetResults(sessionId,
+                              new[]
+                              {
+                                key,
+                              },
+                              cancellationToken)
+                   .SingleAsync(cancellationToken)
+                   .ConfigureAwait(false);
     }
     catch (InvalidOperationException)
     {
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
+
+  /// <summary>
+  ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
+  /// </summary>
+  /// <param name="Keys">Ids of the results that will change owner</param>
+  /// <param name="NewTaskId">Task id of the new owner</param>
+  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
+                                             string              NewTaskId);
 }
