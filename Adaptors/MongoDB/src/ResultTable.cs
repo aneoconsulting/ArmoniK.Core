@@ -104,11 +104,9 @@ public class ResultTable : IResultTable
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    var cursor = resultCollection.AsQueryable(sessionHandle)
-                                 .Where(model => keys.Contains(model.Name) && model.SessionId == sessionId)
-                                 .ToCursor(cancellationToken);
-
-    return cursor.ToAsyncEnumerable(cancellationToken);
+    return resultCollection.AsQueryable(sessionHandle)
+                           .Where(model => keys.Contains(model.Name) && model.SessionId == sessionId)
+                           .ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />

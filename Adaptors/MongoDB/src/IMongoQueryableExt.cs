@@ -26,15 +26,17 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-internal static class IAsyncCursorExt
+internal static class IMongoQueryableExt
 {
-  public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this                     IAsyncCursor<T>   cursor,
-                                                               [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this                     IMongoQueryable<T> queryable,
+                                                               [EnumeratorCancellation] CancellationToken  cancellationToken = default)
   {
+    var cursor = await queryable.ToCursorAsync(cancellationToken)
+                                .ConfigureAwait(false);
     while (await cursor.MoveNextAsync(cancellationToken)
                        .ConfigureAwait(false))
     {
