@@ -152,6 +152,7 @@ public static class Program
       app.MapGrpcService<GrpcSubmitterService>();
       app.MapGrpcService<GrpcTasksService>();
       app.MapGrpcService<GrpcSessionsService>();
+      app.MapGrpcService<GrpcResultsService>();
 
       app.MapHealthChecks("/startup",
                           new HealthCheckOptions
