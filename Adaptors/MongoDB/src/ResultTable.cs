@@ -94,9 +94,9 @@ public class ResultTable : IResultTable
     }
   }
 
-  public async IAsyncEnumerable<Core.Common.Storage.Result> GetResults(string                                     sessionId,
-                                                                       IEnumerable<string>                        keys,
-                                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<Core.Common.Storage.Result> GetResults(string              sessionId,
+                                                                 IEnumerable<string> keys,
+                                                                 CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetResults)}");
     activity?.SetTag($"{nameof(GetResults)}_sessionId",
@@ -104,20 +104,11 @@ public class ResultTable : IResultTable
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    var cursor = await resultCollection.AsQueryable(sessionHandle)
-                                       .Where(model => keys.Contains(model.Name) && model.SessionId == sessionId)
-                                       .ToCursorAsync(cancellationToken)
-                                       .ConfigureAwait(false);
+    var cursor = resultCollection.AsQueryable(sessionHandle)
+                                 .Where(model => keys.Contains(model.Name) && model.SessionId == sessionId)
+                                 .ToCursor(cancellationToken);
 
-    while (await cursor.MoveNextAsync(cancellationToken)
-                       .ConfigureAwait(false))
-    {
-      foreach (var result in cursor.Current)
-      {
-        cancellationToken.ThrowIfCancellationRequested();
-        yield return result;
-      }
-    }
+    return cursor.ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />
