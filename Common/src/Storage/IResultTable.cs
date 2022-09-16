@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,11 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
 
@@ -106,17 +109,17 @@ public interface IResultTable : IInitializable
                      CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Get the result from its id
+  ///   Get the results from a collection of ids
   /// </summary>
   /// <param name="sessionId">id of the session containing the result</param>
-  /// <param name="key">id of the result to be retrieved</param>
+  /// <param name="keys">Collection of id of the result to be retrieved</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Result metadata from the database
+  ///   Collection of results metadata from the database
   /// </returns>
-  Task<Result> GetResult(string            sessionId,
-                         string            key,
-                         CancellationToken cancellationToken = default);
+  IAsyncEnumerable<Result> GetResults(string              sessionId,
+                                      IEnumerable<string> keys,
+                                      CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   List results from a session
@@ -186,6 +189,36 @@ public interface IResultTable : IInitializable
   Task AbortTaskResults(string            sessionId,
                         string            ownerTaskId,
                         CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Get the result from its id
+  /// </summary>
+  /// <param name="sessionId">id of the session containing the result</param>
+  /// <param name="key">id of the result to be retrieved</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Result metadata from the database
+  /// </returns>
+  public async Task<Result> GetResult(string            sessionId,
+                                      string            key,
+                                      CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return await GetResults(sessionId,
+                              new[]
+                              {
+                                key,
+                              },
+                              cancellationToken)
+                   .SingleAsync(cancellationToken)
+                   .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new ResultNotFoundException($"Key '{key}' not found");
+    }
+  }
 
   /// <summary>
   ///   Data structure to hold the results id and the new owner of the results in order to make batching easier

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -36,8 +36,6 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
-
-using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
@@ -140,20 +138,12 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
-  /// <inheritdoc />
-  public Task<Result> GetResult(string            sessionId,
-                                string            key,
-                                CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      return Task.FromResult(results_[sessionId][key]);
-    }
-    catch (KeyNotFoundException)
-    {
-      throw new ResultNotFoundException($"Key '{key}' not found");
-    }
-  }
+  public IAsyncEnumerable<Result> GetResults(string              sessionId,
+                                             IEnumerable<string> keys,
+                                             CancellationToken   cancellationToken = default)
+    => results_[sessionId]
+       .Values.Where(r => keys.Contains(r.Name))
+       .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListResultsAsync(string            sessionId,

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -94,31 +94,19 @@ public class ResultTable : IResultTable
     }
   }
 
-  /// <inheritdoc />
-  public async Task<Core.Common.Storage.Result> GetResult(string            sessionId,
-                                                          string            key,
-                                                          CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<Core.Common.Storage.Result> GetResults(string              sessionId,
+                                                                 IEnumerable<string> keys,
+                                                                 CancellationToken   cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResult)}");
-    activity?.SetTag($"{nameof(GetResult)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(GetResults)}");
+    activity?.SetTag($"{nameof(GetResults)}_sessionId",
                      sessionId);
-    activity?.SetTag($"{nameof(GetResult)}_key",
-                     key);
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    try
-    {
-      return await resultCollection.AsQueryable(sessionHandle)
-                                   .Where(model => model.Id == Result.GenerateId(sessionId,
-                                                                                 key))
-                                   .SingleAsync(cancellationToken)
-                                   .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException)
-    {
-      throw new ResultNotFoundException($"Key '{key}' not found");
-    }
+    return resultCollection.AsQueryable(sessionHandle)
+                           .Where(model => keys.Contains(model.Name) && model.SessionId == sessionId)
+                           .ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />
