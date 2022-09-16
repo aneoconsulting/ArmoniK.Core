@@ -1221,19 +1221,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.ResultTable.DeleteResults
   nameWithType: ResultTable.DeleteResults
-- uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResult(System.String,System.String,CancellationToken)
-  name: GetResult(String, String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResult_System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.GetResult(System.String,System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResult(System.String, System.String, CancellationToken)
-  nameWithType: ResultTable.GetResult(String, String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResult*
-  name: GetResult
-  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResult_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.ResultTable.GetResult
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name: GetResults(String, IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResults_System_String_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name.vb: GetResults(String, IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResults(System.String, IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.GetResults(System.String, IEnumerable(Of System.String), CancellationToken)
+  nameWithType: ResultTable.GetResults(String, IEnumerable<String>, CancellationToken)
+  nameWithType.vb: ResultTable.GetResults(String, IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResults*
+  name: GetResults
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResults_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.ResultTable.GetResults
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResult
-  nameWithType: ResultTable.GetResult
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResults
+  nameWithType: ResultTable.GetResults
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
   name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
@@ -3021,19 +3024,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.DeleteResults
   nameWithType: ResultTable.DeleteResults
-- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult(System.String,System.String,CancellationToken)
-  name: GetResult(String, String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResult_System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult(System.String,System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult(System.String, System.String, CancellationToken)
-  nameWithType: ResultTable.GetResult(String, String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult*
-  name: GetResult
-  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResult_
-  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name: GetResults(String, IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResults_System_String_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name.vb: GetResults(String, IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults(System.String, IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults(System.String, IEnumerable(Of System.String), CancellationToken)
+  nameWithType: ResultTable.GetResults(String, IEnumerable<String>, CancellationToken)
+  nameWithType.vb: ResultTable.GetResults(String, IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults*
+  name: GetResults
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResults_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult
-  nameWithType: ResultTable.GetResult
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResults
+  nameWithType: ResultTable.GetResults
 - uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
   name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
@@ -6737,6 +6743,41 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop
   nameWithType: GrpcAgentService.Stop
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService
+  name: GrpcResultsService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcResultsService
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService
+  nameWithType: GrpcResultsService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.#ctor(ArmoniK.Core.Common.Storage.IResultTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcResultsService})
+  name: GrpcResultsService(IResultTable, ILogger<GrpcResultsService>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcResultsService__ctor_ArmoniK_Core_Common_Storage_IResultTable_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcResultsService__
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.#ctor(ArmoniK.Core.Common.Storage.IResultTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcResultsService})
+  name.vb: GrpcResultsService(IResultTable, ILogger(Of GrpcResultsService))
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GrpcResultsService(ArmoniK.Core.Common.Storage.IResultTable, ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcResultsService>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GrpcResultsService(ArmoniK.Core.Common.Storage.IResultTable, ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcResultsService))
+  nameWithType: GrpcResultsService.GrpcResultsService(IResultTable, ILogger<GrpcResultsService>)
+  nameWithType.vb: GrpcResultsService.GrpcResultsService(IResultTable, ILogger(Of GrpcResultsService))
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.#ctor*
+  name: GrpcResultsService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcResultsService__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GrpcResultsService
+  nameWithType: GrpcResultsService.GrpcResultsService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GetOwnerTaskId(GetOwnerTaskIdRequest,ServerCallContext)
+  name: GetOwnerTaskId(GetOwnerTaskIdRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcResultsService_GetOwnerTaskId_GetOwnerTaskIdRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GetOwnerTaskId(GetOwnerTaskIdRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GetOwnerTaskId(GetOwnerTaskIdRequest, ServerCallContext)
+  nameWithType: GrpcResultsService.GetOwnerTaskId(GetOwnerTaskIdRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GetOwnerTaskId*
+  name: GetOwnerTaskId
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcResultsService_GetOwnerTaskId_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GetOwnerTaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.GetOwnerTaskId
+  nameWithType: GrpcResultsService.GetOwnerTaskId
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService
   name: GrpcSessionsService
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html
@@ -10176,6 +10217,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IResultTable.GetResult
   nameWithType: IResultTable.GetResult
+- uid: ArmoniK.Core.Common.Storage.IResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name: GetResults(String, IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_GetResults_System_String_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name.vb: GetResults(String, IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.GetResults(System.String, IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.GetResults(System.String, IEnumerable(Of System.String), CancellationToken)
+  nameWithType: IResultTable.GetResults(String, IEnumerable<String>, CancellationToken)
+  nameWithType.vb: IResultTable.GetResults(String, IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IResultTable.GetResults*
+  name: GetResults
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_GetResults_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IResultTable.GetResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.GetResults
+  nameWithType: IResultTable.GetResults
 - uid: ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
   name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
