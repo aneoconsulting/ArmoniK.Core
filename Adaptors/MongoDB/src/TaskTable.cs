@@ -633,10 +633,13 @@ public class TaskTable : ITaskTable
 
     return taskCollection.AsQueryable(sessionHandle)
                          .Where(tdm => taskIds.Contains(tdm.TaskId))
-                         .Select(model => Tuple.Create(model.TaskId,
-                                                       model.ExpectedOutputIds))
-                         .Cast<(string taskId, IEnumerable<string> expectedOutputKeys)>()
-                         .ToAsyncEnumerable();
+                         .Select(model => new
+                                          {
+                                            model.TaskId,
+                                            model.ExpectedOutputIds,
+                                          })
+                         .ToAsyncEnumerable(cancellationToken)
+                         .Select(model => (model.TaskId, model.ExpectedOutputIds.AsEnumerable()));
   }
 
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
