@@ -26,7 +26,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Core" Version="3.0.3-jgservicesforext.7.2c150e9" />
+    <PackageReference Include="ArmoniK.Api.Core" Version="3.0.3-jgservicesforext.8.53da215" />
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="6.2.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.48.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />

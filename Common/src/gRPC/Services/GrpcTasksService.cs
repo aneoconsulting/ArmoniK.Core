@@ -132,7 +132,6 @@ public class GrpcTasksService : Tasks.TasksBase
     {
       return new GetResultIdsResponse
              {
-               SessionId = request.SessionId,
                TaskResult =
                {
                  await taskTable_.GetTasksExpectedOutputKeys(request.TaskId,
