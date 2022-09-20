@@ -34,7 +34,7 @@ using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 
-using Armonik.Api.gRPC.V1.Tasks;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
@@ -611,12 +611,13 @@ public class TaskHandlerTest
                                                                               CancellationToken   cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
-                                                               CancellationToken cancellationToken = default)
-      => Task.FromResult(new[]
-                         {
-                           "",
-                         }.AsEnumerable());
+    public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
+                                                                                                                CancellationToken   cancellationToken = default)
+      => taskIds.Select(s => (s, new[]
+                                 {
+                                   "",
+                                 }.AsEnumerable()))
+                .ToAsyncEnumerable();
 
     public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
                                                       CancellationToken cancellationToken)

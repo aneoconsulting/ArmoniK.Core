@@ -24,7 +24,7 @@
 
 using ArmoniK.Api.gRPC.V1;
 
-using Armonik.Api.gRPC.V1.Tasks;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 

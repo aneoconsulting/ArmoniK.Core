@@ -24,13 +24,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 
-using Armonik.Api.gRPC.V1.Tasks;
+using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Common.Exceptions;
 
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 
 using Task = System.Threading.Tasks.Task;
@@ -293,6 +296,17 @@ public interface ITaskTable : IInitializable
                                                                      CancellationToken   cancellationToken = default);
 
   /// <summary>
+  ///   Get expected output keys of tasks given their ids
+  /// </summary>
+  /// <param name="taskIds">Collection of task ids</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The expected output keys
+  /// </returns>
+  IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
+                                                                                                       CancellationToken   cancellationToken = default);
+
+  /// <summary>
   ///   Get expected output keys of a task given its id
   /// </summary>
   /// <param name="taskId">Id of the target task</param>
@@ -300,8 +314,25 @@ public interface ITaskTable : IInitializable
   /// <returns>
   ///   The expected output keys
   /// </returns>
-  Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
-                                                      CancellationToken cancellationToken = default);
+  public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
+                                                      CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return await GetTasksExpectedOutputKeys(new[]
+                                              {
+                                                taskId,
+                                              },
+                                              cancellationToken)
+                   .Select(tuple => tuple.expectedOutputKeys)
+                   .SingleAsync(cancellationToken)
+                   .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new TaskNotFoundException($"Task '{taskId}' not found");
+    }
+  }
 
   /// <summary>
   ///   Get expected parent's ids of a task given its id

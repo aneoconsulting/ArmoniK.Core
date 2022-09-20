@@ -32,7 +32,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 
-using Armonik.Api.gRPC.V1.Tasks;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
@@ -42,6 +42,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -624,6 +625,21 @@ public class TaskTable : ITaskTable
                                                 })
                                .ToListAsync(cancellationToken)
                                .ConfigureAwait(false);
+  }
+
+  public  IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
+                                                                                                              CancellationToken   cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(GetTasksExpectedOutputKeys)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    return taskCollection.AsQueryable(sessionHandle)
+                         .Where(tdm => taskIds.Contains(tdm.TaskId))
+                         .Select(model => Tuple.Create(model.TaskId,
+                                                       model.ExpectedOutputIds))
+                         .Cast<(string taskId, IEnumerable<string> expectedOutputKeys)>()
+                         .ToAsyncEnumerable();
   }
 
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,

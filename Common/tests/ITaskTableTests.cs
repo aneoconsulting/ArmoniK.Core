@@ -29,7 +29,7 @@ using System.Threading;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 
-using Armonik.Api.gRPC.V1.Tasks;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Validators;
