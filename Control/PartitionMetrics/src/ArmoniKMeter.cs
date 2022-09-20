@@ -127,7 +127,8 @@ public class ArmoniKMeter : Meter, IHostedService
     await foreach (var partition in partitionTable_.GetPartitionWithAllocationAsync(cancellationToken)
                                                    .ConfigureAwait(false))
     {
-      var metricValue = (metrics[$"armonik_{partition.PartitionId}_tasks_queued"] as Metric)!.MetricValue;
+      var metricValue = (metrics[$"armonik_{partition.PartitionId}_tasks_queued"] as Metric)?.MetricValue;
+
       if (metricValue != null)
       {
         var numberOfTasks = (long)metricValue.Value;
