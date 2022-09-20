@@ -25,7 +25,6 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;

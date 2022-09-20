@@ -27,13 +27,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-
-using Google.Protobuf.Collections;
 
 using Grpc.Core;
 
@@ -126,7 +122,7 @@ public class GrpcTasksService : Tasks.TasksBase
   }
 
   public override async Task<GetResultIdsResponse> GetResultIds(GetResultIdsRequest request,
-                                                          ServerCallContext   context)
+                                                                ServerCallContext   context)
   {
     try
     {
@@ -148,7 +144,6 @@ public class GrpcTasksService : Tasks.TasksBase
                                  .ConfigureAwait(false),
                },
              };
-
     }
     catch (ArmoniKException e)
     {

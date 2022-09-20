@@ -26,9 +26,7 @@ using System;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Core.Common.Storage;
 
 using LinqKit;

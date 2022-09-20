@@ -28,9 +28,7 @@ using System.Linq;
 using System.Threading;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;

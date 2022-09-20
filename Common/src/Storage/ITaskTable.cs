@@ -29,11 +29,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
 
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 
 using Task = System.Threading.Tasks.Task;
@@ -315,7 +313,7 @@ public interface ITaskTable : IInitializable
   ///   The expected output keys
   /// </returns>
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
-                                                      CancellationToken cancellationToken = default)
+                                                                   CancellationToken cancellationToken = default)
   {
     try
     {
