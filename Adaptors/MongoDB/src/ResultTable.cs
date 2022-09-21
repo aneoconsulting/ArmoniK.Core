@@ -94,6 +94,31 @@ public class ResultTable : IResultTable
     }
   }
 
+  async Task<Core.Common.Storage.Result> IResultTable.GetResult(string              sessionId,
+                                                                 string key,
+                                                                 CancellationToken   cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
+    activity?.SetTag($"{nameof(IResultTable.GetResult)}_sessionId",
+                     sessionId);
+    var sessionHandle    = sessionProvider_.Get();
+    var resultCollection = resultCollectionProvider_.Get();
+    try
+    {
+      return await resultCollection.AsQueryable(sessionHandle)
+                                   .Where(model => model.Id == Result.GenerateId(sessionId,
+                                                                                 key))
+                                   .SingleAsync(cancellationToken)
+                                   .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new ResultNotFoundException($"Key '{key}' not found");
+    }
+  }
+  
+
+
   public IAsyncEnumerable<Core.Common.Storage.Result> GetResults(string              sessionId,
                                                                  IEnumerable<string> keys,
                                                                  CancellationToken   cancellationToken = default)

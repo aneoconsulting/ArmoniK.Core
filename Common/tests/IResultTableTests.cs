@@ -23,7 +23,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -331,6 +333,71 @@ public class ResultTableTestBase
 
       Assert.AreEqual(result.Data,
                       smallPayload);
+    }
+  }
+
+  [Test]
+  public async Task GetResultsBench()
+  {
+    if (RunTests)
+    {
+      var n = 2000;
+      var ids = Enumerable.Range(0,
+                                 n).Select(i => $"ResultIsAvailable#{i}").ToArray();
+      await ResultTable!.Create(ids.Select(id => new Result("SessionId",
+                                                            id,
+                                                            "OwnerId",
+                                                            ResultStatus.Completed,
+                                                            DateTime.Today,
+                                                            Encoding.ASCII.GetBytes(id))))
+                        .ConfigureAwait(false);
+      var results = await ResultTable!.GetResults("SessionId",
+                                                  ids,
+                                                  CancellationToken.None)
+                                      .ToListAsync()
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(n, results.Count);
+      foreach (var result in results)
+      {
+        Assert.AreEqual(ResultStatus.Completed, result.Status);
+      }
+    }
+  }
+
+  [Test]
+  public async Task GetResultBench()
+  {
+    if (RunTests)
+    {
+      var n = 2000;
+      var ids = Enumerable.Range(0,
+                                 n)
+                          .Select(i => $"ResultIsAvailable#{i}")
+                          .ToArray();
+      await ResultTable!.Create(ids.Select(id => new Result("SessionId",
+                                                            id,
+                                                            "OwnerId",
+                                                            ResultStatus.Completed,
+                                                            DateTime.Today,
+                                                            Encoding.ASCII.GetBytes(id))))
+                        .ConfigureAwait(false);
+
+      List<Result> results = new(n);
+      foreach (var id in ids)
+      {
+        results.Add(await ResultTable.GetResult("SessionId",
+                                                 id)
+                                      .ConfigureAwait(false));
+      }
+
+      Assert.AreEqual(n,
+                      results.Count);
+      foreach (var result in results)
+      {
+        Assert.AreEqual(ResultStatus.Completed,
+                        result.Status);
+      }
     }
   }
 
