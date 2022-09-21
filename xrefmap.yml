@@ -1652,19 +1652,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetParentTaskIds
   nameWithType: TaskTable.GetParentTaskIds
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)
-  name: GetTaskExpectedOutputKeys(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskExpectedOutputKeys_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskExpectedOutputKeys(System.String, CancellationToken)
-  nameWithType: TaskTable.GetTaskExpectedOutputKeys(String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskExpectedOutputKeys*
-  name: GetTaskExpectedOutputKeys
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskExpectedOutputKeys_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskExpectedOutputKeys
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskExpectedOutputKeys
-  nameWithType: TaskTable.GetTaskExpectedOutputKeys
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskOutput(System.String,CancellationToken)
   name: GetTaskOutput(String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskOutput_System_String_CancellationToken_
@@ -1678,6 +1665,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskOutput
   nameWithType: TaskTable.GetTaskOutput
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name: GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTasksExpectedOutputKeys_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskTable.GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys*
+  name: GetTasksExpectedOutputKeys
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTasksExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTasksExpectedOutputKeys
+  nameWithType: TaskTable.GetTasksExpectedOutputKeys
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
   name: GetTaskStatus(IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
@@ -4172,6 +4175,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskOutput
   nameWithType: TaskTable.GetTaskOutput
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name: GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTasksExpectedOutputKeys_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskTable.GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys*
+  name: GetTasksExpectedOutputKeys
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTasksExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTasksExpectedOutputKeys
+  nameWithType: TaskTable.GetTasksExpectedOutputKeys
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
   name: GetTaskStatus(IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
@@ -7106,6 +7125,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GrpcTasksService
   nameWithType: GrpcTasksService.GrpcTasksService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds(GetResultIdsRequest,ServerCallContext)
+  name: GetResultIds(GetResultIdsRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_GetResultIds_GetResultIdsRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds(GetResultIdsRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds(GetResultIdsRequest, ServerCallContext)
+  nameWithType: GrpcTasksService.GetResultIds(GetResultIdsRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds*
+  name: GetResultIds
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_GetResultIds_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds
+  nameWithType: GrpcTasksService.GetResultIds
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask(GetTaskRequest,ServerCallContext)
   name: GetTask(GetTaskRequest, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_GetTask_GetTaskRequest_ServerCallContext_
@@ -10571,6 +10603,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskOutput
   nameWithType: ITaskTable.GetTaskOutput
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name: GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_GetTasksExpectedOutputKeys_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: ITaskTable.GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: ITaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys*
+  name: GetTasksExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_GetTasksExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys
+  nameWithType: ITaskTable.GetTasksExpectedOutputKeys
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
   name: GetTaskStatus(IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
@@ -17071,19 +17119,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetParentTaskIds
   nameWithType: TaskHandlerTest.WaitTaskTable.GetParentTaskIds
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)
-  name: GetTaskExpectedOutputKeys(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskExpectedOutputKeys_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(System.String, CancellationToken)
-  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys*
-  name: GetTaskExpectedOutputKeys
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskExpectedOutputKeys_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys
-  nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskExpectedOutputKeys
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput(System.String,CancellationToken)
   name: GetTaskOutput(String, CancellationToken)
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskOutput_System_String_CancellationToken_
@@ -17097,6 +17132,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskOutput
   nameWithType: TaskHandlerTest.WaitTaskTable.GetTaskOutput
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name: GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTasksExpectedOutputKeys_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys*
+  name: GetTasksExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTasksExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys
+  nameWithType: TaskHandlerTest.WaitTaskTable.GetTasksExpectedOutputKeys
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
   name: GetTaskStatus(IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
@@ -20040,6 +20091,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.FinalizeTaskCreationShouldSucceed
   nameWithType: TaskTableTestBase.FinalizeTaskCreationShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.GetExpectedOutputKeysShouldSucceed
+  name: GetExpectedOutputKeysShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_GetExpectedOutputKeysShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.GetExpectedOutputKeysShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.GetExpectedOutputKeysShouldSucceed()
+  nameWithType: TaskTableTestBase.GetExpectedOutputKeysShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.GetExpectedOutputKeysShouldSucceed*
+  name: GetExpectedOutputKeysShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_GetExpectedOutputKeysShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.GetExpectedOutputKeysShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.GetExpectedOutputKeysShouldSucceed
+  nameWithType: TaskTableTestBase.GetExpectedOutputKeysShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.GetParentTaskIdsShouldFail
   name: GetParentTaskIdsShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_GetParentTaskIdsShouldFail
