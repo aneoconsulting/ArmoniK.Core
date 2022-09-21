@@ -128,7 +128,7 @@ public class GrpcTasksService : Tasks.TasksBase
     {
       return new GetResultIdsResponse
              {
-               TaskResult =
+               TaskResults =
                {
                  await taskTable_.GetTasksExpectedOutputKeys(request.TaskId,
                                                              context.CancellationToken)
