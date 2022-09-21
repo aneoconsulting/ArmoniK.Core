@@ -134,11 +134,11 @@ public class GrpcTasksService : Tasks.TasksBase
                                                              context.CancellationToken)
                                  .Select(r => new GetResultIdsResponse.Types.MapTaskResult
                                               {
+                                                TaskId = r.taskId,
                                                 ResultIds =
                                                 {
                                                   r.expectedOutputKeys,
                                                 },
-                                                TaskId = r.taskId,
                                               })
                                  .ToListAsync(context.CancellationToken)
                                  .ConfigureAwait(false),
