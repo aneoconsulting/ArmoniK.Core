@@ -17455,6 +17455,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
   nameWithType: ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultBench
+  name: GetResultBench()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultBench
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultBench
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultBench()
+  nameWithType: ResultTableTestBase.GetResultBench()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultBench*
+  name: GetResultBench
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultBench_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultBench
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultBench
+  nameWithType: ResultTableTestBase.GetResultBench
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultsBench
+  name: GetResultsBench()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultsBench
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultsBench
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultsBench()
+  nameWithType: ResultTableTestBase.GetResultsBench()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultsBench*
+  name: GetResultsBench
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultsBench_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultsBench
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultsBench
+  nameWithType: ResultTableTestBase.GetResultsBench
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed
   name: GetResultStatusShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultStatusShouldSucceed
