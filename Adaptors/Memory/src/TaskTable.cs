@@ -32,9 +32,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Submitter;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
@@ -484,18 +482,11 @@ public class TaskTable : ITaskTable
                                                           TaskId = model.Value.TaskId,
                                                         }));
 
-  /// <inheritdoc />
-  public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
-                                                             CancellationToken cancellationToken = default)
-  {
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .ExpectedOutputIds as IEnumerable<string>);
-  }
+  public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
+                                                                                                              CancellationToken   cancellationToken = default)
+    => taskId2TaskData_.Where(pair => taskIds.Contains(pair.Key))
+                       .Select(pair => (pair.Key, pair.Value.ExpectedOutputIds as IEnumerable<string>))
+                       .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,

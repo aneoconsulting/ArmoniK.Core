@@ -28,9 +28,7 @@ using System.Linq;
 using System.Threading;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
@@ -72,6 +70,7 @@ public class TaskTableTestBase
                                             new[]
                                             {
                                               "output1",
+                                              "output2",
                                             },
                                             Array.Empty<string>(),
                                             TaskStatus.Completed,
@@ -738,6 +737,7 @@ public class TaskTableTestBase
       var expectedOutput = new[]
                            {
                              "output1",
+                             "output2",
                            };
       var result = await TaskTable!.GetTaskExpectedOutputKeys("TaskCompletedId",
                                                               CancellationToken.None)
@@ -791,6 +791,30 @@ public class TaskTableTestBase
                                                                                     CancellationToken.None)
                                                                   .ConfigureAwait(false);
                                                 });
+    }
+  }
+
+  [Test]
+  public void GetExpectedOutputKeysShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var parentTaskIds = new[]
+                          {
+                            "output1",
+                            "output2",
+                          };
+      var result = TaskTable!.GetTasksExpectedOutputKeys(new[]
+                                                         {
+                                                           "TaskCompletedId",
+                                                         },
+                                                         CancellationToken.None)
+                             .ToListAsync(CancellationToken.None)
+                             .Result.Single()
+                             .expectedOutputKeys;
+
+      Assert.AreEqual(parentTaskIds,
+                      result);
     }
   }
 

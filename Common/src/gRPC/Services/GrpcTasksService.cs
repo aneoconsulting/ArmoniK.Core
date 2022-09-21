@@ -27,8 +27,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -36,7 +35,7 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using Task = Armonik.Api.gRPC.V1.Tasks.Task;
+using Task = ArmoniK.Api.gRPC.V1.Tasks.Task;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -117,6 +116,46 @@ public class GrpcTasksService : Tasks.TasksBase
     {
       logger_.LogWarning(e,
                          "Error while listing tasks");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  public override async Task<GetResultIdsResponse> GetResultIds(GetResultIdsRequest request,
+                                                                ServerCallContext   context)
+  {
+    try
+    {
+      return new GetResultIdsResponse
+             {
+               TaskResults =
+               {
+                 await taskTable_.GetTasksExpectedOutputKeys(request.TaskId,
+                                                             context.CancellationToken)
+                                 .Select(r => new GetResultIdsResponse.Types.MapTaskResult
+                                              {
+                                                TaskId = r.taskId,
+                                                ResultIds =
+                                                {
+                                                  r.expectedOutputKeys,
+                                                },
+                                              })
+                                 .ToListAsync(context.CancellationToken)
+                                 .ConfigureAwait(false),
+               },
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting results ids from tasks");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting results ids from tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

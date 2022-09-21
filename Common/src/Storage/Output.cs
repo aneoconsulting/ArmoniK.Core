@@ -23,8 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.gRPC.V1;
-
-using Armonik.Api.gRPC.V1.Tasks;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
