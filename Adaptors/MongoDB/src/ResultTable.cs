@@ -94,9 +94,9 @@ public class ResultTable : IResultTable
     }
   }
 
-  async Task<Core.Common.Storage.Result> IResultTable.GetResult(string              sessionId,
-                                                                 string key,
-                                                                 CancellationToken   cancellationToken)
+  async Task<Core.Common.Storage.Result> IResultTable.GetResult(string            sessionId,
+                                                                string            key,
+                                                                CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
     activity?.SetTag($"{nameof(IResultTable.GetResult)}_sessionId",
@@ -116,7 +116,6 @@ public class ResultTable : IResultTable
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
-  
 
 
   public IAsyncEnumerable<Core.Common.Storage.Result> GetResults(string              sessionId,

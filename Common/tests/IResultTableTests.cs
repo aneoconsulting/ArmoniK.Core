@@ -343,7 +343,9 @@ public class ResultTableTestBase
     {
       var n = 2000;
       var ids = Enumerable.Range(0,
-                                 n).Select(i => $"ResultIsAvailable#{i}").ToArray();
+                                 n)
+                          .Select(i => $"ResultIsAvailable#{i}")
+                          .ToArray();
       await ResultTable!.Create(ids.Select(id => new Result("SessionId",
                                                             id,
                                                             "OwnerId",
@@ -357,10 +359,12 @@ public class ResultTableTestBase
                                       .ToListAsync()
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(n, results.Count);
+      Assert.AreEqual(n,
+                      results.Count);
       foreach (var result in results)
       {
-        Assert.AreEqual(ResultStatus.Completed, result.Status);
+        Assert.AreEqual(ResultStatus.Completed,
+                        result.Status);
       }
     }
   }
@@ -387,8 +391,8 @@ public class ResultTableTestBase
       foreach (var id in ids)
       {
         results.Add(await ResultTable.GetResult("SessionId",
-                                                 id)
-                                      .ConfigureAwait(false));
+                                                id)
+                                     .ConfigureAwait(false));
       }
 
       Assert.AreEqual(n,
