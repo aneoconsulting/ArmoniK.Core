@@ -36,6 +36,7 @@ using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -67,8 +68,10 @@ public class DataPrefetcher : IInitializable
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)

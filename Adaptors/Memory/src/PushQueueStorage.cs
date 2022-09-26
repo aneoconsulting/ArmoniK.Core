@@ -32,6 +32,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Adapters.Memory;
 
 public class PushQueueStorage : IPushQueueStorage
@@ -41,8 +43,8 @@ public class PushQueueStorage : IPushQueueStorage
   private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)

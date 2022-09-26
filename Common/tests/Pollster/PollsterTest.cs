@@ -39,6 +39,8 @@ using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using Moq;
 
 using NUnit.Framework;
@@ -217,8 +219,8 @@ public class PollsterTest
     public WaitWorkerStreamHandler(double delay)
       => delay_ = delay;
 
-    public ValueTask<bool> Check(HealthCheckTag tag)
-      => new(true);
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
 
     public Task Init(CancellationToken cancellationToken)
       => Task.CompletedTask;

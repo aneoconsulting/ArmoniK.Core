@@ -38,6 +38,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson.Serialization;
@@ -128,8 +129,10 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)

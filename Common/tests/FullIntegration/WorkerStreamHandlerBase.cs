@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -33,6 +33,8 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
 public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
@@ -46,8 +48,8 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
     ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply());
   }
 
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => new(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;

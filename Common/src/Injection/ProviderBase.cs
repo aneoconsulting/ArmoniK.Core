@@ -22,6 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using System;
 using System.Threading.Tasks;
 
@@ -37,8 +39,10 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
     => builder_ = builder;
 
   /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(object_ is not null);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(object_ is not null
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   public T Get()
   {

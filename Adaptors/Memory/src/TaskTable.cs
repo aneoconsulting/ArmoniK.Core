@@ -38,6 +38,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using Task = System.Threading.Tasks.Task;
@@ -560,8 +561,8 @@ public class TaskTable : ITaskTable
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   private bool UpdateAndCheckTaskStatus(string     id,
                                         TaskStatus status)

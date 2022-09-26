@@ -30,6 +30,8 @@ using ArmoniK.Core.Common;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
@@ -44,17 +46,20 @@ public class SessionProvider : IInitializable
   public SessionProvider(IMongoClient client)
     => client_ = client;
 
-  public ValueTask<bool> Check(HealthCheckTag tag)
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     switch (tag)
     {
       case HealthCheckTag.Readiness:
       case HealthCheckTag.Startup:
-        return new ValueTask<bool>(clientSessionHandle_ is not null);
+        return Task.FromResult(clientSessionHandle_ is not null
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy());
       case HealthCheckTag.Liveness:
-
-        return new ValueTask<bool>(client_.ListDatabaseNames()
-                                          .FirstOrDefault() is not null);
+        return Task.FromResult(client_.ListDatabaseNames()
+                                      .FirstOrDefault() is not null
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy());
       default:
         throw new ArgumentOutOfRangeException(nameof(tag),
                                               tag,

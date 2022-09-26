@@ -28,6 +28,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Common.Tests.Auth;
 
 public class MockAuthenticationTable : IAuthenticationTable
@@ -37,8 +39,8 @@ public class MockAuthenticationTable : IAuthenticationTable
   public MockAuthenticationTable(List<MockIdentity> mockIdentities)
     => identities_ = mockIdentities;
 
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;

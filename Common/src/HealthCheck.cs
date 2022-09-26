@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -51,19 +51,25 @@ public class HealthCheck : IHealthCheck
   public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
                                                         CancellationToken  cancellationToken = default)
   {
-    if (await healthCheckProvider_.Check(tag_)
-                                  .ConfigureAwait(false))
-    {
-      return HealthCheckResult.Healthy();
-    }
+    var result = await healthCheckProvider_.Check(tag_)
+                                           .ConfigureAwait(false);
 
     return context.Registration.FailureStatus switch
            {
-             HealthStatus.Unhealthy => HealthCheckResult.Unhealthy(),
-             HealthStatus.Degraded  => HealthCheckResult.Degraded(),
-             HealthStatus.Healthy   => HealthCheckResult.Healthy(),
+             HealthStatus.Unhealthy => HealthCheckResult.Unhealthy(result.Description,
+                                                                   result.Status == HealthStatus.Healthy
+                                                                     ? null
+                                                                     : result.Exception,
+                                                                   result.Data),
+             HealthStatus.Degraded => HealthCheckResult.Degraded(result.Description,
+                                                                 result.Status == HealthStatus.Healthy
+                                                                   ? null
+                                                                   : result.Exception,
+                                                                 result.Data),
+             HealthStatus.Healthy => HealthCheckResult.Healthy(result.Description + result.Exception,
+                                                               result.Data),
              _ => throw new ArgumentOutOfRangeException(nameof(context),
-                                                        "Context has been registered with a non supported FailureStatus"),
+                                                        "Context has been registered with a non supported FailureStatus")
            };
   }
 }

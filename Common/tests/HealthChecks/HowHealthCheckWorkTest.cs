@@ -122,14 +122,14 @@ public class HowHealthCheckWorkTest
 
   private class AlwaysTrueHealthCheck : IHealthCheckProvider
   {
-    public ValueTask<bool> Check(HealthCheckTag tag)
-      => new(true);
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
   }
 
   private class AlwaysFalseHealthCheck : IHealthCheckProvider
   {
-    public ValueTask<bool> Check(HealthCheckTag tag)
-      => new(false);
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Unhealthy());
   }
 
   [Test]

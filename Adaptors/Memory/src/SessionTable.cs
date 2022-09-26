@@ -38,6 +38,7 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
@@ -56,8 +57,8 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)

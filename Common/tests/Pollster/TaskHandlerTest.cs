@@ -45,6 +45,7 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -418,8 +419,8 @@ public class TaskHandlerTest
       Logger      = NullLogger.Instance;
     }
 
-    public ValueTask<bool> Check(HealthCheckTag tag)
-      => new(true);
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
 
     public Task Init(CancellationToken cancellationToken)
       => Task.CompletedTask;
@@ -642,8 +643,8 @@ public class TaskHandlerTest
       Logger = NullLogger.Instance;
     }
 
-    public ValueTask<bool> Check(HealthCheckTag tag)
-      => new(true);
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
 
     public Task Init(CancellationToken cancellationToken)
       => Task.CompletedTask;
@@ -839,8 +840,8 @@ public class TaskHandlerTest
     public ExceptionWorkerStreamHandler(int delay)
       => delay_ = delay;
 
-    public ValueTask<bool> Check(HealthCheckTag tag)
-      => new(true);
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
 
     public Task Init(CancellationToken cancellationToken)
       => Task.CompletedTask;

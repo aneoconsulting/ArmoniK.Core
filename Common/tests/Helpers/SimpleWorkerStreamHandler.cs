@@ -26,14 +26,16 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleWorkerStreamHandler : IWorkerStreamHandler
 {
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => new(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;

@@ -36,7 +36,10 @@ using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+
+using static Grpc.Core.Metadata;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
@@ -48,6 +51,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private          bool                                                    isInitialized_;
   private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
   private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
+  private          int                                                     retryCheck_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
@@ -120,9 +124,30 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     throw e;
   }
 
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(CheckWorker(CancellationToken.None)
-                              .Result);
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    try
+    {
+      retryCheck_++;
+      var check = await CheckWorker(CancellationToken.None)
+                    .ConfigureAwait(false);
+
+      if (!check)
+      {
+        return retryCheck_ > optionsInitWorker_.WorkerCheckRetries
+                 ? HealthCheckResult.Unhealthy("Health check on worker was not successful")
+                 : HealthCheckResult.Degraded("Health check on worker was not successful");
+      }
+
+      retryCheck_ = 0;
+      return HealthCheckResult.Healthy();
+    }
+    catch (Exception ex)
+    {
+      return HealthCheckResult.Unhealthy(null,
+                                         ex);
+    }
+  }
 
   public void Dispose()
   {
