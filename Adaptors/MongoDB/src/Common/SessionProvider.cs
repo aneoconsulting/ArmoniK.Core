@@ -33,6 +33,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Clusters;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
@@ -56,8 +57,7 @@ public class SessionProvider : IInitializable
                                  ? HealthCheckResult.Healthy()
                                  : HealthCheckResult.Degraded($"{nameof(clientSessionHandle_)} is still null"));
       case HealthCheckTag.Liveness:
-        return Task.FromResult(client_.ListDatabaseNames()
-                                      .FirstOrDefault() is not null
+        return Task.FromResult(clientSessionHandle_ is not null && client_.Cluster.Description.State == ClusterState.Connected
                                  ? HealthCheckResult.Healthy()
                                  : HealthCheckResult.Unhealthy());
       default:
@@ -73,7 +73,7 @@ public class SessionProvider : IInitializable
     {
       lock (lockObj_)
       {
-        clientSessionHandle_ ??= client_.StartSession();
+        clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
       }
     }
 
