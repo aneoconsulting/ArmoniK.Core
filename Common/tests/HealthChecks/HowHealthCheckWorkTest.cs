@@ -65,7 +65,19 @@ public class HowHealthCheckWorkTest
                                             new[]
                                             {
                                               nameof(HealthCheckTag.Liveness),
-                                            }));
+                                            }))
+           .AddCheck("Check from add check",
+                     () => HealthCheckResult.Healthy(),
+                     new[]
+                     {
+                       nameof(HealthCheckTag.Readiness),
+                     })
+           .AddCheck("Check from add check2",
+                     () => HealthCheckResult.Unhealthy("test"),
+                     new[]
+                     {
+                       nameof(HealthCheckTag.Readiness),
+                     });
 
     builder.WebHost.UseTestServer();
     app_ = builder.Build();
@@ -81,6 +93,12 @@ public class HowHealthCheckWorkTest
                          new HealthCheckOptions
                          {
                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                         });
+
+    app_.MapHealthChecks("/readiness",
+                         new HealthCheckOptions
+                         {
+                           Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                          });
   }
 
@@ -114,7 +132,6 @@ public class HowHealthCheckWorkTest
       => new(false);
   }
 
-
   [Test]
   public async Task CallHealthChecks()
   {
@@ -130,6 +147,20 @@ public class HowHealthCheckWorkTest
 
     Assert.AreEqual(HttpStatusCode.ServiceUnavailable,
                     (await client.GetAsync("/liveness")
+                                 .ConfigureAwait(false)).StatusCode);
+  }
+
+  [Test]
+  public async Task CallHealthChecksFromAddCheck()
+  {
+    await app_!.StartAsync()
+               .ConfigureAwait(false);
+
+    server_ = app_.GetTestServer();
+    var client = server_.CreateClient();
+
+    Assert.AreEqual(HttpStatusCode.ServiceUnavailable,
+                    (await client.GetAsync("/readiness")
                                  .ConfigureAwait(false)).StatusCode);
   }
 }
