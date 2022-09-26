@@ -80,6 +80,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
+
   public async Task Init(CancellationToken cancellationToken)
   {
     if (isInitialized_)
@@ -91,23 +92,15 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     {
       try
       {
-        var channel = channelProvider_.Get();
-        workerClient_ = new Api.gRPC.V1.Worker.Worker.WorkerClient(channel);
-        var reply = workerClient_.HealthCheck(new Empty(),
-                                              cancellationToken: cancellationToken);
-        if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
+        var check = await CheckWorker(cancellationToken)
+                      .ConfigureAwait(false);
+
+        if (!check)
         {
           throw new ArmoniKException("Worker Health Check was not successful");
         }
 
         isInitialized_ = true;
-        logger_.LogInformation("Channel was initialized");
-        return;
-      }
-      catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
-      {
-        isInitialized_ = true;
-        logger_.LogInformation("Channel was initialized but Worker health check is not implemented");
         return;
       }
       catch (Exception ex)
@@ -128,11 +121,36 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+    => ValueTask.FromResult(CheckWorker(CancellationToken.None)
+                              .Result);
 
   public void Dispose()
   {
     stream_?.Dispose();
     GC.SuppressFinalize(this);
+  }
+
+  private Task<bool> CheckWorker(CancellationToken cancellationToken)
+  {
+    try
+    {
+      var channel = channelProvider_.Get();
+      workerClient_ = new Api.gRPC.V1.Worker.Worker.WorkerClient(channel);
+      var reply = workerClient_.HealthCheck(new Empty(),
+                                            cancellationToken: cancellationToken);
+      if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
+      {
+        return Task.FromResult(false);
+      }
+
+      logger_.LogInformation("Channel was initialized");
+      return Task.FromResult(true);
+    }
+    catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
+    {
+      isInitialized_ = true;
+      logger_.LogInformation("Channel was initialized but Worker health check is not implemented");
+      return Task.FromResult(true);
+    }
   }
 }

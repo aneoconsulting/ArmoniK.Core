@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -58,7 +58,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : ProviderBase<IMongo
              {
              }
 
-             var output  = mongoDatabase.GetCollection<TData>(model.CollectionName);
+             var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
+             await sessionProvider.Init(cancellationToken)
+                                  .ConfigureAwait(false);
              var session = sessionProvider.Get();
              try
              {

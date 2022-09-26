@@ -111,7 +111,7 @@ public static class ServiceCollectionExt
             .AddOption<InitWorker>(configuration,
                                    InitWorker.SettingSection)
             .AddSingleton<GrpcChannelProvider>()
-            .AddSingleton<IWorkerStreamHandler, WorkerStreamHandler>();
+            .AddSingletonWithHealthCheck<IWorkerStreamHandler, WorkerStreamHandler>(nameof(IWorkerStreamHandler));
 
     return services;
   }
