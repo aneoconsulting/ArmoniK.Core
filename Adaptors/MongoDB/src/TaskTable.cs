@@ -754,15 +754,15 @@ public class TaskTable : ITaskTable
     => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
       sessionProvider_.Get();
       taskCollectionProvider_.Get();
       isInitialized_ = true;
     }
-
-    return Task.CompletedTask;
   }
 }

@@ -25,6 +25,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
@@ -173,7 +174,8 @@ public static class Program
       }
 
       var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
-      sessionProvider.Get();
+      await sessionProvider.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
 
       await app.RunAsync()
                .ConfigureAwait(false);

@@ -66,16 +66,16 @@ public class PartitionTable : IPartitionTable
   public ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(isInitialized_);
 
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
       sessionProvider_.Get();
       partitionCollectionProvider_.Get();
       isInitialized_ = true;
     }
-
-    return Task.CompletedTask;
   }
 
   public async Task CreatePartitionsAsync(IEnumerable<PartitionData> partitions,
