@@ -54,17 +54,18 @@ public class HealthCheck : IHealthCheck
     var result = await healthCheckProvider_.Check(tag_)
                                            .ConfigureAwait(false);
 
+    if (result.Status is HealthStatus.Healthy or HealthStatus.Degraded)
+    {
+      return result;
+    }
+
     return context.Registration.FailureStatus switch
            {
              HealthStatus.Unhealthy => HealthCheckResult.Unhealthy(result.Description,
-                                                                   result.Status == HealthStatus.Healthy
-                                                                     ? null
-                                                                     : result.Exception,
+                                                                   result.Exception,
                                                                    result.Data),
              HealthStatus.Degraded => HealthCheckResult.Degraded(result.Description,
-                                                                 result.Status == HealthStatus.Healthy
-                                                                   ? null
-                                                                   : result.Exception,
+                                                                 result.Exception,
                                                                  result.Data),
              HealthStatus.Healthy => HealthCheckResult.Healthy(result.Description + result.Exception,
                                                                result.Data),
