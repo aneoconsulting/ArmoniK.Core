@@ -54,7 +54,7 @@ public class SessionProvider : IInitializable
       case HealthCheckTag.Startup:
         return Task.FromResult(clientSessionHandle_ is not null
                                  ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy());
+                                 : HealthCheckResult.Degraded($"{nameof(clientSessionHandle_)} is still null"));
       case HealthCheckTag.Liveness:
         return Task.FromResult(client_.ListDatabaseNames()
                                       .FirstOrDefault() is not null

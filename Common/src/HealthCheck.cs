@@ -70,7 +70,7 @@ public class HealthCheck : IHealthCheck
              HealthStatus.Healthy => HealthCheckResult.Healthy(result.Description + result.Exception,
                                                                result.Data),
              _ => throw new ArgumentOutOfRangeException(nameof(context),
-                                                        "Context has been registered with a non supported FailureStatus")
+                                                        "Context has been registered with a non supported FailureStatus"),
            };
   }
 }

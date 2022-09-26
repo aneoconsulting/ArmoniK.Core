@@ -39,8 +39,6 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using static Grpc.Core.Metadata;
-
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
@@ -49,9 +47,9 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private readonly ILogger<WorkerStreamHandler>                            logger_;
   private readonly InitWorker                                              optionsInitWorker_;
   private          bool                                                    isInitialized_;
+  private          int                                                     retryCheck_;
   private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
   private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
-  private          int                                                     retryCheck_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
@@ -168,13 +166,13 @@ public class WorkerStreamHandler : IWorkerStreamHandler
         return Task.FromResult(false);
       }
 
-      logger_.LogInformation("Channel was initialized");
+      logger_.LogDebug("Channel was initialized");
       return Task.FromResult(true);
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
     {
       isInitialized_ = true;
-      logger_.LogInformation("Channel was initialized but Worker health check is not implemented");
+      logger_.LogDebug("Channel was initialized but Worker health check is not implemented");
       return Task.FromResult(true);
     }
   }
