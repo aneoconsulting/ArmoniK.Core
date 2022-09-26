@@ -27,9 +27,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
@@ -190,6 +193,36 @@ public class AuthenticationTableTestBase
  * of AuthenticationTable to the corresponding interface implementation */
   public virtual void GetAuthSource()
   {
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    if (RunTests)
+    {
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await AuthenticationTable!.Check(HealthCheckTag.Liveness)
+                                                 .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await AuthenticationTable.Check(HealthCheckTag.Readiness)
+                                                .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await AuthenticationTable.Check(HealthCheckTag.Startup)
+                                                .ConfigureAwait(false)).Status);
+
+      await AuthenticationTable.Init(CancellationToken.None)
+                               .ConfigureAwait(false);
+
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await AuthenticationTable.Check(HealthCheckTag.Liveness)
+                                                .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await AuthenticationTable.Check(HealthCheckTag.Readiness)
+                                                .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await AuthenticationTable.Check(HealthCheckTag.Startup)
+                                                .ConfigureAwait(false)).Status);
+    }
   }
 
   [TestCase("CNUser1",

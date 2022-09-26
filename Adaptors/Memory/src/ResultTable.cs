@@ -44,6 +44,8 @@ public class ResultTable : IResultTable
 {
   private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results_;
 
+  private bool isInitialized_;
+
   public ResultTable(ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results,
                      ILogger<ResultTable>                                               logger)
   {
@@ -226,12 +228,17 @@ public class ResultTable : IResultTable
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 }

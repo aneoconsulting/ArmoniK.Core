@@ -49,6 +49,8 @@ public class SessionTable : ISessionTable
 {
   private readonly ConcurrentDictionary<string, SessionData> storage_;
 
+  private bool isInitialized_;
+
   public SessionTable(ConcurrentDictionary<string, SessionData> storage,
                       ILogger<SessionTable>                     logger)
   {
@@ -57,12 +59,17 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+  public Task Init(CancellationToken cancellationToken)
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
   public Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,

@@ -51,6 +51,8 @@ public class TaskTable : ITaskTable
   private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_;
   private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_;
 
+  private bool isInitialized_;
+
   public TaskTable(ConcurrentDictionary<string, TaskData>                task2TaskData,
                    ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
                    ILogger<TaskTable>                                    logger)
@@ -558,11 +560,16 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   private bool UpdateAndCheckTaskStatus(string     id,
                                         TaskStatus status)

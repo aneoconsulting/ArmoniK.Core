@@ -34,6 +34,8 @@ using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
@@ -227,6 +229,36 @@ public class TaskTableTestBase
    * of TaskTable to the corresponding interface implementation */
   public virtual void GetTaskTableInstance()
   {
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    if (RunTests)
+    {
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await TaskTable!.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await TaskTable.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await TaskTable.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status);
+
+      await TaskTable.Init(CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await TaskTable.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await TaskTable.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await TaskTable.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status);
+    }
   }
 
   [Test]

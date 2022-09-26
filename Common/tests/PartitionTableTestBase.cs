@@ -29,6 +29,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -82,6 +84,36 @@ public class PartitionTableTestBase
    * of PartitionTable to the corresponding interface implementation */
   public virtual void GetPartitionTableInstance()
   {
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    if (RunTests)
+    {
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await PartitionTable!.Check(HealthCheckTag.Liveness)
+                                            .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await PartitionTable.Check(HealthCheckTag.Readiness)
+                                           .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await PartitionTable.Check(HealthCheckTag.Startup)
+                                           .ConfigureAwait(false)).Status);
+
+      await PartitionTable.Init(CancellationToken.None)
+                          .ConfigureAwait(false);
+
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await PartitionTable.Check(HealthCheckTag.Liveness)
+                                           .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await PartitionTable.Check(HealthCheckTag.Readiness)
+                                           .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await PartitionTable.Check(HealthCheckTag.Startup)
+                                           .ConfigureAwait(false)).Status);
+    }
   }
 
   [Test]
