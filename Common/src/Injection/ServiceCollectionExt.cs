@@ -225,14 +225,14 @@ public static class ServiceCollectionExt
   [PublicAPI]
   public static IServiceCollection AddTransientWithHealthCheck<TService, TImplementation>(this IServiceCollection services,
                                                                                           string                  checkName)
-    where TImplementation : class, IHealthCheckProvider, TService
-    where TService : class
+    where TImplementation : class, TService
+    where TService : class, IHealthCheckProvider
   {
     services.AddTransient<TService, TImplementation>();
 
     services.AddHealthChecks()
             .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Startup)}",
-                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                             provider => new HealthCheck(provider.GetRequiredService<TService>(),
                                                                          HealthCheckTag.Startup),
                                              HealthStatus.Unhealthy,
                                              new[]
@@ -240,7 +240,7 @@ public static class ServiceCollectionExt
                                                nameof(HealthCheckTag.Startup),
                                              }))
             .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
-                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                             provider => new HealthCheck(provider.GetRequiredService<TService>(),
                                                                          HealthCheckTag.Liveness),
                                              HealthStatus.Unhealthy,
                                              new[]
@@ -248,7 +248,7 @@ public static class ServiceCollectionExt
                                                nameof(HealthCheckTag.Liveness),
                                              }))
             .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
-                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                             provider => new HealthCheck(provider.GetRequiredService<TService>(),
                                                                          HealthCheckTag.Readiness),
                                              HealthStatus.Unhealthy,
                                              new[]

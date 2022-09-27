@@ -22,11 +22,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Injection;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
@@ -114,5 +119,72 @@ public class HealthCheckTest
 
     Assert.AreEqual(healthCheckResultInput,
                     checkResult);
+  }
+
+  private class TestHealthCheck : IInitializable
+  {
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => tag switch
+         {
+           HealthCheckTag.Startup   => Task.FromResult(HealthCheckResult.Healthy()),
+           HealthCheckTag.Liveness  => Task.FromResult(HealthCheckResult.Degraded()),
+           HealthCheckTag.Readiness => Task.FromResult(HealthCheckResult.Unhealthy()),
+           _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                      tag,
+                                                      null),
+         };
+
+    public Task Init(CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+  }
+
+  public static IEnumerable TestAddWithHealthCheck
+  {
+    get
+    {
+      yield return new TestCaseData(new Action<IServiceCollection>(collection => collection.AddTransientWithHealthCheck<TestHealthCheck>(nameof(TestHealthCheck))))
+        .SetArgDisplayNames("Transient");
+      yield return new TestCaseData(new Action<IServiceCollection>(collection
+                                                                     => collection
+                                                                       .AddTransientWithHealthCheck<IInitializable, TestHealthCheck>(nameof(TestHealthCheck))))
+        .SetArgDisplayNames("ITransient");
+
+      yield return new TestCaseData(new Action<IServiceCollection>(collection => collection.AddSingletonWithHealthCheck<TestHealthCheck>(nameof(TestHealthCheck))))
+        .SetArgDisplayNames("Singleton");
+      yield return new TestCaseData(new Action<IServiceCollection>(collection
+                                                                     => collection
+                                                                       .AddSingletonWithHealthCheck<IInitializable, TestHealthCheck>(nameof(TestHealthCheck))))
+        .SetArgDisplayNames("ISingleton");
+    }
+  }
+
+
+  [Test]
+  [TestCaseSource(nameof(TestAddWithHealthCheck))]
+  public async Task AddWithHealthCheckShouldSucceed(Action<IServiceCollection> configurator)
+  {
+    var serviceBuilder = new ServiceCollection();
+
+    serviceBuilder.AddLogging(builder => builder.AddConsole()
+                                                .SetMinimumLevel(LogLevel.Debug))
+                  .AddHealthChecks();
+
+    configurator.Invoke(serviceBuilder);
+
+    var provider = serviceBuilder.BuildServiceProvider();
+
+    var healthCheckService = provider.GetRequiredService<HealthCheckService>();
+
+    Assert.AreEqual(HealthStatus.Degraded,
+                    (await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Liveness.ToString()))
+                                             .ConfigureAwait(false)).Status);
+
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Startup.ToString()))
+                                             .ConfigureAwait(false)).Status);
+
+    Assert.AreEqual(HealthStatus.Unhealthy,
+                    (await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Readiness.ToString()))
+                                             .ConfigureAwait(false)).Status);
   }
 }
