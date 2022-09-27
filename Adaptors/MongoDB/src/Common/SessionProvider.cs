@@ -59,7 +59,7 @@ public class SessionProvider : IInitializable
       case HealthCheckTag.Liveness:
         return Task.FromResult(clientSessionHandle_ is not null && client_.Cluster.Description.State == ClusterState.Connected
                                  ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy());
+                                 : HealthCheckResult.Unhealthy("Connection to MongoDB cluster dropped."));
       default:
         throw new ArgumentOutOfRangeException(nameof(tag),
                                               tag,

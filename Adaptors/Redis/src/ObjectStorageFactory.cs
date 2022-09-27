@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -64,9 +65,24 @@ public class ObjectStorageFactory : IObjectStorageFactory
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(isInitialized_
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy());
+  {
+    switch (tag)
+    {
+      case HealthCheckTag.Startup:
+      case HealthCheckTag.Readiness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("Redis not initialized yet."));
+      case HealthCheckTag.Liveness:
+        return Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped."));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(tag),
+                                              tag,
+                                              null);
+    }
+  }
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
     => new ObjectStorage(redis_,

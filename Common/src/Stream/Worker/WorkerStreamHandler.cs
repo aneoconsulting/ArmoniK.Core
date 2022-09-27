@@ -142,7 +142,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     }
     catch (Exception ex)
     {
-      return HealthCheckResult.Unhealthy(null,
+      return HealthCheckResult.Unhealthy("Health check on worker was not successful",
                                          ex);
     }
   }

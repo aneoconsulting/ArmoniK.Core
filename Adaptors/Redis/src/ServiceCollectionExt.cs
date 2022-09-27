@@ -123,7 +123,7 @@ public static class ServiceCollectionExt
       serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                         TextWriter.Null)
                                                                                .GetDatabase());
-      serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+      serviceCollection.AddSingletonWithHealthCheck<IObjectStorageFactory, ObjectStorageFactory>(nameof(IObjectStorageFactory));
     }
 
     return serviceCollection;
