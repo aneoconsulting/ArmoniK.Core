@@ -87,8 +87,8 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                    ValidateOnBuild = true,
                                                  });
 
-    var objectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage = objectStorageFactory.CreateObjectStorage("storage");
-    RunTests      = true;
+    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
+    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
+    RunTests             = true;
   }
 }

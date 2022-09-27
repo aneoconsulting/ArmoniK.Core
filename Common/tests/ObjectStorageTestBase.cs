@@ -26,10 +26,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
@@ -73,12 +76,14 @@ public class ObjectStorageTestBase
   [TearDown]
   public virtual void TearDown()
   {
-    ObjectStorage = null;
-    RunTests      = false;
+    ObjectStorage        = null;
+    ObjectStorageFactory = null;
+    RunTests             = false;
   }
 
   /* Interface to test */
-  protected IObjectStorage? ObjectStorage;
+  protected IObjectStorage?        ObjectStorage;
+  protected IObjectStorageFactory? ObjectStorageFactory;
 
   /* Boolean to control that tests are executed in
    * an instance of this class */
@@ -88,6 +93,36 @@ public class ObjectStorageTestBase
    * of TaskTable to the corresponding interface implementation */
   public virtual void GetObjectStorageInstance()
   {
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    if (RunTests)
+    {
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await ObjectStorageFactory!.Check(HealthCheckTag.Liveness)
+                                                  .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
+                                                 .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Unhealthy,
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
+                                                 .ConfigureAwait(false)).Status);
+
+      await ObjectStorageFactory.Init(CancellationToken.None)
+                                .ConfigureAwait(false);
+
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Liveness)
+                                                 .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
+                                                 .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
+                                                 .ConfigureAwait(false)).Status);
+    }
   }
 
   [Test]
