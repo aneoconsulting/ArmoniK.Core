@@ -35,6 +35,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using Moq;
@@ -671,5 +672,39 @@ public class DataPrefetcherTest
 
     Assert.AreNotEqual(0,
                        res.Count);
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var loggerFactory            = new LoggerFactory();
+
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
+                                            activitySource_,
+                                            loggerFactory.CreateLogger<DataPrefetcher>());
+
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await dataPrefetcher.Check(HealthCheckTag.Liveness)
+                                           .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await dataPrefetcher.Check(HealthCheckTag.Readiness)
+                                           .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await dataPrefetcher.Check(HealthCheckTag.Startup)
+                                           .ConfigureAwait(false));
+
+    await dataPrefetcher.Init(CancellationToken.None)
+                        .ConfigureAwait(false);
+
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await dataPrefetcher.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await dataPrefetcher.Check(HealthCheckTag.Readiness)
+                                        .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await dataPrefetcher.Check(HealthCheckTag.Startup)
+                                        .ConfigureAwait(false));
   }
 }
