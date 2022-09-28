@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
@@ -201,6 +202,37 @@ public class PollsterTest
       => throw new NotImplementedException();
   }
 
+  private class ReturnHealthCheckWorkerStreamHandler : IWorkerStreamHandler
+  {
+    private readonly HealthCheckResult healthCheckResult_;
+
+    private bool isInitialized_;
+
+    public ReturnHealthCheckWorkerStreamHandler(HealthCheckResult healthCheckResult)
+      => healthCheckResult_ = healthCheckResult;
+
+    public Task Init(CancellationToken cancellationToken)
+    {
+      isInitialized_ = true;
+      return Task.CompletedTask;
+    }
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(isInitialized_
+                           ? healthCheckResult_
+                           : HealthCheckResult.Healthy());
+
+    public void Dispose()
+    {
+    }
+
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+
+    public void StartTaskProcessing(TaskData          taskData,
+                                    CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+  }
+
   private class MockPullQueueStorage : IPullQueueStorage
   {
     private bool isInitialized_;
@@ -258,6 +290,71 @@ public class PollsterTest
     Assert.AreEqual(HealthStatus.Healthy,
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
                                               .ConfigureAwait(false)).Status);
+  }
+
+  [Test]
+  public async Task InitShouldFail()
+  {
+    var mockAgentHandler = new Mock<IAgentHandler>();
+
+    var desc = "desc";
+    var ex   = new ArmoniKException();
+    var data = new Dictionary<string, object>
+               {
+                 {
+                   "key1", "val1"
+                 },
+               };
+
+    using var testServiceProvider = new TestPollsterProvider(new ReturnHealthCheckWorkerStreamHandler(HealthCheckResult.Unhealthy(desc,
+                                                                                                                                  ex,
+                                                                                                                                  data)),
+                                                             mockAgentHandler.Object,
+                                                             new MockPullQueueStorage());
+
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                                 .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                                 .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                                 .ConfigureAwait(false)).Status);
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var res = await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false);
+
+    var healthResult = await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                                .ConfigureAwait(false);
+
+    Console.WriteLine(res.Description);
+
+    Assert.AreEqual(new StringBuilder().AppendLine(desc)
+                                       .ToString(),
+                    healthResult.Description);
+    Assert.AreEqual(new AggregateException(ex).Message,
+                    healthResult.Exception?.Message);
+    Assert.AreEqual(HealthStatus.Unhealthy,
+                    healthResult.Status);
+    Assert.AreEqual(data,
+                    healthResult.Data);
+
+    Assert.AreEqual(HealthStatus.Unhealthy,
+                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                              .ConfigureAwait(false)).Status);
+    Assert.AreEqual(HealthStatus.Unhealthy,
+                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                              .ConfigureAwait(false)).Status);
+
+    // This test that we return from the mainloop after the health check is unhealthy
+    var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await testServiceProvider.Pollster.MainLoop(cancellationTokenSource.Token)
+                             .ConfigureAwait(false);
+    Assert.IsFalse(cancellationTokenSource.IsCancellationRequested);
   }
 
   [Test]

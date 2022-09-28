@@ -48,7 +48,6 @@ public class Pollster : IInitializable
   private readonly ActivitySource             activitySource_;
   private readonly IAgentHandler              agentHandler_;
   private readonly DataPrefetcher             dataPrefetcher_;
-  private readonly bool                       healthCheckFailed_;
   private readonly IHostApplicationLifetime   lifeTime_;
   private readonly ILogger<Pollster>          logger_;
   private readonly int                        messageBatchSize_;
@@ -62,6 +61,7 @@ public class Pollster : IInitializable
   private readonly ITaskProcessingChecker     taskProcessingChecker_;
   private readonly ITaskTable                 taskTable_;
   private readonly IWorkerStreamHandler       workerStreamHandler_;
+  private          bool                       healthCheckFailed_;
   public           string                     TaskProcessing;
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
@@ -168,6 +168,11 @@ public class Pollster : IInitializable
       worstStatus = worstStatus < healthCheckResult.Status
                       ? worstStatus
                       : healthCheckResult.Status;
+    }
+
+    if (worstStatus == HealthStatus.Unhealthy)
+    {
+      healthCheckFailed_ = true;
     }
 
     return new HealthCheckResult(worstStatus,
