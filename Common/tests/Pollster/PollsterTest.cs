@@ -175,6 +175,91 @@ public class PollsterTest
     Assert.NotNull(testServiceProvider.Pollster);
   }
 
+  private class MockWorkerStreamHandler : IWorkerStreamHandler
+  {
+    private bool isInitialized_;
+
+    public Task Init(CancellationToken cancellationToken)
+    {
+      isInitialized_ = true;
+      return Task.CompletedTask;
+    }
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(isInitialized_
+                           ? HealthCheckResult.Healthy()
+                           : HealthCheckResult.Unhealthy());
+
+    public void Dispose()
+    {
+    }
+
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+
+    public void StartTaskProcessing(TaskData          taskData,
+                                    CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+  }
+
+  private class MockPullQueueStorage : IPullQueueStorage
+  {
+    private bool isInitialized_;
+
+    public Task Init(CancellationToken cancellationToken)
+    {
+      isInitialized_ = true;
+      return Task.CompletedTask;
+    }
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(isInitialized_
+                           ? HealthCheckResult.Healthy()
+                           : HealthCheckResult.Unhealthy());
+
+    public int MaxPriority { get; }
+
+    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                                    CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    var mockAgentHandler = new Mock<IAgentHandler>();
+    using var testServiceProvider = new TestPollsterProvider(new MockWorkerStreamHandler(),
+                                                             mockAgentHandler.Object,
+                                                             new MockPullQueueStorage());
+
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                                 .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                                 .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                                 .ConfigureAwait(false)).Status);
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var res = await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false);
+
+    Console.WriteLine(res.Description);
+
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                              .ConfigureAwait(false)).Status);
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                              .ConfigureAwait(false)).Status);
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                              .ConfigureAwait(false)).Status);
+  }
+
   [Test]
   public async Task RunThenCancelPollster()
   {

@@ -23,7 +23,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,16 +37,18 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public class Pollster
+public class Pollster : IInitializable
 {
   private readonly ActivitySource             activitySource_;
   private readonly IAgentHandler              agentHandler_;
   private readonly DataPrefetcher             dataPrefetcher_;
+  private readonly bool                       healthCheckFailed_;
   private readonly IHostApplicationLifetime   lifeTime_;
   private readonly ILogger<Pollster>          logger_;
   private readonly int                        messageBatchSize_;
@@ -99,6 +103,7 @@ public class Pollster
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    healthCheckFailed_     = false;
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -119,6 +124,58 @@ public class Pollster
                     .ConfigureAwait(false);
   }
 
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    var checks = new List<Task<HealthCheckResult>>
+                 {
+                   pullQueueStorage_.Check(tag),
+                   dataPrefetcher_.Check(tag),
+                   workerStreamHandler_.Check(tag),
+                   objectStorageFactory_.Check(tag),
+                   resultTable_.Check(tag),
+                   sessionTable_.Check(tag),
+                   taskTable_.Check(tag),
+                 };
+
+    var exceptions  = new List<Exception>();
+    var data        = new Dictionary<string, object>();
+    var description = new StringBuilder();
+    var worstStatus = HealthStatus.Healthy;
+
+    foreach (var healthCheckResult in await checks.WhenAll()
+                                                  .ConfigureAwait(false))
+    {
+      if (healthCheckResult.Status == HealthStatus.Healthy)
+      {
+        continue;
+      }
+
+      if (healthCheckResult.Exception is not null)
+      {
+        exceptions.Add(healthCheckResult.Exception);
+      }
+
+      foreach (var (key, value) in healthCheckResult.Data)
+      {
+        data[key] = value;
+      }
+
+      if (healthCheckResult.Description is not null)
+      {
+        description.AppendLine(healthCheckResult.Description);
+      }
+
+      worstStatus = worstStatus < healthCheckResult.Status
+                      ? worstStatus
+                      : healthCheckResult.Status;
+    }
+
+    return new HealthCheckResult(worstStatus,
+                                 description.ToString(),
+                                 new AggregateException(exceptions),
+                                 data);
+  }
+
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
@@ -136,6 +193,12 @@ public class Pollster
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cancellationToken.IsCancellationRequested)
       {
+        if (healthCheckFailed_)
+        {
+          cts.Cancel();
+          return;
+        }
+
         logger_.LogTrace("Trying to fetch messages");
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
