@@ -236,15 +236,15 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await TaskTable!.Check(HealthCheckTag.Liveness)
-                                       .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await TaskTable.Check(HealthCheckTag.Readiness)
-                                      .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await TaskTable.Check(HealthCheckTag.Startup)
-                                      .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await TaskTable!.Check(HealthCheckTag.Liveness)
+                                          .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await TaskTable.Check(HealthCheckTag.Readiness)
+                                         .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await TaskTable.Check(HealthCheckTag.Startup)
+                                         .ConfigureAwait(false)).Status);
 
       await TaskTable.Init(CancellationToken.None)
                      .ConfigureAwait(false);

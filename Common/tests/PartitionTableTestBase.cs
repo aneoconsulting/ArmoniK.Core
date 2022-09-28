@@ -91,15 +91,15 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await PartitionTable!.Check(HealthCheckTag.Liveness)
-                                            .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await PartitionTable.Check(HealthCheckTag.Readiness)
-                                           .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await PartitionTable.Check(HealthCheckTag.Startup)
-                                           .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await PartitionTable!.Check(HealthCheckTag.Liveness)
+                                               .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await PartitionTable.Check(HealthCheckTag.Readiness)
+                                              .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await PartitionTable.Check(HealthCheckTag.Startup)
+                                              .ConfigureAwait(false)).Status);
 
       await PartitionTable.Init(CancellationToken.None)
                           .ConfigureAwait(false);

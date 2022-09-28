@@ -108,15 +108,15 @@ public class SessionProviderTests
 
     Assert.NotNull(sessionProvider);
 
-    Assert.AreEqual(HealthStatus.Degraded,
-                    (await sessionProvider.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Degraded,
-                    (await sessionProvider.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Unhealthy,
-                    (await sessionProvider!.Check(HealthCheckTag.Liveness)
-                                           .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await sessionProvider.Check(HealthCheckTag.Readiness)
+                                             .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await sessionProvider.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false)).Status);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await sessionProvider!.Check(HealthCheckTag.Liveness)
+                                              .ConfigureAwait(false)).Status);
 
     await sessionProvider.Init(CancellationToken.None)
                          .ConfigureAwait(false);

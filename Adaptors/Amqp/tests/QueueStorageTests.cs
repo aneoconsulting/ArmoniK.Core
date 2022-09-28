@@ -81,6 +81,17 @@ public class QueueStorageTests
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
+
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pushQueueStorage.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pushQueueStorage.Check(HealthCheckTag.Readiness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pushQueueStorage.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false));
+
     await pushQueueStorage.Init(CancellationToken.None)
                           .ConfigureAwait(false);
 
@@ -107,6 +118,16 @@ public class QueueStorageTests
     var pullQueueStorage = new PullQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PullQueueStorage>.Instance);
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pullQueueStorage.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pullQueueStorage.Check(HealthCheckTag.Readiness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pullQueueStorage.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false));
+
     await pullQueueStorage.Init(CancellationToken.None)
                           .ConfigureAwait(false);
 

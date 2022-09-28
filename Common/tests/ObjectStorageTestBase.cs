@@ -100,15 +100,15 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await ObjectStorageFactory!.Check(HealthCheckTag.Liveness)
-                                                  .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
-                                                 .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
-                                                 .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await ObjectStorageFactory!.Check(HealthCheckTag.Liveness)
+                                                     .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
+                                                    .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
+                                                    .ConfigureAwait(false)).Status);
 
       await ObjectStorageFactory.Init(CancellationToken.None)
                                 .ConfigureAwait(false);

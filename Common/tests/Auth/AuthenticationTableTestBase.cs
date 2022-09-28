@@ -200,15 +200,15 @@ public class AuthenticationTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await AuthenticationTable!.Check(HealthCheckTag.Liveness)
-                                                 .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await AuthenticationTable.Check(HealthCheckTag.Readiness)
-                                                .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await AuthenticationTable.Check(HealthCheckTag.Startup)
-                                                .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await AuthenticationTable!.Check(HealthCheckTag.Liveness)
+                                                    .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await AuthenticationTable.Check(HealthCheckTag.Readiness)
+                                                   .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await AuthenticationTable.Check(HealthCheckTag.Startup)
+                                                   .ConfigureAwait(false)).Status);
 
       await AuthenticationTable.Init(CancellationToken.None)
                                .ConfigureAwait(false);

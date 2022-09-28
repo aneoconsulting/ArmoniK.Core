@@ -154,15 +154,15 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await SessionTable!.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await SessionTable.Check(HealthCheckTag.Readiness)
-                                         .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await SessionTable.Check(HealthCheckTag.Startup)
-                                         .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await SessionTable!.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await SessionTable.Check(HealthCheckTag.Readiness)
+                                            .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await SessionTable.Check(HealthCheckTag.Startup)
+                                            .ConfigureAwait(false)).Status);
 
       await SessionTable.Init(CancellationToken.None)
                         .ConfigureAwait(false);

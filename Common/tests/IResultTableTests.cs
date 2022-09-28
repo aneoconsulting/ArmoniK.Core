@@ -109,15 +109,15 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await ResultTable!.Check(HealthCheckTag.Liveness)
-                                         .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await ResultTable.Check(HealthCheckTag.Readiness)
-                                        .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Unhealthy,
-                      (await ResultTable.Check(HealthCheckTag.Startup)
-                                        .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await ResultTable!.Check(HealthCheckTag.Liveness)
+                                            .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await ResultTable.Check(HealthCheckTag.Readiness)
+                                           .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await ResultTable.Check(HealthCheckTag.Startup)
+                                           .ConfigureAwait(false)).Status);
 
       await ResultTable.Init(CancellationToken.None)
                        .ConfigureAwait(false);
