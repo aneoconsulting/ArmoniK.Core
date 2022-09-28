@@ -94,6 +94,9 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     {
       try
       {
+        var channel = channelProvider_.Get();
+        workerClient_ = new Api.gRPC.V1.Worker.Worker.WorkerClient(channel);
+
         var check = await CheckWorker(cancellationToken)
                       .ConfigureAwait(false);
 
@@ -126,6 +129,13 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   {
     try
     {
+      if (!isInitialized_)
+      {
+        return tag == HealthCheckTag.Liveness
+                 ? HealthCheckResult.Unhealthy("Worker not yet initialized")
+                 : HealthCheckResult.Degraded("Worker not yet initialized");
+      }
+
       retryCheck_++;
       var check = await CheckWorker(CancellationToken.None)
                     .ConfigureAwait(false);
@@ -133,8 +143,8 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       if (!check)
       {
         return retryCheck_ > optionsInitWorker_.WorkerCheckRetries
-                 ? HealthCheckResult.Unhealthy("Health check on worker was not successful")
-                 : HealthCheckResult.Degraded("Health check on worker was not successful");
+                 ? HealthCheckResult.Unhealthy("Health check on worker was not successful (too many retries)")
+                 : HealthCheckResult.Degraded("Health check on worker was not successful (too many retries)");
       }
 
       retryCheck_ = 0;
@@ -142,7 +152,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     }
     catch (Exception ex)
     {
-      return HealthCheckResult.Unhealthy("Health check on worker was not successful",
+      return HealthCheckResult.Unhealthy("Health check on worker was not successful with exception",
                                          ex);
     }
   }
@@ -157,8 +167,11 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   {
     try
     {
-      var channel = channelProvider_.Get();
-      workerClient_ = new Api.gRPC.V1.Worker.Worker.WorkerClient(channel);
+      if (workerClient_ is null)
+      {
+        return Task.FromResult(false);
+      }
+
       var reply = workerClient_.HealthCheck(new Empty(),
                                             cancellationToken: cancellationToken);
       if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
@@ -171,7 +184,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
     {
-      isInitialized_ = true;
       logger_.LogDebug("Channel was initialized but Worker health check is not implemented");
       return Task.FromResult(true);
     }
