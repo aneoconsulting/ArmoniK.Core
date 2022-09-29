@@ -452,7 +452,7 @@
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public static IServiceCollection AddSingletonWithHealthCheck&lt;TService, TImplementation&gt;(this IServiceCollection services, string checkName)
-    where TService : class where TImplementation : class, IHealthCheckProvider, TService</code></pre>
+    where TService : class, IHealthCheckProvider where TImplementation : class, TService</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -665,7 +665,7 @@
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public static IServiceCollection AddTransientWithHealthCheck&lt;TService, TImplementation&gt;(this IServiceCollection services, string checkName)
-    where TService : class where TImplementation : class, IHealthCheckProvider, TService</code></pre>
+    where TService : class, IHealthCheckProvider where TImplementation : class, TService</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">

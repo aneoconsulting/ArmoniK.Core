@@ -78,27 +78,18 @@
   <div class="inheritance">
     <h5>Inheritance</h5>
     <div class="level0"><span class="xref">System.Object</span></div>
-    <div class="level1"><a class="xref" href="ArmoniK.Core.Common.Injection.ProviderBase-1.html">ProviderBase</a>&lt;<span class="xref">IClientSessionHandle</span>&gt;</div>
-    <div class="level2"><span class="xref">SessionProvider</span></div>
+    <div class="level1"><span class="xref">SessionProvider</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
+    <div><a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a></div>
     <div><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></div>
-  </div>
-  <div class="inheritedMembers">
-    <h5>Inherited Members</h5>
-    <div>
-      <a class="xref" href="ArmoniK.Core.Common.Injection.ProviderBase-1.html#ArmoniK_Core_Common_Injection_ProviderBase_1_Check_ArmoniK_Core_Common_HealthCheckTag_">ProviderBase&lt;IClientSessionHandle&gt;.Check(HealthCheckTag)</a>
-    </div>
-    <div>
-      <a class="xref" href="ArmoniK.Core.Common.Injection.ProviderBase-1.html#ArmoniK_Core_Common_Injection_ProviderBase_1_Get">ProviderBase&lt;IClientSessionHandle&gt;.Get()</a>
-    </div>
   </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Common.html">ArmoniK.Core.Adapters.MongoDB.Common</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.MongoDB.dll</h6>
   <h5 id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class SessionProvider : ProviderBase&lt;IClientSessionHandle&gt;, IHealthCheckProvider</code></pre>
+    <pre><code class="lang-csharp hljs">public class SessionProvider : object, IInitializable, IHealthCheckProvider</code></pre>
   </div>
   <h3 id="constructors">Constructors
   </h3>
@@ -107,7 +98,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider__ctor_IMongoClient_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.%23ctor(IMongoClient)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L35">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L46">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider__ctor_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.#ctor*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider__ctor_IMongoClient_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.#ctor(IMongoClient)">SessionProvider(IMongoClient)</h4>
@@ -134,7 +125,136 @@
       </tr>
     </tbody>
   </table>
+  <h3 id="methods">Methods
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L50">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Check_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;HealthCheckResult&gt; Check(HealthCheckTag tag)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.HealthCheckTag.html">HealthCheckTag</a></td>
+        <td><span class="parametername">tag</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Get.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L83">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Get_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Get" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get">Get()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IClientSessionHandle Get()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IClientSessionHandle</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L70">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Init_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init(CancellationToken)">Init(CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task Init(CancellationToken cancellationToken)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
   <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a>
+  </div>
   <div>
       <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a>
   </div>
@@ -149,7 +269,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L33" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/Common/SessionProvider.cs/#L40" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

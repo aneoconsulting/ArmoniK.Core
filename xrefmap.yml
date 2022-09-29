@@ -2200,6 +2200,45 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.SessionProvider
   nameWithType: SessionProvider.SessionProvider
+- uid: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html#ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: SessionProvider.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html#ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Check
+  nameWithType: SessionProvider.Check
+- uid: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get
+  name: Get()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html#ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Get
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get
+  fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get()
+  nameWithType: SessionProvider.Get()
+- uid: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get*
+  name: Get
+  href: api/ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html#ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Get_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Get
+  nameWithType: SessionProvider.Get
+- uid: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html#ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init(CancellationToken)
+  nameWithType: SessionProvider.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html#ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.Init
+  nameWithType: SessionProvider.Init
 - uid: ArmoniK.Core.Adapters.MongoDB.Object
   name: ArmoniK.Core.Adapters.MongoDB.Object
   href: api/ArmoniK.Core.Adapters.MongoDB.Object.html
@@ -4542,6 +4581,64 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultTableTests.TearDown
   nameWithType: ResultTableTests.TearDown
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests
+  name: SessionProviderTests
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests
+  nameWithType: SessionProviderTests
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderGetBeforeInitShouldThrow
+  name: SessionProviderGetBeforeInitShouldThrow()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_SessionProviderGetBeforeInitShouldThrow
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderGetBeforeInitShouldThrow
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderGetBeforeInitShouldThrow()
+  nameWithType: SessionProviderTests.SessionProviderGetBeforeInitShouldThrow()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderGetBeforeInitShouldThrow*
+  name: SessionProviderGetBeforeInitShouldThrow
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_SessionProviderGetBeforeInitShouldThrow_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderGetBeforeInitShouldThrow
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderGetBeforeInitShouldThrow
+  nameWithType: SessionProviderTests.SessionProviderGetBeforeInitShouldThrow
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderInitShouldSucceed
+  name: SessionProviderInitShouldSucceed()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_SessionProviderInitShouldSucceed
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderInitShouldSucceed
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderInitShouldSucceed()
+  nameWithType: SessionProviderTests.SessionProviderInitShouldSucceed()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderInitShouldSucceed*
+  name: SessionProviderInitShouldSucceed
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_SessionProviderInitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderInitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SessionProviderInitShouldSucceed
+  nameWithType: SessionProviderTests.SessionProviderInitShouldSucceed
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_SetUp
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SetUp
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SetUp()
+  nameWithType: SessionProviderTests.SetUp()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_SetUp_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.SetUp
+  nameWithType: SessionProviderTests.SetUp
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_TearDown
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.TearDown
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.TearDown()
+  nameWithType: SessionProviderTests.TearDown()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_SessionProviderTests_TearDown_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.TearDown
+  nameWithType: SessionProviderTests.TearDown
 - uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionTableTests
   name: SessionTableTests
   href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionTableTests.html
@@ -8863,6 +8960,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster
   nameWithType: Pollster.Pollster
+- uid: ArmoniK.Core.Common.Pollster.Pollster.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: Pollster.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Pollster.Pollster.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_Check_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.Pollster.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Check
+  nameWithType: Pollster.Check
 - uid: ArmoniK.Core.Common.Pollster.Pollster.Init(CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_Init_CancellationToken_
@@ -12978,6 +13088,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.GetIdentityFromNameShouldSucceed
   nameWithType: AuthenticationTableTestBase.GetIdentityFromNameShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationTableTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.InitShouldSucceed()
+  nameWithType: AuthenticationTableTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationTableTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.InitShouldSucceed
+  nameWithType: AuthenticationTableTestBase.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.RunTests
   name: RunTests
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationTableTestBase_RunTests
@@ -13947,6 +14070,144 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing
   nameWithType: WorkerStreamHandlerFullTest.StartTaskProcessing
+- uid: ArmoniK.Core.Common.Tests.HealthChecks
+  name: ArmoniK.Core.Common.Tests.HealthChecks
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.html
+  commentId: N:ArmoniK.Core.Common.Tests.HealthChecks
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks
+  nameWithType: ArmoniK.Core.Common.Tests.HealthChecks
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest
+  name: HealthCheckTest
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest
+  nameWithType: HealthCheckTest
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed(Action{IServiceCollection})
+  name: AddWithHealthCheckShouldSucceed(Action<IServiceCollection>)
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_AddWithHealthCheckShouldSucceed_Action_IServiceCollection__
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed(Action{IServiceCollection})
+  name.vb: AddWithHealthCheckShouldSucceed(Action(Of IServiceCollection))
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed(Action<IServiceCollection>)
+  fullName.vb: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed(Action(Of IServiceCollection))
+  nameWithType: HealthCheckTest.AddWithHealthCheckShouldSucceed(Action<IServiceCollection>)
+  nameWithType.vb: HealthCheckTest.AddWithHealthCheckShouldSucceed(Action(Of IServiceCollection))
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed*
+  name: AddWithHealthCheckShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_AddWithHealthCheckShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.AddWithHealthCheckShouldSucceed
+  nameWithType: HealthCheckTest.AddWithHealthCheckShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.FailureStatusShouldSucceed(HealthStatus)
+  name: FailureStatusShouldSucceed(HealthStatus)
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_FailureStatusShouldSucceed_HealthStatus_
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.FailureStatusShouldSucceed(HealthStatus)
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.FailureStatusShouldSucceed(HealthStatus)
+  nameWithType: HealthCheckTest.FailureStatusShouldSucceed(HealthStatus)
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.FailureStatusShouldSucceed*
+  name: FailureStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_FailureStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.FailureStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.FailureStatusShouldSucceed
+  nameWithType: HealthCheckTest.FailureStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.ReturnSameShouldSucceed(HealthCheckResult)
+  name: ReturnSameShouldSucceed(HealthCheckResult)
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_ReturnSameShouldSucceed_HealthCheckResult_
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.ReturnSameShouldSucceed(HealthCheckResult)
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.ReturnSameShouldSucceed(HealthCheckResult)
+  nameWithType: HealthCheckTest.ReturnSameShouldSucceed(HealthCheckResult)
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.ReturnSameShouldSucceed*
+  name: ReturnSameShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_ReturnSameShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.ReturnSameShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.ReturnSameShouldSucceed
+  nameWithType: HealthCheckTest.ReturnSameShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestAddWithHealthCheck
+  name: TestAddWithHealthCheck
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_TestAddWithHealthCheck
+  commentId: P:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestAddWithHealthCheck
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestAddWithHealthCheck
+  nameWithType: HealthCheckTest.TestAddWithHealthCheck
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestAddWithHealthCheck*
+  name: TestAddWithHealthCheck
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_TestAddWithHealthCheck_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestAddWithHealthCheck
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestAddWithHealthCheck
+  nameWithType: HealthCheckTest.TestAddWithHealthCheck
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestCases
+  name: TestCases
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_TestCases
+  commentId: P:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestCases
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestCases
+  nameWithType: HealthCheckTest.TestCases
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestCases*
+  name: TestCases
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HealthCheckTest_TestCases_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestCases
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HealthCheckTest.TestCases
+  nameWithType: HealthCheckTest.TestCases
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest
+  name: HowHealthCheckWorkTest
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest
+  nameWithType: HowHealthCheckWorkTest
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecks
+  name: CallHealthChecks()
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_CallHealthChecks
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecks
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecks()
+  nameWithType: HowHealthCheckWorkTest.CallHealthChecks()
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecks*
+  name: CallHealthChecks
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_CallHealthChecks_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecks
+  nameWithType: HowHealthCheckWorkTest.CallHealthChecks
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecksFromAddCheck
+  name: CallHealthChecksFromAddCheck()
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_CallHealthChecksFromAddCheck
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecksFromAddCheck
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecksFromAddCheck()
+  nameWithType: HowHealthCheckWorkTest.CallHealthChecksFromAddCheck()
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecksFromAddCheck*
+  name: CallHealthChecksFromAddCheck
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_CallHealthChecksFromAddCheck_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecksFromAddCheck
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.CallHealthChecksFromAddCheck
+  nameWithType: HowHealthCheckWorkTest.CallHealthChecksFromAddCheck
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.SetUp
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.SetUp()
+  nameWithType: HowHealthCheckWorkTest.SetUp()
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.SetUp
+  nameWithType: HowHealthCheckWorkTest.SetUp
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.TearDown
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.TearDown()
+  nameWithType: HowHealthCheckWorkTest.TearDown()
+- uid: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.html#ArmoniK_Core_Common_Tests_HealthChecks_HowHealthCheckWorkTest_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.HealthChecks.HowHealthCheckWorkTest.TearDown
+  nameWithType: HowHealthCheckWorkTest.TearDown
 - uid: ArmoniK.Core.Common.Tests.Helpers
   name: ArmoniK.Core.Common.Tests.Helpers
   href: api/ArmoniK.Core.Common.Tests.Helpers.html
@@ -16031,12 +16292,31 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.GetValuesAsyncShouldSucceed
   nameWithType: ObjectStorageTestBase.GetValuesAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html#ArmoniK_Core_Common_Tests_ObjectStorageTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ObjectStorageTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.InitShouldSucceed()
+  nameWithType: ObjectStorageTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html#ArmoniK_Core_Common_Tests_ObjectStorageTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ObjectStorageTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.InitShouldSucceed
+  nameWithType: ObjectStorageTestBase.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.ObjectStorage
   name: ObjectStorage
   href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html#ArmoniK_Core_Common_Tests_ObjectStorageTestBase_ObjectStorage
   commentId: F:ArmoniK.Core.Common.Tests.ObjectStorageTestBase.ObjectStorage
   fullName: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.ObjectStorage
   nameWithType: ObjectStorageTestBase.ObjectStorage
+- uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.ObjectStorageFactory
+  name: ObjectStorageFactory
+  href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html#ArmoniK_Core_Common_Tests_ObjectStorageTestBase_ObjectStorageFactory
+  commentId: F:ArmoniK.Core.Common.Tests.ObjectStorageTestBase.ObjectStorageFactory
+  fullName: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.ObjectStorageFactory
+  nameWithType: ObjectStorageTestBase.ObjectStorageFactory
 - uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.Payload2ShouldBeEqual
   name: Payload2ShouldBeEqual()
   href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html#ArmoniK_Core_Common_Tests_ObjectStorageTestBase_Payload2ShouldBeEqual
@@ -16166,6 +16446,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance
   nameWithType: PartitionTableTestBase.GetPartitionTableInstance
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed()
+  nameWithType: PartitionTableTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed
+  nameWithType: PartitionTableTestBase.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.PartitionTable
   name: PartitionTable
   href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_PartitionTable
@@ -16307,6 +16600,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.EmptyPayloadAndTwoDependenciesStateMachine
   nameWithType: DataPrefetcherTest.EmptyPayloadAndTwoDependenciesStateMachine
+- uid: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.html#ArmoniK_Core_Common_Tests_Pollster_DataPrefetcherTest_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.InitShouldSucceed()
+  nameWithType: DataPrefetcherTest.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.html#ArmoniK_Core_Common_Tests_Pollster_DataPrefetcherTest_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.InitShouldSucceed
+  nameWithType: DataPrefetcherTest.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.PayloadWithDataAndOneDependencyWithDataStateMachine
   name: PayloadWithDataAndOneDependencyWithDataStateMachine()
   href: api/ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.html#ArmoniK_Core_Common_Tests_Pollster_DataPrefetcherTest_PayloadWithDataAndOneDependencyWithDataStateMachine
@@ -16378,6 +16684,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster
   nameWithType: PollsterTest.InitializePollster
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldFail
+  name: InitShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldFail()
+  nameWithType: PollsterTest.InitShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldFail*
+  name: InitShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldFail
+  nameWithType: PollsterTest.InitShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldSucceed()
+  nameWithType: PollsterTest.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitShouldSucceed
+  nameWithType: PollsterTest.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.RunThenCancelPollster
   name: RunThenCancelPollster()
   href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_RunThenCancelPollster
@@ -17558,6 +17890,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultTableInstance
   nameWithType: ResultTableTestBase.GetResultTableInstance
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.InitShouldSucceed()
+  nameWithType: ResultTableTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.InitShouldSucceed
+  nameWithType: ResultTableTestBase.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted
   name: ResultsAreAvailableShouldReturnAborted()
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldReturnAborted
@@ -17887,6 +18232,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.GetSessionTableInstance
   nameWithType: SessionTableTestBase.GetSessionTableInstance
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.InitShouldSucceed()
+  nameWithType: SessionTableTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.InitShouldSucceed
+  nameWithType: SessionTableTestBase.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.IsSessionCancelledAsyncShouldFail
   name: IsSessionCancelledAsyncShouldFail()
   href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_IsSessionCancelledAsyncShouldFail
@@ -20195,6 +20553,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.GetTaskTableInstance
   nameWithType: TaskTableTestBase.GetTaskTableInstance
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.InitShouldSucceed()
+  nameWithType: TaskTableTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.InitShouldSucceed
+  nameWithType: TaskTableTestBase.InitShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.IsTaskCanceledShouldFail
   name: IsTaskCanceledShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_IsTaskCanceledShouldFail
