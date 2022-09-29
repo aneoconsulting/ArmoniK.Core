@@ -264,9 +264,6 @@ public class PollsterTest
                                                              new MockPullQueueStorage());
 
     Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
-                                                 .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
                        (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
                                                  .ConfigureAwait(false)).Status);
     Assert.AreNotEqual(HealthStatus.Healthy,
@@ -312,9 +309,6 @@ public class PollsterTest
                                                              mockAgentHandler.Object,
                                                              new MockPullQueueStorage());
 
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
-                                                 .ConfigureAwait(false)).Status);
     Assert.AreNotEqual(HealthStatus.Healthy,
                        (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
                                                  .ConfigureAwait(false)).Status);
@@ -484,7 +478,7 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(120));
+    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
     Assert.True(source.Token.IsCancellationRequested);

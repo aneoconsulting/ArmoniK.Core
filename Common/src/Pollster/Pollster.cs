@@ -62,6 +62,7 @@ public class Pollster : IInitializable
   private readonly ITaskTable                 taskTable_;
   private readonly IWorkerStreamHandler       workerStreamHandler_;
   private          bool                       healthCheckFailed_;
+  private          HealthCheckResult?         healthCheckFailedResult_;
   public           string                     TaskProcessing;
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
@@ -128,7 +129,7 @@ public class Pollster : IInitializable
   {
     if (healthCheckFailed_)
     {
-      return HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
+      return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
     }
 
     var checks = new List<Task<HealthCheckResult>>
@@ -175,15 +176,18 @@ public class Pollster : IInitializable
                       : healthCheckResult.Status;
     }
 
-    if (worstStatus == HealthStatus.Unhealthy)
+    var result = new HealthCheckResult(worstStatus,
+                                       description.ToString(),
+                                       new AggregateException(exceptions),
+                                       data);
+
+    if (worstStatus == HealthStatus.Unhealthy && tag == HealthCheckTag.Liveness)
     {
-      healthCheckFailed_ = true;
+      healthCheckFailed_       = true;
+      healthCheckFailedResult_ = result;
     }
 
-    return new HealthCheckResult(worstStatus,
-                                 description.ToString(),
-                                 new AggregateException(exceptions),
-                                 data);
+    return result;
   }
 
 
@@ -205,6 +209,7 @@ public class Pollster : IInitializable
       {
         if (healthCheckFailed_)
         {
+          logger_.LogWarning("Health Check failed thus no more tasks will be executed.");
           cts.Cancel();
           return;
         }
