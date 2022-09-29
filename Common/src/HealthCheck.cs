@@ -32,12 +32,21 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common;
 
+/// <summary>
+///   Implementation of <see cref="IHealthCheck" /> that manages FailureStatus and simplifies the implementation of Health
+///   Checks
+/// </summary>
 [PublicAPI]
 public class HealthCheck : IHealthCheck
 {
   private readonly IHealthCheckProvider healthCheckProvider_;
   private readonly HealthCheckTag       tag_;
 
+  /// <summary>
+  ///   Constructor that creates a HealthCheck from a <see cref="IHealthCheckProvider" />
+  /// </summary>
+  /// <param name="healthCheckProvider">Interface for classes that exposes a simplified Health Check</param>
+  /// <param name="tag">Tag to filter which health check is executed</param>
   public HealthCheck(IHealthCheckProvider healthCheckProvider,
                      HealthCheckTag       tag)
   {

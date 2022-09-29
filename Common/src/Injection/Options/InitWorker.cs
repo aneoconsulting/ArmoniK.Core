@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,8 +26,14 @@ using System;
 
 namespace ArmoniK.Core.Common.Injection.Options;
 
+/// <summary>
+///   Configuration for <see cref="Stream.Worker.WorkerStreamHandler" />
+/// </summary>
 public class InitWorker
 {
+  /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
   public const string SettingSection = nameof(InitWorker);
 
   public int      WorkerCheckRetries { get; set; } = 10;

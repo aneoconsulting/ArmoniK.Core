@@ -30,8 +30,18 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common;
 
+/// <summary>
+///   Represents a simpler health check than <see cref="IHealthCheck" />.
+/// </summary>
 [PublicAPI]
 public interface IHealthCheckProvider
 {
+  /// <summary>
+  ///   Checks the status of a class for the given health check type.
+  /// </summary>
+  /// <param name="tag">Health check for which the class has to answer.</param>
+  /// <returns>
+  ///   The result of the check containing the status of the class for the health check type.
+  /// </returns>
   Task<HealthCheckResult> Check(HealthCheckTag tag);
 }

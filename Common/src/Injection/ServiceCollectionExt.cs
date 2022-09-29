@@ -40,13 +40,36 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common.Injection;
 
+/// <summary>
+///   Extends the functionality of the <see cref="IConfiguration" />
+/// </summary>
 public static class ConfigurationExt
 {
+  /// <summary>
+  ///   Configure an object with the given configuration.
+  /// </summary>
+  /// <typeparam name="T">Type of the options class</typeparam>
+  /// <param name="configuration">Configurations used to fill the class</param>
+  /// <param name="key">Path to the Object in the configuration</param>
+  /// <returns>
+  ///   The initialized object
+  /// </returns>
+  /// <exception cref="InvalidOperationException">the <paramref name="key" /> is not found in the configurations.</exception>
   public static T GetRequiredValue<T>(this IConfiguration configuration,
                                       string              key)
     => configuration.GetRequiredSection(key)
                     .Get<T>();
 
+  /// <summary>
+  ///   Configure an object with the given configuration.
+  ///   If the object is not found in the configuration, a new object in returned.
+  /// </summary>
+  /// <typeparam name="T">Type of the options class</typeparam>
+  /// <param name="configuration">Configurations used to fill the class</param>
+  /// <param name="key">Path to the Object in the configuration</param>
+  /// <returns>
+  ///   The initialized object
+  /// </returns>
   public static T GetInitializedValue<T>(this IConfiguration configuration,
                                          string              key)
     where T : new()
@@ -54,6 +77,9 @@ public static class ConfigurationExt
                     .Get<T>() ?? new T();
 }
 
+/// <summary>
+///   Extends the functionality of the <see cref="IServiceCollection" />
+/// </summary>
 public static class ServiceCollectionExt
 {
   /// <summary>
@@ -73,6 +99,16 @@ public static class ServiceCollectionExt
     where T : class, new()
     => services.AddSingleton(configuration.GetInitializedValue<T>(key));
 
+  /// <summary>
+  ///   Fills in an option class and add it in the service collection
+  /// </summary>
+  /// <typeparam name="T">Type of option class to add</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="configuration">Collection of configuration used to configure the option class</param>
+  /// <param name="key">Key to find the option to fill</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddOption<T>(this IServiceCollection services,
                                                 IConfiguration          configuration,
@@ -80,7 +116,17 @@ public static class ServiceCollectionExt
     where T : class
     => services.AddSingleton(configuration.GetRequiredValue<T>(key));
 
-
+  /// <summary>
+  ///   Fills in an option class, add it in the service collection and return the initialized class
+  /// </summary>
+  /// <typeparam name="T">Type of option class to add</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="configuration">Collection of configuration used to configure the option class</param>
+  /// <param name="key">Key to find the option to fill</param>
+  /// <param name="option">Represents the filled option class</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddOption<T>(this IServiceCollection services,
                                                 IConfiguration          configuration,
@@ -92,6 +138,14 @@ public static class ServiceCollectionExt
     return services.AddSingleton(option);
   }
 
+  /// <summary>
+  ///   Add the services to create connection to the worker
+  /// </summary>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="configuration">Collection of configuration used to configure the added services</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddArmoniKWorkerConnection(this IServiceCollection services,
                                                               IConfiguration          configuration)
@@ -116,6 +170,15 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Add a singleton service of the type specified with health check capabilities
+  /// </summary>
+  /// <typeparam name="T">Type of the service (interface)</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="checkName">Name for the health check</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddSingletonWithHealthCheck<T>(this IServiceCollection services,
                                                                   string                  checkName)
@@ -151,6 +214,16 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Add a singleton service of the type specified with health check capabilities
+  /// </summary>
+  /// <typeparam name="TService">Type of the service (interface)</typeparam>
+  /// <typeparam name="TImplementation">Implementation class of the service</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="checkName">Name for the health check</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddSingletonWithHealthCheck<TService, TImplementation>(this IServiceCollection services,
                                                                                           string                  checkName)
@@ -187,6 +260,15 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Add a transient service of the type specified with health check capabilities
+  /// </summary>
+  /// <typeparam name="T">Type of the service (interface)</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="checkName">Name for the health check</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddTransientWithHealthCheck<T>(this IServiceCollection services,
                                                                   string                  checkName)
@@ -222,6 +304,16 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Add a transient service of the type specified with health check capabilities
+  /// </summary>
+  /// <typeparam name="TService">Type of the service (interface)</typeparam>
+  /// <typeparam name="TImplementation">Implementation class of the service</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="checkName">Name for the health check</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection AddTransientWithHealthCheck<TService, TImplementation>(this IServiceCollection services,
                                                                                           string                  checkName)
@@ -258,6 +350,16 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Add a transient service of the type specified with health check capabilities
+  /// </summary>
+  /// <typeparam name="TService">Type of the service</typeparam>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="implementationFactory">Factory to create service</param>
+  /// <param name="checkName">Name for the health check</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   public static IServiceCollection AddTransientWithHealthCheck<TService>(this IServiceCollection          services,
                                                                          Func<IServiceProvider, TService> implementationFactory,
                                                                          string                           checkName)
@@ -293,6 +395,13 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Add validation services for gRPC Requests
+  /// </summary>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
   [PublicAPI]
   public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
     => services.AddGrpc(options =>

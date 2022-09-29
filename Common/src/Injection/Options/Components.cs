@@ -26,14 +26,34 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Injection.Options;
 
+/// <summary>
+///   Configuration used to choose which adapter for storage is used
+/// </summary>
 [PublicAPI]
 public class Components
 {
+  /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
   public const string SettingSection = nameof(Components);
 
-  public string? TableStorage          { get; set; }
-  public string? QueueStorage          { get; set; }
-  public string? LeaseProvider         { get; set; }
-  public string? ObjectStorage         { get; set; }
+  /// <summary>
+  ///   Represents which database is used for tasks metadata
+  /// </summary>
+  public string? TableStorage { get; set; }
+
+  /// <summary>
+  ///   Represents which queue implementation is used to store messages
+  /// </summary>
+  public string? QueueStorage { get; set; }
+
+  /// <summary>
+  ///   Represents which object storage is used to store data for tasks
+  /// </summary>
+  public string? ObjectStorage { get; set; }
+
+  /// <summary>
+  ///   Represents which database is used for authentication
+  /// </summary>
   public string? AuthenticationStorage { get; set; }
 }

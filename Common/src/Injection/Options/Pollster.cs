@@ -27,7 +27,7 @@ using System;
 namespace ArmoniK.Core.Common.Injection.Options;
 
 /// <summary>
-///   Configuration for Pollster
+///   Configuration for <see cref="Common.Pollster.Pollster" />
 /// </summary>
 public class Pollster
 {

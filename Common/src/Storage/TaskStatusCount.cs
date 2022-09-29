@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,5 +26,10 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Relation between a task status and the number of tasks with this status
+/// </summary>
+/// <param name="Status">Status of the task</param>
+/// <param name="Count">Number of tasks with the associated status</param>
 public record TaskStatusCount(TaskStatus Status,
                               int        Count);
