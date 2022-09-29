@@ -126,6 +126,11 @@ public class Pollster : IInitializable
 
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
+    if (healthCheckFailed_)
+    {
+      return HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
+    }
+
     var checks = new List<Task<HealthCheckResult>>
                  {
                    pullQueueStorage_.Check(tag),
