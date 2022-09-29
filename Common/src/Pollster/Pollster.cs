@@ -23,7 +23,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,12 +37,13 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public class Pollster
+public class Pollster : IInitializable
 {
   private readonly ActivitySource             activitySource_;
   private readonly IAgentHandler              agentHandler_;
@@ -58,6 +61,8 @@ public class Pollster
   private readonly ITaskProcessingChecker     taskProcessingChecker_;
   private readonly ITaskTable                 taskTable_;
   private readonly IWorkerStreamHandler       workerStreamHandler_;
+  private          bool                       healthCheckFailed_;
+  private          HealthCheckResult?         healthCheckFailedResult_;
   public           string                     TaskProcessing;
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
@@ -99,6 +104,7 @@ public class Pollster
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    healthCheckFailed_     = false;
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -119,6 +125,71 @@ public class Pollster
                     .ConfigureAwait(false);
   }
 
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (healthCheckFailed_)
+    {
+      return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
+    }
+
+    var checks = new List<Task<HealthCheckResult>>
+                 {
+                   pullQueueStorage_.Check(tag),
+                   dataPrefetcher_.Check(tag),
+                   workerStreamHandler_.Check(tag),
+                   objectStorageFactory_.Check(tag),
+                   resultTable_.Check(tag),
+                   sessionTable_.Check(tag),
+                   taskTable_.Check(tag),
+                 };
+
+    var exceptions  = new List<Exception>();
+    var data        = new Dictionary<string, object>();
+    var description = new StringBuilder();
+    var worstStatus = HealthStatus.Healthy;
+
+    foreach (var healthCheckResult in await checks.WhenAll()
+                                                  .ConfigureAwait(false))
+    {
+      if (healthCheckResult.Status == HealthStatus.Healthy)
+      {
+        continue;
+      }
+
+      if (healthCheckResult.Exception is not null)
+      {
+        exceptions.Add(healthCheckResult.Exception);
+      }
+
+      foreach (var (key, value) in healthCheckResult.Data)
+      {
+        data[key] = value;
+      }
+
+      if (healthCheckResult.Description is not null)
+      {
+        description.AppendLine(healthCheckResult.Description);
+      }
+
+      worstStatus = worstStatus < healthCheckResult.Status
+                      ? worstStatus
+                      : healthCheckResult.Status;
+    }
+
+    var result = new HealthCheckResult(worstStatus,
+                                       description.ToString(),
+                                       new AggregateException(exceptions),
+                                       data);
+
+    if (worstStatus == HealthStatus.Unhealthy && tag == HealthCheckTag.Liveness)
+    {
+      healthCheckFailed_       = true;
+      healthCheckFailedResult_ = result;
+    }
+
+    return result;
+  }
+
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
@@ -136,6 +207,13 @@ public class Pollster
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cancellationToken.IsCancellationRequested)
       {
+        if (healthCheckFailed_)
+        {
+          logger_.LogWarning("Health Check failed thus no more tasks will be executed.");
+          cts.Cancel();
+          return;
+        }
+
         logger_.LogTrace("Trying to fetch messages");
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");

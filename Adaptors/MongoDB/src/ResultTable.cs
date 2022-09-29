@@ -38,6 +38,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -337,22 +338,24 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
       sessionProvider_.Get();
       resultCollectionProvider_.Get();
       isInitialized_ = true;
     }
-
-    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 }

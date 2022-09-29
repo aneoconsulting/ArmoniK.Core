@@ -41,6 +41,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -750,19 +751,21 @@ public class TaskTable : ITaskTable
   public ILogger Logger { get; }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
       sessionProvider_.Get();
       taskCollectionProvider_.Get();
       isInitialized_ = true;
     }
-
-    return Task.CompletedTask;
   }
 }

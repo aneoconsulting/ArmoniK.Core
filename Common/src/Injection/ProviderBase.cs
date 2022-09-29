@@ -25,6 +25,8 @@
 using System;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Common.Injection;
 
 public abstract class ProviderBase<T> : IHealthCheckProvider
@@ -37,8 +39,10 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
     => builder_ = builder;
 
   /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(object_ is not null);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(object_ is not null
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   public T Get()
   {

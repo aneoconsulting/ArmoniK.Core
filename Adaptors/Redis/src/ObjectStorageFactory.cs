@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,12 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
@@ -62,8 +64,25 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    switch (tag)
+    {
+      case HealthCheckTag.Startup:
+      case HealthCheckTag.Readiness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("Redis not initialized yet."));
+      case HealthCheckTag.Liveness:
+        return Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped."));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(tag),
+                                              tag,
+                                              null);
+    }
+  }
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
     => new ObjectStorage(redis_,

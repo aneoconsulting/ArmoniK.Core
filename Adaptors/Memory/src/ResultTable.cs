@@ -35,6 +35,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Memory;
@@ -42,6 +43,8 @@ namespace ArmoniK.Core.Adapters.Memory;
 public class ResultTable : IResultTable
 {
   private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results_;
+
+  private bool isInitialized_;
 
   public ResultTable(ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results,
                      ILogger<ResultTable>                                               logger)
@@ -225,12 +228,17 @@ public class ResultTable : IResultTable
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 }

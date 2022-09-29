@@ -33,6 +33,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Adapters.Memory;
 
 public class QueueStorage : IQueueStorage
@@ -51,8 +53,8 @@ public class QueueStorage : IQueueStorage
     => "";
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)

@@ -29,6 +29,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
@@ -112,8 +114,10 @@ public class QueueStorage : IQueueStorage
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(IsInitialized);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(IsInitialized
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
   public int MaxPriority { get; }

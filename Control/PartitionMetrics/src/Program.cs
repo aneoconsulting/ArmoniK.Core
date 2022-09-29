@@ -24,8 +24,11 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
@@ -47,7 +50,7 @@ namespace ArmoniK.Core.Control.PartitionMetrics;
 
 public static class Program
 {
-  public static int Main(string[] args)
+  public static async Task<int> Main(string[] args)
   {
     var builder = WebApplication.CreateBuilder(args);
 
@@ -110,7 +113,12 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      app.Run();
+      var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      await sessionProvider.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
+
+      await app.RunAsync()
+               .ConfigureAwait(false);
 
       return 0;
     }

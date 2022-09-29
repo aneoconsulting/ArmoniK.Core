@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,10 +26,12 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 namespace ArmoniK.Core.Common;
 
 [PublicAPI]
 public interface IHealthCheckProvider
 {
-  ValueTask<bool> Check(HealthCheckTag tag);
+  Task<HealthCheckResult> Check(HealthCheckTag tag);
 }

@@ -37,6 +37,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
@@ -90,8 +91,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     logger_ = logger;
   }
 
-  public new ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public new Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   public override async Task Init(CancellationToken cancellationToken)
   {

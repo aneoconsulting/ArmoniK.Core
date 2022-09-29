@@ -45,6 +45,7 @@ using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -263,19 +264,22 @@ public class SessionTable : ISessionTable
 
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
       sessionCollectionProvider_.Get();
       sessionProvider_.Get();
     }
 
     isInitialized_ = true;
-    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 }

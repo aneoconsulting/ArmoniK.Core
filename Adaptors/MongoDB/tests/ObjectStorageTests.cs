@@ -92,8 +92,8 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
     services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
 
-    var objectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage = objectStorageFactory.CreateObjectStorage("storage");
-    RunTests      = true;
+    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
+    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
+    RunTests             = true;
   }
 }

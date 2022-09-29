@@ -36,6 +36,7 @@ using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
@@ -46,6 +47,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private readonly ILogger<WorkerStreamHandler>                            logger_;
   private readonly InitWorker                                              optionsInitWorker_;
   private          bool                                                    isInitialized_;
+  private          int                                                     retryCheck_;
   private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
   private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
 
@@ -80,6 +82,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
+
   public async Task Init(CancellationToken cancellationToken)
   {
     if (isInitialized_)
@@ -93,21 +96,16 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       {
         var channel = channelProvider_.Get();
         workerClient_ = new Api.gRPC.V1.Worker.Worker.WorkerClient(channel);
-        var reply = workerClient_.HealthCheck(new Empty(),
-                                              cancellationToken: cancellationToken);
-        if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
+
+        var check = await CheckWorker(cancellationToken)
+                      .ConfigureAwait(false);
+
+        if (!check)
         {
           throw new ArmoniKException("Worker Health Check was not successful");
         }
 
         isInitialized_ = true;
-        logger_.LogInformation("Channel was initialized");
-        return;
-      }
-      catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
-      {
-        isInitialized_ = true;
-        logger_.LogInformation("Channel was initialized but Worker health check is not implemented");
         return;
       }
       catch (Exception ex)
@@ -127,12 +125,67 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     throw e;
   }
 
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    try
+    {
+      if (!isInitialized_)
+      {
+        return tag == HealthCheckTag.Liveness
+                 ? HealthCheckResult.Unhealthy("Worker not yet initialized")
+                 : HealthCheckResult.Degraded("Worker not yet initialized");
+      }
+
+      retryCheck_++;
+      var check = await CheckWorker(CancellationToken.None)
+                    .ConfigureAwait(false);
+
+      if (!check)
+      {
+        return retryCheck_ > optionsInitWorker_.WorkerCheckRetries
+                 ? HealthCheckResult.Unhealthy("Health check on worker was not successful (too many retries)")
+                 : HealthCheckResult.Degraded("Health check on worker was not successful (too many retries)");
+      }
+
+      retryCheck_ = 0;
+      return HealthCheckResult.Healthy();
+    }
+    catch (Exception ex)
+    {
+      return HealthCheckResult.Unhealthy("Health check on worker was not successful with exception",
+                                         ex);
+    }
+  }
 
   public void Dispose()
   {
     stream_?.Dispose();
     GC.SuppressFinalize(this);
+  }
+
+  private Task<bool> CheckWorker(CancellationToken cancellationToken)
+  {
+    try
+    {
+      if (workerClient_ is null)
+      {
+        return Task.FromResult(false);
+      }
+
+      var reply = workerClient_.HealthCheck(new Empty(),
+                                            cancellationToken: cancellationToken);
+      if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
+      {
+        return Task.FromResult(false);
+      }
+
+      logger_.LogDebug("Channel was initialized");
+      return Task.FromResult(true);
+    }
+    catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
+    {
+      logger_.LogDebug("Channel was initialized but Worker health check is not implemented");
+      return Task.FromResult(true);
+    }
   }
 }

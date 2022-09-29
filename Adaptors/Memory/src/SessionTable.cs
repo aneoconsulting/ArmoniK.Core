@@ -38,6 +38,7 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
@@ -48,6 +49,8 @@ public class SessionTable : ISessionTable
 {
   private readonly ConcurrentDictionary<string, SessionData> storage_;
 
+  private bool isInitialized_;
+
   public SessionTable(ConcurrentDictionary<string, SessionData> storage,
                       ILogger<SessionTable>                     logger)
   {
@@ -56,12 +59,17 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task Init(CancellationToken cancellationToken)
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
   public Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,

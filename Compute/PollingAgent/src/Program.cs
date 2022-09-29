@@ -87,7 +87,7 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddHostedService<Worker>()
-             .AddSingleton<Common.Pollster.Pollster>()
+             .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,

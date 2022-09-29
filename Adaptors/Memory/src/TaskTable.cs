@@ -38,6 +38,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using Task = System.Threading.Tasks.Task;
@@ -49,6 +50,8 @@ public class TaskTable : ITaskTable
 {
   private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_;
   private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_;
+
+  private bool isInitialized_;
 
   public TaskTable(ConcurrentDictionary<string, TaskData>                task2TaskData,
                    ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
@@ -557,11 +560,16 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(true);
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   private bool UpdateAndCheckTaskStatus(string     id,
                                         TaskStatus status)

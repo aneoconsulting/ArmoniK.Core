@@ -31,6 +31,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
@@ -80,15 +81,29 @@ public class QueueStorageTests
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
+
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pushQueueStorage.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pushQueueStorage.Check(HealthCheckTag.Readiness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pushQueueStorage.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false));
+
     await pushQueueStorage.Init(CancellationToken.None)
                           .ConfigureAwait(false);
 
-    Assert.IsTrue(await pushQueueStorage.Check(HealthCheckTag.Liveness)
-                                        .ConfigureAwait(false));
-    Assert.IsTrue(await pushQueueStorage.Check(HealthCheckTag.Readiness)
-                                        .ConfigureAwait(false));
-    Assert.IsTrue(await pushQueueStorage.Check(HealthCheckTag.Startup)
-                                        .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await pushQueueStorage.Check(HealthCheckTag.Liveness)
+                                          .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await pushQueueStorage.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await pushQueueStorage.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false));
   }
 
   [Test]
@@ -103,15 +118,28 @@ public class QueueStorageTests
     var pullQueueStorage = new PullQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PullQueueStorage>.Instance);
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pullQueueStorage.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pullQueueStorage.Check(HealthCheckTag.Readiness)
+                                             .ConfigureAwait(false));
+    Assert.AreNotEqual(HealthCheckResult.Healthy(),
+                       await pullQueueStorage.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false));
+
     await pullQueueStorage.Init(CancellationToken.None)
                           .ConfigureAwait(false);
 
-    Assert.IsTrue(await pullQueueStorage.Check(HealthCheckTag.Liveness)
-                                        .ConfigureAwait(false));
-    Assert.IsTrue(await pullQueueStorage.Check(HealthCheckTag.Readiness)
-                                        .ConfigureAwait(false));
-    Assert.IsTrue(await pullQueueStorage.Check(HealthCheckTag.Startup)
-                                        .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await pullQueueStorage.Check(HealthCheckTag.Liveness)
+                                          .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await pullQueueStorage.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false));
+    Assert.AreEqual(HealthCheckResult.Healthy(),
+                    await pullQueueStorage.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false));
   }
 
   [Test]

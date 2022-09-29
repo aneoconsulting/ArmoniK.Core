@@ -37,6 +37,8 @@ using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
 using NUnit.Framework;
 
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
@@ -145,6 +147,36 @@ public class SessionTableTestBase
 
   public virtual void GetSessionTableInstance()
   {
+  }
+
+  [Test]
+  public async Task InitShouldSucceed()
+  {
+    if (RunTests)
+    {
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await SessionTable!.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await SessionTable.Check(HealthCheckTag.Readiness)
+                                            .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await SessionTable.Check(HealthCheckTag.Startup)
+                                            .ConfigureAwait(false)).Status);
+
+      await SessionTable.Init(CancellationToken.None)
+                        .ConfigureAwait(false);
+
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await SessionTable.Check(HealthCheckTag.Liveness)
+                                         .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await SessionTable.Check(HealthCheckTag.Readiness)
+                                         .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await SessionTable.Check(HealthCheckTag.Startup)
+                                         .ConfigureAwait(false)).Status);
+    }
   }
 
   [Test]
