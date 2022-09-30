@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,13 +26,16 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 using FluentValidation;
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
-[UsedImplicitly]
+/// <summary>
+///   Validator for <see cref="SessionFilter" />
+/// </summary>
 public class SessionFilterValidator : AbstractValidator<SessionFilter>
 {
+  /// <summary>
+  ///   Initializes a validator for <see cref="SessionFilter" />
+  /// </summary>
   public SessionFilterValidator()
   {
     RuleFor(filter => filter.Included)
