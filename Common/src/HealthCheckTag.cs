@@ -30,17 +30,17 @@ namespace ArmoniK.Core.Common;
 public enum HealthCheckTag
 {
   /// <summary>
-  ///   For health check that determines the status of a class exposing health check during its initialization.
+  ///   For a health check that determines the status of a class exposing health check during its initialization.
   /// </summary>
   Startup,
 
   /// <summary>
-  ///   For health check that determines the status of a class exposing health check during its execution.
+  ///   For a health check that determines the status of a class exposing health check during its execution.
   /// </summary>
   Liveness,
 
   /// <summary>
-  ///   For health check that determines if a class exposing health check can accept workload.
+  ///   For a health check that determines if a class exposing health check can accept workload.
   /// </summary>
   Readiness,
 }

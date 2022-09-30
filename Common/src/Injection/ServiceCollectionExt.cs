@@ -49,7 +49,7 @@ public static class ConfigurationExt
   ///   Configure an object with the given configuration.
   /// </summary>
   /// <typeparam name="T">Type of the options class</typeparam>
-  /// <param name="configuration">Configurations used to fill the class</param>
+  /// <param name="configuration">Configurations used to populate the class</param>
   /// <param name="key">Path to the Object in the configuration</param>
   /// <returns>
   ///   The initialized object
@@ -65,7 +65,7 @@ public static class ConfigurationExt
   ///   If the object is not found in the configuration, a new object in returned.
   /// </summary>
   /// <typeparam name="T">Type of the options class</typeparam>
-  /// <param name="configuration">Configurations used to fill the class</param>
+  /// <param name="configuration">Configurations used to populate the class</param>
   /// <param name="key">Path to the Object in the configuration</param>
   /// <returns>
   ///   The initialized object
@@ -87,7 +87,7 @@ public static class ServiceCollectionExt
   /// </summary>
   /// <typeparam name="T">Class to fill</typeparam>
   /// <param name="services">Collection of services</param>
-  /// <param name="configuration">Configurations used to fill the class</param>
+  /// <param name="configuration">Configurations used to populate the class</param>
   /// <param name="key">Path to the Object in the configuration</param>
   /// <returns>
   ///   Input collection of services to chain usages
@@ -100,7 +100,7 @@ public static class ServiceCollectionExt
     => services.AddSingleton(configuration.GetInitializedValue<T>(key));
 
   /// <summary>
-  ///   Fills in an option class and add it in the service collection
+  ///   Fills in an option class and add it to the service collection
   /// </summary>
   /// <typeparam name="T">Type of option class to add</typeparam>
   /// <param name="services">Collection of service descriptors</param>
@@ -171,7 +171,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Add a singleton service of the type specified with health check capabilities
+  ///   Add a singleton service of the specified type with health check capabilities
   /// </summary>
   /// <typeparam name="T">Type of the service (interface)</typeparam>
   /// <param name="services">Collection of service descriptors</param>
@@ -215,7 +215,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Add a singleton service of the type specified with health check capabilities
+  ///   Add a singleton service of the specified type with health check capabilities
   /// </summary>
   /// <typeparam name="TService">Type of the service (interface)</typeparam>
   /// <typeparam name="TImplementation">Implementation class of the service</typeparam>
@@ -261,7 +261,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Add a transient service of the type specified with health check capabilities
+  ///   Add a transient service of the specified type with health check capabilities
   /// </summary>
   /// <typeparam name="T">Type of the service (interface)</typeparam>
   /// <param name="services">Collection of service descriptors</param>
@@ -305,7 +305,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Add a transient service of the type specified with health check capabilities
+  ///   Add a transient service of the specified type with health check capabilities
   /// </summary>
   /// <typeparam name="TService">Type of the service (interface)</typeparam>
   /// <typeparam name="TImplementation">Implementation class of the service</typeparam>
@@ -351,7 +351,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Add a transient service of the type specified with health check capabilities
+  ///   Add a transient service of the specified type with health check capabilities
   /// </summary>
   /// <typeparam name="TService">Type of the service</typeparam>
   /// <param name="services">Collection of service descriptors</param>
