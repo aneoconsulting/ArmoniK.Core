@@ -60,14 +60,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                             $"{nameof(Options.PartitionId)} is not defined.");
     }
 
-    logger_ = logger;
-    receivers_ = new AsyncLazy<IReceiverLink>[]
-                 {
-                 };
-
-    senders_ = new AsyncLazy<ISenderLink>[]
-               {
-               };
+    logger_    = logger;
+    receivers_ = Array.Empty<AsyncLazy<IReceiverLink>>();
+    senders_   = Array.Empty<AsyncLazy<ISenderLink>>();
   }
 
   public override async Task Init(CancellationToken cancellationToken)
