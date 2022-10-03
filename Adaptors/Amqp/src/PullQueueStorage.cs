@@ -45,8 +45,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
   private readonly ILogger<PullQueueStorage> logger_;
 
-  private AsyncLazy<IReceiverLink>[]? receivers_;
-  private AsyncLazy<ISenderLink>[]?   senders_;
+  private AsyncLazy<IReceiverLink>[] receivers_;
+  private AsyncLazy<ISenderLink>[]   senders_;
 
   public PullQueueStorage(Options.Amqp              options,
                           IConnectionAmqp           connectionAmqp,
@@ -61,6 +61,13 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     }
 
     logger_ = logger;
+    receivers_ = new AsyncLazy<IReceiverLink>[]
+                 {
+                 };
+
+    senders_ = new AsyncLazy<ISenderLink>[]
+               {
+               };
   }
 
   public override async Task Init(CancellationToken cancellationToken)
@@ -110,7 +117,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _               = logger_!.LogFunction();
+    using var _               = logger_.LogFunction();
     var       nbPulledMessage = 0;
 
     if (!IsInitialized)
@@ -121,7 +128,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;
-      for (var i = receivers_!.Length - 1; i >= 0; --i)
+      for (var i = receivers_.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
@@ -129,20 +136,20 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                     .ConfigureAwait(false);
         if (message is null)
         {
-          logger_!.LogTrace($"Message is null for receiver {i}",
-                            i);
+          logger_.LogTrace("Message is null for receiver {receiver}",
+                           i);
           continue;
         }
 
         nbPulledMessage++;
 
-        var sender = await senders_![i];
+        var sender = await senders_[i];
 
         yield return new QueueMessageHandler(message,
                                              sender,
                                              receiver,
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
-                                             logger_!,
+                                             logger_,
                                              cancellationToken);
 
         break;
