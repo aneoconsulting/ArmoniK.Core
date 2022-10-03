@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,9 +32,12 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
+
+using TimeoutException = System.TimeoutException;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
@@ -43,18 +45,14 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
-  private readonly IConnectionAmqp connectionAmqp_;
-
   private readonly ILogger<PushQueueStorage> logger_;
 
   public PushQueueStorage(Options.Amqp              options,
                           IConnectionAmqp           connectionAmqp,
                           ILogger<PushQueueStorage> logger)
-    : base(options)
-  {
-    connectionAmqp_ = connectionAmqp;
-    logger_         = logger;
-  }
+    : base(options,
+           connectionAmqp)
+    => logger_ = logger;
 
   /// <inheritdoc />
   public async Task PushMessagesAsync(IEnumerable<string> messages,
@@ -64,8 +62,13 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   {
     using var _ = logger_.LogFunction();
 
+    if (!IsInitialized)
+    {
+      throw new ArmoniKException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
+    }
+
     /* Create Session at each call of push */
-    var session = new Session(connectionAmqp_.Connection);
+    var session = new Session(ConnectionAmqp.Connection);
 
     /* Priority is handled using multiple queues; there should be at least one queue which
      * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
