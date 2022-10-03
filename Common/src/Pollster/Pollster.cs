@@ -277,7 +277,7 @@ public class Pollster : IInitializable
                              "Error with messageHandler {messageId}",
                              message.MessageId);
             consecutiveErrors += 1;
-            if (pollsterOptions_.MaxErrorAllowed >= 0 && consecutiveErrors >= pollsterOptions_.MaxErrorAllowed)
+            if (pollsterOptions_.MaxErrorAllowed >= 0 && consecutiveErrors > pollsterOptions_.MaxErrorAllowed)
             {
               logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
               healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
