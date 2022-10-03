@@ -280,7 +280,8 @@ public class Pollster : IInitializable
             if (pollsterOptions_.MaxErrorAllowed >= 0 && consecutiveErrors > pollsterOptions_.MaxErrorAllowed)
             {
               logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
-              healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
+              healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop",
+                                                                     e);
               cts.Cancel();
               return;
             }
