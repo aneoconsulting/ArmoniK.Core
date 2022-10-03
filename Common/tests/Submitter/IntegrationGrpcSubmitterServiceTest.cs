@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,17 +8,17 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -40,6 +41,10 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
@@ -845,6 +850,110 @@ internal class IntegrationGrpcSubmitterServiceTest
     }
 
     return null;
+  }
+
+  [Test]
+  public async Task TooManyExceptionUnaryCallShouldBeUnhealthy()
+  {
+    var requests = Enumerable.Range(1,
+                                    3)
+                             .Select(i => new CreateSessionRequest
+                                          {
+                                            PartitionIds =
+                                            {
+                                              "Part",
+                                            },
+                                            DefaultTaskOption = new TaskOptions
+                                                                {
+                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.MaxValue),
+                                                                  MaxRetries  = 1,
+                                                                  PartitionId = "Part1",
+                                                                  Priority    = i,
+                                                                },
+                                          })
+                             .ToArray();
+    var noErrorRequest     = requests[0];
+    var clientErrorRequest = requests[1];
+    var serverErrorRequest = requests[2];
+    var noErrorReply = new CreateSessionReply
+                       {
+                         SessionId = "",
+                       };
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
+                                                             It.IsAny<TaskOptions>(),
+                                                             It.IsAny<CancellationToken>()))
+                 .Returns((IList<string>     _,
+                           TaskOptions       taskOptions,
+                           CancellationToken _) =>
+                          {
+                            if (taskOptions.Priority == 1)
+                            {
+                              return Task.FromResult(noErrorReply);
+                            }
+
+                            if (taskOptions.Priority == 2)
+                            {
+                              return Task.FromException<CreateSessionReply>(new ArmoniKException("Client Error"));
+                            }
+
+                            return Task.FromException<CreateSessionReply>(new ApplicationException("Server failure"));
+                          });
+
+    var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
+                                               {
+                                                 MaxErrorAllowed = 1,
+                                               },
+                                               NullLogger<ExceptionInterceptor>.Instance);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object,
+                                             services => services.AddSingleton(interceptor)
+                                                                 .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
+
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+
+
+    // Call #1-4 without error
+    foreach (var _ in Enumerable.Range(0,
+                                       4))
+    {
+      Assert.AreEqual(noErrorReply,
+                      client.CreateSession(noErrorRequest));
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await interceptor.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status);
+    }
+
+    // Call #5-8 with client error
+    /*
+    foreach (var _ in Enumerable.Range(0,
+                                       4))
+    {
+      Assert.Throws<RpcException>(() => client.CreateSession(clientErrorRequest));
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await interceptor.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status);
+    }
+    */
+    // Call #9 with server error
+    Assert.Throws<RpcException>(() => client.CreateSession(serverErrorRequest));
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+    // Call #10 with server error
+    Assert.Throws<RpcException>(() => client.CreateSession(serverErrorRequest));
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await interceptor.Check(HealthCheckTag.Liveness)
+                                         .ConfigureAwait(false)).Status);
+    // Call #11 without error
+    Assert.AreEqual(noErrorReply,
+                    client.CreateSession(noErrorRequest));
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await interceptor.Check(HealthCheckTag.Liveness)
+                                         .ConfigureAwait(false)).Status);
   }
 
   public static IEnumerable TestCasesOutput

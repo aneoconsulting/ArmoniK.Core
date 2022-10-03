@@ -86,7 +86,8 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e)
+      await HandleException(e,
+                            context)
         .ConfigureAwait(false);
       throw;
     }
@@ -106,7 +107,8 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e)
+      await HandleException(e,
+                            context)
         .ConfigureAwait(false);
       throw;
     }
@@ -128,7 +130,8 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e)
+      await HandleException(e,
+                            context)
         .ConfigureAwait(false);
       throw;
     }
@@ -150,15 +153,36 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e)
+      await HandleException(e,
+                            context)
         .ConfigureAwait(false);
       throw;
     }
   }
 
-  private ValueTask HandleException(Exception e)
+  private ValueTask HandleException(Exception         e,
+                                    ServerCallContext context)
   {
+    _ = context;
+    /*
+    if (e is ArmoniKException)
+    {
+      logger_.LogTrace(e,
+                       "client Error has been thrown by the request");
+      return ValueTask.CompletedTask;
+    }
+    if (e is not OperationCanceledException && context.CancellationToken.IsCancellationRequested)
+    {
+      logger_.LogTrace(e,
+                       "Request has been cancelled");
+      return ValueTask.CompletedTask;
+    }
+    */
+
+    logger_.LogInformation(e,
+                           "An exception has been thrown during handling of request");
     errors_.Enqueue(e);
+
     return ValueTask.CompletedTask;
   }
 }
