@@ -205,11 +205,11 @@ public class Pollster : IInitializable
                                  logger_.LogError("Global cancellation has been triggered.");
                                  cts.Cancel();
                                });
-    var recordedErrors = new List<Exception>();
+    var recordedErrors = new Queue<Exception>();
 
     void RecordError(Exception e)
     {
-      recordedErrors.Add(e);
+      recordedErrors.Enqueue(e);
       if (pollsterOptions_.MaxErrorAllowed >= 0 && recordedErrors.Count > pollsterOptions_.MaxErrorAllowed)
       {
         logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
@@ -291,6 +291,12 @@ public class Pollster : IInitializable
                                  .ConfigureAwait(false);
 
                 logger_.LogDebug("Task returned");
+
+                // If the task was successful, we can remove a failure
+                if (recordedErrors.Count > 0)
+                {
+                  recordedErrors.Dequeue();
+                }
               }
             }
             catch (Exception e)

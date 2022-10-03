@@ -23,7 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Injection.Options;
@@ -42,9 +42,9 @@ namespace ArmoniK.Core.Common.gRPC;
 /// </summary>
 public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
 {
-  private readonly ILogger logger_;
-  private readonly int     maxAllowedErrors_;
-  private          int     nbErrors_;
+  private readonly ConcurrentQueue<Exception> errors_;
+  private readonly ILogger                    logger_;
+  private readonly int                        maxAllowedErrors_;
 
   /// <summary>
   ///   Construct the interceptor
@@ -55,24 +55,25 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                               ILogger<ExceptionInterceptor> logger)
   {
     maxAllowedErrors_ = submitterOptions.MaxErrorAllowed;
-    nbErrors_         = 0;
+    errors_           = new ConcurrentQueue<Exception>();
     logger_           = logger;
     logger_.LogDebug("Interceptor created with {maxAllowedErrors_} maximum errors",
                      maxAllowedErrors_);
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag _)
   {
     logger_.LogDebug("Interceptor HealthCheck: errors {nbErrors}/{maxAllowedErrors}",
-                     nbErrors_,
+                     errors_.Count,
                      maxAllowedErrors_);
-    return Task.FromResult(nbErrors_ <= maxAllowedErrors_
+    return Task.FromResult(errors_.Count <= maxAllowedErrors_
                              ? HealthCheckResult.Healthy()
-                             : HealthCheckResult.Unhealthy("Too many errors recorded"));
+                             : HealthCheckResult.Unhealthy("Too many errors recorded",
+                                                           new AggregateException(errors_)));
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest                               request,
                                                                                 ServerCallContext                      context,
                                                                                 UnaryServerMethod<TRequest, TResponse> continuation)
@@ -91,7 +92,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public override async Task<TResponse> ClientStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>                     requestStream,
                                                                                           ServerCallContext                                context,
                                                                                           ClientStreamingServerMethod<TRequest, TResponse> continuation)
@@ -111,7 +112,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public override async Task ServerStreamingServerHandler<TRequest, TResponse>(TRequest                                         request,
                                                                                IServerStreamWriter<TResponse>                   responseStream,
                                                                                ServerCallContext                                context,
@@ -133,7 +134,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public override async Task DuplexStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>                     requestStream,
                                                                                IServerStreamWriter<TResponse>                   responseStream,
                                                                                ServerCallContext                                context,
@@ -157,10 +158,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
 
   private ValueTask HandleException(Exception e)
   {
-    _ = e;
-
-    // Interlocked is required here because the interceptor can be shared across threads
-    Interlocked.Increment(ref nbErrors_);
+    errors_.Enqueue(e);
     return ValueTask.CompletedTask;
   }
 }
