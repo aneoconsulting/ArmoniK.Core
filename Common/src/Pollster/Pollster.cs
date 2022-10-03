@@ -45,7 +45,6 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster : IInitializable
 {
-  private const    int                        maxErrorAllowed = 10;
   private readonly ActivitySource             activitySource_;
   private readonly IAgentHandler              agentHandler_;
   private readonly DataPrefetcher             dataPrefetcher_;
@@ -278,7 +277,7 @@ public class Pollster : IInitializable
                              "Error with messageHandler {messageId}",
                              message.MessageId);
             consecutiveErrors += 1;
-            if (consecutiveErrors >= maxErrorAllowed)
+            if (pollsterOptions_.MaxErrorAllowed >= 0 && consecutiveErrors >= pollsterOptions_.MaxErrorAllowed)
             {
               logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
               healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
