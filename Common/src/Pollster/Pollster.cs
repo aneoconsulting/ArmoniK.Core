@@ -103,7 +103,10 @@ public class Pollster : IInitializable
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    Failed                 = false;
   }
+
+  public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
   {
@@ -187,7 +190,6 @@ public class Pollster : IInitializable
     return result;
   }
 
-
   public async Task MainLoop(CancellationToken cancellationToken)
   {
     await Init(cancellationToken)
@@ -199,7 +201,20 @@ public class Pollster : IInitializable
                                  logger_.LogError("Global cancellation has been triggered.");
                                  cts.Cancel();
                                });
-    var consecutiveErrors = 0;
+    var recordedErrors = new List<Exception>();
+
+    void RecordError(Exception e)
+    {
+      recordedErrors.Add(e);
+      if (pollsterOptions_.MaxErrorAllowed >= 0 && recordedErrors.Count > pollsterOptions_.MaxErrorAllowed)
+      {
+        logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
+        healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
+        cts.Cancel();
+        throw new TooManyException(recordedErrors.ToArray());
+      }
+    }
+
     try
     {
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
@@ -215,92 +230,108 @@ public class Pollster : IInitializable
         logger_.LogTrace("Trying to fetch messages");
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
-        var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
-                                                           cancellationToken);
 
-        await foreach (var message in messages.WithCancellation(cancellationToken)
-                                              .ConfigureAwait(false))
+        try
         {
-          using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
-                                                           ("messageHandler", message.MessageId),
-                                                           ("taskId", message.TaskId),
-                                                           ("ownerPodId", ownerPodId_));
-          using var activity = activitySource_.StartActivity("ProcessQueueMessage");
-          activity?.SetBaggage("TaskId",
-                               message.TaskId);
-          activity?.SetBaggage("messageId",
+          var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+                                                             cancellationToken);
+
+          await foreach (var message in messages.WithCancellation(cancellationToken)
+                                                .ConfigureAwait(false))
+          {
+            using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
+                                                             ("messageHandler", message.MessageId),
+                                                             ("taskId", message.TaskId),
+                                                             ("ownerPodId", ownerPodId_));
+            using var activity = activitySource_.StartActivity("ProcessQueueMessage");
+            activity?.SetBaggage("TaskId",
+                                 message.TaskId);
+            activity?.SetBaggage("messageId",
+                                 message.MessageId);
+
+            logger_.LogDebug("Start a new Task to process the messageHandler");
+
+            try
+            {
+              await using var taskHandler = new TaskHandler(sessionTable_,
+                                                            taskTable_,
+                                                            resultTable_,
+                                                            submitter_,
+                                                            dataPrefetcher_,
+                                                            workerStreamHandler_,
+                                                            message,
+                                                            taskProcessingChecker_,
+                                                            ownerPodId_,
+                                                            activitySource_,
+                                                            agentHandler_,
+                                                            logger_,
+                                                            pollsterOptions_,
+                                                            cts);
+
+              var precondition = await taskHandler.AcquireTask()
+                                                  .ConfigureAwait(false);
+
+              if (precondition)
+              {
+                TaskProcessing = taskHandler.GetAcquiredTask();
+
+                await taskHandler.PreProcessing()
+                                 .ConfigureAwait(false);
+
+                await taskHandler.ExecuteTask()
+                                 .ConfigureAwait(false);
+
+                logger_.LogDebug("Complete task processing");
+
+                await taskHandler.PostProcessing()
+                                 .ConfigureAwait(false);
+
+                logger_.LogDebug("Task returned");
+              }
+            }
+            catch (Exception e)
+            {
+              logger_.LogError(e,
+                               "Error with messageHandler {messageId}",
                                message.MessageId);
-
-          logger_.LogDebug("Start a new Task to process the messageHandler");
-
-          try
-          {
-            await using var taskHandler = new TaskHandler(sessionTable_,
-                                                          taskTable_,
-                                                          resultTable_,
-                                                          submitter_,
-                                                          dataPrefetcher_,
-                                                          workerStreamHandler_,
-                                                          message,
-                                                          taskProcessingChecker_,
-                                                          ownerPodId_,
-                                                          activitySource_,
-                                                          agentHandler_,
-                                                          logger_,
-                                                          pollsterOptions_,
-                                                          cts);
-
-            var precondition = await taskHandler.AcquireTask()
-                                                .ConfigureAwait(false);
-
-            if (precondition)
+              RecordError(e);
+            }
+            finally
             {
-              TaskProcessing = taskHandler.GetAcquiredTask();
-
-              await taskHandler.PreProcessing()
-                               .ConfigureAwait(false);
-
-              await taskHandler.ExecuteTask()
-                               .ConfigureAwait(false);
-
-              logger_.LogDebug("Complete task processing");
-
-              await taskHandler.PostProcessing()
-                               .ConfigureAwait(false);
-
-              logger_.LogDebug("Task returned");
+              TaskProcessing = string.Empty;
             }
           }
-          catch (Exception e)
-          {
-            logger_.LogError(e,
-                             "Error with messageHandler {messageId}",
-                             message.MessageId);
-            consecutiveErrors += 1;
-            if (pollsterOptions_.MaxErrorAllowed >= 0 && consecutiveErrors > pollsterOptions_.MaxErrorAllowed)
-            {
-              logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
-              healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop",
-                                                                     e);
-              cts.Cancel();
-              return;
-            }
-          }
-          finally
-          {
-            TaskProcessing = string.Empty;
-          }
+        }
+        catch (TooManyException e)
+        {
+          // This exception should not be caught here
+          throw;
+        }
+        catch (Exception e)
+        {
+          logger_.LogError(e,
+                           "Error while pulling the messages from the queue");
+          RecordError(e);
         }
       }
     }
     catch (Exception e)
     {
+      Failed = true;
       logger_.LogCritical(e,
                           "Error in pollster");
     }
     finally
     {
       logger_.LogWarning("End of Pollster main loop");
+    }
+  }
+
+  private class TooManyException : AggregateException
+  {
+    public TooManyException(Exception[] inner)
+      : base(inner)
+    {
     }
   }
 }
