@@ -83,29 +83,31 @@
   <div class="implements">
     <h5>Implements</h5>
     <div><a class="xref" href="ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html">IConnectionAmqp</a></div>
+    <div><a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a></div>
+    <div><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></div>
   </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.Amqp.html">ArmoniK.Core.Adapters.Amqp</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.Amqp.dll</h6>
   <h5 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class ConnectionAmqp : object, IConnectionAmqp</code></pre>
+    <pre><code class="lang-csharp hljs">public class ConnectionAmqp : object, IConnectionAmqp, IInitializable, IHealthCheckProvider</code></pre>
   </div>
   <h3 id="constructors">Constructors
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.%23ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp%2CILogger)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.%23ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp%2CILogger%7BArmoniK.Core.Adapters.Amqp.ConnectionAmqp%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L41">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L50">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)">ConnectionAmqp(Amqp, ILogger)</h4>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger{ArmoniK.Core.Adapters.Amqp.ConnectionAmqp})">ConnectionAmqp(Amqp, ILogger&lt;ConnectionAmqp&gt;)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ConnectionAmqp(Amqp options, ILogger logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public ConnectionAmqp(Amqp options, ILogger&lt;ConnectionAmqp&gt; logger)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -123,7 +125,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">ILogger</span></td>
+        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html">ConnectionAmqp</a>&gt;</td>
         <td><span class="parametername">logger</span></td>
         <td></td>
       </tr>
@@ -136,7 +138,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Connection.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L48">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L57">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Connection_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection*"></a>
   <h4 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Connection" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection">Connection</h4>
@@ -144,7 +146,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Connection? Connection { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public Connection? Connection { get; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -165,19 +167,36 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_OpenConnectionAsync.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L50">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L59">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_OpenConnectionAsync_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_OpenConnectionAsync" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync">OpenConnectionAsync()</h4>
+  <a id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Check_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Check*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;IConnectionAmqp&gt; OpenConnectionAsync()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;HealthCheckResult&gt; Check(HealthCheckTag tag)</code></pre>
   </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.HealthCheckTag.html">HealthCheckTag</a></td>
+        <td><span class="parametername">tag</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
     <thead>
@@ -188,7 +207,54 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html">IConnectionAmqp</a>&gt;</td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L76">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Init_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Init*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Init(CancellationToken)">Init(CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public async Task Init(CancellationToken cancellationToken)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -196,6 +262,12 @@
   <h3 id="implements">Implements</h3>
   <div>
       <a class="xref" href="ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html">IConnectionAmqp</a>
+  </div>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a>
+  </div>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a>
   </div>
 </article>
           </div>
@@ -208,7 +280,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_ConnectionAmqp.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.ConnectionAmqp%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L35" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/ConnectionAmqp.cs/#L43" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
