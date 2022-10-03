@@ -631,7 +631,7 @@ jobs:
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=1000 \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -650,7 +650,7 @@ jobs:
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=1000 \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -670,7 +670,7 @@ jobs:
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=1000 \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -690,7 +690,7 @@ jobs:
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=1000 \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
