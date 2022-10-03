@@ -855,26 +855,20 @@ internal class IntegrationGrpcSubmitterServiceTest
   [Test]
   public async Task TooManyExceptionUnaryCallShouldBeUnhealthy()
   {
-    var requests = Enumerable.Range(1,
-                                    3)
-                             .Select(i => new CreateSessionRequest
-                                          {
-                                            PartitionIds =
-                                            {
-                                              "Part",
-                                            },
-                                            DefaultTaskOption = new TaskOptions
-                                                                {
-                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.MaxValue),
-                                                                  MaxRetries  = 1,
-                                                                  PartitionId = "Part1",
-                                                                  Priority    = i,
-                                                                },
-                                          })
-                             .ToArray();
-    var noErrorRequest     = requests[0];
-    var clientErrorRequest = requests[1];
-    var serverErrorRequest = requests[2];
+    Exception? ex = null;
+    var request = new CreateSessionRequest
+                  {
+                    PartitionIds =
+                    {
+                      "Part",
+                    },
+                    DefaultTaskOption = new TaskOptions
+                                        {
+                                          Priority    = 1,
+                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.MaxValue),
+                                          MaxRetries  = 1,
+                                        },
+                  };
     var noErrorReply = new CreateSessionReply
                        {
                          SessionId = "",
@@ -883,21 +877,14 @@ internal class IntegrationGrpcSubmitterServiceTest
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              It.IsAny<CancellationToken>()))
-                 .Returns((IList<string>     _,
-                           TaskOptions       taskOptions,
-                           CancellationToken _) =>
+                 .Returns(() =>
                           {
-                            if (taskOptions.Priority == 1)
+                            if (ex is null)
                             {
                               return Task.FromResult(noErrorReply);
                             }
 
-                            if (taskOptions.Priority == 2)
-                            {
-                              return Task.FromException<CreateSessionReply>(new ArmoniKException("Client Error"));
-                            }
-
-                            return Task.FromException<CreateSessionReply>(new ApplicationException("Server failure"));
+                            return Task.FromException<CreateSessionReply>(ex);
                           });
 
     var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
@@ -917,11 +904,12 @@ internal class IntegrationGrpcSubmitterServiceTest
 
 
     // Call #1-4 without error
+    ex = null;
     foreach (var _ in Enumerable.Range(0,
                                        4))
     {
       Assert.AreEqual(noErrorReply,
-                      client.CreateSession(noErrorRequest));
+                      client.CreateSession(request));
       Assert.AreEqual(HealthStatus.Healthy,
                       (await interceptor.Check(HealthCheckTag.Liveness)
                                         .ConfigureAwait(false)).Status);
@@ -929,6 +917,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     // Call #5-8 with client error
     /*
+    ex = new ArmoniKException("client error");
     foreach (var _ in Enumerable.Range(0,
                                        4))
     {
@@ -939,18 +928,216 @@ internal class IntegrationGrpcSubmitterServiceTest
     }
     */
     // Call #9 with server error
-    Assert.Throws<RpcException>(() => client.CreateSession(serverErrorRequest));
+    ex = new ApplicationException("server error");
+    Assert.Throws<RpcException>(() => client.CreateSession(request));
     Assert.AreEqual(HealthStatus.Healthy,
                     (await interceptor.Check(HealthCheckTag.Liveness)
                                       .ConfigureAwait(false)).Status);
     // Call #10 with server error
-    Assert.Throws<RpcException>(() => client.CreateSession(serverErrorRequest));
+    ex = new ApplicationException("server error");
+    Assert.Throws<RpcException>(() => client.CreateSession(request));
     Assert.AreNotEqual(HealthStatus.Healthy,
                        (await interceptor.Check(HealthCheckTag.Liveness)
                                          .ConfigureAwait(false)).Status);
     // Call #11 without error
+    ex = null;
     Assert.AreEqual(noErrorReply,
-                    client.CreateSession(noErrorRequest));
+                    client.CreateSession(request));
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await interceptor.Check(HealthCheckTag.Liveness)
+                                         .ConfigureAwait(false)).Status);
+  }
+
+  [Test]
+  public async Task TooManyExceptionClientStreamShouldBeUnhealthy()
+  {
+    Exception? ex            = null;
+    var        failAfter     = 0;
+    var        mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
+                                                           It.IsAny<string>(),
+                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<IAsyncEnumerable<gRPC.Services.TaskRequest>>(),
+                                                           It.IsAny<CancellationToken>()))
+                 .Returns(async (string                                      _,
+                                 string                                      _,
+                                 TaskOptions                                 _,
+                                 IAsyncEnumerable<gRPC.Services.TaskRequest> requests,
+                                 CancellationToken                           cancellationToken) =>
+                          {
+                            var i = 0;
+                            if (failAfter == 0 && ex is not null)
+                            {
+                              throw ex;
+                            }
+
+                            await foreach (var req in requests.WithCancellation(cancellationToken)
+                                                              .ConfigureAwait(false))
+                            {
+                              i += 1;
+                              if (i >= failAfter && ex is not null)
+                              {
+                                throw ex;
+                              }
+                            }
+
+                            return (new List<TaskRequest>
+                                    {
+                                      new("taskId",
+                                          new[]
+                                          {
+                                            "output",
+                                          },
+                                          Array.Empty<string>()),
+                                    }, new int(), string.Empty);
+                          });
+
+    var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
+                                               {
+                                                 MaxErrorAllowed = 1,
+                                               },
+                                               NullLogger<ExceptionInterceptor>.Instance);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object,
+                                             services => services.AddSingleton(interceptor)
+                                                                 .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
+
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+
+    var noErrorReply = new CreateTaskReply
+                       {
+                         CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                              {
+                                                CreationStatuses =
+                                                {
+                                                  new CreateTaskReply.Types.CreationStatus
+                                                  {
+                                                    TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                               {
+                                                                 TaskId = "taskId",
+                                                                 ExpectedOutputKeys =
+                                                                 {
+                                                                   "output",
+                                                                 },
+                                                               },
+                                                  },
+                                                },
+                                              },
+                       };
+
+    // Helper to call createLargeTasks
+    async Task<CreateTaskReply> createLargeTasks(int               nbMessage,
+                                                 CancellationToken cancellationToken = new())
+    {
+      var streamingCall = client.CreateLargeTasks(cancellationToken: cancellationToken);
+      await streamingCall.RequestStream.WriteAsync(new CreateLargeTaskRequest
+                                                   {
+                                                     InitRequest = new CreateLargeTaskRequest.Types.InitRequest
+                                                                   {
+                                                                     SessionId = "SessionId",
+                                                                     TaskOptions = new TaskOptions
+                                                                                   {
+                                                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.MaxValue),
+                                                                                     MaxRetries  = 1,
+                                                                                     PartitionId = "Part",
+                                                                                     Priority    = 1,
+                                                                                   },
+                                                                   },
+                                                   },
+                                                   cancellationToken)
+                         .ConfigureAwait(false);
+      await streamingCall.RequestStream.WriteAsync(new CreateLargeTaskRequest
+                                                   {
+                                                     InitTask = new InitTaskRequest
+                                                                {
+                                                                  Header = new TaskRequestHeader
+                                                                           {
+                                                                             ExpectedOutputKeys =
+                                                                             {
+                                                                               "output",
+                                                                             },
+                                                                           },
+                                                                },
+                                                   },
+                                                   cancellationToken)
+                         .ConfigureAwait(false);
+      for (var i = 0; i < nbMessage; ++i)
+      {
+        await streamingCall.RequestStream.WriteAsync(new CreateLargeTaskRequest
+                                                     {
+                                                       TaskPayload = new DataChunk
+                                                                     {
+                                                                       Data = ByteString.CopyFromUtf8("payload"),
+                                                                     },
+                                                     },
+                                                     cancellationToken)
+                           .ConfigureAwait(false);
+      }
+
+      await streamingCall.RequestStream.WriteAsync(new CreateLargeTaskRequest
+                                                   {
+                                                     TaskPayload = new DataChunk
+                                                                   {
+                                                                     DataComplete = true,
+                                                                   },
+                                                   },
+                                                   cancellationToken)
+                         .ConfigureAwait(false);
+      await streamingCall.RequestStream.WriteAsync(new CreateLargeTaskRequest
+                                                   {
+                                                     InitTask = new InitTaskRequest
+                                                                {
+                                                                  LastTask = true,
+                                                                },
+                                                   },
+                                                   cancellationToken)
+                         .ConfigureAwait(false);
+      await streamingCall.RequestStream.CompleteAsync()
+                         .ConfigureAwait(false);
+      return await streamingCall.ResponseAsync.ConfigureAwait(false);
+    }
+
+    // Call #1-4 without error
+    ex = null;
+    foreach (var _ in Enumerable.Range(0,
+                                       4))
+    {
+      Assert.AreEqual(noErrorReply,
+                      await createLargeTasks(10)
+                        .ConfigureAwait(false));
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await interceptor.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status);
+    }
+
+    // Call #5-8 with client error
+    /*
+    ex = new ArmoniKException("client error");
+    foreach (var i in Enumerable.Range(0,
+                                       4))
+    {
+      failAfter = i;
+      Assert.ThrowsAsync<RpcException>(() => createLargeTasks(10));
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await interceptor.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status);
+    }
+    */
+
+    // Call #9 with server error
+    ex        = new ApplicationException("server error");
+    failAfter = 0;
+    Assert.ThrowsAsync<RpcException>(() => createLargeTasks(10));
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+    // Call #10 with server error
+    ex        = new ApplicationException("server error");
+    failAfter = 1;
+    Assert.ThrowsAsync<RpcException>(() => createLargeTasks(10));
     Assert.AreNotEqual(HealthStatus.Healthy,
                        (await interceptor.Check(HealthCheckTag.Liveness)
                                          .ConfigureAwait(false)).Status);
