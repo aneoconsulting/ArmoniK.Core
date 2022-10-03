@@ -119,7 +119,9 @@ public class ConnectionAmqp : IConnectionAmqp
       catch
       {
         logger_.LogInformation("Retrying to create connection");
-        Thread.Sleep(1000 * retry);
+        await Task.Delay(1000 * retry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
       }
     }
 
