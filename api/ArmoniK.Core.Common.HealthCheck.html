@@ -73,7 +73,9 @@
   
   <h1 id="ArmoniK_Core_Common_HealthCheck" data-uid="ArmoniK.Core.Common.HealthCheck" class="text-break">Class HealthCheck
   </h1>
-  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 summary"><p>Implementation of <see cref="!:IHealthCheck"></see> that manages FailureStatus and simplifies the implementation of Health
+Checks</p>
+</div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
@@ -93,11 +95,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_HealthCheck__ctor_ArmoniK_Core_Common_IHealthCheckProvider_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.HealthCheck.%23ctor(ArmoniK.Core.Common.IHealthCheckProvider%2CArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/HealthCheck.cs/#L41">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/HealthCheck.cs/#L50">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_HealthCheck__ctor_" data-uid="ArmoniK.Core.Common.HealthCheck.#ctor*"></a>
   <h4 id="ArmoniK_Core_Common_HealthCheck__ctor_ArmoniK_Core_Common_IHealthCheckProvider_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Common.HealthCheck.#ctor(ArmoniK.Core.Common.IHealthCheckProvider,ArmoniK.Core.Common.HealthCheckTag)">HealthCheck(IHealthCheckProvider, HealthCheckTag)</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Constructor that creates a HealthCheck from a <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
@@ -116,12 +119,14 @@
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></td>
         <td><span class="parametername">healthCheckProvider</span></td>
-        <td></td>
+        <td><p>Interface for classes that exposes a simplified Health Check</p>
+</td>
       </tr>
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.HealthCheckTag.html">HealthCheckTag</a></td>
         <td><span class="parametername">tag</span></td>
-        <td></td>
+        <td><p>Tag to filter which health check is executed</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -132,7 +137,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_HealthCheck_CheckHealthAsync_HealthCheckContext_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.HealthCheck.CheckHealthAsync(HealthCheckContext%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/HealthCheck.cs/#L51">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/HealthCheck.cs/#L60">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_HealthCheck_CheckHealthAsync_" data-uid="ArmoniK.Core.Common.HealthCheck.CheckHealthAsync*"></a>
   <h4 id="ArmoniK_Core_Common_HealthCheck_CheckHealthAsync_HealthCheckContext_CancellationToken_" data-uid="ArmoniK.Core.Common.HealthCheck.CheckHealthAsync(HealthCheckContext,CancellationToken)">CheckHealthAsync(HealthCheckContext, CancellationToken)</h4>
@@ -190,7 +195,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_HealthCheck.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.HealthCheck%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/HealthCheck.cs/#L35" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/HealthCheck.cs/#L39" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

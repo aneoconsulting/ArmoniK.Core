@@ -8313,19 +8313,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.Options.Components.AuthenticationStorage
   nameWithType: Components.AuthenticationStorage
-- uid: ArmoniK.Core.Common.Injection.Options.Components.LeaseProvider
-  name: LeaseProvider
-  href: api/ArmoniK.Core.Common.Injection.Options.Components.html#ArmoniK_Core_Common_Injection_Options_Components_LeaseProvider
-  commentId: P:ArmoniK.Core.Common.Injection.Options.Components.LeaseProvider
-  fullName: ArmoniK.Core.Common.Injection.Options.Components.LeaseProvider
-  nameWithType: Components.LeaseProvider
-- uid: ArmoniK.Core.Common.Injection.Options.Components.LeaseProvider*
-  name: LeaseProvider
-  href: api/ArmoniK.Core.Common.Injection.Options.Components.html#ArmoniK_Core_Common_Injection_Options_Components_LeaseProvider_
-  commentId: Overload:ArmoniK.Core.Common.Injection.Options.Components.LeaseProvider
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Injection.Options.Components.LeaseProvider
-  nameWithType: Components.LeaseProvider
 - uid: ArmoniK.Core.Common.Injection.Options.Components.ObjectStorage
   name: ObjectStorage
   href: api/ArmoniK.Core.Common.Injection.Options.Components.html#ArmoniK_Core_Common_Injection_Options_Components_ObjectStorage

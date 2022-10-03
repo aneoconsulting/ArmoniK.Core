@@ -73,7 +73,8 @@
   
   <h1 id="ArmoniK_Core_Common_Utils_LocalIPv4" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4" class="text-break">Class LocalIPv4
   </h1>
-  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 summary"><p>Helper to get local IP address.</p>
+</div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
@@ -93,15 +94,16 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_NetworkInterfaceType_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/LocalIPv4.cs/#L34">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/LocalIPv4.cs/#L48">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4*"></a>
   <h4 id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_NetworkInterfaceType_" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)">GetLocalIPv4(NetworkInterfaceType)</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Get local IP from a network interface.</p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static string GetLocalIPv4(NetworkInterfaceType _type)</code></pre>
+    <pre><code class="lang-csharp hljs">public static string GetLocalIPv4(NetworkInterfaceType type)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -115,8 +117,9 @@
     <tbody>
       <tr>
         <td><span class="xref">NetworkInterfaceType</span></td>
-        <td><span class="parametername">_type</span></td>
-        <td></td>
+        <td><span class="parametername">type</span></td>
+        <td><p>Interface type from which to get the IP.</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -131,6 +134,22 @@
     <tbody>
       <tr>
         <td><span class="xref">System.String</span></td>
+        <td><p><see cref="!:System.String"></see> representing the IP.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Exceptions.ArmoniKException.html">ArmoniKException</a></td>
         <td></td>
       </tr>
     </tbody>
@@ -140,11 +159,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/LocalIPv4.cs/#L60">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/LocalIPv4.cs/#L80">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet_" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet*"></a>
   <h4 id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet">GetLocalIPv4Ethernet()</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Get local IP from Ethernet network interface.</p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
@@ -161,7 +181,8 @@
     <tbody>
       <tr>
         <td><span class="xref">System.String</span></td>
-        <td></td>
+        <td><p><see cref="!:System.String"></see> representing the IP.</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -176,7 +197,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Utils_LocalIPv4.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Utils.LocalIPv4%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/LocalIPv4.cs/#L32" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/LocalIPv4.cs/#L37" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

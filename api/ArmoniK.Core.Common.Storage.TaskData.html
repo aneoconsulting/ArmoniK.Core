@@ -73,7 +73,8 @@
   
   <h1 id="ArmoniK_Core_Common_Storage_TaskData" data-uid="ArmoniK.Core.Common.Storage.TaskData" class="text-break">Class TaskData
   </h1>
-  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 summary"><p>Task metadata stored in database</p>
+</div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
@@ -97,11 +98,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_ArmoniK_Core_Common_Storage_TaskOptions_ArmoniK_Core_Common_Storage_Output_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.%23ctor(System.String%2CSystem.String%2CSystem.String%2CSystem.String%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CTaskStatus%2CArmoniK.Core.Common.Storage.TaskOptions%2CArmoniK.Core.Common.Storage.Output)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L54">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L101">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData__ctor_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_ArmoniK_Core_Common_Storage_TaskOptions_ArmoniK_Core_Common_Storage_Output_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,ArmoniK.Core.Common.Storage.TaskOptions,ArmoniK.Core.Common.Storage.Output)">TaskData(String, String, String, String, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, TaskStatus, TaskOptions, Output)</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Initializes task metadata with specified fields</p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
@@ -120,57 +122,70 @@
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">sessionId</span></td>
-        <td></td>
+        <td><p>Unique identifier of the session in which the task belongs</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">taskId</span></td>
-        <td></td>
+        <td><p>Unique identifier of the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">ownerPodId</span></td>
-        <td></td>
+        <td><p>Identifier of the polling agent running the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">payloadId</span></td>
-        <td></td>
+        <td><p>Unique identifier of the payload in input of the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">parentTaskIds</span></td>
-        <td></td>
+        <td><p>Unique identifiers of the tasks that submitted the current task up to the session id which
+represents a submission from the client</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">dataDependencies</span></td>
-        <td></td>
+        <td><p>Unique identifiers of the results the task depends on</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">expectedOutputIds</span></td>
-        <td></td>
+        <td><p>Identifiers of the outputs the task should produce or should transmit the
+responsibility to produce</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">retryOfIds</span></td>
-        <td></td>
+        <td><p>List of previous tasks ids before the current retry</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">TaskStatus</span></td>
         <td><span class="parametername">status</span></td>
-        <td></td>
+        <td><p>Current status of the task</p>
+</td>
       </tr>
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskOptions.html">TaskOptions</a></td>
         <td><span class="parametername">options</span></td>
-        <td></td>
+        <td><p>Task options</p>
+</td>
       </tr>
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.Storage.Output.html">Output</a></td>
         <td><span class="parametername">output</span></td>
-        <td></td>
+        <td><p>Output of the task after its successful completion</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -179,11 +194,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__System_String_IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__ArmoniK_Core_Common_Storage_Output_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.%23ctor(System.String%2CSystem.String%2CSystem.String%2CSystem.String%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CSystem.String%2CIList%7BSystem.String%7D%2CTaskStatus%2CSystem.String%2CArmoniK.Core.Common.Storage.TaskOptions%2CDateTime%2CSystem.Nullable%7BDateTime%7D%2CSystem.Nullable%7BDateTime%7D%2CSystem.Nullable%7BDateTime%7D%2CSystem.Nullable%7BDateTime%7D%2CArmoniK.Core.Common.Storage.Output)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L35">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L62">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData__ctor_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__System_String_IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__ArmoniK_Core_Common_Storage_Output_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},System.String,IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},ArmoniK.Core.Common.Storage.Output)">TaskData(String, String, String, String, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, String, IList&lt;String&gt;, TaskStatus, String, TaskOptions, DateTime, Nullable&lt;DateTime&gt;, Nullable&lt;DateTime&gt;, Nullable&lt;DateTime&gt;, Nullable&lt;DateTime&gt;, Output)</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Task metadata stored in database</p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
@@ -202,92 +218,112 @@
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">SessionId</span></td>
-        <td></td>
+        <td><p>Unique identifier of the session in which the task belongs</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">TaskId</span></td>
-        <td></td>
+        <td><p>Unique identifier of the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">OwnerPodId</span></td>
-        <td></td>
+        <td><p>Identifier of the polling agent running the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">PayloadId</span></td>
-        <td></td>
+        <td><p>Unique identifier of the payload in input of the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">ParentTaskIds</span></td>
-        <td></td>
+        <td><p>Unique identifiers of the tasks that submitted the current task up to the session id which
+represents a submission from the client</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">DataDependencies</span></td>
-        <td></td>
+        <td><p>Unique identifiers of the results the task depends on</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">ExpectedOutputIds</span></td>
-        <td></td>
+        <td><p>Identifiers of the outputs the task should produce or should transmit the
+responsibility to produce</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">InitialTaskId</span></td>
-        <td></td>
+        <td><p>Task id before retry</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
         <td><span class="parametername">RetryOfIds</span></td>
-        <td></td>
+        <td><p>List of previous tasks ids before the current retry</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">TaskStatus</span></td>
         <td><span class="parametername">Status</span></td>
-        <td></td>
+        <td><p>Current status of the task</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">StatusMessage</span></td>
-        <td></td>
+        <td><p>Message associated to the status</p>
+</td>
       </tr>
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskOptions.html">TaskOptions</a></td>
         <td><span class="parametername">Options</span></td>
-        <td></td>
+        <td><p>Task options</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">DateTime</span></td>
         <td><span class="parametername">CreationDate</span></td>
-        <td></td>
+        <td><p>Date when the task is created</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">SubmittedDate</span></td>
-        <td></td>
+        <td><p>Date when the task is submitted</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">StartDate</span></td>
-        <td></td>
+        <td><p>Date when the task execution begins</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">EndDate</span></td>
-        <td></td>
+        <td><p>Date when the task ends</p>
+</td>
       </tr>
       <tr>
         <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">PodTtl</span></td>
-        <td></td>
+        <td><p>Task Time To Live on the current pod</p>
+</td>
       </tr>
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.Storage.Output.html">Output</a></td>
         <td><span class="parametername">Output</span></td>
-        <td></td>
+        <td><p>Output of the task after its successful completion</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -298,7 +334,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_CreationDate.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.CreationDate%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L47">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L74">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_CreationDate_" data-uid="ArmoniK.Core.Common.Storage.TaskData.CreationDate*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_CreationDate" data-uid="ArmoniK.Core.Common.Storage.TaskData.CreationDate">CreationDate</h4>
@@ -328,7 +364,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_DataDependencies.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.DataDependencies%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L40">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L67">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_DataDependencies_" data-uid="ArmoniK.Core.Common.Storage.TaskData.DataDependencies*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_DataDependencies" data-uid="ArmoniK.Core.Common.Storage.TaskData.DataDependencies">DataDependencies</h4>
@@ -358,7 +394,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_EndDate.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.EndDate%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L50">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L77">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_EndDate_" data-uid="ArmoniK.Core.Common.Storage.TaskData.EndDate*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_EndDate" data-uid="ArmoniK.Core.Common.Storage.TaskData.EndDate">EndDate</h4>
@@ -388,7 +424,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_ExpectedOutputIds.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L41">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L68">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_ExpectedOutputIds_" data-uid="ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_ExpectedOutputIds" data-uid="ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds">ExpectedOutputIds</h4>
@@ -418,7 +454,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_InitialTaskId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.InitialTaskId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L42">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L69">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_InitialTaskId_" data-uid="ArmoniK.Core.Common.Storage.TaskData.InitialTaskId*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_InitialTaskId" data-uid="ArmoniK.Core.Common.Storage.TaskData.InitialTaskId">InitialTaskId</h4>
@@ -448,7 +484,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_Options.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.Options%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L46">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L73">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_Options_" data-uid="ArmoniK.Core.Common.Storage.TaskData.Options*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_Options" data-uid="ArmoniK.Core.Common.Storage.TaskData.Options">Options</h4>
@@ -478,7 +514,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_Output.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.Output%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L52">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L79">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_Output_" data-uid="ArmoniK.Core.Common.Storage.TaskData.Output*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_Output" data-uid="ArmoniK.Core.Common.Storage.TaskData.Output">Output</h4>
@@ -508,7 +544,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_OwnerPodId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.OwnerPodId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L37">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L64">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_OwnerPodId_" data-uid="ArmoniK.Core.Common.Storage.TaskData.OwnerPodId*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_OwnerPodId" data-uid="ArmoniK.Core.Common.Storage.TaskData.OwnerPodId">OwnerPodId</h4>
@@ -538,7 +574,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_ParentTaskIds.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L39">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L66">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_ParentTaskIds_" data-uid="ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_ParentTaskIds" data-uid="ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds">ParentTaskIds</h4>
@@ -568,7 +604,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_PayloadId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.PayloadId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L38">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L65">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_PayloadId_" data-uid="ArmoniK.Core.Common.Storage.TaskData.PayloadId*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_PayloadId" data-uid="ArmoniK.Core.Common.Storage.TaskData.PayloadId">PayloadId</h4>
@@ -598,7 +634,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_PodTtl.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.PodTtl%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L51">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L78">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_PodTtl_" data-uid="ArmoniK.Core.Common.Storage.TaskData.PodTtl*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_PodTtl" data-uid="ArmoniK.Core.Common.Storage.TaskData.PodTtl">PodTtl</h4>
@@ -628,7 +664,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_RetryOfIds.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.RetryOfIds%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L43">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L70">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_RetryOfIds_" data-uid="ArmoniK.Core.Common.Storage.TaskData.RetryOfIds*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_RetryOfIds" data-uid="ArmoniK.Core.Common.Storage.TaskData.RetryOfIds">RetryOfIds</h4>
@@ -658,7 +694,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_SessionId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.SessionId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L35">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L62">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_SessionId_" data-uid="ArmoniK.Core.Common.Storage.TaskData.SessionId*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_SessionId" data-uid="ArmoniK.Core.Common.Storage.TaskData.SessionId">SessionId</h4>
@@ -688,7 +724,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_StartDate.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.StartDate%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L49">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L76">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_StartDate_" data-uid="ArmoniK.Core.Common.Storage.TaskData.StartDate*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_StartDate" data-uid="ArmoniK.Core.Common.Storage.TaskData.StartDate">StartDate</h4>
@@ -718,7 +754,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_Status.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.Status%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L44">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L71">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_Status_" data-uid="ArmoniK.Core.Common.Storage.TaskData.Status*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_Status" data-uid="ArmoniK.Core.Common.Storage.TaskData.Status">Status</h4>
@@ -748,7 +784,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_StatusMessage.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.StatusMessage%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L45">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L72">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_StatusMessage_" data-uid="ArmoniK.Core.Common.Storage.TaskData.StatusMessage*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_StatusMessage" data-uid="ArmoniK.Core.Common.Storage.TaskData.StatusMessage">StatusMessage</h4>
@@ -778,7 +814,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_SubmittedDate.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.SubmittedDate%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L48">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L75">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_SubmittedDate_" data-uid="ArmoniK.Core.Common.Storage.TaskData.SubmittedDate*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_SubmittedDate" data-uid="ArmoniK.Core.Common.Storage.TaskData.SubmittedDate">SubmittedDate</h4>
@@ -808,7 +844,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_TaskId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.TaskId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L36">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L63">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_TaskId_" data-uid="ArmoniK.Core.Common.Storage.TaskData.TaskId*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_TaskId" data-uid="ArmoniK.Core.Common.Storage.TaskData.TaskId">TaskId</h4>
@@ -840,11 +876,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_op_Implicit_ArmoniK_Core_Common_Storage_TaskData__Task.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~Task%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L127">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L189">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_op_Implicit_" data-uid="ArmoniK.Core.Common.Storage.TaskData.op_Implicit*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_op_Implicit_ArmoniK_Core_Common_Storage_TaskData__Task" data-uid="ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~Task">Implicit(TaskData to Task)</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Conversion operator from <a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a> to <see cref="!:Task"></see></p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
@@ -863,7 +900,8 @@
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a></td>
         <td><span class="parametername">taskData</span></td>
-        <td></td>
+        <td><p>The input task data</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -878,7 +916,8 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span></td>
-        <td></td>
+        <td><p>The converted task data</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -887,11 +926,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData_op_Implicit_ArmoniK_Core_Common_Storage_TaskData__TaskRaw.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~TaskRaw%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L86">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L141">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData_op_Implicit_" data-uid="ArmoniK.Core.Common.Storage.TaskData.op_Implicit*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskData_op_Implicit_ArmoniK_Core_Common_Storage_TaskData__TaskRaw" data-uid="ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~TaskRaw">Implicit(TaskData to TaskRaw)</h4>
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Conversion operator from <a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a> to <see cref="!:TaskRaw"></see></p>
+</div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
@@ -910,7 +950,8 @@
       <tr>
         <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a></td>
         <td><span class="parametername">taskData</span></td>
-        <td></td>
+        <td><p>The input task data</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -925,7 +966,8 @@
     <tbody>
       <tr>
         <td><span class="xref">TaskRaw</span></td>
-        <td></td>
+        <td><p>The converted task data</p>
+</td>
       </tr>
     </tbody>
   </table>
@@ -944,7 +986,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L35" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskData.cs/#L62" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
