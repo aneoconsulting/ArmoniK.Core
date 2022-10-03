@@ -25,6 +25,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
@@ -35,6 +36,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
@@ -57,7 +59,7 @@ public static class Program
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Compute.PollingAgent");
 
-  public static int Main(string[] args)
+  public static async Task<int> Main(string[] args)
   {
     var builder = WebApplication.CreateBuilder(args);
 
@@ -161,7 +163,12 @@ public static class Program
                                                                    .TaskProcessing));
                        });
 
-      app.Run();
+      var pushQueueStorage = app.Services.GetRequiredService<IPushQueueStorage>();
+      await pushQueueStorage.Init(CancellationToken.None)
+                            .ConfigureAwait(false);
+
+      await app.RunAsync()
+               .ConfigureAwait(false);
       return 0;
     }
     catch (Exception ex)

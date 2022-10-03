@@ -22,32 +22,58 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
+using Amqp.Framing;
 
+using ArmoniK.Core.Common;
+
+using JetBrains.Annotations;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
+[UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly ILogger logger_;
+  private readonly ILogger<ConnectionAmqp> logger_;
+  private readonly Options.Amqp            options_;
+  private          bool                    isInitialized_;
 
-  private readonly Options.Amqp options_;
-
-  public ConnectionAmqp(Options.Amqp options,
-                        ILogger      logger)
+  public ConnectionAmqp(Options.Amqp            options,
+                        ILogger<ConnectionAmqp> logger)
   {
-    logger_  = logger;
     options_ = options;
+    logger_  = logger;
   }
 
-  public Connection? Connection { get; set; }
+  public Connection? Connection { get; private set; }
 
-  public async Task<IConnectionAmqp> OpenConnectionAsync()
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (!isInitialized_)
+    {
+      return Task.FromResult(tag != HealthCheckTag.Liveness
+                               ? HealthCheckResult.Degraded($"{nameof(ConnectionAmqp)} is not yet initialized.")
+                               : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} is not yet initialized."));
+    }
+
+    if (Connection is null || Connection.ConnectionState != ConnectionState.Opened)
+    {
+      return Task.FromResult(HealthCheckResult.Unhealthy("Amqp connection dropped."));
+    }
+
+    return Task.FromResult(HealthCheckResult.Healthy());
+  }
+
+  public async Task Init(CancellationToken cancellationToken)
   {
     logger_.LogInformation("Get address for session");
     var address = new Address(options_.Host,
@@ -77,9 +103,46 @@ public class ConnectionAmqp : IConnectionAmqp
                                                                   };
     }
 
-    Connection = await connectionFactory.CreateAsync(address)
-                                        .ConfigureAwait(false);
+    var retry = 0;
+    for (; retry < options_.MaxRetries; retry++)
+    {
+      try
+      {
+        Connection = await connectionFactory.CreateAsync(address)
+                                            .ConfigureAwait(false);
+        Connection.AddClosedCallback((x,
+                                      e) => OnCloseConnection(x,
+                                                              e,
+                                                              logger_));
+        break;
+      }
+      catch
+      {
+        logger_.LogInformation("Retrying to create connection");
+        Thread.Sleep(1000 * retry);
+      }
+    }
 
-    return this;
+    if (retry == options_.MaxRetries)
+    {
+      throw new TimeoutException($"{nameof(options_.MaxRetries)} reached");
+    }
+
+    isInitialized_ = true;
+  }
+
+  private static void OnCloseConnection(IAmqpObject sender,
+                                        Error?      error,
+                                        ILogger     logger)
+  {
+    if (error == null)
+    {
+      logger.LogInformation("AMQP Connection closed with no error");
+    }
+    else
+    {
+      logger.LogWarning("AMQP Connection closed with error: {0}",
+                        error.ToString());
+    }
   }
 }
