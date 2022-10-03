@@ -594,6 +594,119 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
 
+  healthCheckTest:
+    needs:
+      - versionning
+      - buildImages
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
+          pip install awscli
+
+      - name: Docker compose up
+        run: |
+          export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
+          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
+          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
+          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
+          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
+          export LOGGING_LEVEL=Information
+          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml --compatibility up -d --build --force-recreate --remove-orphans
+          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
+          sleep 10
+          ls -la docker-compose/logs/*.json
+
+      - name: Run HtcMock test
+        timeout-minutes: 10
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=3 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+          ls -la docker-compose/logs/*.json
+
+      - name: Health Check Test when database is down
+        timeout-minutes: 10
+        run: |
+          set -e
+          bash tools/test_healthcheck.sh database
+
+      - name: Run HtcMock test
+        timeout-minutes: 10
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=3 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+          ls -la docker-compose/logs/*.json
+
+
+      - name: Health Check Test when queue is down
+        timeout-minutes: 10
+        run: |
+          set -e
+          bash tools/test_healthcheck.sh queue
+
+      - name: Run HtcMock test
+        timeout-minutes: 10
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=3 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+          ls -la docker-compose/logs/*.json
+
+
+      - name: Health Check Test when object is down
+        timeout-minutes: 10
+        run: |
+          set -e
+          bash tools/test_healthcheck.sh object
+
+      - name: Run HtcMock test
+        timeout-minutes: 10
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=3 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+          ls -la docker-compose/logs/*.json
+
+      - name: Show logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
+
+
 
   canMerge:
     needs:
