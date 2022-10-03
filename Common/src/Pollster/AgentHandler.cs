@@ -121,6 +121,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     }
   }
 
+  /// <inheritdoc />
   public async Task<IAgent> Start(string            token,
                                   ILogger           logger,
                                   SessionData       sessionData,
@@ -149,6 +150,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     }
   }
 
+  /// <inheritdoc />
   public async Task Stop(CancellationToken cancellationToken)
   {
     try
@@ -164,6 +166,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     }
   }
 
+  /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
     await app_.DisposeAsync()

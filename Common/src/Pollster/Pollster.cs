@@ -61,6 +61,7 @@ public class Pollster : IInitializable
   private readonly ITaskProcessingChecker     taskProcessingChecker_;
   private readonly ITaskTable                 taskTable_;
   private readonly IWorkerStreamHandler       workerStreamHandler_;
+  private          bool                       endLoopReached_;
   private          HealthCheckResult?         healthCheckFailedResult_;
   public           string                     TaskProcessing;
 
@@ -135,6 +136,11 @@ public class Pollster : IInitializable
     if (healthCheckFailedResult_ is not null)
     {
       return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
+    }
+
+    if (endLoopReached_)
+    {
+      return HealthCheckResult.Unhealthy("End of main loop reached, no more tasks will be executed.");
     }
 
     var checks = new List<Task<HealthCheckResult>>
@@ -334,6 +340,7 @@ public class Pollster : IInitializable
     finally
     {
       logger_.LogWarning("End of Pollster main loop");
+      endLoopReached_ = true;
     }
   }
 

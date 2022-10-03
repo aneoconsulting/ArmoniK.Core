@@ -29,8 +29,14 @@ using FluentValidation;
 
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
+/// <summary>
+///   Validator for <see cref="CreateSmallTaskRequest" />
+/// </summary>
 public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTaskRequest>
 {
+  /// <summary>
+  ///   Initializes a validator for <see cref="CreateSmallTaskRequest" />
+  /// </summary>
   public CreateSmallTaskRequestValidator()
   {
     RuleFor(r => r.SessionId)
@@ -46,8 +52,14 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
   }
 
 
+  /// <summary>
+  ///   Validator for <see cref="TaskRequest" />
+  /// </summary>
   public class TaskRequestValidator : AbstractValidator<TaskRequest>
   {
+    /// <summary>
+    ///   Initializes a validator for <see cref="TaskRequest" />
+    /// </summary>
     public TaskRequestValidator()
     {
       RuleFor(r => r.DataDependencies)
@@ -62,8 +74,14 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
   }
 }
 
+/// <summary>
+///   Validator for <see cref="CreateLargeTaskRequest" />
+/// </summary>
 public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTaskRequest>
 {
+  /// <summary>
+  ///   Initializes a validator for <see cref="CreateLargeTaskRequest" />
+  /// </summary>
   public CreateLargeTaskRequestValidator()
   {
     RuleFor(r => r.TypeCase)

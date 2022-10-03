@@ -36,6 +36,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
@@ -176,9 +177,16 @@ public static class Program
         app.MapGrpcReflectionService();
       }
 
-      var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      var sessionProvider      = app.Services.GetRequiredService<SessionProvider>();
+      var objectFactory        = app.Services.GetRequiredService<IObjectStorageFactory>();
+      var pushQueueStorage     = app.Services.GetRequiredService<IPushQueueStorage>();
+      var taskObjectFactory    = objectFactory.Init(CancellationToken.None);
+      var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
+
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
+      await taskObjectFactory.ConfigureAwait(false);
+      await taskPushQueueStorage.ConfigureAwait(false);
 
       await app.RunAsync()
                .ConfigureAwait(false);

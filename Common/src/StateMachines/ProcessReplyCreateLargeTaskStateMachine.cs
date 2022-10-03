@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,6 +27,7 @@ using System.Linq;
 using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +37,7 @@ using Stateless.Graph;
 namespace ArmoniK.Core.Common.StateMachines;
 
 /// <summary>
-///   Utility class for the Final State Machine from <see cref="ProcessReply.Types.CreateLargeTaskRequest" />
+///   Utility class for the Final State Machine from <see cref="CreateLargeTaskRequest" />
 /// </summary>
 public class ProcessReplyCreateLargeTaskStateMachine
 {
@@ -82,7 +83,7 @@ public class ProcessReplyCreateLargeTaskStateMachine
   public enum Triggers
   {
     /// <summary>
-    ///   Correspond to receive request <see cref="ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest" />
+    ///   Correspond to receive request <see cref="CreateLargeTaskRequest.TypeOneofCase.InitRequest" />
     /// </summary>
     InitRequest,
 

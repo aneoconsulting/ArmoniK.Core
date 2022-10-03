@@ -84,6 +84,8 @@ public class Agent : IAgent
     token_            = token;
   }
 
+  /// <inheritdoc />
+  /// <exception cref="ArmoniKException"></exception>
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(FinalizeTaskCreation),
@@ -108,6 +110,7 @@ public class Agent : IAgent
     }
   }
 
+  /// <inheritdoc />
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
@@ -272,6 +275,7 @@ public class Agent : IAgent
     return new CreateTaskReply();
   }
 
+  /// <inheritdoc />
   public async Task GetCommonData(DataRequest                    request,
                                   IServerStreamWriter<DataReply> responseStream,
                                   CancellationToken              cancellationToken)
@@ -311,6 +315,7 @@ public class Agent : IAgent
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task GetDirectData(DataRequest                    request,
                                   IServerStreamWriter<DataReply> responseStream,
                                   CancellationToken              cancellationToken)
@@ -351,6 +356,7 @@ public class Agent : IAgent
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task GetResourceData(DataRequest                    request,
                                     IServerStreamWriter<DataReply> responseStream,
                                     CancellationToken              cancellationToken)
@@ -448,6 +454,7 @@ public class Agent : IAgent
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
                                             CancellationToken          cancellationToken)
   {
@@ -559,6 +566,7 @@ public class Agent : IAgent
     return new ResultReply();
   }
 
+  /// <inheritdoc />
   public void Dispose()
   {
   }

@@ -26,13 +26,16 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 
 using FluentValidation;
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
-[UsedImplicitly]
+/// <summary>
+///   Validator for <see cref="ListSessionsRequest" />
+/// </summary>
 public class ListSessionsRequestValidator : AbstractValidator<ListSessionsRequest>
 {
+  /// <summary>
+  ///   Initializes a validator for <see cref="ListSessionsRequest" />
+  /// </summary>
   public ListSessionsRequestValidator()
   {
     RuleFor(request => request.Page)

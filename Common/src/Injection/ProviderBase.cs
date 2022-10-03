@@ -29,12 +29,20 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common.Injection;
 
+/// <summary>
+///   Implement a mechanism to initialize a class during its first access
+/// </summary>
+/// <typeparam name="T">Type of the class to initialize</typeparam>
 public abstract class ProviderBase<T> : IHealthCheckProvider
 {
   private readonly Func<Task<T>> builder_;
   private readonly object        lockObj_ = new();
   private          T?            object_;
 
+  /// <summary>
+  ///   Constructor of the provider with a method to initialize the class that will be provided.
+  /// </summary>
+  /// <param name="builder">Method to initialize the class that will be provided</param>
   protected ProviderBase(Func<Task<T>> builder)
     => builder_ = builder;
 
@@ -44,6 +52,14 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
 
+  /// <summary>
+  ///   Getter for the class to initialize.
+  ///   If the class is initialized, returns the class.
+  ///   If not, initializes the class then returns it.
+  /// </summary>
+  /// <returns>
+  ///   The initialized class
+  /// </returns>
   public T Get()
   {
     // Double null check to avoid the lock once initialization is finished

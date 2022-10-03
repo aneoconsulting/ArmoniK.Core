@@ -22,15 +22,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading.Tasks;
-
 using Amqp;
+
+using ArmoniK.Core.Common;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
-public interface IConnectionAmqp
+public interface IConnectionAmqp : IInitializable
 {
-  public Connection? Connection { get; set; }
-
-  Task<IConnectionAmqp> OpenConnectionAsync();
+  public Connection? Connection { get; }
 }

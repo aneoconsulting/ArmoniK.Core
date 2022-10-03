@@ -35,15 +35,16 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
+  private const   int             MaxInternalQueuePriority = 10;
+  public readonly IConnectionAmqp ConnectionAmqp;
 
-  public readonly int           NbLinks;
-  public readonly Options.Amqp? Options;
-  public readonly ISessionAmqp? SessionAmqp;
+  public readonly int          NbLinks;
+  public readonly Options.Amqp Options;
 
   public bool IsInitialized;
 
-  public QueueStorage(Options.Amqp options)
+  public QueueStorage(Options.Amqp    options,
+                      IConnectionAmqp connectionAmqp)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
@@ -87,37 +88,41 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.LinkCredit)} is 1.");
     }
 
-    Options     = options;
-    MaxPriority = options.MaxPriority;
-    PartitionId = options.PartitionId;
+    Options        = options;
+    ConnectionAmqp = connectionAmqp;
+    MaxPriority    = options.MaxPriority;
+    PartitionId    = options.PartitionId;
 
     NbLinks = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
   }
-
-  public QueueStorage(Options.Amqp options,
-                      ISessionAmqp sessionAmqp)
-    : this(options)
-    => SessionAmqp = sessionAmqp;
 
   /// <inheritdoc />
   public string PartitionId { get; }
 
   /// <inheritdoc />
-  public virtual Task Init(CancellationToken cancellationToken)
+  public virtual async Task Init(CancellationToken cancellationToken)
   {
+    await ConnectionAmqp.Init(cancellationToken)
+                        .ConfigureAwait(false);
+
     if (!IsInitialized)
     {
       IsInitialized = true;
     }
-
-    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(IsInitialized
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy());
+  {
+    if (!IsInitialized)
+    {
+      return Task.FromResult(tag != HealthCheckTag.Liveness
+                               ? HealthCheckResult.Degraded($"{nameof(QueueStorage)} is not yet initialized")
+                               : HealthCheckResult.Unhealthy($"{nameof(QueueStorage)} is not yet initialized"));
+    }
+
+    return Task.FromResult(HealthCheckResult.Healthy());
+  }
 
   /// <inheritdoc />
   public int MaxPriority { get; }

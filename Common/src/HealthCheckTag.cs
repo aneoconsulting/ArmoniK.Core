@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -24,9 +24,23 @@
 
 namespace ArmoniK.Core.Common;
 
+/// <summary>
+///   Tags to filter the kind of health check
+/// </summary>
 public enum HealthCheckTag
 {
+  /// <summary>
+  ///   For a health check that determines the status of a class exposing health check during its initialization.
+  /// </summary>
   Startup,
+
+  /// <summary>
+  ///   For a health check that determines the status of a class exposing health check during its execution.
+  /// </summary>
   Liveness,
+
+  /// <summary>
+  ///   For a health check that determines if a class exposing health check can accept workload.
+  /// </summary>
   Readiness,
 }

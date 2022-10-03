@@ -26,13 +26,16 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 using FluentValidation;
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
-[UsedImplicitly]
+/// <summary>
+///   Validator for <see cref="CreateSessionRequest" />
+/// </summary>
 public class CreateSessionRequestValidator : AbstractValidator<CreateSessionRequest>
 {
+  /// <summary>
+  ///   Initializes a validator for <see cref="CreateSessionRequest" />
+  /// </summary>
   public CreateSessionRequestValidator()
     => RuleFor(request => request.DefaultTaskOption)
        .SetValidator(new TaskOptionsValidator())

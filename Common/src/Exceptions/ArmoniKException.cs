@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,18 +27,33 @@ using System.Runtime.Serialization;
 
 namespace ArmoniK.Core.Common.Exceptions;
 
+/// <summary>
+///   Base exception for exceptions in ArmoniK core
+/// </summary>
 [Serializable]
 public class ArmoniKException : Exception
 {
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="ArmoniKException" />
+  /// </summary>
   public ArmoniKException()
   {
   }
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="ArmoniKException" /> with the specified error message
+  /// </summary>
+  /// <param name="message">The error message</param>
   public ArmoniKException(string message)
     : base(message)
   {
   }
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="ArmoniKException" /> with the specified error message and an exception
+  /// </summary>
+  /// <param name="message">The error message</param>
+  /// <param name="innerException">The inner exception that triggered this exception</param>
   public ArmoniKException(string    message,
                           Exception innerException)
     : base(message,
@@ -46,6 +61,11 @@ public class ArmoniKException : Exception
   {
   }
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="ArmoniKException" /> with serialized data
+  /// </summary>
+  /// <param name="info">Information for the perform the serialization</param>
+  /// <param name="context">Context passed to the Stream</param>
   protected ArmoniKException(SerializationInfo info,
                              StreamingContext  context)
     : base(info,

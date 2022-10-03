@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,6 +27,7 @@ using System.Linq;
 using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 
 using Microsoft.Extensions.Logging;
 
@@ -45,13 +46,44 @@ public class ComputeRequestStateMachine
   /// </summary>
   public enum State
   {
+    /// <summary>
+    ///   Initial state of the Final State Machine.
+    /// </summary>
     Init,
+
+    /// <summary>
+    ///   State after receiving <see cref="Triggers.InitRequest" />.
+    /// </summary>
     InitRequest,
+
+    /// <summary>
+    ///   State when receiving payload chunk.
+    /// </summary>
     PayloadData,
+
+    /// <summary>
+    ///   State after reception of the last payload chunk.
+    /// </summary>
     PayloadComplete,
+
+    /// <summary>
+    ///   State for initiating the reception of the data for a data dependency.
+    /// </summary>
     DataInit,
+
+    /// <summary>
+    ///   State when receiving the last data chunk of the given data dependency.
+    /// </summary>
     DataComplete,
+
+    /// <summary>
+    ///   State when receiving a data chunk.
+    /// </summary>
     Data,
+
+    /// <summary>
+    ///   State when receiving the last data dependency.
+    /// </summary>
     DataLast,
   }
 

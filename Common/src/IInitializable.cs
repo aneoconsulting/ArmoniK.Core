@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,7 +27,17 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common;
 
+/// <summary>
+///   Represents a class initializable through the given method and exposes a health check.
+/// </summary>
 public interface IInitializable : IHealthCheckProvider
 {
+  /// <summary>
+  ///   Executes an initialization process for the class
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   Task Init(CancellationToken cancellationToken);
 }

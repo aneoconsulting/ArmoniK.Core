@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,16 +27,30 @@ using System.Net.Sockets;
 
 using ArmoniK.Core.Common.Exceptions;
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Core.Common.Utils;
 
+/// <summary>
+///   Helper to get local IP address.
+/// </summary>
+[PublicAPI]
 public class LocalIPv4
 {
-  public static string GetLocalIPv4(NetworkInterfaceType _type)
+  /// <summary>
+  ///   Get local IP from a network interface.
+  /// </summary>
+  /// <param name="type">Interface type from which to get the IP.</param>
+  /// <returns>
+  ///   <see cref="string" /> representing the IP.
+  /// </returns>
+  /// <exception cref="ArmoniKException"></exception>
+  public static string GetLocalIPv4(NetworkInterfaceType type)
   {
     var output = "";
     foreach (var item in NetworkInterface.GetAllNetworkInterfaces())
     {
-      if (item.NetworkInterfaceType == _type && item.OperationalStatus == OperationalStatus.Up)
+      if (item.NetworkInterfaceType == type && item.OperationalStatus == OperationalStatus.Up)
       {
         foreach (var ip in item.GetIPProperties()
                                .UnicastAddresses)
@@ -57,6 +71,12 @@ public class LocalIPv4
     return output;
   }
 
+  /// <summary>
+  ///   Get local IP from Ethernet network interface.
+  /// </summary>
+  /// <returns>
+  ///   <see cref="string" /> representing the IP.
+  /// </returns>
   public static string GetLocalIPv4Ethernet()
     => GetLocalIPv4(NetworkInterfaceType.Ethernet);
 }

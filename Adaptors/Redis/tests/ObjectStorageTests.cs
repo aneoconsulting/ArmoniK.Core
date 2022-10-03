@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -43,6 +44,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
   public override void TearDown()
   {
     redis_?.Dispose();
+    redis_        = null;
     ObjectStorage = null;
     RunTests      = false;
   }
@@ -51,7 +53,8 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
   public override void GetObjectStorageInstance()
   {
-    redis_ = new RedisInside.Redis();
+    redis_ = new RedisInside.Redis(configuration => configuration.Port(Random.Shared.Next(1000,
+                                                                                          2000)));
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -37,6 +37,7 @@ namespace ArmoniK.Core.Common.gRPC.Validators;
 public class TaskFilterValidator : AbstractValidator<TaskFilter>
 {
   /// <summary>
+  ///   Initializes a validator for <see cref="TaskFilter" />
   ///   Either filter on task id or session id.
   ///   The one selected should not be empty
   ///   Filter on Status is not mandatory but the one selected has to have at least one element
