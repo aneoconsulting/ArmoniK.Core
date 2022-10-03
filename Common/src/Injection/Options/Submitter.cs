@@ -33,5 +33,5 @@ public class Submitter
   /// <summary>
   ///   Specify the maximum number of errors a submitter can encounter before being considered unhealthy
   /// </summary>
-  public int maxErrorAllowed { get; set; } = 5;
+  public int MaxErrorAllowed { get; set; } = 5;
 }

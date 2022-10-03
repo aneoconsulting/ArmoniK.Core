@@ -106,6 +106,10 @@ public class Pollster : IInitializable
     Failed                 = false;
   }
 
+  /// <summary>
+  ///   Is true when the MainLoop exited with an error
+  ///   Used in Unit tests
+  /// </summary>
   public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -302,7 +306,7 @@ public class Pollster : IInitializable
             }
           }
         }
-        catch (TooManyException e)
+        catch (TooManyException)
         {
           // This exception should not be caught here
           throw;
