@@ -28,8 +28,14 @@ using FluentValidation;
 
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
+/// <summary>
+///   Validator for <see cref="TaskOptions" />
+/// </summary>
 public class TaskOptionsValidator : AbstractValidator<TaskOptions>
 {
+  /// <summary>
+  ///   Initializes a validator for <see cref="TaskOptions" />
+  /// </summary>
   public TaskOptionsValidator()
   {
     RuleFor(o => o.MaxRetries)

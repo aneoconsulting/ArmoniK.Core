@@ -24,9 +24,18 @@
 
 namespace ArmoniK.Core.Common.Injection.Options;
 
+/// <summary>
+///   Configuration for <see cref="gRPC.Services.Submitter" />.
+/// </summary>
 public class Submitter
 {
+  /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
   public const string SettingSection = nameof(Submitter);
 
+  /// <summary>
+  ///   Name of the default partition in which submit tasks
+  /// </summary>
   public string DefaultPartition { get; set; } = string.Empty;
 }

@@ -32,6 +32,33 @@ using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Task metadata stored in database
+/// </summary>
+/// <param name="SessionId">Unique identifier of the session in which the task belongs</param>
+/// <param name="TaskId">Unique identifier of the task</param>
+/// <param name="OwnerPodId">Identifier of the polling agent running the task</param>
+/// <param name="PayloadId">Unique identifier of the payload in input of the task</param>
+/// <param name="ParentTaskIds">
+///   Unique identifiers of the tasks that submitted the current task up to the session id which
+///   represents a submission from the client
+/// </param>
+/// <param name="DataDependencies">Unique identifiers of the results the task depends on</param>
+/// <param name="ExpectedOutputIds">
+///   Identifiers of the outputs the task should produce or should transmit the
+///   responsibility to produce
+/// </param>
+/// <param name="InitialTaskId">Task id before retry</param>
+/// <param name="RetryOfIds">List of previous tasks ids before the current retry</param>
+/// <param name="Status">Current status of the task</param>
+/// <param name="StatusMessage">Message associated to the status</param>
+/// <param name="Options">Task options</param>
+/// <param name="CreationDate">Date when the task is created</param>
+/// <param name="SubmittedDate">Date when the task is submitted</param>
+/// <param name="StartDate">Date when the task execution begins</param>
+/// <param name="EndDate">Date when the task ends</param>
+/// <param name="PodTtl">Task Time To Live on the current pod</param>
+/// <param name="Output">Output of the task after its successful completion</param>
 public record TaskData(string        SessionId,
                        string        TaskId,
                        string        OwnerPodId,
@@ -51,6 +78,26 @@ public record TaskData(string        SessionId,
                        DateTime?     PodTtl,
                        Output        Output)
 {
+  /// <summary>
+  ///   Initializes task metadata with specified fields
+  /// </summary>
+  /// <param name="sessionId">Unique identifier of the session in which the task belongs</param>
+  /// <param name="taskId">Unique identifier of the task</param>
+  /// <param name="ownerPodId">Identifier of the polling agent running the task</param>
+  /// <param name="payloadId">Unique identifier of the payload in input of the task</param>
+  /// <param name="parentTaskIds">
+  ///   Unique identifiers of the tasks that submitted the current task up to the session id which
+  ///   represents a submission from the client
+  /// </param>
+  /// <param name="dataDependencies">Unique identifiers of the results the task depends on</param>
+  /// <param name="expectedOutputIds">
+  ///   Identifiers of the outputs the task should produce or should transmit the
+  ///   responsibility to produce
+  /// </param>
+  /// <param name="retryOfIds">List of previous tasks ids before the current retry</param>
+  /// <param name="status">Current status of the task</param>
+  /// <param name="options">Task options</param>
+  /// <param name="output">Output of the task after its successful completion</param>
   public TaskData(string        sessionId,
                   string        taskId,
                   string        ownerPodId,
@@ -83,6 +130,14 @@ public record TaskData(string        SessionId,
   {
   }
 
+
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskRaw" />
+  /// </summary>
+  /// <param name="taskData">The input task data</param>
+  /// <returns>
+  ///   The converted task data
+  /// </returns>
   public static implicit operator TaskRaw(TaskData taskData)
     => new()
        {
@@ -124,6 +179,13 @@ public record TaskData(string        SessionId,
                          : null,
        };
 
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskData" /> to <see cref="Task" />
+  /// </summary>
+  /// <param name="taskData">The input task data</param>
+  /// <returns>
+  ///   The converted task data
+  /// </returns>
   public static implicit operator Task(TaskData taskData)
     => new()
        {
