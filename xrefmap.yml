@@ -6206,6 +6206,105 @@ references:
   commentId: N:ArmoniK.Core.Common.gRPC
   fullName: ArmoniK.Core.Common.gRPC
   nameWithType: ArmoniK.Core.Common.gRPC
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor
+  name: ExceptionInterceptor
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html
+  commentId: T:ArmoniK.Core.Common.gRPC.ExceptionInterceptor
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor
+  nameWithType: ExceptionInterceptor
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.#ctor(ArmoniK.Core.Common.Injection.Options.Submitter,ILogger{ArmoniK.Core.Common.gRPC.ExceptionInterceptor})
+  name: ExceptionInterceptor(Submitter, ILogger<ExceptionInterceptor>)
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor__ctor_ArmoniK_Core_Common_Injection_Options_Submitter_ILogger_ArmoniK_Core_Common_gRPC_ExceptionInterceptor__
+  commentId: M:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.#ctor(ArmoniK.Core.Common.Injection.Options.Submitter,ILogger{ArmoniK.Core.Common.gRPC.ExceptionInterceptor})
+  name.vb: ExceptionInterceptor(Submitter, ILogger(Of ExceptionInterceptor))
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ExceptionInterceptor(ArmoniK.Core.Common.Injection.Options.Submitter, ILogger<ArmoniK.Core.Common.gRPC.ExceptionInterceptor>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ExceptionInterceptor(ArmoniK.Core.Common.Injection.Options.Submitter, ILogger(Of ArmoniK.Core.Common.gRPC.ExceptionInterceptor))
+  nameWithType: ExceptionInterceptor.ExceptionInterceptor(Submitter, ILogger<ExceptionInterceptor>)
+  nameWithType.vb: ExceptionInterceptor.ExceptionInterceptor(Submitter, ILogger(Of ExceptionInterceptor))
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.#ctor*
+  name: ExceptionInterceptor
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ExceptionInterceptor
+  nameWithType: ExceptionInterceptor.ExceptionInterceptor
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: ExceptionInterceptor.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_Check_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.Check
+  nameWithType: ExceptionInterceptor.Check
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler*
+  name: ClientStreamingServerHandler
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ClientStreamingServerHandler_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler
+  nameWithType: ExceptionInterceptor.ClientStreamingServerHandler
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler``2(IAsyncStreamReader{``0},ServerCallContext,ClientStreamingServerMethod{``0,``1})
+  name: ClientStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>, ServerCallContext, ClientStreamingServerMethod<TRequest, TResponse>)
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ClientStreamingServerHandler__2_IAsyncStreamReader___0__ServerCallContext_ClientStreamingServerMethod___0___1__
+  commentId: M:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler``2(IAsyncStreamReader{``0},ServerCallContext,ClientStreamingServerMethod{``0,``1})
+  name.vb: ClientStreamingServerHandler(Of TRequest, TResponse)(IAsyncStreamReader(Of TRequest), ServerCallContext, ClientStreamingServerMethod(Of TRequest, TResponse))
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>, ServerCallContext, ClientStreamingServerMethod<TRequest, TResponse>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler(Of TRequest, TResponse)(IAsyncStreamReader(Of TRequest), ServerCallContext, ClientStreamingServerMethod(Of TRequest, TResponse))
+  nameWithType: ExceptionInterceptor.ClientStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>, ServerCallContext, ClientStreamingServerMethod<TRequest, TResponse>)
+  nameWithType.vb: ExceptionInterceptor.ClientStreamingServerHandler(Of TRequest, TResponse)(IAsyncStreamReader(Of TRequest), ServerCallContext, ClientStreamingServerMethod(Of TRequest, TResponse))
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler*
+  name: DuplexStreamingServerHandler
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_DuplexStreamingServerHandler_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler
+  nameWithType: ExceptionInterceptor.DuplexStreamingServerHandler
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler``2(IAsyncStreamReader{``0},IServerStreamWriter{``1},ServerCallContext,DuplexStreamingServerMethod{``0,``1})
+  name: DuplexStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>, IServerStreamWriter<TResponse>, ServerCallContext, DuplexStreamingServerMethod<TRequest, TResponse>)
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_DuplexStreamingServerHandler__2_IAsyncStreamReader___0__IServerStreamWriter___1__ServerCallContext_DuplexStreamingServerMethod___0___1__
+  commentId: M:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler``2(IAsyncStreamReader{``0},IServerStreamWriter{``1},ServerCallContext,DuplexStreamingServerMethod{``0,``1})
+  name.vb: DuplexStreamingServerHandler(Of TRequest, TResponse)(IAsyncStreamReader(Of TRequest), IServerStreamWriter(Of TResponse), ServerCallContext, DuplexStreamingServerMethod(Of TRequest, TResponse))
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>, IServerStreamWriter<TResponse>, ServerCallContext, DuplexStreamingServerMethod<TRequest, TResponse>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler(Of TRequest, TResponse)(IAsyncStreamReader(Of TRequest), IServerStreamWriter(Of TResponse), ServerCallContext, DuplexStreamingServerMethod(Of TRequest, TResponse))
+  nameWithType: ExceptionInterceptor.DuplexStreamingServerHandler<TRequest, TResponse>(IAsyncStreamReader<TRequest>, IServerStreamWriter<TResponse>, ServerCallContext, DuplexStreamingServerMethod<TRequest, TResponse>)
+  nameWithType.vb: ExceptionInterceptor.DuplexStreamingServerHandler(Of TRequest, TResponse)(IAsyncStreamReader(Of TRequest), IServerStreamWriter(Of TResponse), ServerCallContext, DuplexStreamingServerMethod(Of TRequest, TResponse))
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler*
+  name: ServerStreamingServerHandler
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ServerStreamingServerHandler_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler
+  nameWithType: ExceptionInterceptor.ServerStreamingServerHandler
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler``2(``0,IServerStreamWriter{``1},ServerCallContext,ServerStreamingServerMethod{``0,``1})
+  name: ServerStreamingServerHandler<TRequest, TResponse>(TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerStreamingServerMethod<TRequest, TResponse>)
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ServerStreamingServerHandler__2___0_IServerStreamWriter___1__ServerCallContext_ServerStreamingServerMethod___0___1__
+  commentId: M:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler``2(``0,IServerStreamWriter{``1},ServerCallContext,ServerStreamingServerMethod{``0,``1})
+  name.vb: ServerStreamingServerHandler(Of TRequest, TResponse)(TRequest, IServerStreamWriter(Of TResponse), ServerCallContext, ServerStreamingServerMethod(Of TRequest, TResponse))
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler<TRequest, TResponse>(TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerStreamingServerMethod<TRequest, TResponse>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler(Of TRequest, TResponse)(TRequest, IServerStreamWriter(Of TResponse), ServerCallContext, ServerStreamingServerMethod(Of TRequest, TResponse))
+  nameWithType: ExceptionInterceptor.ServerStreamingServerHandler<TRequest, TResponse>(TRequest, IServerStreamWriter<TResponse>, ServerCallContext, ServerStreamingServerMethod<TRequest, TResponse>)
+  nameWithType.vb: ExceptionInterceptor.ServerStreamingServerHandler(Of TRequest, TResponse)(TRequest, IServerStreamWriter(Of TResponse), ServerCallContext, ServerStreamingServerMethod(Of TRequest, TResponse))
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler*
+  name: UnaryServerHandler
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_UnaryServerHandler_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler
+  nameWithType: ExceptionInterceptor.UnaryServerHandler
+- uid: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler``2(``0,ServerCallContext,UnaryServerMethod{``0,``1})
+  name: UnaryServerHandler<TRequest, TResponse>(TRequest, ServerCallContext, UnaryServerMethod<TRequest, TResponse>)
+  href: api/ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html#ArmoniK_Core_Common_gRPC_ExceptionInterceptor_UnaryServerHandler__2___0_ServerCallContext_UnaryServerMethod___0___1__
+  commentId: M:ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler``2(``0,ServerCallContext,UnaryServerMethod{``0,``1})
+  name.vb: UnaryServerHandler(Of TRequest, TResponse)(TRequest, ServerCallContext, UnaryServerMethod(Of TRequest, TResponse))
+  fullName: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler<TRequest, TResponse>(TRequest, ServerCallContext, UnaryServerMethod<TRequest, TResponse>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler(Of TRequest, TResponse)(TRequest, ServerCallContext, UnaryServerMethod(Of TRequest, TResponse))
+  nameWithType: ExceptionInterceptor.UnaryServerHandler<TRequest, TResponse>(TRequest, ServerCallContext, UnaryServerMethod<TRequest, TResponse>)
+  nameWithType.vb: ExceptionInterceptor.UnaryServerHandler(Of TRequest, TResponse)(TRequest, ServerCallContext, UnaryServerMethod(Of TRequest, TResponse))
 - uid: ArmoniK.Core.Common.gRPC.GrpcHealthCheckServiceBase
   name: GrpcHealthCheckServiceBase
   href: api/ArmoniK.Core.Common.gRPC.GrpcHealthCheckServiceBase.html
@@ -8181,6 +8280,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.Options.Pollster.GraceDelay
   nameWithType: Pollster.GraceDelay
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.MaxErrorAllowed
+  name: MaxErrorAllowed
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_MaxErrorAllowed
+  commentId: P:ArmoniK.Core.Common.Injection.Options.Pollster.MaxErrorAllowed
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.MaxErrorAllowed
+  nameWithType: Pollster.MaxErrorAllowed
+- uid: ArmoniK.Core.Common.Injection.Options.Pollster.MaxErrorAllowed*
+  name: MaxErrorAllowed
+  href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_MaxErrorAllowed_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.Pollster.MaxErrorAllowed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.Pollster.MaxErrorAllowed
+  nameWithType: Pollster.MaxErrorAllowed
 - uid: ArmoniK.Core.Common.Injection.Options.Pollster.SettingSection
   name: SettingSection
   href: api/ArmoniK.Core.Common.Injection.Options.Pollster.html#ArmoniK_Core_Common_Injection_Options_Pollster_SettingSection
@@ -8219,6 +8331,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition
   nameWithType: Submitter.DefaultPartition
+- uid: ArmoniK.Core.Common.Injection.Options.Submitter.MaxErrorAllowed
+  name: MaxErrorAllowed
+  href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html#ArmoniK_Core_Common_Injection_Options_Submitter_MaxErrorAllowed
+  commentId: P:ArmoniK.Core.Common.Injection.Options.Submitter.MaxErrorAllowed
+  fullName: ArmoniK.Core.Common.Injection.Options.Submitter.MaxErrorAllowed
+  nameWithType: Submitter.MaxErrorAllowed
+- uid: ArmoniK.Core.Common.Injection.Options.Submitter.MaxErrorAllowed*
+  name: MaxErrorAllowed
+  href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html#ArmoniK_Core_Common_Injection_Options_Submitter_MaxErrorAllowed_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.Submitter.MaxErrorAllowed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.Submitter.MaxErrorAllowed
+  nameWithType: Submitter.MaxErrorAllowed
 - uid: ArmoniK.Core.Common.Injection.Options.Submitter.SettingSection
   name: SettingSection
   href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html#ArmoniK_Core_Common_Injection_Options_Submitter_SettingSection
@@ -8726,6 +8851,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.Pollster.Check
   nameWithType: Pollster.Check
+- uid: ArmoniK.Core.Common.Pollster.Pollster.Failed
+  name: Failed
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_Failed
+  commentId: P:ArmoniK.Core.Common.Pollster.Pollster.Failed
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Failed
+  nameWithType: Pollster.Failed
+- uid: ArmoniK.Core.Common.Pollster.Pollster.Failed*
+  name: Failed
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_Failed_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.Pollster.Failed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Failed
+  nameWithType: Pollster.Failed
 - uid: ArmoniK.Core.Common.Pollster.Pollster.Init(CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_Init_CancellationToken_
@@ -14076,21 +14214,24 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper
   fullName: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper
   nameWithType: GrpcSubmitterServiceHelper
-- uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter)
-  name: GrpcSubmitterServiceHelper(ISubmitter)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html#ArmoniK_Core_Common_Tests_Helpers_GrpcSubmitterServiceHelper__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter)
-  nameWithType: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter)
-- uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,List{ArmoniK.Core.Common.Tests.Auth.MockIdentity},ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions,LogLevel)
-  name: GrpcSubmitterServiceHelper(ISubmitter, List<MockIdentity>, AuthenticatorOptions, LogLevel)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html#ArmoniK_Core_Common_Tests_Helpers_GrpcSubmitterServiceHelper__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_List_ArmoniK_Core_Common_Tests_Auth_MockIdentity__ArmoniK_Core_Common_Auth_Authentication_AuthenticatorOptions_LogLevel_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,List{ArmoniK.Core.Common.Tests.Auth.MockIdentity},ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions,LogLevel)
-  name.vb: GrpcSubmitterServiceHelper(ISubmitter, List(Of MockIdentity), AuthenticatorOptions, LogLevel)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter, List<ArmoniK.Core.Common.Tests.Auth.MockIdentity>, ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions, LogLevel)
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter, List(Of ArmoniK.Core.Common.Tests.Auth.MockIdentity), ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions, LogLevel)
-  nameWithType: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter, List<MockIdentity>, AuthenticatorOptions, LogLevel)
-  nameWithType.vb: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter, List(Of MockIdentity), AuthenticatorOptions, LogLevel)
+- uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,List{ArmoniK.Core.Common.Tests.Auth.MockIdentity},ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions,LogLevel,System.Nullable{Action{IServiceCollection}})
+  name: GrpcSubmitterServiceHelper(ISubmitter, List<MockIdentity>, AuthenticatorOptions, LogLevel, Nullable<Action<IServiceCollection>>)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html#ArmoniK_Core_Common_Tests_Helpers_GrpcSubmitterServiceHelper__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_List_ArmoniK_Core_Common_Tests_Auth_MockIdentity__ArmoniK_Core_Common_Auth_Authentication_AuthenticatorOptions_LogLevel_System_Nullable_Action_IServiceCollection___
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,List{ArmoniK.Core.Common.Tests.Auth.MockIdentity},ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions,LogLevel,System.Nullable{Action{IServiceCollection}})
+  name.vb: GrpcSubmitterServiceHelper(ISubmitter, List(Of MockIdentity), AuthenticatorOptions, LogLevel, Nullable(Of Action(Of IServiceCollection)))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter, List<ArmoniK.Core.Common.Tests.Auth.MockIdentity>, ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions, LogLevel, System.Nullable<Action<IServiceCollection>>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter, List(Of ArmoniK.Core.Common.Tests.Auth.MockIdentity), ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions, LogLevel, System.Nullable(Of Action(Of IServiceCollection)))
+  nameWithType: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter, List<MockIdentity>, AuthenticatorOptions, LogLevel, Nullable<Action<IServiceCollection>>)
+  nameWithType.vb: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter, List(Of MockIdentity), AuthenticatorOptions, LogLevel, Nullable(Of Action(Of IServiceCollection)))
+- uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,System.Nullable{Action{IServiceCollection}})
+  name: GrpcSubmitterServiceHelper(ISubmitter, Nullable<Action<IServiceCollection>>)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html#ArmoniK_Core_Common_Tests_Helpers_GrpcSubmitterServiceHelper__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_System_Nullable_Action_IServiceCollection___
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,System.Nullable{Action{IServiceCollection}})
+  name.vb: GrpcSubmitterServiceHelper(ISubmitter, Nullable(Of Action(Of IServiceCollection)))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter, System.Nullable<Action<IServiceCollection>>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ArmoniK.Core.Common.gRPC.Services.ISubmitter, System.Nullable(Of Action(Of IServiceCollection)))
+  nameWithType: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter, Nullable<Action<IServiceCollection>>)
+  nameWithType.vb: GrpcSubmitterServiceHelper.GrpcSubmitterServiceHelper(ISubmitter, Nullable(Of Action(Of IServiceCollection)))
 - uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.#ctor*
   name: GrpcSubmitterServiceHelper
   href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html#ArmoniK_Core_Common_Tests_Helpers_GrpcSubmitterServiceHelper__ctor_
@@ -16424,6 +16565,35 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed
   nameWithType: PollsterTest.ExecuteTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple{Mock{ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler},Mock{ArmoniK.Core.Common.Storage.IPullQueueStorage},Mock{ArmoniK.Core.Common.Pollster.IAgentHandler}})
+  name: ExecuteTooManyErrorShouldFail((Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>))
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFail_System_ValueTuple_Mock_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler__Mock_ArmoniK_Core_Common_Storage_IPullQueueStorage__Mock_ArmoniK_Core_Common_Pollster_IAgentHandler___
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple{Mock{ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler},Mock{ArmoniK.Core.Common.Storage.IPullQueueStorage},Mock{ArmoniK.Core.Common.Pollster.IAgentHandler}})
+  name.vb: ExecuteTooManyErrorShouldFail((Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler))(Of Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler)))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple<Mock<ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler>, Mock<ArmoniK.Core.Common.Storage.IPullQueueStorage>, Mock<ArmoniK.Core.Common.Pollster.IAgentHandler>>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple(Of Mock(Of ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler), Mock(Of ArmoniK.Core.Common.Storage.IPullQueueStorage), Mock(Of ArmoniK.Core.Common.Pollster.IAgentHandler)))
+  nameWithType: PollsterTest.ExecuteTooManyErrorShouldFail((Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>))
+  nameWithType.vb: PollsterTest.ExecuteTooManyErrorShouldFail((Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler))(Of Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler)))
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail*
+  name: ExecuteTooManyErrorShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail
+  nameWithType: PollsterTest.ExecuteTooManyErrorShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFailTestCase
+  name: ExecuteTooManyErrorShouldFailTestCase
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFailTestCase
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFailTestCase
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFailTestCase
+  nameWithType: PollsterTest.ExecuteTooManyErrorShouldFailTestCase
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFailTestCase*
+  name: ExecuteTooManyErrorShouldFailTestCase
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFailTestCase_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFailTestCase
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFailTestCase
+  nameWithType: PollsterTest.ExecuteTooManyErrorShouldFailTestCase
 - uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.InitializePollster
   name: InitializePollster()
   href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_InitializePollster
@@ -16763,6 +16933,117 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
   nameWithType: TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1
+  name: TaskHandlerTest.ExceptionWorkerStreamHandler<T>
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1
+  name.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T)
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor(System.Int32)
+  name: ExceptionWorkerStreamHandler(Int32)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1__ctor_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor(System.Int32)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler(System.Int32)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).ExceptionWorkerStreamHandler(System.Int32)
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler(Int32)
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).ExceptionWorkerStreamHandler(Int32)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor*
+  name: ExceptionWorkerStreamHandler
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).ExceptionWorkerStreamHandler
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).ExceptionWorkerStreamHandler
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check(HealthCheckTag)
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose()
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose()
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose()
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init(CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init(CancellationToken)
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init(CancellationToken)
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Pipe
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  name: StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing(TaskData, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing*
+  name: StartTaskProcessing
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_StartTaskProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing
+  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing
+  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
   name: ExecuteTaskShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskShouldSucceed
@@ -16776,12 +17057,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
   nameWithType: TaskHandlerTest.ExecuteTaskShouldSucceed
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed(IWorkerStreamHandler)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(IWorkerStreamHandler)
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed*
   name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed_
@@ -16789,6 +17064,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
   nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+  name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(TaskHandlerTest.ExceptionWorkerStreamHandler<Ex>)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed__1_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler___0__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+  name.vb: ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of Ex)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of Ex))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<Ex>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of Ex)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of Ex))
+  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(TaskHandlerTest.ExceptionWorkerStreamHandler<Ex>)
+  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of Ex)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of Ex))
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
   name: ExecuteTaskWithResultsShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithResultsShouldSucceed
