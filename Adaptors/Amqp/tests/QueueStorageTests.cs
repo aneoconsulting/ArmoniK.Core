@@ -50,9 +50,9 @@ public class QueueStorageTests
      * the later is defined in the  SimpleAmqpClientHelper class */
     => Options = CreateDefaultOptions();
 
-  public Options.Amqp? Options;
+  public Common.Injection.Options.Amqp? Options;
 
-  private static Options.Amqp CreateDefaultOptions()
+  private static Common.Injection.Options.Amqp CreateDefaultOptions()
     => new()
        {
          Host              = "localhost",
@@ -206,7 +206,7 @@ public class QueueStorageTests
   }
 
   [TestCaseSource(nameof(TestCasesBadOptions))]
-  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Options.Amqp options)
+  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Common.Injection.Options.Amqp options)
   {
     await using var helper   = new SimpleAmqpClientHelper();
     var             provider = new Mock<IConnectionAmqp>();

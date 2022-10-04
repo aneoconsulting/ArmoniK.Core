@@ -24,7 +24,7 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Adapters.Amqp.Options;
+namespace ArmoniK.Core.Common.Injection.Options;
 
 [PublicAPI]
 public class Amqp

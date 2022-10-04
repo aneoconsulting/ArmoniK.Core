@@ -43,12 +43,12 @@ namespace ArmoniK.Core.Adapters.Amqp;
 [UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly ILogger<ConnectionAmqp> logger_;
-  private readonly Options.Amqp            options_;
-  private          bool                    isInitialized_;
+  private readonly ILogger<ConnectionAmqp>       logger_;
+  private readonly Common.Injection.Options.Amqp options_;
+  private          bool                          isInitialized_;
 
-  public ConnectionAmqp(Options.Amqp            options,
-                        ILogger<ConnectionAmqp> logger)
+  public ConnectionAmqp(Common.Injection.Options.Amqp options,
+                        ILogger<ConnectionAmqp>       logger)
   {
     options_ = options;
     logger_  = logger;

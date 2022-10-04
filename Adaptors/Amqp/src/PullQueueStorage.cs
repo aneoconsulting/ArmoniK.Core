@@ -48,9 +48,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   private AsyncLazy<IReceiverLink>[] receivers_;
   private AsyncLazy<ISenderLink>[]   senders_;
 
-  public PullQueueStorage(Options.Amqp              options,
-                          IConnectionAmqp           connectionAmqp,
-                          ILogger<PullQueueStorage> logger)
+  public PullQueueStorage(Common.Injection.Options.Amqp options,
+                          IConnectionAmqp               connectionAmqp,
+                          ILogger<PullQueueStorage>     logger)
     : base(options,
            connectionAmqp)
   {
