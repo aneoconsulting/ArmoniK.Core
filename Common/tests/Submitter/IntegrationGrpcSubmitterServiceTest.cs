@@ -1143,6 +1143,143 @@ internal class IntegrationGrpcSubmitterServiceTest
                                          .ConfigureAwait(false)).Status);
   }
 
+  [Test]
+  public async Task TooManyExceptionServerStreamShouldBeUnhealthy()
+  {
+    Exception? ex         = null;
+    var        nbMessages = 2;
+    var        failAfter  = 0;
+
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
+                                                            It.IsAny<IServerStreamWriter<ResultReply>>(),
+                                                            It.IsAny<CancellationToken>()))
+                 .Returns(async (ResultRequest                    _,
+                                 IServerStreamWriter<ResultReply> replyStreamWriter,
+                                 CancellationToken                cancellationToken) =>
+                          {
+                            foreach (var i in Enumerable.Range(0,
+                                                               nbMessages))
+                            {
+                              if (i >= failAfter && ex is not null)
+                              {
+                                throw ex;
+                              }
+
+                              await replyStreamWriter.WriteAsync(new ResultReply
+                                                                 {
+                                                                   Result = new DataChunk
+                                                                            {
+                                                                              Data = ByteString.CopyFromUtf8("payload"),
+                                                                            },
+                                                                 },
+                                                                 cancellationToken)
+                                                     .ConfigureAwait(false);
+                            }
+
+                            if (nbMessages >= failAfter && ex is not null)
+                            {
+                              throw ex;
+                            }
+
+                            await replyStreamWriter.WriteAsync(new ResultReply
+                                                               {
+                                                                 Result = new DataChunk
+                                                                          {
+                                                                            DataComplete = true,
+                                                                          },
+                                                               },
+                                                               CancellationToken.None)
+                                                   .ConfigureAwait(false);
+                            if (ex is not null)
+                            {
+                              throw ex;
+                            }
+                          });
+
+    var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
+                                               {
+                                                 MaxErrorAllowed = 3,
+                                               },
+                                               NullLogger<ExceptionInterceptor>.Instance);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object,
+                                             services => services.AddSingleton(interceptor)
+                                                                 .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
+
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+
+    async Task TryGetResult()
+    {
+      var response = client!.TryGetResultStream(new ResultRequest
+                                                {
+                                                  ResultId = "Key",
+                                                  Session  = "Session",
+                                                });
+      await foreach (var res in response.ResponseStream.ReadAllAsync()
+                                        .ConfigureAwait(false))
+      {
+        _ = res;
+      }
+    }
+
+    // Call #1-4 without error
+    ex = null;
+    foreach (var _ in Enumerable.Range(0,
+                                       4))
+    {
+      Assert.DoesNotThrowAsync(TryGetResult);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await interceptor.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status);
+    }
+
+    // Call #5-8 with client error
+    /*
+    ex = new ArmoniKException("client error");
+    foreach (var i in Enumerable.Range(0,
+                                       4))
+    {
+      failAfter = i;
+      Assert.ThrowsAsync<RpcException>(TryGetResult);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await interceptor.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status);
+    }
+    */
+    // Call #9 with server error
+    ex        = new ApplicationException("server error");
+    failAfter = 0;
+    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+    // Call #10 with server error
+    ex        = new ApplicationException("server error");
+    failAfter = 1;
+    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+    // Call #11 with server error
+    ex        = new ApplicationException("server error");
+    failAfter = 2;
+    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.AreEqual(HealthStatus.Healthy,
+                    (await interceptor.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status);
+    // Call #12 with server error
+    ex        = new ApplicationException("server error");
+    failAfter = 3;
+    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.AreNotEqual(HealthStatus.Healthy,
+                       (await interceptor.Check(HealthCheckTag.Liveness)
+                                         .ConfigureAwait(false)).Status);
+  }
+
   public static IEnumerable TestCasesOutput
   {
     get
