@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -139,17 +140,16 @@ internal class ExceptionInterceptorTests
     }
 
     // Call #5-8 with client error
-    /*
-    ex = new ArmoniKException("client error");
+    ex = new PartitionNotFoundException("Client error");
     foreach (var _ in Enumerable.Range(0,
                                        4))
     {
-      Assert.Throws<RpcException>(() => client.CreateSession(clientErrorRequest));
+      Assert.Throws<RpcException>(() => client.CreateSession(request));
       Assert.AreEqual(HealthStatus.Healthy,
                       (await interceptor.Check(HealthCheckTag.Liveness)
                                         .ConfigureAwait(false)).Status);
     }
-    */
+
     // Call #9 with server error
     ex = new ApplicationException("server error");
     Assert.Throws<RpcException>(() => client.CreateSession(request));
@@ -203,6 +203,11 @@ internal class ExceptionInterceptorTests
                               {
                                 throw ex;
                               }
+                            }
+
+                            if (ex is not null)
+                            {
+                              throw ex;
                             }
 
                             return (new List<Storage.TaskRequest>
@@ -338,18 +343,18 @@ internal class ExceptionInterceptorTests
     }
 
     // Call #5-8 with client error
-    /*
-    ex = new ArmoniKException("client error");
+    ex = new RpcException(new Status(StatusCode.InvalidArgument,
+                                     "Client error"),
+                          "Client error");
     foreach (var i in Enumerable.Range(0,
                                        4))
     {
       failAfter = i;
-      Assert.ThrowsAsync<RpcException>(() => createLargeTasks(10));
+      Assert.ThrowsAsync<RpcException>(() => CreateLargeTasks(10));
       Assert.AreEqual(HealthStatus.Healthy,
                       (await interceptor.Check(HealthCheckTag.Liveness)
                                         .ConfigureAwait(false)).Status);
     }
-    */
 
     // Call #9 with server error
     ex        = new ApplicationException("server error");
@@ -462,8 +467,7 @@ internal class ExceptionInterceptorTests
     }
 
     // Call #5-8 with client error
-    /*
-    ex = new ArmoniKException("client error");
+    ex = new TaskNotFoundException("Client error");
     foreach (var i in Enumerable.Range(0,
                                        4))
     {
@@ -473,7 +477,7 @@ internal class ExceptionInterceptorTests
                       (await interceptor.Check(HealthCheckTag.Liveness)
                                         .ConfigureAwait(false)).Status);
     }
-    */
+
     // Call #9 with server error
     ex        = new ApplicationException("server error");
     failAfter = 0;

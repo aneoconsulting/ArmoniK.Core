@@ -68,7 +68,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     logger_.LogDebug("Interceptor HealthCheck: errors {nbErrors}/{maxAllowedErrors}",
                      errors_.Count,
                      maxAllowedErrors_);
-    return Task.FromResult(errors_.Count <= maxAllowedErrors_
+    return Task.FromResult(maxAllowedErrors_ < 0 || errors_.Count <= maxAllowedErrors_
                              ? HealthCheckResult.Healthy()
                              : HealthCheckResult.Unhealthy("Too many errors recorded",
                                                            new AggregateException(errors_)));
@@ -165,24 +165,42 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                     ServerCallContext context)
   {
     _ = context;
-    /*
-    if (e is ArmoniKException)
+    if (e is RpcException rpcException)
     {
-      logger_.LogTrace(e,
-                       "client Error has been thrown by the request");
-      return ValueTask.CompletedTask;
+      switch (rpcException.Status.StatusCode)
+      {
+        case StatusCode.OK:
+        case StatusCode.Cancelled:
+        case StatusCode.InvalidArgument:
+        case StatusCode.NotFound:
+        case StatusCode.AlreadyExists:
+        case StatusCode.PermissionDenied:
+        case StatusCode.Unauthenticated:
+        case StatusCode.FailedPrecondition:
+        case StatusCode.OutOfRange:
+          logger_.LogDebug(e,
+                           "An exception has been thrown during handling of request due to client error");
+          return ValueTask.CompletedTask;
+        case StatusCode.Unknown:
+        case StatusCode.DeadlineExceeded:
+        case StatusCode.ResourceExhausted:
+        case StatusCode.Aborted:
+        case StatusCode.Unimplemented:
+        case StatusCode.Internal:
+        case StatusCode.Unavailable:
+        case StatusCode.DataLoss:
+        default:
+          break;
+      }
     }
-    if (e is not OperationCanceledException && context.CancellationToken.IsCancellationRequested)
-    {
-      logger_.LogTrace(e,
-                       "Request has been cancelled");
-      return ValueTask.CompletedTask;
-    }
-    */
 
-    logger_.LogInformation(e,
-                           "An exception has been thrown during handling of request");
-    errors_.Enqueue(e);
+    logger_.LogDebug(e,
+                     "An exception has been thrown during handling of request");
+    // If we have already too many errors, stop recording
+    if (errors_.Count <= maxAllowedErrors_)
+    {
+      errors_.Enqueue(e);
+    }
 
     return ValueTask.CompletedTask;
   }
