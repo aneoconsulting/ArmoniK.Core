@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,17 +8,17 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -62,7 +62,6 @@ public class Pollster : IInitializable
   private readonly ITaskTable                 taskTable_;
   private readonly IWorkerStreamHandler       workerStreamHandler_;
   private          bool                       endLoopReached_;
-  private          bool                       healthCheckFailed_;
   private          HealthCheckResult?         healthCheckFailedResult_;
   public           string                     TaskProcessing;
 
@@ -105,8 +104,14 @@ public class Pollster : IInitializable
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
-    healthCheckFailed_     = false;
+    Failed                 = false;
   }
+
+  /// <summary>
+  ///   Is true when the MainLoop exited with an error
+  ///   Used in Unit tests
+  /// </summary>
+  public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
   {
@@ -128,7 +133,7 @@ public class Pollster : IInitializable
 
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
-    if (healthCheckFailed_)
+    if (healthCheckFailedResult_ is not null)
     {
       return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
     }
@@ -189,13 +194,11 @@ public class Pollster : IInitializable
 
     if (worstStatus == HealthStatus.Unhealthy && tag == HealthCheckTag.Liveness)
     {
-      healthCheckFailed_       = true;
       healthCheckFailedResult_ = result;
     }
 
     return result;
   }
-
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
@@ -208,12 +211,35 @@ public class Pollster : IInitializable
                                  logger_.LogError("Global cancellation has been triggered.");
                                  cts.Cancel();
                                });
+    var recordedErrors = new Queue<Exception>();
+
+    void RecordError(Exception e)
+    {
+      if (pollsterOptions_.MaxErrorAllowed < 0)
+      {
+        return;
+      }
+
+      recordedErrors.Enqueue(e);
+
+      if (recordedErrors.Count <= pollsterOptions_.MaxErrorAllowed)
+      {
+        return;
+      }
+
+      logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
+      healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
+      cts.Cancel();
+
+      throw new TooManyException(recordedErrors.ToArray());
+    }
+
     try
     {
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cancellationToken.IsCancellationRequested)
       {
-        if (healthCheckFailed_)
+        if (healthCheckFailedResult_ is not null)
         {
           logger_.LogWarning("Health Check failed thus no more tasks will be executed.");
           cts.Cancel();
@@ -223,77 +249,101 @@ public class Pollster : IInitializable
         logger_.LogTrace("Trying to fetch messages");
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
-        var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
-                                                           cancellationToken);
 
-        await foreach (var message in messages.WithCancellation(cancellationToken)
-                                              .ConfigureAwait(false))
+        try
         {
-          using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
-                                                           ("messageHandler", message.MessageId),
-                                                           ("taskId", message.TaskId),
-                                                           ("ownerPodId", ownerPodId_));
-          using var activity = activitySource_.StartActivity("ProcessQueueMessage");
-          activity?.SetBaggage("TaskId",
-                               message.TaskId);
-          activity?.SetBaggage("messageId",
-                               message.MessageId);
+          var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+                                                             cancellationToken);
 
-          logger_.LogDebug("Start a new Task to process the messageHandler");
-
-          try
+          await foreach (var message in messages.WithCancellation(cancellationToken)
+                                                .ConfigureAwait(false))
           {
-            await using var taskHandler = new TaskHandler(sessionTable_,
-                                                          taskTable_,
-                                                          resultTable_,
-                                                          submitter_,
-                                                          dataPrefetcher_,
-                                                          workerStreamHandler_,
-                                                          message,
-                                                          taskProcessingChecker_,
-                                                          ownerPodId_,
-                                                          activitySource_,
-                                                          agentHandler_,
-                                                          logger_,
-                                                          pollsterOptions_,
-                                                          cts);
+            using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
+                                                             ("messageHandler", message.MessageId),
+                                                             ("taskId", message.TaskId),
+                                                             ("ownerPodId", ownerPodId_));
+            // ReSharper disable once ExplicitCallerInfoArgument
+            using var activity = activitySource_.StartActivity("ProcessQueueMessage");
+            activity?.SetBaggage("TaskId",
+                                 message.TaskId);
+            activity?.SetBaggage("messageId",
+                                 message.MessageId);
 
-            var precondition = await taskHandler.AcquireTask()
-                                                .ConfigureAwait(false);
+            logger_.LogDebug("Start a new Task to process the messageHandler");
 
-            if (precondition)
+            try
             {
-              TaskProcessing = taskHandler.GetAcquiredTask();
+              await using var taskHandler = new TaskHandler(sessionTable_,
+                                                            taskTable_,
+                                                            resultTable_,
+                                                            submitter_,
+                                                            dataPrefetcher_,
+                                                            workerStreamHandler_,
+                                                            message,
+                                                            taskProcessingChecker_,
+                                                            ownerPodId_,
+                                                            activitySource_,
+                                                            agentHandler_,
+                                                            logger_,
+                                                            pollsterOptions_,
+                                                            cts);
 
-              await taskHandler.PreProcessing()
-                               .ConfigureAwait(false);
+              var precondition = await taskHandler.AcquireTask()
+                                                  .ConfigureAwait(false);
 
-              await taskHandler.ExecuteTask()
-                               .ConfigureAwait(false);
+              if (precondition)
+              {
+                TaskProcessing = taskHandler.GetAcquiredTask();
 
-              logger_.LogDebug("Complete task processing");
+                await taskHandler.PreProcessing()
+                                 .ConfigureAwait(false);
 
-              await taskHandler.PostProcessing()
-                               .ConfigureAwait(false);
+                await taskHandler.ExecuteTask()
+                                 .ConfigureAwait(false);
 
-              logger_.LogDebug("Task returned");
+                logger_.LogDebug("Complete task processing");
+
+                await taskHandler.PostProcessing()
+                                 .ConfigureAwait(false);
+
+                logger_.LogDebug("Task returned");
+
+                // If the task was successful, we can remove a failure
+                if (recordedErrors.Count > 0)
+                {
+                  recordedErrors.Dequeue();
+                }
+              }
+            }
+            catch (Exception e)
+            {
+              logger_.LogError(e,
+                               "Error with messageHandler {messageId}",
+                               message.MessageId);
+              RecordError(e);
+            }
+            finally
+            {
+              TaskProcessing = string.Empty;
             }
           }
-          catch (Exception e)
-          {
-            logger_.LogError(e,
-                             "Error with messageHandler {messageId}",
-                             message.MessageId);
-          }
-          finally
-          {
-            TaskProcessing = string.Empty;
-          }
+        }
+        catch (TooManyException)
+        {
+          // This exception should not be caught here
+          throw;
+        }
+        catch (Exception e)
+        {
+          logger_.LogError(e,
+                           "Error while pulling the messages from the queue");
+          RecordError(e);
         }
       }
     }
     catch (Exception e)
     {
+      Failed = true;
       logger_.LogCritical(e,
                           "Error in pollster");
     }
@@ -301,6 +351,14 @@ public class Pollster : IInitializable
     {
       logger_.LogWarning("End of Pollster main loop");
       endLoopReached_ = true;
+    }
+  }
+
+  private sealed class TooManyException : AggregateException
+  {
+    public TooManyException(Exception[] inner)
+      : base(inner)
+    {
     }
   }
 }

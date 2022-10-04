@@ -20,8 +20,8 @@ docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-com
 
 for i in $(seq 0 2);
 do
-  curl -sSL --http2-prior-knowledge localhost:5001/liveness
-  curl -sSL localhost:9980/liveness
+  curl -sSL --http2-prior-knowledge localhost:5001/liveness || true
+  curl -sSL localhost:9980/liveness || true
   echo
   sleep 1
 done
@@ -31,11 +31,11 @@ docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-com
 
 for i in $(seq 0 2);
 do
-  curl -sSL --http2-prior-knowledge localhost:5001/liveness
-  curl -sSL --http2-prior-knowledge localhost:5001/startup
-  curl -sSL localhost:9980/liveness
-  curl -sSL localhost:9980/startup
-  curl -sSL localhost:9980/readiness
+  curl -sSL --http2-prior-knowledge localhost:5001/liveness || true
+  curl -sSL --http2-prior-knowledge localhost:5001/startup || true
+  curl -sSL localhost:9980/liveness || true
+  curl -sSL localhost:9980/startup || true
+  curl -sSL localhost:9980/readiness || true
   echo
   sleep 1
 done
@@ -48,11 +48,11 @@ docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-com
 for i in $(seq 0 2);
 do
   sleep 1
-  curl -sSL --http2-prior-knowledge localhost:5001/liveness
-  curl -sSL --http2-prior-knowledge localhost:5001/startup
-  curl -sSL localhost:9980/liveness
-  curl -sSL localhost:9980/startup
-  curl -sSL localhost:9980/readiness
+  curl -sSL --http2-prior-knowledge localhost:5001/liveness || true
+  curl -sSL --http2-prior-knowledge localhost:5001/startup || true
+  curl -sSL localhost:9980/liveness || true
+  curl -sSL localhost:9980/startup || true
+  curl -sSL localhost:9980/readiness || true
   echo
 done
 
