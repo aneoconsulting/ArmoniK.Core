@@ -215,14 +215,23 @@ public class Pollster : IInitializable
 
     void RecordError(Exception e)
     {
-      recordedErrors.Enqueue(e);
-      if (pollsterOptions_.MaxErrorAllowed >= 0 && recordedErrors.Count > pollsterOptions_.MaxErrorAllowed)
+      if (pollsterOptions_.MaxErrorAllowed < 0)
       {
-        logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
-        healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
-        cts.Cancel();
-        throw new TooManyException(recordedErrors.ToArray());
+        return;
       }
+
+      recordedErrors.Enqueue(e);
+
+      if (recordedErrors.Count <= pollsterOptions_.MaxErrorAllowed)
+      {
+        return;
+      }
+
+      logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
+      healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
+      cts.Cancel();
+
+      throw new TooManyException(recordedErrors.ToArray());
     }
 
     try
