@@ -62,8 +62,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
   }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag _)
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
+    _ = tag;
     logger_.LogDebug("Interceptor HealthCheck: errors {nbErrors}/{maxAllowedErrors}",
                      errors_.Count,
                      maxAllowedErrors_);

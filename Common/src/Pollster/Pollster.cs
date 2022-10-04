@@ -253,6 +253,7 @@ public class Pollster : IInitializable
                                                              ("messageHandler", message.MessageId),
                                                              ("taskId", message.TaskId),
                                                              ("ownerPodId", ownerPodId_));
+            // ReSharper disable once ExplicitCallerInfoArgument
             using var activity = activitySource_.StartActivity("ProcessQueueMessage");
             activity?.SetBaggage("TaskId",
                                  message.TaskId);
@@ -344,7 +345,7 @@ public class Pollster : IInitializable
     }
   }
 
-  private class TooManyException : AggregateException
+  private sealed class TooManyException : AggregateException
   {
     public TooManyException(Exception[] inner)
       : base(inner)

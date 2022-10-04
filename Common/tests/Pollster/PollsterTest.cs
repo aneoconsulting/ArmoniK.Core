@@ -510,7 +510,7 @@ public class PollsterTest
       var mockAgentHandler     = new Mock<IAgentHandler>();
 
       {
-        // Failling WorkerStreamHandler
+        // Failing WorkerStreamHandler
         var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
         mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                                                        It.IsAny<CancellationToken>()))
@@ -519,7 +519,7 @@ public class PollsterTest
       }
 
       {
-        // Failling PullQueueStorage
+        // Failing PullQueueStorage
         var mockPullQueueStorageFail = new Mock<IPullQueueStorage>();
         mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                             It.IsAny<CancellationToken>()))
@@ -529,7 +529,7 @@ public class PollsterTest
       }
 
       {
-        // Failling AgentHandler
+        // Failing AgentHandler
         var mockAgentHandlerFail = new Mock<IAgentHandler>();
         mockAgentHandlerFail.Setup(agent => agent.Start(It.IsAny<string>(),
                                                         It.IsAny<ILogger>(),

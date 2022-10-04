@@ -49,6 +49,8 @@ using NUnit.Framework;
 
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
+// ReSharper disable AccessToModifiedClosure
+
 namespace ArmoniK.Core.Common.Tests.Submitter;
 
 // see https://github.com/dotnet/AspNetCore.Docs/tree/main/aspnetcore/grpc/test-services/sample/Tests/Server/IntegrationTests
@@ -105,15 +107,9 @@ internal class ExceptionInterceptorTests
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              It.IsAny<CancellationToken>()))
-                 .Returns(() =>
-                          {
-                            if (ex is null)
-                            {
-                              return Task.FromResult(noErrorReply);
-                            }
-
-                            return Task.FromException<CreateSessionReply>(ex);
-                          });
+                 .Returns(() => ex is null
+                                  ? Task.FromResult(noErrorReply)
+                                  : Task.FromException<CreateSessionReply>(ex));
 
     var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
                                                {
@@ -129,7 +125,6 @@ internal class ExceptionInterceptorTests
     Assert.AreEqual(HealthStatus.Healthy,
                     (await interceptor.Check(HealthCheckTag.Liveness)
                                       .ConfigureAwait(false)).Status);
-
 
     // Call #1-4 without error
     ex = null;
@@ -202,6 +197,7 @@ internal class ExceptionInterceptorTests
                             await foreach (var req in requests.WithCancellation(cancellationToken)
                                                               .ConfigureAwait(false))
                             {
+                              _ =  req;
                               i += 1;
                               if (i >= failAfter && ex is not null)
                               {
@@ -257,7 +253,7 @@ internal class ExceptionInterceptorTests
                        };
 
     // Helper to call createLargeTasks
-    async Task<CreateTaskReply> createLargeTasks(int               nbMessage,
+    async Task<CreateTaskReply> CreateLargeTasks(int               nbMessage,
                                                  CancellationToken cancellationToken = new())
     {
       var streamingCall = client.CreateLargeTasks(cancellationToken: cancellationToken);
@@ -334,7 +330,7 @@ internal class ExceptionInterceptorTests
                                        4))
     {
       Assert.AreEqual(noErrorReply,
-                      await createLargeTasks(10)
+                      await CreateLargeTasks(10)
                         .ConfigureAwait(false));
       Assert.AreEqual(HealthStatus.Healthy,
                       (await interceptor.Check(HealthCheckTag.Liveness)
@@ -358,14 +354,14 @@ internal class ExceptionInterceptorTests
     // Call #9 with server error
     ex        = new ApplicationException("server error");
     failAfter = 0;
-    Assert.ThrowsAsync<RpcException>(() => createLargeTasks(10));
+    Assert.ThrowsAsync<RpcException>(() => CreateLargeTasks(10));
     Assert.AreEqual(HealthStatus.Healthy,
                     (await interceptor.Check(HealthCheckTag.Liveness)
                                       .ConfigureAwait(false)).Status);
     // Call #10 with server error
     ex        = new ApplicationException("server error");
     failAfter = 1;
-    Assert.ThrowsAsync<RpcException>(() => createLargeTasks(10));
+    Assert.ThrowsAsync<RpcException>(() => CreateLargeTasks(10));
     Assert.AreNotEqual(HealthStatus.Healthy,
                        (await interceptor.Check(HealthCheckTag.Liveness)
                                          .ConfigureAwait(false)).Status);
@@ -442,11 +438,11 @@ internal class ExceptionInterceptorTests
 
     async Task TryGetResult()
     {
-      var response = client!.TryGetResultStream(new ResultRequest
-                                                {
-                                                  ResultId = "Key",
-                                                  Session  = "Session",
-                                                });
+      var response = client.TryGetResultStream(new ResultRequest
+                                               {
+                                                 ResultId = "Key",
+                                                 Session  = "Session",
+                                               });
       await foreach (var res in response.ResponseStream.ReadAllAsync()
                                         .ConfigureAwait(false))
       {
