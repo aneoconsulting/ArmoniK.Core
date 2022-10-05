@@ -24,7 +24,8 @@ COPY --from=publish /app/publish .
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
 USER armonikuser
 
-ENV ASPNETCORE_URLS http://+:1080
+ENV ASPNETCORE_URLS http://+:1080, http://+:1081
 EXPOSE 1080
+EXPOSE 1081
 
 ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Submitter.dll"]

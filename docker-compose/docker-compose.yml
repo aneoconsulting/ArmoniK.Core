@@ -30,6 +30,7 @@ services:
       - armonik-monitoring
     ports:
       - 5001:1080
+      - 5011:1081
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
