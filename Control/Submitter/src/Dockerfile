@@ -19,6 +19,9 @@ FROM build AS publish
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -c Release -o /app/publish
 
 FROM base AS final
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
