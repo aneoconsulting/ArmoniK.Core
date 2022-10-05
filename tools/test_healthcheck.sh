@@ -37,7 +37,7 @@ do
   curl -sSL localhost:9980/startup || true
   curl -sSL localhost:9980/readiness || true
   echo
-  sleep 1
+  sleep 2
 done
 
 docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart armonik.control.submitter
@@ -47,7 +47,7 @@ docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-com
 
 for i in $(seq 0 2);
 do
-  sleep 1
+  sleep 2
   curl -sSL localhost:5011/liveness || true
   curl -sSL localhost:5011/startup || true
   curl -sSL localhost:9980/liveness || true
