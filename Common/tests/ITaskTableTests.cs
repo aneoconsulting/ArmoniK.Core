@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -40,7 +41,6 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -467,10 +467,10 @@ public class TaskTableTestBase
                                                         CancellationToken.None)
                                          .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Canceling,
+      Assert.AreEqual(TaskStatus.Cancelling,
                       resCreating.Single()
                                  .Status);
-      Assert.AreEqual(TaskStatus.Canceling,
+      Assert.AreEqual(TaskStatus.Cancelling,
                       resProcessing.Single()
                                    .Status);
 
@@ -481,7 +481,7 @@ public class TaskTableTestBase
                                                                CancellationToken.None)
                                                 .ConfigureAwait(false);
 
-      Assert.AreNotEqual(TaskStatus.Canceling,
+      Assert.AreNotEqual(TaskStatus.Cancelling,
                          resAnotherProcessing.Single()
                                              .Status);
     }
@@ -727,7 +727,7 @@ public class TaskTableTestBase
                                      .ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Canceled);
+                                                               .Status == TaskStatus.Cancelled);
     }
   }
 

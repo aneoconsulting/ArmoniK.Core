@@ -236,7 +236,7 @@ internal class TaskFilterExtTests
                               Statuses =
                               {
                                 TaskStatus.Completed,
-                                TaskStatus.Canceled,
+                                TaskStatus.Cancelled,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -284,7 +284,7 @@ internal class TaskFilterExtTests
                               Statuses =
                               {
                                 TaskStatus.Completed,
-                                TaskStatus.Canceled,
+                                TaskStatus.Cancelled,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -426,7 +426,7 @@ internal class TaskFilterExtTests
                               Statuses =
                               {
                                 TaskStatus.Completed,
-                                TaskStatus.Canceling,
+                                TaskStatus.Cancelling,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -474,7 +474,7 @@ internal class TaskFilterExtTests
                               Statuses =
                               {
                                 TaskStatus.Completed,
-                                TaskStatus.Canceling,
+                                TaskStatus.Cancelling,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest

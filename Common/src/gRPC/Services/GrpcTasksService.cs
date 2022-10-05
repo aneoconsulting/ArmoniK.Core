@@ -35,11 +35,11 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using Task = ArmoniK.Api.gRPC.V1.Tasks.Task;
+using Task = ArmoniK.Api.gRPC.V1.Tasks.Tasks;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-public class GrpcTasksService : Tasks.TasksBase
+public class GrpcTasksService : Task.TasksBase
 {
   private readonly ILogger<GrpcTasksService> logger_;
   private readonly ITaskTable                taskTable_;
@@ -58,7 +58,7 @@ public class GrpcTasksService : Tasks.TasksBase
     {
       return new GetTaskResponse
              {
-               Task = await taskTable_.ReadTaskAsync(request.Id,
+               Task = await taskTable_.ReadTaskAsync(request.TaskId,
                                                      context.CancellationToken)
                                       .ConfigureAwait(false),
              };
@@ -101,7 +101,7 @@ public class GrpcTasksService : Tasks.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.Select(data => new Task(data)),
+                 taskData.Select(data => new TaskSummary(data)),
                },
              };
     }

@@ -172,7 +172,7 @@ public class TaskHandler : IAsyncDisposable
                        taskData_.Status);
       switch (taskData_.Status)
       {
-        case TaskStatus.Canceling:
+        case TaskStatus.Cancelling:
           logger_.LogInformation("Task is being cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
           await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
@@ -206,7 +206,7 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Timeout:
           logger_.LogInformation("Task was timeout elsewhere ; taking over here");
           break;
-        case TaskStatus.Canceled:
+        case TaskStatus.Cancelled:
           logger_.LogInformation("Task has been cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
           await resultTable_.AbortTaskResults(taskData_.SessionId,
@@ -227,9 +227,9 @@ public class TaskHandler : IAsyncDisposable
       sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
                                                          CancellationToken.None)
                                         .ConfigureAwait(false);
-      var isSessionCancelled = sessionData_.Status == SessionStatus.Canceled;
+      var isSessionCancelled = sessionData_.Status == SessionStatus.Cancelled;
 
-      if (isSessionCancelled && taskData_.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
+      if (isSessionCancelled && taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
       {
         logger_.LogInformation("Task is being cancelled because its session is cancelled");
 
@@ -369,7 +369,7 @@ public class TaskHandler : IAsyncDisposable
                             .ConfigureAwait(false);
           }
 
-          if (taskData_.Status is TaskStatus.Canceling)
+          if (taskData_.Status is TaskStatus.Cancelling)
           {
             messageHandler_.Status = QueueMessageStatus.Cancelled;
             await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,

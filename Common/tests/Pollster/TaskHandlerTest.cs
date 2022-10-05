@@ -55,7 +55,6 @@ using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
-using Task = System.Threading.Tasks.Task;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -332,7 +331,7 @@ public class TaskHandlerTest
   [Test]
   [TestCase(TaskStatus.Creating)]
   [TestCase(TaskStatus.Completed)]
-  [TestCase(TaskStatus.Canceled)]
+  [TestCase(TaskStatus.Cancelled)]
   public async Task AcquireStatusShouldFail(TaskStatus status)
   {
     var sqmh = new SimpleQueueMessageHandler

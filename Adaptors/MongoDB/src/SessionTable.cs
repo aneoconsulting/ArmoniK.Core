@@ -137,7 +137,7 @@ public class SessionTable : ISessionTable
 
     return (await GetSessionAsync(sessionId,
                                   cancellationToken)
-              .ConfigureAwait(false)).Status == SessionStatus.Canceled;
+              .ConfigureAwait(false)).Status == SessionStatus.Cancelled;
   }
 
   /// <inheritdoc />
@@ -180,7 +180,7 @@ public class SessionTable : ISessionTable
 
     var resSession = await sessionCollection.FindOneAndUpdateAsync(filterDefinition,
                                                                    Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                                    SessionStatus.Canceled)
+                                                                                                    SessionStatus.Cancelled)
                                                                                         .Set(model => model.CancellationDate,
                                                                                              DateTime.UtcNow),
                                                                    new FindOneAndUpdateOptions<SessionData>

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -47,7 +47,7 @@ public class TaskFilterValidatorTest
                             Statuses =
                             {
                               TaskStatus.Completed,
-                              TaskStatus.Canceled,
+                              TaskStatus.Cancelled,
                             },
                           },
                Session = new TaskFilter.Types.IdsRequest
@@ -73,7 +73,7 @@ public class TaskFilterValidatorTest
                             Statuses =
                             {
                               TaskStatus.Completed,
-                              TaskStatus.Canceled,
+                              TaskStatus.Cancelled,
                             },
                           },
                Session = new TaskFilter.Types.IdsRequest

@@ -862,7 +862,7 @@ public class SubmitterTests
                                                     CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Canceling,
+    Assert.AreEqual(TaskStatus.Cancelling,
                     reply.IdStatuses.Single()
                          .Status);
   }

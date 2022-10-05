@@ -240,7 +240,7 @@ public class SessionTableTestBase
                                                                CancellationToken.None)
                                            .ConfigureAwait(false);
 
-      Assert.AreEqual(SessionStatus.Canceled,
+      Assert.AreEqual(SessionStatus.Cancelled,
                       sessionData.Status);
 
       var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(rootSessionId_!,

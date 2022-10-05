@@ -47,7 +47,6 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -131,7 +130,7 @@ public class TaskTable : ITaskTable
     Logger.LogInformation("update task {taskId} to status {status}",
                           id,
                           status);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Canceled,
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
@@ -159,7 +158,7 @@ public class TaskTable : ITaskTable
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Canceled)))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }
@@ -189,7 +188,7 @@ public class TaskTable : ITaskTable
     {
       return await taskCollection.AsQueryable(sessionHandle)
                                  .Where(model => model.TaskId == taskId)
-                                 .Select(model => model.Status == TaskStatus.Canceled || model.Status == TaskStatus.Canceling)
+                                 .Select(model => model.Status == TaskStatus.Cancelled || model.Status == TaskStatus.Cancelling)
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }
@@ -217,7 +216,7 @@ public class TaskTable : ITaskTable
     Logger.LogInformation("update task {taskId} to status {status}",
                           taskId,
                           TaskStatus.Processing);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Canceled,
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
@@ -270,9 +269,9 @@ public class TaskTable : ITaskTable
       throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
 
-    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId && model.Status != TaskStatus.Completed && model.Status != TaskStatus.Canceled,
+    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId && model.Status != TaskStatus.Completed && model.Status != TaskStatus.Cancelled,
                                          Builders<TaskData>.Update.Set(model => model.Status,
-                                                                       TaskStatus.Canceling),
+                                                                       TaskStatus.Cancelling),
                                          cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
   }
@@ -445,12 +444,12 @@ public class TaskTable : ITaskTable
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
                                                                        taskOutput)
                                                                   .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Canceled)
+                                                                       TaskStatus.Cancelled)
                                                                   .Set(tdm => tdm.EndDate,
                                                                        DateTime.UtcNow);
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
                           taskId,
-                          TaskStatus.Canceled,
+                          TaskStatus.Cancelled,
                           taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,

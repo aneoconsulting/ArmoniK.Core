@@ -104,7 +104,7 @@ public class SessionTable : ISessionTable
                                             CancellationToken cancellationToken = default)
     => Task.FromResult(GetSessionAsync(sessionId,
                                        cancellationToken)
-                       .Result.Status == SessionStatus.Canceled);
+                       .Result.Status == SessionStatus.Cancelled);
 
   /// <inheritdoc />
   public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
@@ -127,14 +127,14 @@ public class SessionTable : ISessionTable
                                             (_,
                                              data) =>
                                             {
-                                              if (data.Status == SessionStatus.Canceled)
+                                              if (data.Status == SessionStatus.Cancelled)
                                               {
                                                 throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
                                               }
 
                                               return data with
                                                      {
-                                                       Status = SessionStatus.Canceled,
+                                                       Status = SessionStatus.Cancelled,
                                                        CancellationDate = DateTime.UtcNow,
                                                      };
                                             }));

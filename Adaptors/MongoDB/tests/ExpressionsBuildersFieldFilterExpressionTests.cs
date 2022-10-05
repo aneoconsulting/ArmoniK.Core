@@ -272,7 +272,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceled,
+                                                                                 TaskStatus.Cancelled,
                                                                                })
                                   .Compile();
 
@@ -308,7 +308,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceled,
+                                                                                 TaskStatus.Cancelled,
                                                                                },
                                                                                false)
                                   .Compile();
@@ -365,7 +365,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -401,7 +401,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -416,7 +416,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceling,
+                                                                                 TaskStatus.Cancelling,
                                                                                })
                                   .Compile();
 
@@ -437,7 +437,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -452,7 +452,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceling,
+                                                                                 TaskStatus.Cancelling,
                                                                                },
                                                                                false)
                                   .Compile();
@@ -474,7 +474,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -509,7 +509,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -545,7 +545,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -581,7 +581,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -618,7 +618,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -653,7 +653,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -689,7 +689,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -725,7 +725,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -762,7 +762,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));

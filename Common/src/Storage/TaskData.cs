@@ -180,13 +180,13 @@ public record TaskData(string        SessionId,
        };
 
   /// <summary>
-  ///   Conversion operator from <see cref="TaskData" /> to <see cref="Task" />
+  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskSummary" />
   /// </summary>
   /// <param name="taskData">The input task data</param>
   /// <returns>
   ///   The converted task data
   /// </returns>
-  public static implicit operator Task(TaskData taskData)
+  public static implicit operator TaskSummary(TaskData taskData)
     => new()
        {
          SessionId = taskData.SessionId,
