@@ -138,6 +138,8 @@ public static class Program
                                                                              authCache.FlushConnection(context.ConnectionId);
                                                                            });
                                                        });
+                                   options.ListenAnyIP(1081,
+                                                       listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
                                  });
 
       var app = builder.Build();
@@ -159,13 +161,15 @@ public static class Program
       app.MapGrpcService<GrpcSessionsService>();
       app.MapGrpcService<GrpcResultsService>();
 
-      app.MapHealthChecks("/startup",
+      app.UseHealthChecks("/startup",
+                          1081,
                           new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
                           });
 
-      app.MapHealthChecks("/liveness",
+      app.UseHealthChecks("/liveness",
+                          1081,
                           new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
