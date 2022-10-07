@@ -24,7 +24,13 @@
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Interface representing a queue
+/// </summary>
 public interface IQueueStorage : IInitializable
 {
+  /// <summary>
+  ///   Max priority supported by the queue
+  /// </summary>
   public int MaxPriority { get; }
 }

@@ -27,8 +27,19 @@ using System.Threading;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Interface to retrieve messages from the queue
+/// </summary>
 public interface IPullQueueStorage : IQueueStorage
 {
+  /// <summary>
+  ///   Gets messages from the queue
+  /// </summary>
+  /// <param name="nbMessages">Number of messages to retrieve</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Async Enumerable of queue messages
+  /// </returns>
   IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
                                                            CancellationToken cancellationToken = default);
 }
