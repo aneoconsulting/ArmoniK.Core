@@ -27,9 +27,18 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Record encoding if a task successfully produced an output
+/// </summary>
+/// <param name="Success">xWhether the task is successful</param>
+/// <param name="Error">Error message if task is not successful</param>
 public record Output(bool   Success,
                      string Error)
 {
+  /// <summary>
+  ///   Convert the <see cref="Output" /> to <see cref=" Api.gRPC.V1.Output" />
+  /// </summary>
+  /// <param name="output">The object to convert</param>
   public static implicit operator Api.gRPC.V1.Output(Output output)
   {
     if (output.Success)
@@ -49,6 +58,10 @@ public record Output(bool   Success,
            };
   }
 
+  /// <summary>
+  ///   Convert the <see cref=" Api.gRPC.V1.Output" /> to <see cref="Output" />
+  /// </summary>
+  /// <param name="output">The object to convert</param>
   public static implicit operator Output(Api.gRPC.V1.Output output)
     => output.TypeCase switch
        {
@@ -58,6 +71,10 @@ public record Output(bool   Success,
                          output.Error.Details),
        };
 
+  /// <summary>
+  ///   Convert the <see cref="Output" /> to <see cref="TaskRaw.Types.Output" />
+  /// </summary>
+  /// <param name="output">The object to convert</param>
   public static implicit operator TaskRaw.Types.Output(Output output)
     => new()
        {
@@ -65,6 +82,10 @@ public record Output(bool   Success,
          Success = output.Success,
        };
 
+  /// <summary>
+  ///   Convert the <see cref="TaskRaw.Types.Output" /> to <see cref="Output" />
+  /// </summary>
+  /// <param name="output">The object to convert</param>
   public static implicit operator Output(TaskRaw.Types.Output output)
     => new(output.Success,
            output.Error);

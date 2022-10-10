@@ -26,6 +26,12 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Data structure to hold the count of tasks given their status and partition id
+/// </summary>
+/// <param name="PartitionId">Partition identifier</param>
+/// <param name="Status">Task status</param>
+/// <param name="Count">Number of task with the corresponding status and partition id</param>
 public record PartitionTaskStatusCount(string     PartitionId,
                                        TaskStatus Status,
                                        int        Count);

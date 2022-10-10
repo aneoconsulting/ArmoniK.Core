@@ -28,8 +28,21 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Interface to insert messages into the queue
+/// </summary>
 public interface IPushQueueStorage : IQueueStorage
 {
+  /// <summary>
+  ///   Puts messages into the queue
+  /// </summary>
+  /// <param name="messages">Collection of messages</param>
+  /// <param name="partitionId">Id of the partition</param>
+  /// <param name="priority">Priority of the tasks associated to the messages</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   public Task PushMessagesAsync(IEnumerable<string> messages,
                                 string              partitionId,
                                 int                 priority          = 1,

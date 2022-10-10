@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
@@ -34,6 +35,10 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Queue to identify input data with a <see cref="ProcessRequest.Types.ComputeRequest" /> while verifying
+///   the request ordering with state machines
+/// </summary>
 public class ComputeRequestQueue
 {
   private readonly Queue<ProcessRequest.Types.ComputeRequest> computeRequests_;
@@ -41,6 +46,10 @@ public class ComputeRequestQueue
   private readonly ILogger                    logger_;
   private readonly ComputeRequestStateMachine machine_;
 
+  /// <summary>
+  ///   Initializes a queue that stores <see cref="ProcessRequest.Types.ComputeRequest" />
+  /// </summary>
+  /// <param name="logger"></param>
   public ComputeRequestQueue(ILogger logger)
   {
     logger_          = logger;
@@ -48,6 +57,16 @@ public class ComputeRequestQueue
     machine_         = new ComputeRequestStateMachine(logger_);
   }
 
+  /// <summary>
+  ///   Create the init computation request with the given parameters
+  /// </summary>
+  /// <param name="dataChunkMaxSize">The maximum size of a data chunk</param>
+  /// <param name="sessionId">The session identifier</param>
+  /// <param name="taskId">The task identifier</param>
+  /// <param name="taskOptions">The options of the task</param>
+  /// <param name="payload">The input data of the task</param>
+  /// <param name="expectedOutputKeys">Collection of data ids for the expected outputs of the task</param>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void Init(int           dataChunkMaxSize,
                    string        sessionId,
                    string        taskId,
@@ -81,6 +100,11 @@ public class ComputeRequestQueue
                              });
   }
 
+  /// <summary>
+  ///   Add the given payload chunk to the request queue
+  /// </summary>
+  /// <param name="chunk">Data chunk</param>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void AddPayloadChunk(ByteString chunk)
   {
     machine_.AddPayloadChunk();
@@ -93,6 +117,10 @@ public class ComputeRequestQueue
                              });
   }
 
+  /// <summary>
+  ///   Add a request representing the end of the payload in the queue
+  /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void CompletePayload()
   {
     machine_.CompletePayload();
@@ -105,6 +133,11 @@ public class ComputeRequestQueue
                              });
   }
 
+  /// <summary>
+  ///   Add a request representing the start of a data dependency in the queue
+  /// </summary>
+  /// <param name="key">The identifier of the data dependency</param>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void InitDataDependency(string key)
   {
     machine_.InitDataDependency();
@@ -117,7 +150,11 @@ public class ComputeRequestQueue
                              });
   }
 
-
+  /// <summary>
+  ///   Add a request containing the given data chunk for the data dependency in the queue
+  /// </summary>
+  /// <param name="chunk">Data chunk</param>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void AddDataDependencyChunk(ByteString chunk)
   {
     machine_.AddDataDependencyChunk();
@@ -130,6 +167,10 @@ public class ComputeRequestQueue
                              });
   }
 
+  /// <summary>
+  ///   Add a request representing the end of the data dependency in the queue
+  /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void CompleteDataDependency()
   {
     machine_.CompleteDataDependency();
@@ -142,6 +183,13 @@ public class ComputeRequestQueue
                              });
   }
 
+  /// <summary>
+  ///   Get the queue with the complete compute request
+  /// </summary>
+  /// <returns>
+  ///   The queue with the complete compute request
+  /// </returns>
+  /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public Queue<ProcessRequest.Types.ComputeRequest> GetQueue()
   {
     machine_.CompleteRequest();
