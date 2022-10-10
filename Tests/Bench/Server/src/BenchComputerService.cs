@@ -63,8 +63,18 @@ public class BenchComputerService : WorkerStreamWrapper
       var sleep = int.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("TaskDurationMs",
                                                                               "100"));
 
+      logger_.LogInformation("Sleep for {sleepTimeMs}",
+                             sleep);
+
       await Task.Delay(sleep)
                 .ConfigureAwait(false);
+
+      foreach (var resultId in taskHandler.ExpectedResults)
+      {
+        await taskHandler.SendResult(resultId,
+                                     taskHandler.Payload)
+                         .ConfigureAwait(false);
+      }
 
       var taskError = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskError",
                                                                         string.Empty);

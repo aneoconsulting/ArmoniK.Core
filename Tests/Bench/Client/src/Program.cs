@@ -24,6 +24,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Options;
@@ -94,27 +95,31 @@ internal static class Program
                                };
     var createSessionReply = submitterClient.CreateSession(createSessionRequest);
 
+    var results = Enumerable.Range(0,
+                                   optionsHtcMock.NTasks)
+                            .Select(i => Guid.NewGuid() + "root" + i)
+                            .ToList();
+
     var createTaskReply = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
                                                                  null,
-                                                                 Enumerable.Range(0,
-                                                                                  optionsHtcMock.NTasks)
-                                                                           .Select(i => new TaskRequest
-                                                                                        {
-                                                                                          ExpectedOutputKeys =
-                                                                                          {
-                                                                                            Guid.NewGuid() + "root" + i,
-                                                                                          },
-                                                                                          Payload = UnsafeByteOperations.UnsafeWrap(BitConverter.GetBytes(i)),
-                                                                                        }))
+                                                                 results.Select(resultId => new TaskRequest
+                                                                                            {
+                                                                                              ExpectedOutputKeys =
+                                                                                              {
+                                                                                                resultId,
+                                                                                              },
+                                                                                              Payload =
+                                                                                                UnsafeByteOperations.UnsafeWrap(Encoding.ASCII.GetBytes(resultId)),
+                                                                                            }))
                                                .ConfigureAwait(false);
 
     var sessionClient = new SessionClient(submitterClient,
                                           createSessionReply.SessionId,
                                           NullLogger<SessionClient>.Instance);
 
-    foreach (var creationStatus in createTaskReply.CreationStatusList.CreationStatuses)
+    foreach (var resultId in results)
     {
-      var result = sessionClient.GetResult(creationStatus.TaskInfo.TaskId);
+      var result = sessionClient.GetResult(resultId);
     }
 
     Console.CancelKeyPress += (sender,
