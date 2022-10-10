@@ -32,26 +32,27 @@ using ArmoniK.Core.Common.Storage;
 using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly BasicGetResult basicGetResult_;
-  private readonly IModel         channel_;
-  private readonly ILogger        logger_;
+  private readonly IModel                channel_;
+  private readonly BasicDeliverEventArgs deliverEvent_;
+  private readonly ILogger               logger_;
 
-  public QueueMessageHandler(IModel            channel,
-                             string            taskId,
-                             ILogger           logger,
-                             CancellationToken cancellationToken)
+  public QueueMessageHandler(IModel                channel,
+                             BasicDeliverEventArgs deliverEvent,
+                             string                taskId,
+                             ILogger               logger,
+                             CancellationToken     cancellationToken)
   {
     logger_           = logger;
     TaskId            = taskId;
-    channel_          = channel;
+    deliverEvent_     = deliverEvent;
     CancellationToken = cancellationToken;
-    basicGetResult_ = channel_.BasicGet("",
-                                        false);
+    channel_          = channel;
   }
 
   /// <inheritdoc />
@@ -59,7 +60,7 @@ public class QueueMessageHandler : IQueueMessageHandler
 
   /// <inheritdoc />
   public string MessageId
-    => basicGetResult_.BasicProperties.MessageId;
+    => deliverEvent_.BasicProperties.MessageId;
 
   /// <inheritdoc />
   public string TaskId { get; }
@@ -74,24 +75,24 @@ public class QueueMessageHandler : IQueueMessageHandler
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        channel_.BasicPublish(basicGetResult_.Exchange,
-                              basicGetResult_.RoutingKey,
-                              basicGetResult_.BasicProperties,
-                              basicGetResult_.Body);
-        channel_.BasicAck(basicGetResult_.DeliveryTag,
+        channel_.BasicPublish(deliverEvent_.Exchange,
+                              deliverEvent_.RoutingKey,
+                              deliverEvent_.BasicProperties,
+                              deliverEvent_.Body);
+        channel_.BasicAck(deliverEvent_.DeliveryTag,
                           false);
         break;
       case QueueMessageStatus.Failed:
-        channel_.BasicNack(basicGetResult_.DeliveryTag,
+        channel_.BasicNack(deliverEvent_.DeliveryTag,
                            false,
                            false);
         break;
       case QueueMessageStatus.Processed:
-        channel_.BasicAck(basicGetResult_.DeliveryTag,
+        channel_.BasicAck(deliverEvent_.DeliveryTag,
                           false);
         break;
       case QueueMessageStatus.Poisonous:
-        channel_.BasicReject(basicGetResult_.DeliveryTag,
+        channel_.BasicReject(deliverEvent_.DeliveryTag,
                              false);
         break;
       default:

@@ -25,6 +25,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Storage;
+
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : QueueStorageBase

@@ -22,19 +22,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Adapters.Amqp;
+using System.Threading;
+using System.Threading.Tasks;
 
-using RabbitMQ.Client;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class QueueStorage : QueueStorageBase
 {
-  private const      int    MaxInternalQueuePriority = 10;
-  protected readonly IModel Channel;
+  private const      int               MaxInternalQueuePriority = 10;
+  protected readonly IConnectionRabbit ConnectionRabbit;
 
-  public QueueStorage(Common.Injection.Options.Amqp options,
-                      IModel                        channel)
+  public QueueStorage(Amqp              options,
+                      IConnectionRabbit connectionRabbit)
     : base(options)
-    => Channel = channel;
+    => ConnectionRabbit = connectionRabbit;
+
+
+  public override async Task Init(CancellationToken cancellationToken)
+  {
+    await ConnectionRabbit.Init(cancellationToken)
+                          .ConfigureAwait(false);
+
+    if (!IsInitialized)
+    {
+      IsInitialized = true;
+    }
+  }
 }

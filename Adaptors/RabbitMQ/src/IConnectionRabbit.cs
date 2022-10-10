@@ -22,37 +22,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Extensions.Logging;
+using System;
+
+using ArmoniK.Core.Common;
 
 using RabbitMQ.Client;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
-public class ModelRabbitMq
+public interface IConnectionRabbit : IInitializable, IDisposable
 {
-  private readonly ILogger logger_;
-
-  private readonly Common.Injection.Options.Amqp options_;
-
-  public ModelRabbitMq(Common.Injection.Options.Amqp options,
-                       ILogger                       logger)
-  {
-    logger_  = logger;
-    options_ = options;
-  }
-
-  public IModel CreateModel()
-  {
-    var factory = new ConnectionFactory
-                  {
-                    HostName = options_.Host,
-                    Port     = options_.Port,
-                    UserName = options_.User,
-                    Password = options_.Password,
-                  };
-
-    var connection = factory.CreateConnection();
-
-    return connection.CreateModel();
-  }
+  public IModel? Channel { get; }
 }

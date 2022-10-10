@@ -27,9 +27,11 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -41,20 +43,26 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
 {
-  private readonly IModel                    channel_;
+  private readonly IConnectionRabbit         connection_;
   private readonly ILogger<PullQueueStorage> logger_;
   private readonly QueueDeclareOk            pullQueue_;
 
-  public PullQueueStorage(Common.Injection.Options.Amqp options,
-                          IModel                        channel,
-                          ILogger<PullQueueStorage>     logger)
+  public PullQueueStorage(Amqp                      options,
+                          IConnectionRabbit         connectionRabbit,
+                          ILogger<PullQueueStorage> logger)
     : base(options)
   {
-    channel_ = channel;
-    logger_  = logger;
+    connection_ = connectionRabbit;
+    logger_     = logger;
 
-    channel_.ExchangeDeclare("ArmoniK.QueueExchange",
-                             "direct");
+    if (string.IsNullOrEmpty(options.PartitionId))
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.PartitionId)} is not defined.");
+    }
+
+    connection_.Channel.ExchangeDeclare("ArmoniK.QueueExchange",
+                                        "direct");
 
     var queueArgs = new Dictionary<string, object>
                     {
@@ -63,81 +71,69 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                       },
                     };
 
-    pullQueue_ = channel_.QueueDeclare("",
-                                       false, /* to survive broker restart */
-                                       true /* used only by a connection, deleted after connection closes */,
-                                       false, /* deleted when last consumer unsubscribes (if it has had one) */
-                                       queueArgs);
+    pullQueue_ = connection_.Channel!.QueueDeclare("",
+                                                   false, /* to survive broker restart */
+                                                   true /* used only by a connection, deleted after connection closes */,
+                                                   false, /* deleted when last consumer unsubscribes (if it has had one) */
+                                                   queueArgs);
 
-    channel_.QueueBind(pullQueue_.QueueName,
-                       "ArmoniK.QueueExchange",
-                       Options!.PartitionId);
+    connection_.Channel.QueueBind(pullQueue_.QueueName,
+                                  "ArmoniK.QueueExchange",
+                                  Options!.PartitionId);
 
     /* Setup prefetching. TODO: Rename LinkCredit to something less amqpLite specific */
-    channel_.BasicQos(0,
-                      Convert.ToUInt16(Options.LinkCredit),
-                      false);
+    connection_.Channel.BasicQos(0,
+                                 Convert.ToUInt16(Options.LinkCredit),
+                                 false);
   }
 
   public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
                                                                   CancellationToken cancellationToken = default)
     => throw new NotImplementedException();
 
-
-  public IList<IQueueMessageHandler> PullMessages(int                                        nbMessages,
-                                                  [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async Task<IList<IQueueMessageHandler>> PullMessages(int                                        nbMessages,
+                                                              [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    if (!IsInitialized)
+    {
+      throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
+    }
+
     using var _               = logger_!.LogFunction();
     var       nbPulledMessage = 0;
+    var       qmhList         = new List<IQueueMessageHandler>();
 
     cancellationToken.ThrowIfCancellationRequested();
-#if false
-    while (nbPulledMessage < nbMessages)
+
+    var consumer = new EventingBasicConsumer(connection_.Channel!);
+
+    // Delegate to declare a subscriber to the queue
+    void Subscriber(object?               model,
+                    BasicDeliverEventArgs eventArgs)
     {
-      var currentNbMessages = nbPulledMessage;
-      var bGet = channel_.BasicGet(pullQueue_.QueueName,
-                                   false);
-      if (bGet is null)
-      {
-        logger_!.LogTrace("Message is null");
-        continue;
-      }
+      var body    = eventArgs.Body.ToArray();
+      var message = Encoding.UTF8.GetString(body);
 
-      yield return new QueueMessageHandler(channel_,
-                                           Encoding.UTF8.GetString(bGet.Body.ToArray() ?? throw new InvalidOperationException("Error while deserializing message")),
-                                           logger_!,
-                                           cancellationToken);
-      nbPulledMessage++;
+      qmhList.Add(new QueueMessageHandler(connection_.Channel!,
+                                          eventArgs,
+                                          message,
+                                          logger_,
+                                          cancellationToken));
 
-      if (nbPulledMessage == currentNbMessages)
+      Interlocked.Increment(ref nbPulledMessage);
+
+      // Cancel subscription if the number of pulled messages hits the target
+      if (Thread.VolatileRead(ref nbPulledMessage) == nbMessages)
       {
-        break;
+        consumer.Received -= Subscriber;
       }
     }
 
-#else
-    var qmhList  = new List<IQueueMessageHandler>();
-    var consumer = new EventingBasicConsumer(channel_);
-    consumer.Received += (model,
-                          eventArgs) =>
-                         {
-                           var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
-                           qmhList.Add(new QueueMessageHandler(channel_,
-                                                               message,
-                                                               logger_!,
-                                                               cancellationToken));
+    consumer.Received += Subscriber;
 
-                           nbPulledMessage++;
-
-                           if (nbPulledMessage == nbMessages)
-                           {
-                             channel_.BasicCancel(eventArgs.ConsumerTag);
-                           }
-                         };
-    channel_.BasicConsume(pullQueue_.QueueName,
-                          false,
-                          consumer);
+    connection_.Channel!.BasicConsume(pullQueue_.QueueName,
+                                      false,
+                                      consumer);
     return qmhList;
-#endif
   }
 }

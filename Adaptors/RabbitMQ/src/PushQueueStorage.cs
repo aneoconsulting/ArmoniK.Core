@@ -29,6 +29,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -41,16 +43,12 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
   private readonly ILogger<PushQueueStorage> logger_;
 
-  public PushQueueStorage(Common.Injection.Options.Amqp options,
-                          IModel                        channel,
-                          ILogger<PushQueueStorage>     logger)
+  public PushQueueStorage(Amqp                      options,
+                          IConnectionRabbit         connectionRabbit,
+                          ILogger<PushQueueStorage> logger)
     : base(options,
-           channel)
-  {
-    logger_ = logger;
-    Channel.ExchangeDeclare("ArmoniK.QueueExchange",
-                            "direct");
-  }
+           connectionRabbit)
+    => logger_ = logger;
 
   /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<string> messages,
@@ -71,15 +69,23 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   {
     using var _ = logger_.LogFunction();
 
-    var basicProperties = Channel.CreateBasicProperties();
+    if (!IsInitialized)
+    {
+      throw new ArmoniKException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
+    }
+
+    ConnectionRabbit.Channel!.ExchangeDeclare("ArmoniK.QueueExchange",
+                                              "direct");
+
+    var basicProperties = ConnectionRabbit.Channel!.CreateBasicProperties();
     basicProperties.Priority = Convert.ToByte(priority);
 
     foreach (var msg in messages)
     {
-      Channel.BasicPublish("ArmoniK.QueueExchange",
-                           partitionId,
-                           basicProperties,
-                           Encoding.UTF8.GetBytes(msg));
+      ConnectionRabbit.Channel.BasicPublish("ArmoniK.QueueExchange",
+                                            partitionId,
+                                            basicProperties,
+                                            Encoding.UTF8.GetBytes(msg));
     }
   }
 }

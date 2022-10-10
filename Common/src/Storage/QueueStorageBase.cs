@@ -26,21 +26,20 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Injection.Options;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core.Adapters.Amqp;
+namespace ArmoniK.Core.Common.Storage;
 
 public class QueueStorageBase : IQueueStorage
 {
-  private const   int                           MaxInternalQueuePriority = 10;
-  public readonly Common.Injection.Options.Amqp Options;
+  private const   int  MaxInternalQueuePriority = 10;
+  public readonly Amqp Options;
 
   public bool IsInitialized;
 
-  protected QueueStorageBase(Common.Injection.Options.Amqp options)
+  protected QueueStorageBase(Amqp options)
   {
     if (string.IsNullOrEmpty(options.Host))
     {

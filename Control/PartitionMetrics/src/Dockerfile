@@ -9,6 +9,7 @@ COPY ["Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj", "Adaptors/Amqp/src/"]
+COPY ["Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj", "Adaptors/RabbitMQ/src/"]
 COPY ["Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj", "Adaptors/MongoDB/src/"]
 RUN dotnet restore "Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj"
 COPY . .
