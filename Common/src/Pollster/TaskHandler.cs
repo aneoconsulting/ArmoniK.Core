@@ -440,9 +440,19 @@ public class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
-    computeRequestStream_ = await dataPrefetcher_.PrefetchDataAsync(taskData_,
-                                                                    cancellationTokenSource_.Token)
-                                                 .ConfigureAwait(false);
+    try
+    {
+      computeRequestStream_ = await dataPrefetcher_.PrefetchDataAsync(taskData_,
+                                                                      cancellationTokenSource_.Token)
+                                                   .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      await HandleErrorAsync(e,
+                             taskData_,
+                             cancellationTokenSource_.Token)
+        .ConfigureAwait(false);
+    }
   }
 
   /// <summary>
@@ -462,40 +472,50 @@ public class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
-    logger_.LogDebug("Create agent server to receive requests from worker");
-
-    // In theory we could create the server during dependencies checking and activate it only now
-    agent_ = await agentHandler_.Start(token_,
-                                       logger_,
-                                       sessionData_,
-                                       taskData_,
-                                       cancellationTokenSource_.Token)
-                                .ConfigureAwait(false);
-
-    logger_.LogInformation("Start processing task");
-    await submitter_.StartTask(taskData_.TaskId,
-                               cancellationTokenSource_.Token)
-                    .ConfigureAwait(false);
-
-    workerStreamHandler_.StartTaskProcessing(taskData_,
-                                             workerConnectionCts_.Token);
-    if (workerStreamHandler_.Pipe is null)
+    try
     {
-      throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
-    }
+      logger_.LogDebug("Create agent server to receive requests from worker");
 
-    while (computeRequestStream_.TryDequeue(out var computeRequest))
-    {
-      await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                 {
-                                                   Compute            = computeRequest,
-                                                   CommunicationToken = token_,
-                                                 })
+      // In theory we could create the server during dependencies checking and activate it only now
+      agent_ = await agentHandler_.Start(token_,
+                                         logger_,
+                                         sessionData_,
+                                         taskData_,
+                                         cancellationTokenSource_.Token)
+                                  .ConfigureAwait(false);
+
+      logger_.LogInformation("Start processing task");
+      await submitter_.StartTask(taskData_.TaskId,
+                                 cancellationTokenSource_.Token)
+                      .ConfigureAwait(false);
+
+      workerStreamHandler_.StartTaskProcessing(taskData_,
+                                               workerConnectionCts_.Token);
+      if (workerStreamHandler_.Pipe is null)
+      {
+        throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
+      }
+
+      while (computeRequestStream_.TryDequeue(out var computeRequest))
+      {
+        await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                   {
+                                                     Compute            = computeRequest,
+                                                     CommunicationToken = token_,
+                                                   })
+                                  .ConfigureAwait(false);
+      }
+
+      await workerStreamHandler_.Pipe.CompleteAsync()
                                 .ConfigureAwait(false);
     }
-
-    await workerStreamHandler_.Pipe.CompleteAsync()
-                              .ConfigureAwait(false);
+    catch (Exception e)
+    {
+      await HandleErrorAsync(e,
+                             taskData_,
+                             cancellationTokenSource_.Token)
+        .ConfigureAwait(false);
+    }
   }
 
   /// <summary>
@@ -553,50 +573,33 @@ public class TaskHandler : IAsyncDisposable
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
-    catch (RpcException e)
-    {
-      logger_.LogError(e,
-                       "Error while computing task, retrying task");
-
-      await CompleteTaskAfterErrorAsync(e,
-                                        taskData_,
-                                        QueueMessageStatus.Cancelled,
-                                        true,
-                                        cancellationTokenSource_.Token)
-        .ConfigureAwait(false);
-
-      // Rethrow enable the recording of the error by the Pollster Main loop
-      throw;
-    }
     catch (Exception e)
     {
-      logger_.LogWarning(e,
-                         "Error while finalizing task processing");
-
-      await CompleteTaskAfterErrorAsync(e,
-                                        taskData_,
-                                        QueueMessageStatus.Processed,
-                                        false,
-                                        cancellationTokenSource_.Token)
+      await HandleErrorAsync(e,
+                             taskData_,
+                             cancellationTokenSource_.Token)
         .ConfigureAwait(false);
-
-      // Rethrow enable the recording of the error by the Pollster Main loop
-      throw;
     }
 
     logger_.LogDebug("End Task Processing");
   }
 
-
-  private async Task CompleteTaskAfterErrorAsync(Exception          e,
-                                                 TaskData           taskData,
-                                                 QueueMessageStatus queueStatus,
-                                                 bool               resubmit,
-                                                 CancellationToken  cancellationToken)
+  private async Task HandleErrorAsync(Exception         e,
+                                      TaskData          taskData,
+                                      CancellationToken cancellationToken)
   {
+    var resubmit    = false;
+    var queueStatus = QueueMessageStatus.Processed;
+    if (e is RpcException or ObjectDataNotFoundException)
+    {
+      resubmit    = true;
+      queueStatus = QueueMessageStatus.Cancelled;
+    }
+
     if (cancellationToken.IsCancellationRequested)
     {
-      logger_.LogWarning("Cancellation triggered, task cancelled here and re executed elsewhere");
+      logger_.LogWarning(e,
+                         "Cancellation triggered, task cancelled here and re executed elsewhere");
       await taskTable_.ReleaseTask(taskData.TaskId,
                                    ownerPodId_,
                                    CancellationToken.None)
@@ -605,6 +608,17 @@ public class TaskHandler : IAsyncDisposable
     }
     else
     {
+      if (resubmit)
+      {
+        logger_.LogWarning(e,
+                           "Error during task execution, retrying task");
+      }
+      else
+      {
+        logger_.LogError(e,
+                         "Error during task execution, cancelling task");
+      }
+
       await submitter_.CompleteTaskAsync(taskData,
                                          resubmit,
                                          new Output
@@ -618,5 +632,8 @@ public class TaskHandler : IAsyncDisposable
                       .ConfigureAwait(false);
       messageHandler_.Status = queueStatus;
     }
+
+    // Rethrow enable the recording of the error by the Pollster Main loop
+    throw e;
   }
 }
