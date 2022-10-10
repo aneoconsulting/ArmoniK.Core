@@ -857,6 +857,26 @@ public class TaskHandlerTest
       => Pipe = new ExceptionAsyncPipe<T>(delay_);
   }
 
+  public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
+    where T : Exception, new()
+  {
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+
+    public void Dispose()
+    {
+    }
+
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+
+    public void StartTaskProcessing(TaskData          taskData,
+                                    CancellationToken cancellationToken)
+      => throw new T();
+  }
+
   public class TestRpcException : RpcException
   {
     public TestRpcException()
@@ -1000,6 +1020,55 @@ public class TaskHandlerTest
                                                                        })
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
+  }
+
+  [Test]
+  public async Task ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new ExceptionStartWorkerStreamHandler<TestRpcException>();
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                new CancellationTokenSource());
+
+    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                              .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.IsTrue(acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<TestRpcException>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
+                                                                              .ConfigureAwait(false));
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Error,
+                    taskData.Status);
+
+    var taskDataRetry = await testServiceProvider.TaskTable.ReadTaskAsync(taskId + "###1",
+                                                                          CancellationToken.None)
+                                                 .ConfigureAwait(false);
+    Assert.AreEqual(taskId,
+                    taskDataRetry.InitialTaskId);
   }
 
   [Test]
