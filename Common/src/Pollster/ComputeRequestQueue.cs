@@ -36,8 +36,8 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
-///   Queue for converting data to their corresponding <see cref="ProcessRequest.Types.ComputeRequest" /> while verifying
-///   their consistency through state machines
+///   Queue to identify input data with a <see cref="ProcessRequest.Types.ComputeRequest" /> while verifying
+///   the request ordering with state machines
 /// </summary>
 public class ComputeRequestQueue
 {
@@ -118,7 +118,7 @@ public class ComputeRequestQueue
   }
 
   /// <summary>
-  ///   Add request representing the end of the payload in the queue
+  ///   Add a request representing the end of the payload in the queue
   /// </summary>
   /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void CompletePayload()
@@ -134,7 +134,7 @@ public class ComputeRequestQueue
   }
 
   /// <summary>
-  ///   Add request representing the start of a data dependency in the queue
+  ///   Add a request representing the start of a data dependency in the queue
   /// </summary>
   /// <param name="key">The identifier of the data dependency</param>
   /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
@@ -151,7 +151,7 @@ public class ComputeRequestQueue
   }
 
   /// <summary>
-  ///   Add request containing the given data chunk for the data dependency in the queue
+  ///   Add a request containing the given data chunk for the data dependency in the queue
   /// </summary>
   /// <param name="chunk">Data chunk</param>
   /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
@@ -168,7 +168,7 @@ public class ComputeRequestQueue
   }
 
   /// <summary>
-  ///   Add request representing the end of the data dependency in the queue
+  ///   Add a request representing the end of the data dependency in the queue
   /// </summary>
   /// <exception cref="InvalidOperationException">Invalid request according to the state machine</exception>
   public void CompleteDataDependency()

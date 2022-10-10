@@ -38,7 +38,7 @@ public interface IPullQueueStorage : IQueueStorage
   /// <param name="nbMessages">Number of messages to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Async Enumerable of queue messages
+  ///   Enumerator allowing async iteration over the message queue
   /// </returns>
   IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
                                                            CancellationToken cancellationToken = default);
