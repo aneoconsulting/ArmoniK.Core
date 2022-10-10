@@ -28,8 +28,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
