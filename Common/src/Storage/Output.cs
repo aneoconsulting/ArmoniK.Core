@@ -28,7 +28,7 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-///   Represents the output of a task
+///   Record encoding if a task successfully produced an output
 /// </summary>
 /// <param name="Success">xWhether the task is successful</param>
 /// <param name="Error">Error message if task is not successful</param>
