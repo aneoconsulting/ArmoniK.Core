@@ -157,7 +157,7 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueue:
+  testsQueue-Amqp1.0.0:
     strategy:
       matrix:
         projects:
@@ -165,6 +165,47 @@ jobs:
         queue:
           - activemqp
           - rabbitmq
+        os:
+          - ubuntu-latest
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.x
+
+    - name: Setup queue
+      uses: isbang/compose-action@v1.1.0
+      with:
+        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
+
+    - name: Run tests
+      run: |
+        cd ${{ matrix.projects }}
+        dotnet test --logger "trx;LogFileName=test-results.trx"
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
+        path: ${{ matrix.projects }}/TestResults/test-results.trx
+        reporter: dotnet-trx
+
+  testsQueue-Amqp0.9.1:
+    strategy:
+      matrix:
+        projects:
+          - Adaptors/RabbitMQ/tests
+        queue:
+          - rabbitmq-0.9.1
         os:
           - ubuntu-latest
       fail-fast: false
@@ -712,7 +753,8 @@ jobs:
     needs:
       - format
       - tests
-      - testsQueue
+      - testsQueue-Amqp0.9.1
+      - testsQueue-Amqp1.0.0
       - testsWinOnly
       - testHtcMockDC
       - defaultPartitionMock
