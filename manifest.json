@@ -1485,7 +1485,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.TaskHandler.html",
-          "hash": "M7Dv1GNbHNL7rvO0/6cyBqr4KQAUu+k+ADL6T/6a/b0="
+          "hash": "oEw3Zko3VZxm9t1Q+GIYb1Tx/l+DXnE3NhHelCQudpo="
         }
       },
       "is_incremental": false,
@@ -2657,6 +2657,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler-1.html",
+          "hash": "uhwBYYUFOee97F7x4cGaKKgaBYGhZju2ZqHr3fzBNWY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.yml",
       "output": {
         ".html": {
@@ -2673,7 +2685,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html",
-          "hash": "ANKC0KS5MYTJ/fZcPl2Zh0Djw53l1rW77Au13kYRcIo="
+          "hash": "i0+43DElOkfARBBrfXai9H4dMmmRO0PT0/QlyW362/g="
         }
       },
       "is_incremental": false,
@@ -2721,7 +2733,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html",
-          "hash": "Szt9MOEB0hOYsxmo6XO4ijPaFQzg+LUx4SkOm4BuLHQ="
+          "hash": "Q7zwt4qDOwFfWJMmLPpQcyx4Mu2nGkws8Le9L/45/yM="
         }
       },
       "is_incremental": false,
@@ -2733,7 +2745,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.html",
-          "hash": "Ty92S3YYk7F54Zd3qLfJDmtKz/dWQeaQVupzJbeSmxo="
+          "hash": "twX37G5EwGDSk2SCxQenOi0dRN9lG7wJ9nS+xKFQeEg="
         }
       },
       "is_incremental": false,
@@ -3873,7 +3885,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "JqykiNQ2JXgdwavbUhYeIdqlTljZhNyKFaNtZ4Axa+8="
+          "hash": "9b7e9ZVOINrQJlWFvGglkAZWl2MLjhFsaLWtTQvcHw0="
         }
       },
       "is_incremental": false,
@@ -3972,7 +3984,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 321,
+          "total_file_count": 322,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
