@@ -205,7 +205,8 @@ public class QueueStorageTestsBase
         {
           var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
                                           .ConfigureAwait(false);
-          Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
+          Assert.IsNotNull(qmh);
+          Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
           qmh.Status = QueueMessageStatus.Processed;
           await qmh.DisposeAsync()
                    .ConfigureAwait(false);
@@ -246,7 +247,8 @@ public class QueueStorageTestsBase
       {
         var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
                                         .ConfigureAwait(false);
-        Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
+        Assert.IsNotNull(qmh);
+        Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);
       }
@@ -258,7 +260,8 @@ public class QueueStorageTestsBase
       {
         var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
                                         .ConfigureAwait(false);
-        Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
+        Assert.IsNotNull(qmh);
+        Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
         qmh.Status = QueueMessageStatus.Processed;
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);
@@ -296,7 +299,8 @@ public class QueueStorageTestsBase
       {
         var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
                                         .ConfigureAwait(false);
-        qmh.Status = QueueMessageStatus.Processed;
+        Assert.IsNotNull(qmh);
+        qmh!.Status = QueueMessageStatus.Processed;
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);
       }
