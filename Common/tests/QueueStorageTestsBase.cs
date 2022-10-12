@@ -119,8 +119,8 @@ public class QueueStorageTestsBase
     if (RunTests)
     {
       Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                         await PullQueueStorage.Check(HealthCheckTag.Liveness)
-                                               .ConfigureAwait(false));
+                         await PullQueueStorage!.Check(HealthCheckTag.Liveness)
+                                                .ConfigureAwait(false));
       Assert.AreNotEqual(HealthCheckResult.Healthy(),
                          await PullQueueStorage.Check(HealthCheckTag.Readiness)
                                                .ConfigureAwait(false));

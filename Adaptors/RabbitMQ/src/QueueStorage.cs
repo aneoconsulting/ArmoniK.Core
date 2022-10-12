@@ -35,8 +35,8 @@ public class QueueStorage : QueueStorageBase
   private const      int               MaxInternalQueuePriority = 10;
   protected readonly IConnectionRabbit ConnectionRabbit;
 
-  public QueueStorage(Amqp              options,
-                      IConnectionRabbit connectionRabbit)
+  protected QueueStorage(Amqp              options,
+                         IConnectionRabbit connectionRabbit)
     : base(options)
     => ConnectionRabbit = connectionRabbit;
 
