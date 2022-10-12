@@ -30,6 +30,7 @@ using Stateless.Graph;
 
 namespace ArmoniK.Core.Common.StateMachines;
 
+/// <inheritdoc />
 public class UmlMermaidGraphStyle : GraphStyleBase
 {
   /// <inheritdoc />

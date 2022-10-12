@@ -46,9 +46,9 @@ public interface IAgentHandler
   /// </summary>
   /// <param name="token">Token that can be used to differentiate running tasks</param>
   /// <param name="logger">Logger that may be injected into the handler that embed preconfigured scopes</param>
-  /// <param name="taskId"></param>
+  /// <param name="sessionData">Session metadata</param>
+  /// <param name="taskData">Task metadata</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <param name="sessionId"></param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>

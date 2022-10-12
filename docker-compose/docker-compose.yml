@@ -30,6 +30,7 @@ services:
       - armonik-monitoring
     ports:
       - 5001:1080
+      - 5011:1081
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
@@ -141,6 +142,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
+      - Pollster__MaxErrorAllowed=-1
       - InitWorker__WorkerCheckRetries=10
       - InitWorker__WorkerCheckDelay=00:00:10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}

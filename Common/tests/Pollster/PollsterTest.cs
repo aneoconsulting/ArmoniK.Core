@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,21 +8,22 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,6 +42,7 @@ using ArmoniK.Core.Common.Utils;
 using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using Moq;
 
@@ -347,6 +349,7 @@ public class PollsterTest
     var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
     await testServiceProvider.Pollster.MainLoop(cancellationTokenSource.Token)
                              .ConfigureAwait(false);
+    Assert.False(testServiceProvider.Pollster.Failed);
     Assert.IsFalse(cancellationTokenSource.IsCancellationRequested);
   }
 
@@ -478,6 +481,7 @@ public class PollsterTest
     var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
+    Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
     Assert.AreEqual(TaskStatus.Completed,
@@ -492,5 +496,73 @@ public class PollsterTest
                     testServiceProvider.Pollster.TaskProcessing);
     Assert.AreSame(string.Empty,
                    testServiceProvider.Pollster.TaskProcessing);
+  }
+
+  public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
+  {
+    get
+    {
+      var mockStreamHandler    = new Mock<IWorkerStreamHandler>();
+      var mockPullQueueStorage = new Mock<IPullQueueStorage>();
+      var mockAgentHandler     = new Mock<IAgentHandler>();
+
+      {
+        // Failing WorkerStreamHandler
+        var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
+        mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                                                       It.IsAny<CancellationToken>()))
+                             .Throws(new ApplicationException("Failed WorkerStreamHandler"));
+        yield return (mockStreamHandlerFail, mockPullQueueStorage, mockAgentHandler);
+      }
+
+      {
+        // Failing PullQueueStorage
+        var mockPullQueueStorageFail = new Mock<IPullQueueStorage>();
+        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+                                                                            It.IsAny<CancellationToken>()))
+                                .Throws(new ApplicationException("Failed queue"));
+
+        yield return (mockStreamHandler, mockPullQueueStorageFail, mockAgentHandler);
+      }
+
+      {
+        // Failing AgentHandler
+        var mockAgentHandlerFail = new Mock<IAgentHandler>();
+        mockAgentHandlerFail.Setup(agent => agent.Start(It.IsAny<string>(),
+                                                        It.IsAny<ILogger>(),
+                                                        It.IsAny<SessionData>(),
+                                                        It.IsAny<TaskData>(),
+                                                        It.IsAny<CancellationToken>()))
+                            .Throws(new ApplicationException("Failed agent"));
+
+        yield return (mockStreamHandler, mockPullQueueStorage, mockAgentHandlerFail);
+      }
+    }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(ExecuteTooManyErrorShouldFailTestCase))]
+  public async Task ExecuteTooManyErrorShouldFail((Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>) mocks)
+  {
+    var (mockStreamHandler, mockPullQueueStorage, mockAgentHandler) = mocks;
+
+    using var testServiceProvider = new TestPollsterProvider(mockStreamHandler.Object,
+                                                             mockAgentHandler.Object,
+                                                             mockPullQueueStorage.Object);
+    var pollster = testServiceProvider.Pollster;
+
+    await pollster.Init(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+
+    Assert.DoesNotThrowAsync(() => pollster.MainLoop(source.Token));
+    Assert.True(pollster.Failed);
+    Assert.False(source.Token.IsCancellationRequested);
+    Assert.AreEqual(string.Empty,
+                    pollster.TaskProcessing);
+    Assert.AreSame(string.Empty,
+                   pollster.TaskProcessing);
   }
 }

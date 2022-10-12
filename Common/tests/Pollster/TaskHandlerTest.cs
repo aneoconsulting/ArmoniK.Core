@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,17 +8,17 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -832,7 +832,7 @@ public class TaskHandlerTest
       => Task.CompletedTask;
   }
 
-  private class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
+  public class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
     where T : Exception, new()
   {
     private readonly int delay_;
@@ -855,6 +855,26 @@ public class TaskHandlerTest
     public void StartTaskProcessing(TaskData          taskData,
                                     CancellationToken cancellationToken)
       => Pipe = new ExceptionAsyncPipe<T>(delay_);
+  }
+
+  public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
+    where T : Exception, new()
+  {
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+
+    public void Dispose()
+    {
+    }
+
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+
+    public void StartTaskProcessing(TaskData          taskData,
+                                    CancellationToken cancellationToken)
+      => throw new T();
   }
 
   public class TestRpcException : RpcException
@@ -909,7 +929,8 @@ public class TaskHandlerTest
 
   [Test]
   [TestCaseSource(nameof(TestCaseOuptut))]
-  public async Task<TaskStatus> ExecuteTaskWithExceptionDuringCancellationShouldSucceed(IWorkerStreamHandler workerStreamHandler)
+  public async Task<TaskStatus> ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(ExceptionWorkerStreamHandler<Ex> workerStreamHandler)
+    where Ex : Exception, new()
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -944,8 +965,7 @@ public class TaskHandlerTest
 
     cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(1500));
 
-    await testServiceProvider.TaskHandler.PostProcessing()
-                             .ConfigureAwait(false);
+    Assert.ThrowsAsync<Ex>(() => testServiceProvider.TaskHandler.PostProcessing());
 
     return (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                               {
@@ -1000,6 +1020,55 @@ public class TaskHandlerTest
                                                                        })
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
+  }
+
+  [Test]
+  public async Task ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new ExceptionStartWorkerStreamHandler<TestRpcException>();
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                new CancellationTokenSource());
+
+    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                              .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.IsTrue(acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<TestRpcException>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
+                                                                              .ConfigureAwait(false));
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Error,
+                    taskData.Status);
+
+    var taskDataRetry = await testServiceProvider.TaskTable.ReadTaskAsync(taskId + "###1",
+                                                                          CancellationToken.None)
+                                                 .ConfigureAwait(false);
+    Assert.AreEqual(taskId,
+                    taskDataRetry.InitialTaskId);
   }
 
   [Test]

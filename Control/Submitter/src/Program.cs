@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,17 +8,17 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,6 +33,7 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
@@ -83,12 +84,14 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
+             .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
                                                             Common.Injection.Options.Submitter.SettingSection)
              .AddGrpcReflection()
              .ValidateGrpcRequests();
 
       builder.Services.AddHealthChecks();
+      builder.Services.AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>());
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
@@ -135,6 +138,8 @@ public static class Program
                                                                              authCache.FlushConnection(context.ConnectionId);
                                                                            });
                                                        });
+                                   options.ListenAnyIP(1081,
+                                                       listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
                                  });
 
       var app = builder.Build();
@@ -156,13 +161,15 @@ public static class Program
       app.MapGrpcService<GrpcSessionsService>();
       app.MapGrpcService<GrpcResultsService>();
 
-      app.MapHealthChecks("/startup",
+      app.UseHealthChecks("/startup",
+                          1081,
                           new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
                           });
 
-      app.MapHealthChecks("/liveness",
+      app.UseHealthChecks("/liveness",
+                          1081,
                           new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
