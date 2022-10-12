@@ -24,7 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,21 +86,17 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                  false);
   }
 
-  public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
-                                                                  CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
-
-  public async Task<IList<IQueueMessageHandler>> PullMessages(int                                        nbMessages,
-                                                              [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default)
   {
     if (!IsInitialized)
     {
       throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    using var _               = logger_!.LogFunction();
-    var       nbPulledMessage = 0;
-    var       qmhList         = new List<IQueueMessageHandler>();
+    using var             _               = logger_!.LogFunction();
+    var                   nbPulledMessage = 0;
+    const int             nbMessages      = 1;
+    IQueueMessageHandler? qmh             = null;
 
     cancellationToken.ThrowIfCancellationRequested();
 
@@ -114,11 +109,11 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
       var body    = eventArgs.Body.ToArray();
       var message = Encoding.UTF8.GetString(body);
 
-      qmhList.Add(new QueueMessageHandler(connection_.Channel!,
-                                          eventArgs,
-                                          message,
-                                          logger_,
-                                          cancellationToken));
+      qmh = new QueueMessageHandler(connection_.Channel!,
+                                    eventArgs,
+                                    message,
+                                    logger_,
+                                    cancellationToken);
 
       Interlocked.Increment(ref nbPulledMessage);
 
@@ -134,6 +129,7 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
     connection_.Channel!.BasicConsume(pullQueue_.QueueName,
                                       false,
                                       consumer);
-    return qmhList;
+
+    return Task.FromResult(qmh);
   }
 }

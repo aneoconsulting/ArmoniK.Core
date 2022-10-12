@@ -250,8 +250,7 @@ public class PollsterTest
 
     public int MaxPriority { get; }
 
-    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
-                                                                    CancellationToken cancellationToken = default)
+    public Task<IQueueMessageHandler> PullMessagesAsync(CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
   }
 
@@ -358,8 +357,7 @@ public class PollsterTest
     var mockPullQueueStorage = new Mock<IPullQueueStorage>();
     var mockAgentHandler     = new Mock<IAgentHandler>();
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<CancellationToken>()))
                         .Returns(() => new List<IQueueMessageHandler>
                                        {
                                          new SimpleQueueMessageHandler
@@ -461,8 +459,7 @@ public class PollsterTest
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<CancellationToken>()))
                         .Returns(() => new List<IQueueMessageHandler>
                                        {
                                          new SimpleQueueMessageHandler
