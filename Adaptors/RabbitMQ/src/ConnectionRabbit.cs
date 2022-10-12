@@ -79,9 +79,10 @@ public class ConnectionRabbit : IConnectionRabbit
         Channel     = connection_.CreateModel();
         break;
       }
-      catch
+      catch (Exception ex)
       {
-        logger_.LogInformation("Retrying to create connection");
+        logger_.LogInformation(ex,
+                               "Retrying to create connection");
         await Task.Delay(1000 * retry,
                          cancellationToken)
                   .ConfigureAwait(false);
