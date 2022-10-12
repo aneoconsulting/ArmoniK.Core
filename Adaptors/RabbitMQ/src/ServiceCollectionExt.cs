@@ -46,7 +46,7 @@ public static class ServiceCollectionExt
 
     var components = configuration.GetSection(Components.SettingSection);
 
-    if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
+    if (components["QueueStorage"] == "ArmoniK.Adapters.RabbitMQ.QueueStorage")
     {
       serviceCollection.AddOption(configuration,
                                   Amqp.SettingSection,
