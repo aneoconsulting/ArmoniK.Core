@@ -317,9 +317,6 @@ public class Pollster : IInitializable
             }
             catch (Exception e)
             {
-              logger_.LogError(e,
-                               "Error with messageHandler {messageId}",
-                               message.MessageId);
               RecordError(e);
             }
             finally
