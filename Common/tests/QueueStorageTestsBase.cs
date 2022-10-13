@@ -46,7 +46,7 @@ public class QueueStorageTestsBase
 
   [SetUp]
   public virtual void SetDefaultOptions()
-    => options_ = CreateDefaultOptions();
+    => Options = CreateDefaultOptions();
 
 
   /* Interfaces to test */
@@ -63,7 +63,7 @@ public class QueueStorageTestsBase
   public virtual Task GetQueueStorageInstance()
     => Task.CompletedTask;
 
-  private Injection.Options.Amqp? options_;
+  protected Injection.Options.Amqp? Options;
 
   protected static Injection.Options.Amqp CreateDefaultOptions()
     => new()
@@ -160,7 +160,7 @@ public class QueueStorageTestsBase
                            "msg5",
                          };
       await PushQueueStorage.PushMessagesAsync(testMessages,
-                                               options_!.PartitionId,
+                                               Options!.PartitionId,
                                                1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
@@ -174,7 +174,7 @@ public class QueueStorageTestsBase
   {
     if (RunTests)
     {
-      var priority = 1;
+      const int priority = 1;
       var testMessages = new[]
                          {
                            "msg1",
@@ -192,7 +192,7 @@ public class QueueStorageTestsBase
 
       for (var i = 0; i < 3; i++)
       {
-        options_!.PartitionId = $"part{i}";
+        Options!.PartitionId = $"part{i}";
 
         await PushQueueStorage.PushMessagesAsync(testMessages,
                                                  $"part{i}",
@@ -225,7 +225,7 @@ public class QueueStorageTestsBase
       await PullQueueStorage!.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-      var priority = 1;
+      const int priority = 1;
       var testMessages = new[]
                          {
                            "msg1",
@@ -236,7 +236,7 @@ public class QueueStorageTestsBase
                          };
       /* Push 5 messages to the queue to test the pull */
       await PushQueueStorage.PushMessagesAsync(testMessages,
-                                               options_!.PartitionId,
+                                               Options!.PartitionId,
                                                priority,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
@@ -290,7 +290,7 @@ public class QueueStorageTestsBase
                          };
 
       await PushQueueStorage.PushMessagesAsync(testMessages,
-                                               options_!.PartitionId,
+                                               Options!.PartitionId,
                                                1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);

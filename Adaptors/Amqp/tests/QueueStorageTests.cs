@@ -40,8 +40,6 @@ namespace ArmoniK.Core.Adapters.Amqp.Tests;
 [TestFixture]
 public class QueueStorageTests : QueueStorageTestsBase
 {
-  public Common.Injection.Options.Amqp? Options;
-
   public override async Task GetQueueStorageInstance()
   {
     await using var helper   = new SimpleAmqpClientHelper();
