@@ -157,7 +157,7 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueue100:
+  testsQueueProtocol100:
     strategy:
       matrix:
         projects:
@@ -199,7 +199,7 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueue091:
+  testsQueueProtocol091:
     strategy:
       matrix:
         projects:
