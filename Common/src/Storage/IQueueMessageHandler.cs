@@ -40,7 +40,7 @@ public enum QueueMessageStatus
 
 public interface IQueueMessageHandler : IAsyncDisposable
 {
-  CancellationToken CancellationToken { get; }
+  CancellationToken CancellationToken { get; set; }
 
   string MessageId { get; }
 

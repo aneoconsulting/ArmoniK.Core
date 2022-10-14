@@ -56,7 +56,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public QueueMessageStatus Status { get; set; }
 
-  public CancellationToken CancellationToken { get; init; }
+  public CancellationToken CancellationToken { get; set; }
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()

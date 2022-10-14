@@ -56,7 +56,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   }
 
   /// <inheritdoc />
-  public CancellationToken CancellationToken { get; }
+  public CancellationToken CancellationToken { get; set; }
 
   /// <inheritdoc />
   public string MessageId

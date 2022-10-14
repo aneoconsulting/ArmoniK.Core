@@ -118,8 +118,11 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     if (isInitialized_)
     {
-      connection_!.Dispose();
-      Channel!.Dispose();
+      Channel!.Close();
+      connection_!.Close();
+
+      Channel.Dispose();
+      connection_.Dispose();
     }
 
     GC.SuppressFinalize(this);

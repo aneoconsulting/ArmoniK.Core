@@ -23,12 +23,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
@@ -42,9 +42,9 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
 {
-  private readonly IConnectionRabbit         connection_;
-  private readonly ILogger<PullQueueStorage> logger_;
-  private readonly QueueDeclareOk            pullQueue_;
+  private readonly IConnectionRabbit                      connection_;
+  private readonly ILogger<PullQueueStorage>              logger_;
+  private readonly ConcurrentQueue<IQueueMessageHandler?> queueHandlers_;
 
   public PullQueueStorage(Amqp                      options,
                           IConnectionRabbit         connectionRabbit,
@@ -60,6 +60,8 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                             $"{nameof(Options.PartitionId)} is not defined.");
     }
 
+    queueHandlers_ = new ConcurrentQueue<IQueueMessageHandler?>();
+
     connection_.Channel.ExchangeDeclare("ArmoniK.QueueExchange",
                                         "direct");
 
@@ -70,13 +72,13 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                       },
                     };
 
-    pullQueue_ = connection_.Channel!.QueueDeclare("",
-                                                   false, /* to survive broker restart */
-                                                   true /* used only by a connection, deleted after connection closes */,
-                                                   false, /* deleted when last consumer unsubscribes (if it has had one) */
-                                                   queueArgs);
+    var pullQueue = connection_.Channel!.QueueDeclare("",
+                                                      false, /* to survive broker restart */
+                                                      true,  /* used only by a connection, deleted after connection closes */
+                                                      false, /* deleted when last consumer unsubscribes (if it has had one) */
+                                                      queueArgs);
 
-    connection_.Channel.QueueBind(pullQueue_.QueueName,
+    connection_.Channel.QueueBind(pullQueue.QueueName,
                                   "ArmoniK.QueueExchange",
                                   Options!.PartitionId);
 
@@ -84,21 +86,6 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
     connection_.Channel.BasicQos(0,
                                  Convert.ToUInt16(Options.LinkCredit),
                                  false);
-  }
-
-  public Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default)
-  {
-    if (!IsInitialized)
-    {
-      throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
-    }
-
-    using var             _               = logger_!.LogFunction();
-    var                   nbPulledMessage = 0;
-    const int             nbMessages      = 1;
-    IQueueMessageHandler? qmh             = null;
-
-    cancellationToken.ThrowIfCancellationRequested();
 
     var consumer = new EventingBasicConsumer(connection_.Channel!);
 
@@ -109,26 +96,38 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
       var body    = eventArgs.Body.ToArray();
       var message = Encoding.UTF8.GetString(body);
 
-      qmh = new QueueMessageHandler(connection_.Channel!,
-                                    eventArgs,
-                                    message,
-                                    logger_,
-                                    cancellationToken);
-
-      Interlocked.Increment(ref nbPulledMessage);
-
-      // Cancel subscription if the number of pulled messages hits the target
-      if (Thread.VolatileRead(ref nbPulledMessage) == nbMessages)
-      {
-        consumer.Received -= Subscriber;
-      }
+      // Enqueue message in local storage to be pulled later, the
+      // Cancellation token will be set by the pulling function.
+      queueHandlers_.Enqueue(new QueueMessageHandler(connection_.Channel!,
+                                                     eventArgs,
+                                                     message,
+                                                     logger_,
+                                                     CancellationToken.None));
     }
 
     consumer.Received += Subscriber;
 
-    connection_.Channel!.BasicConsume(pullQueue_.QueueName,
+    connection_.Channel!.BasicConsume(pullQueue.QueueName,
                                       false,
                                       consumer);
+  }
+
+  public Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default)
+  {
+    if (!IsInitialized)
+    {
+      throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
+    }
+
+    if (queueHandlers_.TryDequeue(out var qmh))
+    {
+      // Pass the cancellation token to the pulled handler
+      qmh!.CancellationToken = cancellationToken;
+    }
+    else
+    {
+      qmh = null;
+    }
 
     return Task.FromResult(qmh);
   }
