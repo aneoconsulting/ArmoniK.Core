@@ -1,11 +1,13 @@
 version: '3.7'
 
 services:
+  queue:
+    command: sh -c "echo [rabbitmq_management,rabbitmq_management_agent]. > /etc/rabbitmq/enabled_plugins && exec docker-entrypoint.sh rabbitmq-server"
   armonik.control.submitter:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
-
+      - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage
+      
   armonik.control.metrics:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -13,7 +15,7 @@ services:
   armonik.compute.pollingagent0:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage
       - Amqp__PartitionId=TestPartition0
     ports:
       - 9980:1080
@@ -23,7 +25,7 @@ services:
   armonik.compute.pollingagent1:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage     
       - Amqp__PartitionId=TestPartition0
     ports:
       - 9981:1080
@@ -33,7 +35,7 @@ services:
   armonik.compute.pollingagent2:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage
       - Amqp__PartitionId=TestPartition1
     ports:
       - 9982:1080

@@ -510,6 +510,7 @@ jobs:
         queue:
           - activemqp
           - rabbitmq
+          - rabbitmq091
         log-level:
           - Information
           - Verbose
@@ -538,7 +539,10 @@ jobs:
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
-          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml --compatibility up -d --build --force-recreate --remove-orphans
+          OVERRIDE="docker-compose/docker-compose.override.yml"
+          QUEUE="docker-compose/docker-compose.queue-${{ matrix.queue }}.yml"
+          if [ "x${{ matrix.queue }}" == x"rabbitmq091" ]; then OVERRIDE="docker-compose/docker-compose.override-rabbitmq091.yml";  QUEUE="docker-compose/docker-compose.queue-rabbitmq.yml"; fi;
+          docker-compose -f ${OVERRIDE} -f docker-compose/docker-compose.yml -f ${QUEUE} --compatibility up -d --build --force-recreate --remove-orphans
           docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
           sleep 10
           ls -la docker-compose/logs/*.json
