@@ -70,6 +70,9 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                       {
                         "x-max-priority", Options!.MaxPriority
                       },
+                      {
+                        "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
+                      },
                     };
 
     var pullQueue = connection_.Channel!.QueueDeclare("",
@@ -87,10 +90,10 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                  Convert.ToUInt16(Options.LinkCredit),
                                  false);
 
-    var consumer = new EventingBasicConsumer(connection_.Channel!);
+    var consumer = new AsyncEventingBasicConsumer(connection_.Channel!);
 
     // Delegate to declare a subscriber to the queue
-    void Subscriber(object?               model,
+    Task Subscriber(object?               model,
                     BasicDeliverEventArgs eventArgs)
     {
       var body    = eventArgs.Body.ToArray();
@@ -103,6 +106,7 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                                      message,
                                                      logger_,
                                                      CancellationToken.None));
+      return Task.CompletedTask;
     }
 
     consumer.Received += Subscriber;

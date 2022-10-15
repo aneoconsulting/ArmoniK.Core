@@ -67,7 +67,7 @@ public class ConnectionRabbit : IConnectionRabbit
                     Password               = options_.Password,
                     HostName               = options_.Host,
                     Port                   = options_.Port,
-                    DispatchConsumersAsync = false,
+                    DispatchConsumersAsync = true,
                   };
 
     var retry = 0;

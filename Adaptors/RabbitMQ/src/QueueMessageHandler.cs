@@ -81,6 +81,8 @@ public class QueueMessageHandler : IQueueMessageHandler
                               deliverEvent_.Body);
         channel_.BasicAck(deliverEvent_.DeliveryTag,
                           false);
+        // TODO: Investigate if code above may be replaced by:
+        //channel_.BasicReject(deliverEvent_.DeliveryTag,true);
         break;
       case QueueMessageStatus.Failed:
         channel_.BasicNack(deliverEvent_.DeliveryTag,
