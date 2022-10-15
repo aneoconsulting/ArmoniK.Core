@@ -75,27 +75,21 @@ public class QueueMessageHandler : IQueueMessageHandler
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        channel_.BasicPublish(deliverEvent_.Exchange,
-                              deliverEvent_.RoutingKey,
-                              deliverEvent_.BasicProperties,
-                              deliverEvent_.Body);
-        channel_.BasicAck(deliverEvent_.DeliveryTag,
-                          false);
-        // TODO: Investigate if code above may be replaced by:
-        //channel_.BasicReject(deliverEvent_.DeliveryTag,true);
-        break;
-      case QueueMessageStatus.Failed:
+        /* Negative acknowledging this message will send it
+         to the retry exchange, see PullQueueStorage.cs */
         channel_.BasicNack(deliverEvent_.DeliveryTag,
                            false,
                            false);
         break;
+      case QueueMessageStatus.Failed:
+
       case QueueMessageStatus.Processed:
+
+      case QueueMessageStatus.Poisonous:
+        /* Failed, Processed and Poisonous messages are
+         * acknowledged so they are not send to Retry exchange */
         channel_.BasicAck(deliverEvent_.DeliveryTag,
                           false);
-        break;
-      case QueueMessageStatus.Poisonous:
-        channel_.BasicReject(deliverEvent_.DeliveryTag,
-                             false);
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(Status),

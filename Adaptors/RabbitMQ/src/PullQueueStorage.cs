@@ -60,15 +60,32 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                             $"{nameof(Options.PartitionId)} is not defined.");
     }
 
+    /* Local storage where pulled messages from the consumer will be placed.
+     * PollingAgent should fetch one message a time from here */
     queueHandlers_ = new ConcurrentQueue<IQueueMessageHandler?>();
 
+    /* Work exchange to decide task execution */
     connection_.Channel.ExchangeDeclare("ArmoniK.QueueExchange",
                                         "direct");
 
+    /* Retry exchange that will be used to place tasks from the Work
+     * exchange that cannot be treated, the approach is necessary because
+     * RabbitMQ will place a retry message in its original place in the
+     * queue, we will use the Retry exchange to puts such messages in a
+     * retry queue configured to resend the messages to the work queue
+     * after a given TTL is passed. */
+    connection_.Channel.ExchangeDeclare("ArmoniK.RetryExchange",
+                                        "direct");
+
+    /* Declare a working queue that will be bonded to the Work exchange
+     * and configure to send rejected messages to the RetryExchange */
     var queueArgs = new Dictionary<string, object>
                     {
                       {
                         "x-max-priority", Options!.MaxPriority
+                      },
+                      {
+                        "x-dead-letter-exchange", "ArmoniK.RetryExchange"
                       },
                       {
                         "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
@@ -83,6 +100,29 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
 
     connection_.Channel.QueueBind(pullQueue.QueueName,
                                   "ArmoniK.QueueExchange",
+                                  Options!.PartitionId);
+
+
+    /* Declare a retry queue that will be bonded to the Retry exchange
+     * and configure to send expired messages  back to the Work Exchange */
+    var retryArgs = new Dictionary<string, object>
+                    {
+                      {
+                        "x-dead-letter-exchange", "ArmoniK.QueueExchange"
+                      },
+                      {
+                        "x-message-ttl", 100 // TODO: Make this a configurable variable?
+                      },
+                    };
+
+    var retryQueue = connection_.Channel!.QueueDeclare("",
+                                                       false,
+                                                       true,
+                                                       false,
+                                                       retryArgs);
+
+    connection_.Channel.QueueBind(retryQueue.QueueName,
+                                  "ArmoniK.RetryExchange",
                                   Options!.PartitionId);
 
     /* Setup prefetching. TODO: Rename LinkCredit to something less amqpLite specific */
