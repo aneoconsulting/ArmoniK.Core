@@ -168,54 +168,6 @@ public class QueueStorageTestsBase
                                                1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
-
-      Assert.Pass();
-    }
-  }
-
-  [Test]
-  public async Task PullMessagesAsyncFromMultiplePartitionsSucceeds()
-  {
-    if (RunTests)
-    {
-      const int priority = 1;
-      var testMessages = new[]
-                         {
-                           "msg1",
-                           "msg2",
-                           "msg3",
-                           "msg4",
-                           "msg5",
-                         };
-
-      await PushQueueStorage!.Init(CancellationToken.None)
-                             .ConfigureAwait(false);
-
-      await PullQueueStorage!.Init(CancellationToken.None)
-                             .ConfigureAwait(false);
-
-      for (var i = 0; i < 3; i++)
-      {
-        Options!.PartitionId = $"part{i}";
-
-        await PushQueueStorage.PushMessagesAsync(testMessages,
-                                                 $"part{i}",
-                                                 priority,
-                                                 CancellationToken.None)
-                              .ConfigureAwait(false);
-
-        var messages = PullQueueStorage.PullMessagesAsync(5,
-                                                          CancellationToken.None);
-
-        await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                          .ConfigureAwait(false))
-        {
-          Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
-          qmh.Status = QueueMessageStatus.Processed;
-          await qmh.DisposeAsync()
-                   .ConfigureAwait(false);
-        }
-      }
     }
   }
 
