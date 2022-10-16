@@ -31,8 +31,6 @@ using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
-using Moq;
-
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Adapters.Amqp.Tests;
@@ -40,20 +38,19 @@ namespace ArmoniK.Core.Adapters.Amqp.Tests;
 [TestFixture]
 public class QueueStorageTests : QueueStorageTestsBase
 {
-  public override async Task GetQueueStorageInstance()
+  protected override async Task GetQueueStorageInstance()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(cp => cp.Connection)
-            .Returns(helper.Connection);
+    await using var pushClient = new SimpleAmqpClient();
 
     PushQueueStorage = new PushQueueStorage(Options!,
-                                            provider.Object,
+                                            pushClient,
                                             NullLogger<PushQueueStorage>.Instance);
 
+    /* Our implementation uses separate connections for pushing and pulling */
+    await using var pullClient = new SimpleAmqpClient();
+
     PullQueueStorage = new PullQueueStorage(Options!,
-                                            provider.Object,
+                                            pullClient,
                                             NullLogger<PullQueueStorage>.Instance);
     RunTests = true;
   }
@@ -61,17 +58,16 @@ public class QueueStorageTests : QueueStorageTestsBase
   [Test]
   public async Task CreatePullQueueStorageShouldFail()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
+    await using var pullClient = new SimpleAmqpClient();
 
     var badOpts = CreateDefaultOptions();
     badOpts.PartitionId = "";
-    Assert.Throws<ArgumentOutOfRangeException>(() => new PullQueueStorage(badOpts,
-                                                                          provider.Object,
-                                                                          NullLogger<PullQueueStorage>.Instance));
+    Assert.Throws<ArgumentOutOfRangeException>(() =>
+                                               {
+                                                 var _ = new PullQueueStorage(badOpts,
+                                                                              pullClient,
+                                                                              NullLogger<PullQueueStorage>.Instance);
+                                               });
   }
 
   public static IEnumerable TestCasesBadOptions
@@ -125,13 +121,12 @@ public class QueueStorageTests : QueueStorageTestsBase
   [TestCaseSource(nameof(TestCasesBadOptions))]
   public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Common.Injection.Options.Amqp options)
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
+    await using var client = new SimpleAmqpClient();
 
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-
-    Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
-                                                                      provider.Object));
+    Assert.Throws<ArgumentOutOfRangeException>(() =>
+                                               {
+                                                 var _ = new QueueStorage(options,
+                                                                          client);
+                                               });
   }
 }

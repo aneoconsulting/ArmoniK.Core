@@ -26,14 +26,11 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Tests;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
-using Moq;
-
 using NUnit.Framework;
-
-using RabbitMQ.Client;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ.Tests;
 
@@ -43,50 +40,36 @@ public class QueueStorageTests : QueueStorageTestsBase
   protected override Task GetQueueStorageInstance()
   {
     options_ = CreateDefaultOptions();
-
-    var factory = new ConnectionFactory
-                  {
-                    HostName = options_!.Host,
-                    Port     = options_!.Port,
-                    UserName = options_!.User,
-                    Password = options_!.Password,
-                  };
-
-    connection_ = factory.CreateConnection();
-    channel_    = connection_.CreateModel();
-
-    var provider = new Mock<IConnectionRabbit>();
-    provider.Setup(cp => cp.Channel)
-            .Returns(channel_);
+    using var pullClient = new SimpleRabbitClient();
 
     PullQueueStorage = new PullQueueStorage(options_!,
-                                            provider.Object,
+                                            pullClient,
                                             NullLogger<PullQueueStorage>.Instance);
 
+    using var pushClient = new SimpleRabbitClient();
+
     PushQueueStorage = new PushQueueStorage(options_!,
-                                            provider.Object,
+                                            pushClient,
                                             NullLogger<PushQueueStorage>.Instance);
     RunTests = true;
 
     return Task.CompletedTask;
   }
 
-  private IModel?      channel_;
-  private IConnection? connection_;
-
   private Common.Injection.Options.Amqp? options_;
 
   [Test]
   public void CreatePullQueueStorageShouldFail()
   {
-    var provider = new Mock<IConnectionRabbit>();
-    provider.Setup(cp => cp.Channel)
-            .Returns(channel_);
+    using var pullClient = new SimpleRabbitClient();
 
     var badOpt = CreateDefaultOptions();
     badOpt.PartitionId = "";
-    Assert.Throws<ArgumentOutOfRangeException>(() => new PullQueueStorage(badOpt,
-                                                                          provider.Object,
-                                                                          NullLogger<PullQueueStorage>.Instance));
+    Assert.Throws<ArgumentOutOfRangeException>(() =>
+                                               {
+                                                 var _ = new PullQueueStorage(badOpt,
+                                                                              pullClient,
+                                                                              NullLogger<PullQueueStorage>.Instance);
+                                               });
   }
 }

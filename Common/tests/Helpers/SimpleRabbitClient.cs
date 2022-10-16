@@ -23,40 +23,56 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-using Amqp;
+using ArmoniK.Core.Adapters.RabbitMQ;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+
+using RabbitMQ.Client;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class SimpleAmqpClientHelper : IAsyncDisposable
+public class SimpleRabbitClient : IConnectionRabbit
 {
   private readonly ILoggerFactory loggerFactory_;
+  private          IConnection?   connection_;
 
-  public SimpleAmqpClientHelper()
+  public SimpleRabbitClient()
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
-
-    var address = new Address("amqp://guest:guest@localhost:5672");
-
-    Connection = new Connection(address);
-    Session    = new Session(Connection);
   }
 
-  public Connection Connection { get; }
+  public IModel? Channel { get; private set; }
 
-  public Session Session { get; }
-
-  public async ValueTask DisposeAsync()
+  public void Dispose()
   {
-    await Session.CloseAsync()
-                 .ConfigureAwait(false);
-    await Connection.CloseAsync()
-                    .ConfigureAwait(false);
+    if (connection_ is not null && connection_.IsOpen)
+    {
+      connection_.Close();
+    }
+
     loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
   }
+
+  public Task Init(CancellationToken cancellation)
+  {
+    var connectionFactory = new ConnectionFactory
+                            {
+                              Uri                    = new Uri("amqp://guest:guest@localhost:5672"),
+                              DispatchConsumersAsync = true,
+                            };
+
+    connection_ = connectionFactory.CreateConnection();
+    Channel     = connection_!.CreateModel();
+
+    return Task.CompletedTask;
+  }
+
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 }

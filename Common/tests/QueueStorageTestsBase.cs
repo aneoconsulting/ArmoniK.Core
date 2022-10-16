@@ -45,9 +45,13 @@ public class QueueStorageTestsBase
   }
 
   [SetUp]
-  public virtual void SetDefaultOptions()
-    => Options = CreateDefaultOptions();
-
+  public void Setup()
+  {
+    Options = CreateDefaultOptions();
+    GetQueueStorageInstance()
+      .Wait();
+    RunTests = true;
+  }
 
   /* Interfaces to test */
   protected IPushQueueStorage? PushQueueStorage;
@@ -60,7 +64,7 @@ public class QueueStorageTestsBase
 
 /* Function be override so it returns the suitable instance
  * of QueueStorage to the corresponding interface implementation */
-  public virtual Task GetQueueStorageInstance()
+  protected virtual Task GetQueueStorageInstance()
     => Task.CompletedTask;
 
   protected Injection.Options.Amqp? Options;
@@ -290,7 +294,6 @@ public class QueueStorageTestsBase
                            "msg4",
                            "msg5",
                          };
-
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
                                                1,

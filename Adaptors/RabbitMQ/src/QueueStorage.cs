@@ -32,7 +32,6 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class QueueStorage : QueueStorageBase
 {
-  private const      int               MaxInternalQueuePriority = 10;
   protected readonly IConnectionRabbit ConnectionRabbit;
 
   protected QueueStorage(Amqp              options,
