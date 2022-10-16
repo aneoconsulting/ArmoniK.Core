@@ -40,7 +40,7 @@ namespace ArmoniK.Core.Adapters.RabbitMQ.Tests;
 [TestFixture]
 public class QueueStorageTests : QueueStorageTestsBase
 {
-  public override Task GetQueueStorageInstance()
+  protected override Task GetQueueStorageInstance()
   {
     options_ = CreateDefaultOptions();
 

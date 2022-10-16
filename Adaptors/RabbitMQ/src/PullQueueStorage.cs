@@ -41,120 +41,129 @@ using RabbitMQ.Client.Events;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
-public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
+public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
-  private readonly IConnectionRabbit                      connection_;
   private readonly ILogger<PullQueueStorage>              logger_;
-  private readonly ConcurrentQueue<IQueueMessageHandler?> queueHandlers_;
+  private          ConcurrentQueue<IQueueMessageHandler>? queueMessageHandlers_;
 
   public PullQueueStorage(Amqp                      options,
                           IConnectionRabbit         connectionRabbit,
                           ILogger<PullQueueStorage> logger)
-    : base(options)
+    : base(options,
+           connectionRabbit)
   {
-    connection_ = connectionRabbit;
-    logger_     = logger;
+    logger_ = logger;
 
     if (string.IsNullOrEmpty(options.PartitionId))
     {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.PartitionId)} is not defined.");
     }
+  }
 
-    /* Local storage where pulled messages from the consumer will be placed.
-     * PollingAgent should fetch one message a time from here */
-    queueHandlers_ = new ConcurrentQueue<IQueueMessageHandler?>();
-
-    /* Work exchange to decide task execution */
-    connection_.Channel.ExchangeDeclare("ArmoniK.QueueExchange",
-                                        "direct");
-
-    /* Retry exchange that will be used to place tasks from the Work
-     * exchange that cannot be treated. The approach is necessary because
-     * RabbitMQ will try to place a retry message in its original place in the
-     * queue, which can lead to an undesired and potentially infinite retry-loop.
-     * We will use the Retry exchange to place retry messages in a
-     * another queue which is configured to resend the messages back to the work queue
-     * after a given TTL expires. */
-    connection_.Channel.ExchangeDeclare("ArmoniK.RetryExchange",
-                                        "direct");
-
-    /* Declare a working queue that will be bonded to the Work exchange
-     * and configure to send rejected messages to the RetryExchange */
-    var queueArgs = new Dictionary<string, object>
-                    {
-                      {
-                        "x-max-priority", Options!.MaxPriority
-                      },
-                      {
-                        "x-dead-letter-exchange", "ArmoniK.RetryExchange"
-                      },
-                      {
-                        "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
-                      },
-                    };
-
-    var pullQueue = connection_.Channel!.QueueDeclare("",
-                                                      false, /* to survive broker restart */
-                                                      true,  /* used only by a connection, deleted after connection closes */
-                                                      false, /* deleted when last consumer unsubscribes (if it has had one) */
-                                                      queueArgs);
-
-    connection_.Channel.QueueBind(pullQueue.QueueName,
-                                  "ArmoniK.QueueExchange",
-                                  Options!.PartitionId);
-
-    /* Declare a retry queue that will be bonded to the Retry exchange
-     * and configured to send expired messages  back to the Work Exchange */
-    var retryArgs = new Dictionary<string, object>
-                    {
-                      {
-                        "x-dead-letter-exchange", "ArmoniK.QueueExchange"
-                      },
-                      {
-                        "x-message-ttl", 100 // TODO: Make this a configurable variable?
-                      },
-                    };
-
-    var retryQueue = connection_.Channel!.QueueDeclare("",
-                                                       false,
-                                                       true,
-                                                       false,
-                                                       retryArgs);
-
-    connection_.Channel.QueueBind(retryQueue.QueueName,
-                                  "ArmoniK.RetryExchange",
-                                  Options!.PartitionId);
-
-    /* Setup prefetching. TODO: Rename LinkCredit to something less amqpLite specific */
-    connection_.Channel.BasicQos(0,
-                                 Convert.ToUInt16(Options.LinkCredit),
-                                 false);
-
-    var consumer = new AsyncEventingBasicConsumer(connection_.Channel!);
-
-    // Delegate to declare a subscriber to the queue
-    Task Subscriber(object?               model,
-                    BasicDeliverEventArgs eventArgs)
+  public override async Task Init(CancellationToken cancellationToken)
+  {
+    if (!IsInitialized)
     {
-      var body    = eventArgs.Body.ToArray();
-      var message = Encoding.UTF8.GetString(body);
+      await ConnectionRabbit.Init(cancellationToken)
+                            .ConfigureAwait(false);
 
-      // Enqueue message in local storage to be pulled later, the
-      // Cancellation token will be set by the pulling function.
-      queueHandlers_.Enqueue(new QueueMessageHandler(connection_.Channel!,
-                                                     eventArgs,
-                                                     message,
-                                                     logger_,
-                                                     CancellationToken.None));
-      return Task.CompletedTask;
+      /* Local storage where pulled messages from the consumer will be placed.
+       * PollingAgent should fetch one message a time from here */
+      queueMessageHandlers_ = new ConcurrentQueue<IQueueMessageHandler>();
+
+      /* Work exchange to decide task execution */
+      ConnectionRabbit.Channel.ExchangeDeclare("ArmoniK.QueueExchange",
+                                               "direct");
+
+      /* Retry exchange that will be used to place tasks from the Work
+       * exchange that cannot be treated. The approach is necessary because
+       * RabbitMQ will try to place a retry message in its original place in the
+       * queue, which can lead to an undesired and potentially infinite retry-loop.
+       * We will use the Retry exchange to place retry messages in a
+       * another queue which is configured to resend the messages back to the work queue
+       * after a given TTL expires. */
+      ConnectionRabbit.Channel.ExchangeDeclare("ArmoniK.RetryExchange",
+                                               "direct");
+
+      /* Declare a working queue that will be bonded to the Work exchange
+       * and configure to send rejected messages to the RetryExchange */
+      var queueArgs = new Dictionary<string, object>
+                      {
+                        {
+                          "x-max-priority", Options!.MaxPriority
+                        },
+                        {
+                          "x-dead-letter-exchange", "ArmoniK.RetryExchange"
+                        },
+                        {
+                          "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
+                        },
+                      };
+
+      var pullQueue = ConnectionRabbit.Channel!.QueueDeclare("",
+                                                             false, /* to survive broker restart */
+                                                             true,  /* used only by a connection, deleted after connection closes */
+                                                             false, /* deleted when last consumer unsubscribes (if it has had one) */
+                                                             queueArgs);
+
+      ConnectionRabbit.Channel.QueueBind(pullQueue.QueueName,
+                                         "ArmoniK.QueueExchange",
+                                         Options!.PartitionId);
+
+      /* Declare a retry queue that will be bonded to the Retry exchange
+       * and configured to send expired messages  back to the Work Exchange */
+      var retryArgs = new Dictionary<string, object>
+                      {
+                        {
+                          "x-dead-letter-exchange", "ArmoniK.QueueExchange"
+                        },
+                        {
+                          "x-message-ttl", 100 // TODO: Make this a configurable variable?
+                        },
+                      };
+
+      var retryQueue = ConnectionRabbit.Channel!.QueueDeclare("",
+                                                              false,
+                                                              true,
+                                                              false,
+                                                              retryArgs);
+
+      ConnectionRabbit.Channel.QueueBind(retryQueue.QueueName,
+                                         "ArmoniK.RetryExchange",
+                                         Options!.PartitionId);
+
+      /* Setup prefetching. TODO: Rename LinkCredit to something less amqpLite specific */
+      ConnectionRabbit.Channel.BasicQos(0,
+                                        Convert.ToUInt16(Options.LinkCredit),
+                                        false);
+
+      var consumer = new AsyncEventingBasicConsumer(ConnectionRabbit.Channel!);
+
+      // Delegate to declare a subscriber to the queue
+      Task Subscriber(object?               model,
+                      BasicDeliverEventArgs eventArgs)
+      {
+        var body    = eventArgs.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+
+        // Enqueue message in local storage to be pulled later, the
+        // Cancellation token will be set by the pulling function.
+        queueMessageHandlers_.Enqueue(new QueueMessageHandler(ConnectionRabbit.Channel!,
+                                                              eventArgs,
+                                                              message,
+                                                              logger_,
+                                                              cancellationToken));
+        return Task.CompletedTask;
+      }
+
+      consumer.Received += Subscriber;
+
+      ConnectionRabbit.Channel!.BasicConsume(pullQueue.QueueName,
+                                             false,
+                                             consumer);
+      IsInitialized = true;
     }
-
-    consumer.Received += Subscriber;
-
-    connection_.Channel!.BasicConsume(pullQueue.QueueName,
-                                      false,
-                                      consumer);
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
@@ -171,10 +180,9 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
     await Task.CompletedTask.ConfigureAwait(false);
 
     cancellationToken.ThrowIfCancellationRequested();
-
     while (nbPulledMessage < nbMessages)
     {
-      if (!queueHandlers_.TryDequeue(out var qmh))
+      if (!queueMessageHandlers_!.TryDequeue(out var qmh))
       {
         continue;
       }
