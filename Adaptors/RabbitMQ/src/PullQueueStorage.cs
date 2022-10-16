@@ -70,11 +70,12 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                         "direct");
 
     /* Retry exchange that will be used to place tasks from the Work
-     * exchange that cannot be treated, the approach is necessary because
-     * RabbitMQ will place a retry message in its original place in the
-     * queue, we will use the Retry exchange to puts such messages in a
-     * retry queue configured to resend the messages to the work queue
-     * after a given TTL is passed. */
+     * exchange that cannot be treated. The approach is necessary because
+     * RabbitMQ will try to place a retry message in its original place in the
+     * queue, which can lead to an undesired and potentially infinite retry-loop.
+     * We will use the Retry exchange to place retry messages in a
+     * another queue which is configured to resend the messages back to the work queue
+     * after a given TTL expires. */
     connection_.Channel.ExchangeDeclare("ArmoniK.RetryExchange",
                                         "direct");
 
@@ -103,9 +104,8 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                   "ArmoniK.QueueExchange",
                                   Options!.PartitionId);
 
-
     /* Declare a retry queue that will be bonded to the Retry exchange
-     * and configure to send expired messages  back to the Work Exchange */
+     * and configured to send expired messages  back to the Work Exchange */
     var retryArgs = new Dictionary<string, object>
                     {
                       {
