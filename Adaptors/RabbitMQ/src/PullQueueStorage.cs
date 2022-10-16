@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -156,23 +157,33 @@ public class PullQueueStorage : QueueStorageBase, IPullQueueStorage
                                       consumer);
   }
 
-  public Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    var nbPulledMessage = 0;
+
     if (!IsInitialized)
     {
       throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    if (queueHandlers_.TryDequeue(out var qmh))
+    // TODO: Fix this, I put it here cuz the method must be async to return an IAsyncEnumerable.
+    await Task.CompletedTask.ConfigureAwait(false);
+
+    cancellationToken.ThrowIfCancellationRequested();
+
+    while (nbPulledMessage < nbMessages)
     {
+      if (!queueHandlers_.TryDequeue(out var qmh))
+      {
+        continue;
+      }
+
+      nbPulledMessage++;
+
       // Pass the cancellation token to the pulled handler
       qmh!.CancellationToken = cancellationToken;
+      yield return qmh;
     }
-    else
-    {
-      qmh = null;
-    }
-
-    return Task.FromResult(qmh);
   }
 }

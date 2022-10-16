@@ -252,7 +252,8 @@ public class PollsterTest
 
     public int MaxPriority { get; }
 
-    public Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                                    CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
   }
 
@@ -360,18 +361,18 @@ public class PollsterTest
     var mockPullQueueStorage = new Mock<IPullQueueStorage>();
     var mockAgentHandler     = new Mock<IAgentHandler>();
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<CancellationToken>()))
-                        .Returns(() =>
-                                 {
-                                   var qmh = (IQueueMessageHandler?)new SimpleQueueMessageHandler
-                                                                    {
-                                                                      CancellationToken = CancellationToken.None,
-                                                                      Status            = QueueMessageStatus.Waiting,
-                                                                      MessageId = Guid.NewGuid()
-                                                                                      .ToString(),
-                                                                    };
-                                   return Task.FromResult(qmh);
-                                 });
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+                                                                    It.IsAny<CancellationToken>()))
+                        .Returns(() => new List<IQueueMessageHandler>
+                                       {
+                                         new SimpleQueueMessageHandler
+                                         {
+                                           CancellationToken = CancellationToken.None,
+                                           Status            = QueueMessageStatus.Waiting,
+                                           MessageId = Guid.NewGuid()
+                                                           .ToString(),
+                                         },
+                                       }.ToAsyncEnumerable());
 
     using var testServiceProvider = new TestPollsterProvider(mockStreamHandler.Object,
                                                              mockAgentHandler.Object,
@@ -463,19 +464,19 @@ public class PollsterTest
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<CancellationToken>()))
-                        .Returns(() =>
-                                 {
-                                   var qmh = (IQueueMessageHandler?)new SimpleQueueMessageHandler
-                                                                    {
-                                                                      CancellationToken = CancellationToken.None,
-                                                                      Status            = QueueMessageStatus.Waiting,
-                                                                      MessageId = Guid.NewGuid()
-                                                                                      .ToString(),
-                                                                      TaskId = tuple.taskSubmitted,
-                                                                    };
-                                   return Task.FromResult(qmh);
-                                 });
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+                                                                    It.IsAny<CancellationToken>()))
+                        .Returns(() => new List<IQueueMessageHandler>
+                                       {
+                                         new SimpleQueueMessageHandler
+                                         {
+                                           CancellationToken = CancellationToken.None,
+                                           Status            = QueueMessageStatus.Waiting,
+                                           MessageId = Guid.NewGuid()
+                                                           .ToString(),
+                                           TaskId = tuple.taskSubmitted,
+                                         },
+                                       }.ToAsyncEnumerable());
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -520,7 +521,8 @@ public class PollsterTest
       {
         // Failing PullQueueStorage
         var mockPullQueueStorageFail = new Mock<IPullQueueStorage>();
-        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync(It.IsAny<CancellationToken>()))
+        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+                                                                            It.IsAny<CancellationToken>()))
                                 .Throws(new ApplicationException("Failed queue"));
 
         yield return (mockStreamHandler, mockPullQueueStorageFail, mockAgentHandler);

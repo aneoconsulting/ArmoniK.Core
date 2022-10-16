@@ -200,12 +200,12 @@ public class QueueStorageTestsBase
                                                  CancellationToken.None)
                               .ConfigureAwait(false);
 
+        var messages = PullQueueStorage.PullMessagesAsync(5,
+                                                          CancellationToken.None);
 
-        for (var j = 0; j < testMessages.Length; j++)
+        await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                          .ConfigureAwait(false))
         {
-          var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
-                                          .ConfigureAwait(false);
-          Assert.IsNotNull(qmh);
           Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
           qmh.Status = QueueMessageStatus.Processed;
           await qmh.DisposeAsync()
@@ -243,11 +243,12 @@ public class QueueStorageTestsBase
 
       /* Pull 3 messages from the queue, their default status being pending means that
        they should be pushed again to the queue */
-      for (var j = 0; j < 3; j++)
+      var messages = PullQueueStorage.PullMessagesAsync(3,
+                                                        CancellationToken.None);
+
+      await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                        .ConfigureAwait(false))
       {
-        var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
-                                        .ConfigureAwait(false);
-        Assert.IsNotNull(qmh);
         Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);
@@ -256,11 +257,12 @@ public class QueueStorageTestsBase
       /* Pull 2 messages from the queue and change their status to processing; this means that
        these two should be treated as dequeued  by the broker and the remaining three
        as Pending if the test passes */
-      for (var j = 0; j < 2; j++)
+      var messages2 = PullQueueStorage.PullMessagesAsync(2,
+                                                         CancellationToken.None);
+
+      await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
+                                         .ConfigureAwait(false))
       {
-        var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
-                                        .ConfigureAwait(false);
-        Assert.IsNotNull(qmh);
         Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
         qmh.Status = QueueMessageStatus.Processed;
         await qmh.DisposeAsync()
@@ -295,11 +297,12 @@ public class QueueStorageTestsBase
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
-      for (var j = 0; j < testMessages.Length; j++)
+      var messages = PullQueueStorage.PullMessagesAsync(5,
+                                                        CancellationToken.None);
+
+      await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                        .ConfigureAwait(false))
       {
-        var qmh = await PullQueueStorage.PullMessagesAsync(CancellationToken.None)
-                                        .ConfigureAwait(false);
-        Assert.IsNotNull(qmh);
         qmh!.Status = QueueMessageStatus.Processed;
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);

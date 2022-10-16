@@ -23,7 +23,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,40 +109,51 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   }
 
   /// <inheritdoc />
-  public async Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var             _   = logger_.LogFunction();
-    IQueueMessageHandler? qmh = null;
+    using var _               = logger_.LogFunction();
+    var       nbPulledMessage = 0;
 
     if (!IsInitialized)
     {
       throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    for (var i = receivers_.Length - 1; i >= 0; --i)
+    while (nbPulledMessage < nbMessages)
     {
-      cancellationToken.ThrowIfCancellationRequested();
-      var receiver = await receivers_[i];
-      var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
-                                  .ConfigureAwait(false);
-      if (message is null)
+      var currentNbMessages = nbPulledMessage;
+      for (var i = receivers_.Length - 1; i >= 0; --i)
       {
-        logger_.LogTrace("Message is null for receiver {receiver}",
-                         i);
-        continue;
+        cancellationToken.ThrowIfCancellationRequested();
+        var receiver = await receivers_[i];
+        var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
+                                    .ConfigureAwait(false);
+        if (message is null)
+        {
+          logger_.LogTrace("Message is null for receiver {receiver}",
+                           i);
+          continue;
+        }
+
+        nbPulledMessage++;
+
+        var sender = await senders_[i];
+
+        yield return new QueueMessageHandler(message,
+                                             sender,
+                                             receiver,
+                                             Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
+                                             logger_,
+                                             cancellationToken);
+
+        break;
       }
 
-      var sender = await senders_[i];
-
-      qmh = new QueueMessageHandler(message,
-                                    sender,
-                                    receiver,
-                                    Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
-                                    logger_,
-                                    cancellationToken);
-      break;
+      if (nbPulledMessage == currentNbMessages)
+      {
+        break;
+      }
     }
-
-    return qmh;
   }
 }

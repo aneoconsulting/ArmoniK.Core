@@ -22,8 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -33,11 +33,13 @@ namespace ArmoniK.Core.Common.Storage;
 public interface IPullQueueStorage : IQueueStorage
 {
   /// <summary>
-  ///   Gets a message from the queue
+  ///   Gets messages from the queue
   /// </summary>
+  /// <param name="nbMessages">Number of messages to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   A message from the queue
+  ///   Enumerator allowing async iteration over the message queue
   /// </returns>
-  Task<IQueueMessageHandler?> PullMessagesAsync(CancellationToken cancellationToken = default);
+  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                           CancellationToken cancellationToken = default);
 }

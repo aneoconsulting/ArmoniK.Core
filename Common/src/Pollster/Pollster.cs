@@ -252,10 +252,11 @@ public class Pollster : IInitializable
 
         try
         {
-          var message = await pullQueueStorage_.PullMessagesAsync(cancellationToken)
-                                               .ConfigureAwait(false);
+          var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+                                                             cancellationToken);
 
-          if (message is not null)
+          await foreach (var message in messages.WithCancellation(cancellationToken)
+                                                .ConfigureAwait(false))
           {
             using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                              ("messageHandler", message.MessageId),
