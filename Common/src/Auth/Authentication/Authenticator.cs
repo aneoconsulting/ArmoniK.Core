@@ -309,9 +309,10 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   }
 
   /// <summary>
+  ///   Tries to retrieve the given header from the request, return null if it doesn't exist or is empty
   /// </summary>
-  /// <param name="headerName"></param>
-  /// <returns></returns>
+  /// <param name="headerName">Name of the header</param>
+  /// <returns>Value of the header if found and not empty, null otherwise</returns>
   private string? TryGetHeader(string headerName)
   {
     if (!string.IsNullOrEmpty(headerName) && Request.Headers.TryGetValue(headerName,

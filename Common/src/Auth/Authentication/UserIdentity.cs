@@ -55,9 +55,18 @@ public class UserIdentity : ClaimsPrincipal
 
   public string UserId { get; set; }
 
+  /// <summary>
+  ///   Checks if the user has a specific role
+  /// </summary>
+  /// <param name="role">Name of the role</param>
+  /// <returns>True if the user as the role, false otherwise</returns>
   public override bool IsInRole(string role)
     => Roles.Contains(role);
 
+  /// <summary>
+  ///   Deeply clones a Useridentity
+  /// </summary>
+  /// <returns>Cloned user identity</returns>
   public override UserIdentity Clone()
     => new(new UserAuthenticationResult(UserId,
                                         UserName,
