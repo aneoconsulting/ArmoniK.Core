@@ -9,6 +9,12 @@ services:
     ports:
       - 127.0.0.1:5672:5672
       - 15672:15672
+    healthcheck:
+        test: rabbitmq-diagnostics -q ping
+        interval: 10s
+        timeout: 5s
+        start_period: 20s
+        retries: 5
 
   armonik.control.submitter:
     environment:

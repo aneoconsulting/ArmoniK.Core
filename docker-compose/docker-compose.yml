@@ -110,11 +110,16 @@ services:
   armonik.compute.pollingagent0: &armonik_compute_pollingagent_base
     image: ${ARMONIK_POLLINGAGENT}
     depends_on:
-      - database
-      - object
-      - queue
-      - fluentbit
-      - zipkin
+      database:
+        condition: service_started
+      object:
+        condition: service_started
+      queue:
+        condition: service_healthy
+      fluentbit:
+        condition: service_started
+      zipkin:
+        condition: service_started
     networks:
       - armonik-backend
       - armonik-monitoring
