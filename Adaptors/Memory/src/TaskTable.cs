@@ -31,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common;
@@ -185,6 +186,38 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                               CancellationToken   cancellationToken = default)
+  {
+    foreach (var taskId in taskIds)
+    {
+      if (!taskId2TaskData_.TryGetValue(taskId,
+                                        out var taskData))
+      {
+        continue;
+      }
+
+      if (taskData.Status is TaskStatus.Completed or TaskStatus.Cancelled or TaskStatus.Cancelling or TaskStatus.Error)
+      {
+        continue;
+      }
+
+      taskId2TaskData_.AddOrUpdate(taskId,
+                                   _ => throw new InvalidOperationException("The task does not exist."),
+                                   (_,
+                                    data) => data with
+                                             {
+                                               Status = TaskStatus.Cancelling,
+                                               EndDate = DateTime.UtcNow,
+                                             });
+    }
+
+    return Task.FromResult(taskId2TaskData_.Where(pair => taskIds.Contains(pair.Key))
+                                           .Select(pair => pair.Value)
+                                           .ToList() as IList<TaskData>);
+  }
+
+  /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                                   CancellationToken cancellationToken = default)
     => await ListTasksAsync(filter,
@@ -289,6 +322,7 @@ public class TaskTable : ITaskTable
                   .ToAsyncEnumerable();
   }
 
+  /// <inheritdoc />
   public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
                                                     CancellationToken cancellationToken = default)
   {
@@ -299,6 +333,22 @@ public class TaskTable : ITaskTable
     var ordered = request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc
                     ? queryable.OrderBy(request.Sort.ToTaskDataField())
                     : queryable.OrderByDescending(request.Sort.ToTaskDataField());
+
+    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
+                                                         .Take(request.PageSize));
+  }
+
+  /// <inheritdoc />
+  public Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
+                                                    CancellationToken       cancellationToken = default)
+  {
+    var queryable = taskId2TaskData_.AsQueryable()
+                                    .Select(pair => pair.Value)
+                                    .Where(request.Filter.ToApplicationFilter());
+
+    var ordered = request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc
+                    ? queryable.OrderBy(request.Sort.ToApplicationField())
+                    : queryable.OrderByDescending(request.Sort.ToApplicationField());
 
     return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
                                                          .Take(request.PageSize));
@@ -584,12 +634,12 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (status is not TaskStatus.Cancelling && data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
+                                   if (status is not TaskStatus.Cancelling && data.Status is TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error)
                                    {
                                      throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
                                    }
 
-                                   if (data.Status == status || data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
+                                   if (data.Status == status || data.Status is TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error)
                                    {
                                      return data;
                                    }

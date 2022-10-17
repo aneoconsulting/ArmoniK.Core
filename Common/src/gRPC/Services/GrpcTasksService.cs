@@ -160,4 +160,35 @@ public class GrpcTasksService : Task.TasksBase
                                         "Unknown Exception, see application logs"));
     }
   }
+
+  public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
+                                                              ServerCallContext  context)
+  {
+    try
+    {
+      return new CancelTasksResponse
+             {
+               Tasks =
+               {
+                 (await taskTable_.CancelTaskAsync(request.TaskIds,
+                                                   context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(data => new TaskSummary(data)),
+               },
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while cancelling tasks");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while cancelling tasks");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
 }

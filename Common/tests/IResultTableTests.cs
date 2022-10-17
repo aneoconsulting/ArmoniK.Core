@@ -30,9 +30,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -72,6 +75,15 @@ public class ResultTableTestBase
                                        }),
                             new Result("SessionId",
                                        "ResultIsCreated",
+                                       "OwnerId",
+                                       ResultStatus.Created,
+                                       DateTime.Today,
+                                       new[]
+                                       {
+                                         (byte)1,
+                                       }),
+                            new Result("SessionId",
+                                       "ResultIsCreated2",
                                        "OwnerId",
                                        ResultStatus.Created,
                                        DateTime.Today,
@@ -548,6 +560,105 @@ public class ResultTableTestBase
                       resultStatus.Count(status => status.Status == ResultStatus.Aborted));
       Assert.AreEqual(2,
                       resultStatus.Count(status => status.Status != ResultStatus.Aborted));
+    }
+  }
+
+  [Test]
+  public async Task ListResultsAsyncFilterResultStatusAndSessionIdShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListResultsRequest
+                {
+                  Page     = 0,
+                  PageSize = 3,
+                  Filter = new ListResultsRequest.Types.Filter
+                           {
+                             Status    = ResultStatus.Created,
+                             SessionId = "SessionId",
+                           },
+                  Sort = new ListResultsRequest.Types.Sort
+                         {
+                           Order = ListResultsRequest.Types.SortOrder.Asc,
+                           Field = ListResultsRequest.Types.SortField.Status,
+                         },
+                };
+
+      ListResultsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = (await ResultTable!.ListResultsAsync(req,
+                                                     CancellationToken.None)
+                                   .ConfigureAwait(false)).ToList();
+
+      Assert.AreEqual(2,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListResultsAsyncFilterResultStatusAndSessionIdLimit1ShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListResultsRequest
+                {
+                  Page     = 0,
+                  PageSize = 1,
+                  Filter = new ListResultsRequest.Types.Filter
+                           {
+                             Status    = ResultStatus.Created,
+                             SessionId = "SessionId",
+                           },
+                  Sort = new ListResultsRequest.Types.Sort
+                         {
+                           Order = ListResultsRequest.Types.SortOrder.Asc,
+                           Field = ListResultsRequest.Types.SortField.Status,
+                         },
+                };
+
+      ListResultsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = (await ResultTable!.ListResultsAsync(req,
+                                                     CancellationToken.None)
+                                   .ConfigureAwait(false)).ToList();
+
+      Assert.AreEqual(1,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncNoFilterShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListResultsRequest
+                {
+                  Page     = 0,
+                  PageSize = 4,
+                  Filter   = new ListResultsRequest.Types.Filter(),
+                  Sort = new ListResultsRequest.Types.Sort
+                         {
+                           Order = ListResultsRequest.Types.SortOrder.Asc,
+                           Field = ListResultsRequest.Types.SortField.Status,
+                         },
+                };
+
+      ListResultsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = await ResultTable!.ListResultsAsync(req,
+                                                    CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(4,
+                      res.Count);
     }
   }
 }

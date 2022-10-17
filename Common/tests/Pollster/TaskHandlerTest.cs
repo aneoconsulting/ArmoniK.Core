@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -493,6 +494,10 @@ public class TaskHandlerTest
                                    CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                                 CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
+
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                               CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
@@ -514,6 +519,10 @@ public class TaskHandlerTest
 
     public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
                                                       CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
+                                                      CancellationToken       cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task SetTaskSuccessAsync(string            taskId,

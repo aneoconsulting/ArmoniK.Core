@@ -30,6 +30,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -158,7 +159,8 @@ public class TaskTable : ITaskTable
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled)))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled) ||
+                                    filter.Included.Statuses.Contains(TaskStatus.Error)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }
@@ -277,6 +279,32 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                                     CancellationToken   cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(CancelTaskAsync)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(data => data.Status,
+                                                                       TaskStatus.Cancelling)
+                                                                  .Set(data => data.EndDate,
+                                                                       DateTime.UtcNow);
+
+    await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId) &&
+                                                 !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
+                                                   data.Status == TaskStatus.Completed),
+                                         updateDefinition,
+                                         cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+
+    var tasks = await taskCollection.FindAsync(data => taskIds.Contains(data.TaskId),
+                                               cancellationToken: cancellationToken)
+                                    .ConfigureAwait(false);
+
+    return tasks.ToList();
+  }
+
+  /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                                   CancellationToken cancellationToken = default)
   {
@@ -379,6 +407,7 @@ public class TaskTable : ITaskTable
     }
   }
 
+  /// <inheritdoc />
   public async Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
                                                           CancellationToken cancellationToken = default)
   {
@@ -399,6 +428,28 @@ public class TaskTable : ITaskTable
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
+  public async Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
+                                                          CancellationToken       cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var queryable = taskCollection.AsQueryable(sessionHandle)
+                                  .Where(request.Filter.ToApplicationFilter());
+
+    var ordered = request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc
+                    ? queryable.OrderBy(request.Sort.ToApplicationField())
+                    : queryable.OrderByDescending(request.Sort.ToApplicationField());
+
+    return await ordered.Skip(request.Page * request.PageSize)
+                        .Take(request.PageSize)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task SetTaskSuccessAsync(string            taskId,
                                         CancellationToken cancellationToken = default)
   {
@@ -432,6 +483,7 @@ public class TaskTable : ITaskTable
     }
   }
 
+  /// <inheritdoc />
   public async Task SetTaskCanceledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
@@ -465,6 +517,7 @@ public class TaskTable : ITaskTable
     }
   }
 
+  /// <inheritdoc />
   public async Task<bool> SetTaskErrorAsync(string            taskId,
                                             string            errorDetail,
                                             CancellationToken cancellationToken = default)

@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
@@ -488,7 +489,10 @@ public class TaskTableTestBase
   }
 
   [Test(Description = "Forbidden update: A given Task its on a final status")]
-  public void UpdateAllTaskStatusAsyncShouldFail()
+  [TestCase(TaskStatus.Error)]
+  [TestCase(TaskStatus.Cancelled)]
+  [TestCase(TaskStatus.Completed)]
+  public void UpdateAllTaskStatusAsyncShouldFailOnSomeStatus(TaskStatus status)
   {
     if (RunTests)
     {
@@ -498,9 +502,7 @@ public class TaskTableTestBase
                                     {
                                       Statuses =
                                       {
-                                        TaskStatus.Completed, // Presence of this status should generate an exception
-                                        TaskStatus.Creating,
-                                        TaskStatus.Processing,
+                                        status, // Presence of this status should generate an exception
                                       },
                                     },
                          Session = new TaskFilter.Types.IdsRequest
@@ -1088,6 +1090,44 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task ListApplicationFromTasksShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListApplicationsRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListApplicationsRequest.Types.Filter
+                           {
+                             Name = options_.ApplicationName,
+                           },
+                  Sort = new ListApplicationsRequest.Types.Sort
+                         {
+                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                         },
+                };
+
+      var validator = new ListApplicationsRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      var listTasksResponseTaskData = listTasks.ToList();
+      foreach (var task in listTasksResponseTaskData)
+      {
+        Console.WriteLine(task);
+      }
+
+      Assert.AreEqual(2,
+                      listTasksResponseTaskData.Count());
+    }
+  }
 
   [Test]
   public async Task ListTaskWithRequestShouldSucceed()
@@ -1411,6 +1451,119 @@ public class TaskTableTestBase
       Assert.AreEqual(TaskStatus.Processing,
                       listTasksResponseTaskData[1]
                         .Status);
+    }
+  }
+
+  [Test]
+  public async Task CancelTasksAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 200,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId = "SessionId",
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                           Field     = ListTasksRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      var cancelledTasks = await TaskTable.CancelTaskAsync(listTasks.Select(data => data.TaskId)
+                                                                    .ToList(),
+                                                           CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+      var listTasksResponseTaskData = listTasks.ToList();
+      Assert.AreEqual(cancelledTasks.Count,
+                      listTasksResponseTaskData.Count);
+
+      foreach (var task in cancelledTasks)
+      {
+        Console.WriteLine(task);
+        Assert.IsTrue(task.Status is TaskStatus.Completed or TaskStatus.Cancelled or TaskStatus.Cancelling or TaskStatus.Error);
+      }
+    }
+  }
+
+  [TestCase(TaskStatus.Error)]
+  [TestCase(TaskStatus.Completed)]
+  [TestCase(TaskStatus.Cancelled)]
+  [TestCase(TaskStatus.Cancelling)]
+  public async Task CancelTasksAsyncShouldNotChangeTheGivenStatus(TaskStatus status)
+  {
+    if (RunTests)
+    {
+      var taskId = "TaskToBeCancelled";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "OwnerPodId",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                    "output2",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  status,
+                                                  options_,
+                                                  new Output(true,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var cancelledTasks = await TaskTable.CancelTaskAsync(new List<string>
+                                                           {
+                                                             taskId,
+                                                           },
+                                                           CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+      Console.WriteLine(cancelledTasks.Single());
+      Assert.AreEqual(status,
+                      cancelledTasks.Single()
+                                    .Status);
+      Assert.AreEqual(taskId,
+                      cancelledTasks.Single()
+                                    .TaskId);
+    }
+  }
+
+  [Test]
+  public async Task CancelTasksAsyncEmptyListShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var cancelledTasks = await TaskTable!.CancelTaskAsync(new List<string>(),
+                                                            CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.AreEqual(0,
+                      cancelledTasks.Count);
     }
   }
 }

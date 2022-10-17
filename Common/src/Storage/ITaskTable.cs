@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
@@ -134,7 +135,7 @@ public interface ITaskTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Cancel all tasks in a given session
+  ///   Cancels all tasks in a given session
   /// </summary>
   /// <param name="sessionId">Id of the target session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -143,6 +144,17 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task CancelSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Cancels all the given tasks that are not in a final status
+  /// </summary>
+  /// <param name="taskIds">Collection of task ids</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of task metadata of the input tasks if tasks exists
+  /// </returns>
+  Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                        CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Count tasks matching a given filter
@@ -207,6 +219,17 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
                                              CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   List all tasks matching the given request
+  /// </summary>
+  /// <param name="request">Filter request</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of task metadata matching the request
+  /// </returns>
+  Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
+                                             CancellationToken       cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to succeeded

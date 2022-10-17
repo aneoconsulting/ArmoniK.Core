@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -131,6 +132,17 @@ public interface IResultTable : IInitializable
   /// </returns>
   IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
                                             CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   List all results matching the given request
+  /// </summary>
+  /// <param name="request">Result request describing the results to be listed </param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of results metadata that matched the filter
+  /// </returns>
+  Task<IEnumerable<Result>> ListResultsAsync(ListResultsRequest request,
+                                             CancellationToken  cancellationToken = default);
 
   /// <summary>
   ///   Update result with small payload

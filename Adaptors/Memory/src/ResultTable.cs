@@ -30,9 +30,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -154,6 +156,22 @@ public class ResultTable : IResultTable
     => results_.Values.SelectMany(results => results.Keys)
                .ToImmutableList()
                .ToAsyncEnumerable();
+
+  /// <inheritdoc />
+  public Task<IEnumerable<Result>> ListResultsAsync(ListResultsRequest request,
+                                                    CancellationToken  cancellationToken = default)
+  {
+    var queryable = results_.Values.SelectMany(results => results.Values)
+                            .AsQueryable()
+                            .Where(request.Filter.ToResultFilter());
+
+    var ordered = request.Sort.Order == ListResultsRequest.Types.SortOrder.Asc
+                    ? queryable.OrderBy(request.Sort.ToResultField())
+                    : queryable.OrderByDescending(request.Sort.ToResultField());
+
+    return Task.FromResult<IEnumerable<Result>>(ordered.Skip(request.Page * request.PageSize)
+                                                       .Take(request.PageSize));
+  }
 
   /// <inheritdoc />
   public Task SetResult(string            sessionId,

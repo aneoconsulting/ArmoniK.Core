@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,17 +22,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
-public static class ResultExtensions
+using FluentValidation;
+
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+/// <summary>
+///   Validator for <see cref="CancelTasksRequest" />
+/// </summary>
+public class CancelTasksRequestValidator : AbstractValidator<CancelTasksRequest>
 {
-  public static Result ToResultDataModel(this Core.Common.Storage.Result result)
-  {
-    if (result is Result resultModel)
-    {
-      return resultModel;
-    }
-
-    return new Result(result);
-  }
+  /// <summary>
+  ///   Initializes a validator for <see cref="CancelTasksRequest" />
+  /// </summary>
+  public CancelTasksRequestValidator()
+    => RuleFor(request => request.TaskIds)
+       .NotNull()
+       .WithName(nameof(CancelTasksRequest.TaskIds));
 }
