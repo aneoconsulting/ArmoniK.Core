@@ -13,6 +13,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
 
   armonik.compute.pollingagent0:
+    depends_on:
+      queue:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage
@@ -23,6 +26,9 @@ services:
       - socket_vol0:/cache
 
   armonik.compute.pollingagent1:
+    depends_on:
+      queue:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage     
@@ -33,6 +39,9 @@ services:
       - socket_vol1:/cache
 
   armonik.compute.pollingagent2:
+    depends_on:
+      queue:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Components__QueueStorage=ArmoniK.Adapters.RabbitMQ.QueueStorage

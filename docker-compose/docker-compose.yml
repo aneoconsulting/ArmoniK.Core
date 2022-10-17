@@ -115,7 +115,7 @@ services:
       object:
         condition: service_started
       queue:
-        condition: service_healthy
+        condition: service_started
       fluentbit:
         condition: service_started
       zipkin:
