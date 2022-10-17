@@ -149,6 +149,7 @@ public class AuthenticationTable : IAuthenticationTable
     }
   }
 
+  /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                                string            fingerprint,
                                                                                CancellationToken cancellationToken = default)

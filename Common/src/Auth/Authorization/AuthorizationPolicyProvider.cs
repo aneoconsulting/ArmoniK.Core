@@ -46,6 +46,11 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
     requireAuthorization_  = options.CurrentValue.RequireAuthorization;
   }
 
+  /// <summary>
+  ///   Get the policy associtaed with the given name
+  /// </summary>
+  /// <param name="policyName">Name of the policy</param>
+  /// <returns>Authorization policy</returns>
   public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
   {
     // If authentication is disabled, no check is required
@@ -73,13 +78,25 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
                                                                                                          .Build());
   }
 
+  /// <summary>
+  ///   Get an authorization policy where the user needs to be authenticated
+  /// </summary>
+  /// <returns></returns>
   public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
     => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
                                                                                .Build());
 
+  /// <summary>
+  ///   Get a null authorization policy, falling back to other policies
+  /// </summary>
+  /// <returns></returns>
   public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
     => Task.FromResult<AuthorizationPolicy?>(null);
 
+  /// <summary>
+  ///   Get an authorization policy accepting accepting anything
+  /// </summary>
+  /// <returns></returns>
   public static Task<AuthorizationPolicy> GetAlwaysTruePolicyAsync()
     => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAssertion(_ => true)
                                                                                .Build());
