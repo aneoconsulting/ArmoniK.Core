@@ -50,7 +50,6 @@ public class QueueStorageTestsBase
     Options = CreateDefaultOptions();
     GetQueueStorageInstance()
       .Wait();
-    RunTests = true;
   }
 
   /* Interfaces to test */
