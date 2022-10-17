@@ -54,6 +54,10 @@ public static class Permissions
   // Permissions list
   public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
 
+  /// <summary>
+  ///   Get the list of all permissions, based on the gRPC endpoints
+  /// </summary>
+  /// <returns></returns>
   private static ImmutableList<Permission> GetPermissionList()
   {
     var permissions = typeof(GrpcSubmitterService).GetMethods()
