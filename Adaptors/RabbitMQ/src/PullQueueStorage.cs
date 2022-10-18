@@ -166,8 +166,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     }
   }
 
+#pragma warning disable CS1998
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+#pragma warning restore CS1998
   {
     var nbPulledMessage = 0;
 
@@ -175,9 +177,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     {
       throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
-
-    // TODO: Fix this, I put it here cuz the method must be async to return an IAsyncEnumerable.
-    await Task.CompletedTask.ConfigureAwait(false);
 
     cancellationToken.ThrowIfCancellationRequested();
     while (nbPulledMessage < nbMessages)
