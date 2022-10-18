@@ -24,137 +24,50 @@
 
 using System;
 using System.Collections;
-using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests;
 using ArmoniK.Core.Common.Tests.Helpers;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
-
-using Moq;
 
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Adapters.Amqp.Tests;
 
 [TestFixture]
-public class QueueStorageTests
+public class QueueStorageTests : QueueStorageTestsBase
 {
-  [SetUp]
-  public void SetDefaultOptions()
-    /* These options are only to feed the QueueStorage constructor
-     * and they do not play any role in the how the connection is created,
-     * the later is defined in the  SimpleAmqpClientHelper class */
-    => Options = CreateDefaultOptions();
-
-  public Options.Amqp? Options;
-
-  private static Options.Amqp CreateDefaultOptions()
-    => new()
-       {
-         Host              = "localhost",
-         User              = "guest",
-         Password          = "guest",
-         Port              = 5672,
-         CaPath            = "somePath",
-         Scheme            = "someScheme",
-         CredentialsPath   = "somePath",
-         PartitionId       = "part1",
-         MaxPriority       = 5,
-         MaxRetries        = 5,
-         AllowHostMismatch = false,
-         LinkCredit        = 2,
-       };
-
-  [Test]
-  public async Task CreatePushQueueStorageShouldSucceed()
+  protected override async Task GetQueueStorageInstance()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
+    await using var pushClient = new SimpleAmqpClient();
 
-    provider.Setup(cp => cp.Connection)
-            .Returns(helper.Connection);
+    PushQueueStorage = new PushQueueStorage(Options!,
+                                            pushClient,
+                                            NullLogger<PushQueueStorage>.Instance);
 
-    var pushQueueStorage = new PushQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PushQueueStorage>.Instance);
+    /* Our implementation uses separate connections for pushing and pulling */
+    await using var pullClient = new SimpleAmqpClient();
 
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await pushQueueStorage.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await pushQueueStorage.Check(HealthCheckTag.Readiness)
-                                              .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await pushQueueStorage.Check(HealthCheckTag.Startup)
-                                              .ConfigureAwait(false)).Status);
-
-    await pushQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await pushQueueStorage.Check(HealthCheckTag.Liveness)
-                                           .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await pushQueueStorage.Check(HealthCheckTag.Readiness)
-                                           .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await pushQueueStorage.Check(HealthCheckTag.Startup)
-                                           .ConfigureAwait(false)).Status);
-  }
-
-  [Test]
-  public async Task CreatePullQueueStorageShouldSucceed()
-  {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-
-    var pullQueueStorage = new PullQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PullQueueStorage>.Instance);
-    Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                       await pullQueueStorage.Check(HealthCheckTag.Liveness)
-                                             .ConfigureAwait(false));
-    Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                       await pullQueueStorage.Check(HealthCheckTag.Readiness)
-                                             .ConfigureAwait(false));
-    Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                       await pullQueueStorage.Check(HealthCheckTag.Startup)
-                                             .ConfigureAwait(false));
-
-    await pullQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    Assert.AreEqual(HealthCheckResult.Healthy(),
-                    await pullQueueStorage.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false));
-    Assert.AreEqual(HealthCheckResult.Healthy(),
-                    await pullQueueStorage.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false));
-    Assert.AreEqual(HealthCheckResult.Healthy(),
-                    await pullQueueStorage.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false));
+    PullQueueStorage = new PullQueueStorage(Options!,
+                                            pullClient,
+                                            NullLogger<PullQueueStorage>.Instance);
+    RunTests = true;
   }
 
   [Test]
   public async Task CreatePullQueueStorageShouldFail()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
+    await using var pullClient = new SimpleAmqpClient();
 
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-
-    Options!.PartitionId = "";
-    Assert.Throws<ArgumentOutOfRangeException>(() => new PullQueueStorage(Options,
-                                                                          provider.Object,
-                                                                          NullLogger<PullQueueStorage>.Instance));
+    var badOpts = CreateDefaultOptions();
+    badOpts.PartitionId = "";
+    Assert.Throws<ArgumentOutOfRangeException>(() =>
+                                               {
+                                                 var _ = new PullQueueStorage(badOpts,
+                                                                              pullClient,
+                                                                              NullLogger<PullQueueStorage>.Instance);
+                                               });
   }
 
   public static IEnumerable TestCasesBadOptions
@@ -206,221 +119,14 @@ public class QueueStorageTests
   }
 
   [TestCaseSource(nameof(TestCasesBadOptions))]
-  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Options.Amqp options)
+  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Common.Injection.Options.Amqp options)
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
+    await using var client = new SimpleAmqpClient();
 
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-
-    Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
-                                                                      provider.Object));
-  }
-
-  [Test]
-  public async Task PushMessagesAsyncSucceeds()
-  {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(cp => cp.Connection)
-            .Returns(helper.Connection);
-
-    var pushQueueStorage = new PushQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PushQueueStorage>.Instance);
-
-    await pushQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    var priority = 15; // InternalMaxPriority = 10
-    var testMessages = new[]
-                       {
-                         "msg1",
-                         "msg2",
-                         "msg3",
-                         "msg4",
-                         "msg5",
-                       };
-    await pushQueueStorage.PushMessagesAsync(testMessages,
-                                             "part1",
-                                             priority,
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
-    Assert.Pass();
-  }
-
-  [Test]
-  public async Task PullMessagesAsyncSucceeds()
-  {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-
-    var pushQueueStorage = new PushQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PushQueueStorage>.Instance);
-
-    var pullQueueStorage = new PullQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PullQueueStorage>.Instance);
-
-    await pushQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-    await pullQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    var priority = 1;
-    var testMessages = new[]
-                       {
-                         "msg1",
-                         "msg2",
-                         "msg3",
-                         "msg4",
-                         "msg5",
-                       };
-    await pushQueueStorage.PushMessagesAsync(testMessages,
-                                             Options!.PartitionId,
-                                             priority,
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
-
-
-    var messages = pullQueueStorage.PullMessagesAsync(5,
-                                                      CancellationToken.None);
-
-    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                      .ConfigureAwait(false))
-    {
-      Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
-      qmh.Status = QueueMessageStatus.Processed;
-      await qmh.DisposeAsync()
-               .ConfigureAwait(false);
-    }
-  }
-
-  [Test]
-  public async Task PullMessagesAsyncFromMultiplePartitionsSucceeds()
-  {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-    var pushQueueStorage = new PushQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PushQueueStorage>.Instance);
-
-    var priority = 1;
-    var testMessages = new[]
-                       {
-                         "msg1",
-                         "msg2",
-                         "msg3",
-                         "msg4",
-                         "msg5",
-                       };
-
-    await pushQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    for (var i = 0; i < 3; i++)
-    {
-      Options!.PartitionId = $"part{i}";
-      var pullQueueStorage = new PullQueueStorage(Options!,
-                                                  provider.Object,
-                                                  NullLogger<PullQueueStorage>.Instance);
-
-      await pullQueueStorage.Init(CancellationToken.None)
-                            .ConfigureAwait(false);
-
-      await pushQueueStorage.PushMessagesAsync(testMessages,
-                                               $"part{i}",
-                                               priority,
-                                               CancellationToken.None)
-                            .ConfigureAwait(false);
-
-
-      var messages = pullQueueStorage.PullMessagesAsync(5,
-                                                        CancellationToken.None);
-
-      await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                        .ConfigureAwait(false))
-      {
-        Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
-        qmh.Status = QueueMessageStatus.Processed;
-        await qmh.DisposeAsync()
-                 .ConfigureAwait(false);
-      }
-    }
-  }
-
-  [Test]
-  public async Task PullMessagesAsyncSucceedsOnMultipleCalls()
-  {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IConnectionAmqp>();
-
-    provider.Setup(sp => sp.Connection)
-            .Returns(helper.Connection);
-    var pushQueueStorage = new PushQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PushQueueStorage>.Instance);
-
-    var pullQueueStorage = new PullQueueStorage(Options!,
-                                                provider.Object,
-                                                NullLogger<PullQueueStorage>.Instance);
-
-    await pushQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-    await pullQueueStorage.Init(CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    var priority = 1;
-    var testMessages = new[]
-                       {
-                         "msg1",
-                         "msg2",
-                         "msg3",
-                         "msg4",
-                         "msg5",
-                       };
-    /* Push 5 messages to the queue to test the pull */
-    await pushQueueStorage.PushMessagesAsync(testMessages,
-                                             Options!.PartitionId,
-                                             priority,
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    /* Pull 3 messages from the queue, their default status being pending means that
-     they should be pushed again to the queue */
-    var messages = pullQueueStorage.PullMessagesAsync(3,
-                                                      CancellationToken.None);
-
-    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                      .ConfigureAwait(false))
-    {
-      Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
-      await qmh.DisposeAsync()
-               .ConfigureAwait(false);
-    }
-
-    /* Pull 2 messages from the queue and change their status to processing; this means that
-     these two should be treated as dequeued  by the broker and the remaining three
-     as Pending if the test passes */
-    var messages2 = pullQueueStorage.PullMessagesAsync(2,
-                                                       CancellationToken.None);
-
-    await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
-                                       .ConfigureAwait(false))
-    {
-      Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
-      qmh.Status = QueueMessageStatus.Processed;
-      await qmh.DisposeAsync()
-               .ConfigureAwait(false);
-    }
+    Assert.Throws<ArgumentOutOfRangeException>(() =>
+                                               {
+                                                 var _ = new QueueStorage(options,
+                                                                          client);
+                                               });
   }
 }

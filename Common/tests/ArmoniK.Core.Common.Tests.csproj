@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
+    <ProjectReference Include="..\..\Adaptors\RabbitMQ\src\ArmoniK.Core.Adapters.RabbitMQ.csproj" />
     <ProjectReference Include="..\src\ArmoniK.Core.Common.csproj" />
     <ProjectReference Include="../../Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj" />
     <ProjectReference Include="../../Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj" />

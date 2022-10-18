@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -86,6 +87,8 @@ public static class Program
                                  logger.GetLogger())
              .AddAmqp(builder.Configuration,
                       logger.GetLogger())
+             .AddRabbit(builder.Configuration,
+                        logger.GetLogger())
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddHostedService<Worker>()

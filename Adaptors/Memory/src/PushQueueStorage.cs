@@ -195,7 +195,7 @@ public class PushQueueStorage : IPushQueueStorage
     }
 
     /// <inheritdoc />
-    public CancellationToken CancellationToken { get; init; }
+    public CancellationToken CancellationToken { get; set; }
 
     /// <inheritdoc />
     public string MessageId

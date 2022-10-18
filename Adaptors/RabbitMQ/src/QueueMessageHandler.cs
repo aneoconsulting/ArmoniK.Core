@@ -8,7 +8,7 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//   D. Brasseur       <dbrasseur@aneo.fr>
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
@@ -26,36 +26,33 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amqp;
-using Amqp.Framing;
-
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Adapters.Amqp;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+
+namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly ILogger       logger_;
-  private readonly Message       message_;
-  private readonly IReceiverLink receiver_;
-  private readonly ISenderLink   sender_;
+  private readonly IModel                channel_;
+  private readonly BasicDeliverEventArgs deliverEvent_;
+  private readonly ILogger               logger_;
 
-  public QueueMessageHandler(Message           message,
-                             ISenderLink       sender,
-                             IReceiverLink     receiver,
-                             string            taskId,
-                             ILogger           logger,
-                             CancellationToken cancellationToken)
+  public QueueMessageHandler(IModel                channel,
+                             BasicDeliverEventArgs deliverEvent,
+                             string                taskId,
+                             ILogger               logger,
+                             CancellationToken     cancellationToken)
   {
-    message_          = message;
-    sender_           = sender;
-    receiver_         = receiver;
     logger_           = logger;
     TaskId            = taskId;
+    deliverEvent_     = deliverEvent;
     CancellationToken = cancellationToken;
+    channel_          = channel;
   }
 
   /// <inheritdoc />
@@ -63,7 +60,7 @@ public class QueueMessageHandler : IQueueMessageHandler
 
   /// <inheritdoc />
   public string MessageId
-    => message_.Properties.MessageId;
+    => deliverEvent_.BasicProperties.MessageId;
 
   /// <inheritdoc />
   public string TaskId { get; }
@@ -71,33 +68,28 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public QueueMessageStatus Status { get; set; }
 
-  /// <inheritdoc />
-  public async ValueTask DisposeAsync()
+  public ValueTask DisposeAsync()
   {
     using var _ = logger_.LogFunction(MessageId,
                                       functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        await sender_.SendAsync(new Message(message_.Body)
-                                {
-                                  Header = new Header
-                                           {
-                                             Priority = message_.Header.Priority,
-                                           },
-                                  Properties = new Properties(),
-                                })
-                     .ConfigureAwait(false);
-        receiver_.Accept(message_);
+        /* Negative acknowledging this message will send it
+         to the retry exchange, see PullQueueStorage.cs */
+        channel_.BasicNack(deliverEvent_.DeliveryTag,
+                           false,
+                           false);
         break;
       case QueueMessageStatus.Failed:
-        receiver_.Release(message_);
-        break;
+
       case QueueMessageStatus.Processed:
-        receiver_.Accept(message_);
-        break;
+
       case QueueMessageStatus.Poisonous:
-        receiver_.Reject(message_);
+        /* Failed, Processed and Poisonous messages are
+         * acknowledged so they are not send to Retry exchange */
+        channel_.BasicAck(deliverEvent_.DeliveryTag,
+                          false);
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(Status),
@@ -106,5 +98,7 @@ public class QueueMessageHandler : IQueueMessageHandler
     }
 
     GC.SuppressFinalize(this);
+
+    return ValueTask.CompletedTask;
   }
 }

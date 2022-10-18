@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,36 +15,39 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
 
-public enum QueueMessageStatus
+namespace ArmoniK.Core.Adapters.RabbitMQ;
+
+public class QueueStorage : QueueStorageBase
 {
-  Failed,
-  Waiting = Failed,
-  Running = Failed,
-  Postponed,
-  Processed,
-  Cancelled = Processed,
-  Poisonous,
-}
+  protected readonly IConnectionRabbit ConnectionRabbit;
 
-public interface IQueueMessageHandler : IAsyncDisposable
-{
-  CancellationToken CancellationToken { get; set; }
+  protected QueueStorage(Amqp              options,
+                         IConnectionRabbit connectionRabbit)
+    : base(options)
+    => ConnectionRabbit = connectionRabbit;
 
-  string MessageId { get; }
 
-  string TaskId { get; }
+  public override async Task Init(CancellationToken cancellationToken)
+  {
+    await ConnectionRabbit.Init(cancellationToken)
+                          .ConfigureAwait(false);
 
-  QueueMessageStatus Status { get; set; }
+    if (!IsInitialized)
+    {
+      IsInitialized = true;
+    }
+  }
 }
