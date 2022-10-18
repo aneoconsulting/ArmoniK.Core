@@ -58,8 +58,8 @@ jobs:
     - name: ReTag
       run: |
         set -xe
-        docker manifest inspect ${{ matrix.image }}:$VERSION | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:${RELEASE} -a 
-        docker manifest inspect ${{ matrix.image }}:$VERSION | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:latest -a 
+        docker manifest inspect ${{ matrix.image }}:${VERSION} | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:${RELEASE} -a 
+        docker manifest inspect ${{ matrix.image }}:${VERSION} | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:latest -a 
         docker manifest push ${{ matrix.image }}:${RELEASE}
         docker manifest push ${{ matrix.image }}:latest
 

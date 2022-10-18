@@ -422,10 +422,10 @@ jobs:
           --push
 
     - name: Create multi-arch manifest
-      run: docker create manifest ${{ matrix.img }}:$VERSION -a ${{ matrix.img }}:$VERSION -a ${{ matrix.img }}:$VERSION-arm
+      run: docker manifest create ${{ matrix.img }}:${VERSION} -a ${{ matrix.img }}:${VERSION} -a ${{ matrix.img }}:${VERSION}-arm
 
     - name: Push multi-arch manifest
-      run: docker manifest push ${{ matrix.img }}:$VERSION
+      run: docker manifest push ${{ matrix.img }}:${VERSION}
 
   testStreamDC:
     needs:
