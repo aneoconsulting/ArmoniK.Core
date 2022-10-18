@@ -68,10 +68,10 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler">
   
   
-  <h1 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler" class="text-break">Class QueueMessageHandler
+  <h1 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler" class="text-break">Class QueueMessageHandler
   </h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
@@ -85,9 +85,9 @@
     <div><a class="xref" href="ArmoniK.Core.Common.Storage.IQueueMessageHandler.html">IQueueMessageHandler</a></div>
     <div><span class="xref">IAsyncDisposable</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.Amqp.html">ArmoniK.Core.Adapters.Amqp</a></h6>
-  <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.Amqp.dll</h6>
-  <h5 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_syntax">Syntax</h5>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.RabbitMQ.html">ArmoniK.Core.Adapters.RabbitMQ</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.RabbitMQ.dll</h6>
+  <h5 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public class QueueMessageHandler : object, IQueueMessageHandler</code></pre>
   </div>
@@ -95,18 +95,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler__ctor_Message_ISenderLink_IReceiverLink_System_String_ILogger_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.%23ctor(Message%2CISenderLink%2CIReceiverLink%2CSystem.String%2CILogger%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler__ctor_IModel_BasicDeliverEventArgs_System_String_ILogger_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.%23ctor(IModel%2CBasicDeliverEventArgs%2CSystem.String%2CILogger%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L46">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L45">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler__ctor_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler__ctor_Message_ISenderLink_IReceiverLink_System_String_ILogger_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.#ctor(Message,ISenderLink,IReceiverLink,System.String,ILogger,CancellationToken)">QueueMessageHandler(Message, ISenderLink, IReceiverLink, String, ILogger, CancellationToken)</h4>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler__ctor_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.#ctor*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler__ctor_IModel_BasicDeliverEventArgs_System_String_ILogger_CancellationToken_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.#ctor(IModel,BasicDeliverEventArgs,System.String,ILogger,CancellationToken)">QueueMessageHandler(IModel, BasicDeliverEventArgs, String, ILogger, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public QueueMessageHandler(Message message, ISenderLink sender, IReceiverLink receiver, string taskId, ILogger logger, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public QueueMessageHandler(IModel channel, BasicDeliverEventArgs deliverEvent, string taskId, ILogger logger, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -119,18 +119,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Message</span></td>
-        <td><span class="parametername">message</span></td>
+        <td><span class="xref">IModel</span></td>
+        <td><span class="parametername">channel</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">ISenderLink</span></td>
-        <td><span class="parametername">sender</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">IReceiverLink</span></td>
-        <td><span class="parametername">receiver</span></td>
+        <td><span class="xref">BasicDeliverEventArgs</span></td>
+        <td><span class="parametername">deliverEvent</span></td>
         <td></td>
       </tr>
       <tr>
@@ -154,13 +149,13 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_CancellationToken.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.CancellationToken%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_CancellationToken.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.CancellationToken%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L62">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L59">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.CancellationToken*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_CancellationToken" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.CancellationToken">CancellationToken</h4>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_CancellationToken_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.CancellationToken*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_CancellationToken" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.CancellationToken">CancellationToken</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -184,13 +179,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_MessageId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.MessageId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_MessageId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.MessageId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L65">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L62">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_MessageId_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.MessageId*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_MessageId" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.MessageId">MessageId</h4>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_MessageId_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.MessageId*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_MessageId" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.MessageId">MessageId</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -214,13 +209,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_Status.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.Status%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_Status.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.Status%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L72">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L69">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_Status_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.Status*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_Status" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.Status">Status</h4>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_Status_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.Status*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_Status" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.Status">Status</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -244,13 +239,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_TaskId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.TaskId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_TaskId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.TaskId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L69">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L66">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_TaskId_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.TaskId*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_TaskId" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.TaskId">TaskId</h4>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_TaskId_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.TaskId*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_TaskId" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.TaskId">TaskId</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -276,18 +271,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_DisposeAsync.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.DisposeAsync%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_DisposeAsync.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.DisposeAsync%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L75">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L71">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_DisposeAsync_" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.DisposeAsync*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Amqp_QueueMessageHandler_DisposeAsync" data-uid="ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.DisposeAsync">DisposeAsync()</h4>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_DisposeAsync_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.DisposeAsync*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler_DisposeAsync" data-uid="ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler.DisposeAsync">DisposeAsync()</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async ValueTask DisposeAsync()</code></pre>
+    <pre><code class="lang-csharp hljs">public ValueTask DisposeAsync()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -319,10 +314,10 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_QueueMessageHandler.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.QueueMessageHandler%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_QueueMessageHandler.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.QueueMessageHandler%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/QueueMessageHandler.cs/#L39" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/QueueMessageHandler.cs/#L39" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

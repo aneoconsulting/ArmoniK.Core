@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Namespace ArmoniK.Core.Adapters.Amqp.Options
+    <title>Interface IConnectionRabbit
    </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Namespace ArmoniK.Core.Adapters.Amqp.Options
+    <meta name="title" content="Interface IConnectionRabbit
    ">
     <meta name="generator" content="docfx 2.59.4.0">
     
@@ -68,17 +68,60 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.Amqp.Options">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit">
   
-  <h1 id="ArmoniK_Core_Adapters_Amqp_Options" data-uid="ArmoniK.Core.Adapters.Amqp.Options" class="text-break">Namespace ArmoniK.Core.Adapters.Amqp.Options
+  
+  <h1 id="ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit" data-uid="ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit" class="text-break">Interface IConnectionRabbit
   </h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
-  <div class="markdown level0 remarks"></div>
-    <h3 id="classes">Classes
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.IInitializable.html#ArmoniK_Core_Common_IInitializable_Init_CancellationToken_">IInitializable.Init(CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html#ArmoniK_Core_Common_IHealthCheckProvider_Check_ArmoniK_Core_Common_HealthCheckTag_">IHealthCheckProvider.Check(HealthCheckTag)</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.RabbitMQ.html">ArmoniK.Core.Adapters.RabbitMQ</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.RabbitMQ.dll</h6>
+  <h5 id="ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IConnectionRabbit : IInitializable, IHealthCheckProvider</code></pre>
+  </div>
+  <h3 id="properties">Properties
   </h3>
-      <h4><a class="xref" href="ArmoniK.Core.Adapters.Amqp.Options.Amqp.html">Amqp</a></h4>
-      <section></section>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit_Channel.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit.Channel%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/IConnectionRabbit.cs/#L35">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit_Channel_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit.Channel*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit_Channel" data-uid="ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit.Channel">Channel</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">IModel? Channel { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">IModel</span>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
 </article>
           </div>
           
@@ -86,6 +129,12 @@
             <div class="sideaffix">
               <div class="contribution">
                 <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/IConnectionRabbit.cs/#L33" class="contribution-link">View Source</a>
+                  </li>
                 </ul>
               </div>
               <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
