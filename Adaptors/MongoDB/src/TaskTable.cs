@@ -26,20 +26,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -408,43 +406,26 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                          CancellationToken cancellationToken = default)
+  public async Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                          Expression<Func<TaskData, object?>> orderField,
+                                                          bool                                ascOrder,
+                                                          int                                 page,
+                                                          int                                 pageSize,
+                                                          CancellationToken                   cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = taskCollectionProvider_.Get();
 
     var queryable = taskCollection.AsQueryable(sessionHandle)
-                                  .Where(request.Filter.ToTaskDataFilter());
+                                  .Where(filter);
 
-    var ordered = request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToTaskDataField())
-                    : queryable.OrderByDescending(request.Sort.ToTaskDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(request.Page * request.PageSize)
-                        .Take(request.PageSize)
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
-                                                          CancellationToken       cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    var queryable = taskCollection.AsQueryable(sessionHandle)
-                                  .Where(request.Filter.ToApplicationFilter());
-
-    var ordered = request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToApplicationField())
-                    : queryable.OrderByDescending(request.Sort.ToApplicationField());
-
-    return await ordered.Skip(request.Page * request.PageSize)
-                        .Take(request.PageSize)
+    return await ordered.Skip(page * pageSize)
+                        .Take(pageSize)
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
   }

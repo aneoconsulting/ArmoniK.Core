@@ -25,12 +25,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
@@ -113,12 +112,12 @@ public interface ITaskTable : IInitializable
                                      CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Query a task status to check for cancelation
+  ///   Query a task status to check for cancellation
   /// </summary>
   /// <param name="taskId">Id of the task to check</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Boolean representing the cancelation status of the task
+  ///   Boolean representing the cancellation status of the task
   /// </returns>
   Task<bool> IsTaskCancelledAsync(string            taskId,
                                   CancellationToken cancellationToken = default);
@@ -210,26 +209,23 @@ public interface ITaskTable : IInitializable
                                           CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   List all tasks matching the given request
+  ///   List all tasks matching the given filter and ordering
   /// </summary>
-  /// <param name="request">Filter request</param>
+  /// <param name="filter">Filter to select tasks</param>
+  /// <param name="orderField">Select the field that will be used to order the tasks</param>
+  /// <param name="ascOrder">Is the order ascending</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
   /// <returns>
   ///   Collection of task metadata matching the request
   /// </returns>
-  Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                             CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   List all tasks matching the given request
-  /// </summary>
-  /// <param name="request">Filter request</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Collection of task metadata matching the request
-  /// </returns>
-  Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
-                                             CancellationToken       cancellationToken = default);
+  Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                             Expression<Func<TaskData, object?>> orderField,
+                                             bool                                ascOrder,
+                                             int                                 page,
+                                             int                                 pageSize,
+                                             CancellationToken                   cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to succeeded

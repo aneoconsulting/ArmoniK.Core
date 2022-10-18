@@ -30,8 +30,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -39,8 +39,6 @@ using ArmoniK.Core.Common.Utils;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -1114,7 +1112,11 @@ public class TaskTableTestBase
       Assert.IsTrue(validator.Validate(req)
                              .IsValid);
 
-      var listTasks = await TaskTable!.ListTasksAsync(req,
+      var listTasks = await TaskTable!.ListTasksAsync(req.Filter.ToApplicationFilter(),
+                                                      req.Sort.ToApplicationField(),
+                                                      false,
+                                                      req.Page,
+                                                      req.PageSize,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1134,26 +1136,11 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 20,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
+      var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                      data => data.SessionId,
+                                                      false,
+                                                      0,
+                                                      20,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1162,342 +1149,6 @@ public class TaskTableTestBase
     }
   }
 
-  [Test]
-  public async Task ListTaskWithRequestLimit2ShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      Assert.AreEqual(2,
-                      listTasks.Count());
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestTaskStatusShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                             Status    = TaskStatus.Completed,
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(1,
-                      listTasksResponseTaskData.Count());
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedAfterShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId    = "SessionId",
-                             CreatedAfter = FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count());
-    }
-  }
-
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count());
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                           Field     = ListTasksRequest.Types.OrderByField.TaskId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count);
-      Assert.AreEqual("TaskAnotherProcessingId",
-                      listTasksResponseTaskData[0]
-                        .TaskId);
-      Assert.AreEqual("TaskCompletedId",
-                      listTasksResponseTaskData[1]
-                        .TaskId);
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                           Field     = ListTasksRequest.Types.OrderByField.Status,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count);
-      Assert.AreEqual(TaskStatus.Creating,
-                      listTasksResponseTaskData[0]
-                        .Status);
-      Assert.AreEqual(TaskStatus.Submitted,
-                      listTasksResponseTaskData[1]
-                        .Status);
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.Status,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count);
-      Assert.AreEqual(TaskStatus.Processing,
-                      listTasksResponseTaskData[0]
-                        .Status);
-      Assert.AreEqual(TaskStatus.Processing,
-                      listTasksResponseTaskData[1]
-                        .Status);
-    }
-  }
-
-  [Test]
-  public async Task CancelTasksAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 200,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                           Field     = ListTasksRequest.Types.OrderByField.Status,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var cancelledTasks = await TaskTable.CancelTaskAsync(listTasks.Select(data => data.TaskId)
-                                                                    .ToList(),
-                                                           CancellationToken.None)
-                                          .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      Assert.AreEqual(cancelledTasks.Count,
-                      listTasksResponseTaskData.Count);
-
-      foreach (var task in cancelledTasks)
-      {
-        Console.WriteLine(task);
-        Assert.IsTrue(task.Status is TaskStatus.Completed or TaskStatus.Cancelled or TaskStatus.Cancelling or TaskStatus.Error);
-      }
-    }
-  }
 
   [TestCase(TaskStatus.Error)]
   [TestCase(TaskStatus.Completed)]

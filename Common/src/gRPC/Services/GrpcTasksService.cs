@@ -91,7 +91,11 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
-      var taskData = await taskTable_.ListTasksAsync(request,
+      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
+                                                     request.Sort.ToTaskDataField(),
+                                                     request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc,
+                                                     request.Page,
+                                                     request.PageSize,
                                                      context.CancellationToken)
                                      .ConfigureAwait(false);
 

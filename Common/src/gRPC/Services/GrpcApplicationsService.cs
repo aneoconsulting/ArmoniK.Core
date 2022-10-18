@@ -54,7 +54,11 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
          PageSize = request.PageSize,
          Application =
          {
-           (await taskTable_.ListTasksAsync(request,
+           (await taskTable_.ListTasksAsync(request.Filter.ToApplicationFilter(),
+                                            request.Sort.ToApplicationField(),
+                                            request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                            request.Page,
+                                            request.PageSize,
                                             context.CancellationToken)
                             .ConfigureAwait(false)).Select(data => new ApplicationRaw
                                                                    {

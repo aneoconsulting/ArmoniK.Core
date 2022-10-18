@@ -27,16 +27,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -323,35 +321,23 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                    CancellationToken cancellationToken = default)
+  public Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                    Expression<Func<TaskData, object?>> orderField,
+                                                    bool                                ascOrder,
+                                                    int                                 page,
+                                                    int                                 pageSize,
+                                                    CancellationToken                   cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
-                                    .Where(request.Filter.ToTaskDataFilter());
+                                    .Where(filter);
 
-    var ordered = request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToTaskDataField())
-                    : queryable.OrderByDescending(request.Sort.ToTaskDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
-                                                         .Take(request.PageSize));
-  }
-
-  /// <inheritdoc />
-  public Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
-                                                    CancellationToken       cancellationToken = default)
-  {
-    var queryable = taskId2TaskData_.AsQueryable()
-                                    .Select(pair => pair.Value)
-                                    .Where(request.Filter.ToApplicationFilter());
-
-    var ordered = request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToApplicationField())
-                    : queryable.OrderByDescending(request.Sort.ToApplicationField());
-
-    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
-                                                         .Take(request.PageSize));
+    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(page * pageSize)
+                                                         .Take(pageSize));
   }
 
   /// <inheritdoc />

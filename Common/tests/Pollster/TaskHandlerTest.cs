@@ -26,15 +26,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
@@ -517,12 +516,12 @@ public class TaskHandlerTest
                                                    CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                      CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
-    public Task<IEnumerable<TaskData>> ListTasksAsync(ListApplicationsRequest request,
-                                                      CancellationToken       cancellationToken = default)
+    public Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                      Expression<Func<TaskData, object?>> orderField,
+                                                      bool                                ascOrder,
+                                                      int                                 page,
+                                                      int                                 pageSize,
+                                                      CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task SetTaskSuccessAsync(string            taskId,
