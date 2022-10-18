@@ -220,6 +220,13 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  /// Add the storage provider for the client authentication system to the service collection
+  /// </summary>
+  /// <param name="services">Services</param>
+  /// <param name="configuration">Configuration</param>
+  /// <param name="logger">Logger</param>
+  /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
                                                                            ConfigurationManager    configuration,
@@ -235,6 +242,14 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  /// Add the authentication service to the service collection
+  /// </summary>
+  /// <param name="services">Services</param>
+  /// <param name="configuration">Configuration</param>
+  /// <param name="logger">Logger</param>
+  /// <param name="authCache">Created authentication cache</param>
+  /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
                                                                   ConfigurationManager    configuration,

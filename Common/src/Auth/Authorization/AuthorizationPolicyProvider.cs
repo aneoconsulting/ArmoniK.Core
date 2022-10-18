@@ -40,6 +40,10 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   private readonly bool requireAuthentication_;
   private readonly bool requireAuthorization_;
 
+  /// <summary>
+  /// Creates the authorization policy provider from the options
+  /// </summary>
+  /// <param name="options">Options</param>
   public AuthorizationPolicyProvider(IOptionsMonitor<AuthenticatorOptions> options)
   {
     requireAuthentication_ = options.CurrentValue.RequireAuthentication;
@@ -81,7 +85,7 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   /// <summary>
   ///   Get an authorization policy where the user needs to be authenticated
   /// </summary>
-  /// <returns></returns>
+  /// <returns>Default authorization policy</returns>
   public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
     => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
                                                                                .Build());
@@ -89,14 +93,14 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   /// <summary>
   ///   Get a null authorization policy, falling back to other policies
   /// </summary>
-  /// <returns></returns>
+  /// <returns>Null policy (fallback)</returns>
   public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
     => Task.FromResult<AuthorizationPolicy?>(null);
 
   /// <summary>
   ///   Get an authorization policy accepting accepting anything
   /// </summary>
-  /// <returns></returns>
+  /// <returns>Policy returning true all the time</returns>
   public static Task<AuthorizationPolicy> GetAlwaysTruePolicyAsync()
     => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAssertion(_ => true)
                                                                                .Build());

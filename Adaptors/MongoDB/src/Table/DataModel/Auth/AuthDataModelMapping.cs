@@ -34,6 +34,9 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
+/// <summary>
+/// MongoDB object mapping for certificate data
+/// </summary>
 public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
 {
   static AuthDataModelMapping()

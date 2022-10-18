@@ -39,6 +39,9 @@ public record UserAuthenticationResult(string              Id,
                                        IEnumerable<string> Roles,
                                        IEnumerable<string> Permissions)
 {
+  /// <summary>
+  /// Creates an empty result
+  /// </summary>
   public UserAuthenticationResult()
     : this("",
            "",

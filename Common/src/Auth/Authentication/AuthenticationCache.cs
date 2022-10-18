@@ -33,6 +33,14 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// </summary>
 public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
 {
+  /// <summary>
+  /// Creates an authentication cache key from request headers
+  /// </summary>
+  /// <param name="connectionId">Connection id</param>
+  /// <param name="cn">Certificate Common Name</param>
+  /// <param name="fingerprint">Certificate fingerprint</param>
+  /// <param name="impersonateId">User Id to impersonate</param>
+  /// <param name="impersonateUsername">Username to impersonate</param>
   public AuthenticationCacheKey(string  connectionId,
                                 string? cn                  = "",
                                 string? fingerprint         = "",
@@ -46,12 +54,28 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
     ImpersonateUsername = impersonateUsername ?? "";
   }
 
+  /// <summary>
+  /// Id of the connection
+  /// </summary>
   public string ConnectionId        { get; }
+  /// <summary>
+  /// Certificate common name
+  /// </summary>
   public string CN                  { get; }
+  /// <summary>
+  /// Certificate fingerprint
+  /// </summary>
   public string Fingerprint         { get; }
+  /// <summary>
+  /// User id to impersonate
+  /// </summary>
   public string ImpersonateId       { get; }
+  /// <summary>
+  /// Username to impersonate
+  /// </summary>
   public string ImpersonateUsername { get; }
 
+  /// <inheritdoc/>
   public bool Equals(AuthenticationCacheKey? other)
   {
     if (other is null)
@@ -69,6 +93,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
            ImpersonateUsername == other.ImpersonateUsername;
   }
 
+  /// <inheritdoc/>
   public override bool Equals(object? obj)
   {
     if (obj is null)
@@ -85,6 +110,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
     return obj is AuthenticationCacheKey key && Equals(key);
   }
 
+  /// <inheritdoc/>
   public override int GetHashCode()
     => HashCode.Combine(ConnectionId,
                         CN,
@@ -101,6 +127,9 @@ public class AuthenticationCache
 {
   private readonly ConcurrentDictionary<AuthenticationCacheKey, UserIdentity> identityStore_;
 
+  /// <summary>
+  /// Creates a new authentication cache
+  /// </summary>
   public AuthenticationCache()
     => identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, UserIdentity>();
 
