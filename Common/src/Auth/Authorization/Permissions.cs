@@ -172,7 +172,8 @@ public static class Permissions
     /// </summary>
     /// <param name="service">Service</param>
     /// <param name="name">Name</param>
-    /// <param name="target">Target, if null defaults to
+    /// <param name="target">
+    ///   Target, if null defaults to
     ///   <value cref="Permissions.Default">Default</value>
     /// </param>
     public Permission(string  service,
