@@ -421,15 +421,11 @@ jobs:
           -f ${{ matrix.path }} . \
           --push
 
-    - name: Get manifest
-      run: |
-        docker manifest inspect --verbose ${{ matrix.img }}:${VERSION}-arm | jq '.Descriptor' > descr.json
-        cat descr.json
+    - name: Create multi-arch manifest
+      run: docker create manifest ${{ matrix.img }}:$VERSION -a ${{ matrix.img }}:$VERSION -a ${{ matrix.img }}:$VERSION-arm
 
-    - name: Tag
-      continue-on-error: true
-      run: |
-        docker buildx imagetools create ${{ matrix.img }}:$VERSION -t ${{ matrix.img }}:$VERSION --append -f descr.json
+    - name: Push multi-arch manifest
+      run: docker manifest push ${{ matrix.img }}:$VERSION
 
   testStreamDC:
     needs:
