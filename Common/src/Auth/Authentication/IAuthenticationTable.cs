@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>
-/// Interface for the authentication storage
+///   Interface for the authentication storage
 /// </summary>
 public interface IAuthenticationTable : IInitializable
 {

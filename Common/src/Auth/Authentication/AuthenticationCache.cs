@@ -34,7 +34,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
 {
   /// <summary>
-  /// Creates an authentication cache key from request headers
+  ///   Creates an authentication cache key from request headers
   /// </summary>
   /// <param name="connectionId">Connection id</param>
   /// <param name="cn">Certificate Common Name</param>
@@ -55,27 +55,31 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
   }
 
   /// <summary>
-  /// Id of the connection
+  ///   Id of the connection
   /// </summary>
-  public string ConnectionId        { get; }
+  public string ConnectionId { get; }
+
   /// <summary>
-  /// Certificate common name
+  ///   Certificate common name
   /// </summary>
-  public string CN                  { get; }
+  public string CN { get; }
+
   /// <summary>
-  /// Certificate fingerprint
+  ///   Certificate fingerprint
   /// </summary>
-  public string Fingerprint         { get; }
+  public string Fingerprint { get; }
+
   /// <summary>
-  /// User id to impersonate
+  ///   User id to impersonate
   /// </summary>
-  public string ImpersonateId       { get; }
+  public string ImpersonateId { get; }
+
   /// <summary>
-  /// Username to impersonate
+  ///   Username to impersonate
   /// </summary>
   public string ImpersonateUsername { get; }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public bool Equals(AuthenticationCacheKey? other)
   {
     if (other is null)
@@ -93,7 +97,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
            ImpersonateUsername == other.ImpersonateUsername;
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public override bool Equals(object? obj)
   {
     if (obj is null)
@@ -110,7 +114,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
     return obj is AuthenticationCacheKey key && Equals(key);
   }
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public override int GetHashCode()
     => HashCode.Combine(ConnectionId,
                         CN,
@@ -128,7 +132,7 @@ public class AuthenticationCache
   private readonly ConcurrentDictionary<AuthenticationCacheKey, UserIdentity> identityStore_;
 
   /// <summary>
-  /// Creates a new authentication cache
+  ///   Creates a new authentication cache
   /// </summary>
   public AuthenticationCache()
     => identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, UserIdentity>();

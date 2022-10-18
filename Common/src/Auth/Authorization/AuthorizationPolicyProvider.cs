@@ -41,7 +41,7 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   private readonly bool requireAuthorization_;
 
   /// <summary>
-  /// Creates the authorization policy provider from the options
+  ///   Creates the authorization policy provider from the options
   /// </summary>
   /// <param name="options">Options</param>
   public AuthorizationPolicyProvider(IOptionsMonitor<AuthenticatorOptions> options)

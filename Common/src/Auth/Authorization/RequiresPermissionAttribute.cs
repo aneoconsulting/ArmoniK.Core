@@ -33,14 +33,14 @@ namespace ArmoniK.Core.Common.Auth.Authorization;
 public class RequiresPermissionAttribute : AuthorizeAttribute
 {
   /// <summary>
-  /// Prefix of the authorization policy
+  ///   Prefix of the authorization policy
   /// </summary>
   public const string PolicyPrefix = "RequiresPermission:";
 
   private Permissions.Permission? permission_;
 
   /// <summary>
-  /// Creates the method attribute for the given category and method
+  ///   Creates the method attribute for the given category and method
   /// </summary>
   /// <param name="category">Category of the attribute, usually the service</param>
   /// <param name="function">Function guarded by the attribute, usually the method name</param>
@@ -50,7 +50,7 @@ public class RequiresPermissionAttribute : AuthorizeAttribute
                                                function);
 
   /// <summary>
-  /// Get or set the permission required by the method
+  ///   Get or set the permission required by the method
   /// </summary>
   public Permissions.Permission? Permission
   {

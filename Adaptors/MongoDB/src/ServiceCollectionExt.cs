@@ -221,7 +221,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  /// Add the storage provider for the client authentication system to the service collection
+  ///   Add the storage provider for the client authentication system to the service collection
   /// </summary>
   /// <param name="services">Services</param>
   /// <param name="configuration">Configuration</param>
@@ -243,7 +243,7 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  /// Add the authentication service to the service collection
+  ///   Add the authentication service to the service collection
   /// </summary>
   /// <param name="services">Services</param>
   /// <param name="configuration">Configuration</param>

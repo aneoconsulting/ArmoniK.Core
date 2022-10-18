@@ -41,13 +41,13 @@ using Microsoft.Extensions.Options;
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>
-/// Options for authentication
+///   Options for authentication
 /// </summary>
 [PublicAPI]
 public class AuthenticatorOptions : AuthenticationSchemeOptions
 {
   /// <summary>
-  /// Section name in the Appsettings file
+  ///   Section name in the Appsettings file
   /// </summary>
   public const string SectionName = nameof(Authenticator);
 
@@ -80,34 +80,37 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 
   // ReSharper disable once InconsistentNaming
   /// <summary>
-  /// Header containing the certificate common name
+  ///   Header containing the certificate common name
   /// </summary>
-  public string CNHeader                    { get; set; } = "";
+  public string CNHeader { get; set; } = "";
+
   /// <summary>
-  /// Header containing the certificate fingerprint
+  ///   Header containing the certificate fingerprint
   /// </summary>
-  public string FingerprintHeader           { get; set; } = "";
+  public string FingerprintHeader { get; set; } = "";
+
   /// <summary>
-  /// Header containing the username to impersonate
+  ///   Header containing the username to impersonate
   /// </summary>
   public string ImpersonationUsernameHeader { get; set; } = "";
 
   /// <summary>
-  /// Header containing the user id to impersonate
+  ///   Header containing the user id to impersonate
   /// </summary>
   public string ImpersonationIdHeader { get; set; } = "";
 
   /// <summary>
-  /// Flag to activate authentication
+  ///   Flag to activate authentication
   /// </summary>
   public bool RequireAuthentication { get; set; } = true;
-  /// <summary>
-  /// Flag to activate authorization
-  /// </summary>
-  public bool RequireAuthorization  { get; set; } = true;
 
   /// <summary>
-  /// Copies the options of the other object
+  ///   Flag to activate authorization
+  /// </summary>
+  public bool RequireAuthorization { get; set; } = true;
+
+  /// <summary>
+  ///   Copies the options of the other object
   /// </summary>
   /// <param name="other">Other options to copy from</param>
   public void CopyFrom(AuthenticatorOptions other)
@@ -122,12 +125,12 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 }
 
 /// <summary>
-/// Authentication handler used in the authentication middleware
+///   Authentication handler used in the authentication middleware
 /// </summary>
 public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 {
   /// <summary>
-  /// Name of the scheme for this handler
+  ///   Name of the scheme for this handler
   /// </summary>
   public const string SchemeName = "SubmitterAuthenticationScheme";
 
@@ -145,12 +148,12 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   private readonly bool requireAuthentication_;
 
   /// <summary>
-  /// Creates an authentication handler
+  ///   Creates an authentication handler
   /// </summary>
-  /// <param name="options">Options (See <see cref="AuthenticationHandler{TOptions}"/>)</param>
-  /// <param name="loggerFactory">Logger factory (See <see cref="AuthenticationHandler{TOptions}"/>)</param>
-  /// <param name="encoder">Url Encoder (See <see cref="AuthenticationHandler{TOptions}"/>)</param>
-  /// <param name="clock">System clock (See <see cref="AuthenticationHandler{TOptions}"/>)</param>
+  /// <param name="options">Options (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="loggerFactory">Logger factory (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="encoder">Url Encoder (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="clock">System clock (See <see cref="AuthenticationHandler{TOptions}" />)</param>
   /// <param name="authTable">Authentication table storage</param>
   /// <param name="cache">Authentication cache</param>
   /// <exception cref="ArmoniKException">Thrown if the authenticator is misconfigured (missing options)</exception>

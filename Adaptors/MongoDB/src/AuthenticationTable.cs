@@ -47,7 +47,7 @@ using MongoDB.Driver;
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 /// <summary>
-/// Storage class containing the authentication data
+///   Storage class containing the authentication data
 /// </summary>
 [PublicAPI]
 public class AuthenticationTable : IAuthenticationTable
@@ -87,7 +87,7 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <summary>
-  /// Creates an authentication storage
+  ///   Creates an authentication storage
   /// </summary>
   /// <param name="sessionProvider">MongoDB session provider</param>
   /// <param name="userCollectionProvider">Provider for the collection containing user data</param>
@@ -112,7 +112,7 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <summary>
-  /// Logger
+  ///   Logger
   /// </summary>
   public ILogger Logger { get; }
 

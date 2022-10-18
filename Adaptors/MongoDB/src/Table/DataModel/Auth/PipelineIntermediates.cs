@@ -32,7 +32,7 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
 /// <summary>
-/// MongoDB mapping for intermediate object, internally used
+///   MongoDB mapping for intermediate object, internally used
 /// </summary>
 /// <param name="AuthId">Certificate ID</param>
 /// <param name="UserId">User ID</param>
@@ -48,7 +48,7 @@ public record AuthDataAfterLookup([property: BsonId]
                                   UserData[] UserData);
 
 /// <summary>
-/// MongoDB mapping for intermediate object, internally used
+///   MongoDB mapping for intermediate object, internally used
 /// </summary>
 /// <param name="UserId">User ID</param>
 /// <param name="Username">Username</param>

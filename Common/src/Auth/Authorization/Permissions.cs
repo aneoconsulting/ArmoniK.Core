@@ -34,50 +34,53 @@ using ArmoniK.Core.Common.gRPC.Services;
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
 /// <summary>
-/// Class containing permissions usual data
+///   Class containing permissions usual data
 /// </summary>
 public static class Permissions
 {
   // Ownership permission scopes
   /// <summary>
-  /// Permission Scope when it has access to resources of all owners
+  ///   Permission Scope when it has access to resources of all owners
   /// </summary>
   public const string AllUsersScope = "all";
+
   /// <summary>
-  /// Permission Scope when it has only access to resources of the user which created it
+  ///   Permission Scope when it has only access to resources of the user which created it
   /// </summary>
-  public const string SelfScope     = "self";
+  public const string SelfScope = "self";
+
   /// <summary>
-  /// Default permission scope
+  ///   Default permission scope
   /// </summary>
-  public const string Default       = "";
+  public const string Default = "";
 
   // Services
   /// <summary>
-  /// General service
+  ///   General service
   /// </summary>
-  public const string General   = "General";
+  public const string General = "General";
+
   /// <summary>
-  /// Client submitter service
+  ///   Client submitter service
   /// </summary>
   public const string Submitter = "Submitter";
 
   // Constants
   /// <summary>
-  /// Separator used in permission strings
+  ///   Separator used in permission strings
   /// </summary>
   public const char Separator = ':';
 
   // Base permissions
   /// <summary>
-  /// Base permission to allow the user to impersonate
+  ///   Base permission to allow the user to impersonate
   /// </summary>
   public static readonly Permission Impersonate = new(General,
                                                       nameof(Impersonate));
 
   // Permissions list
   /// <summary>
-  /// List of available base permissions
+  ///   List of available base permissions
   /// </summary>
   public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
 
@@ -101,19 +104,22 @@ public static class Permissions
   public class Permission
   {
     /// <summary>
-    /// C# Claim object equivalent to this permission
+    ///   C# Claim object equivalent to this permission
     /// </summary>
-    public readonly Claim  Claim;
+    public readonly Claim Claim;
+
     /// <summary>
-    /// Name of the permission, usually the affected method
+    ///   Name of the permission, usually the affected method
     /// </summary>
     public readonly string Name;
+
     /// <summary>
-    /// Service targeted by the permission
+    ///   Service targeted by the permission
     /// </summary>
     public readonly string Service;
+
     /// <summary>
-    /// target scope of the permission (All, self...)
+    ///   target scope of the permission (All, self...)
     /// </summary>
     public readonly string Target;
 
@@ -148,7 +154,8 @@ public static class Permissions
     }
 
     /// <summary>
-    /// Creates a permission with the given service and name, target is <value cref="Permissions.Default">Default</value>
+    ///   Creates a permission with the given service and name, target is
+    ///   <value cref="Permissions.Default">Default</value>
     /// </summary>
     /// <param name="service">Service</param>
     /// <param name="name">Name</param>
@@ -161,11 +168,13 @@ public static class Permissions
     }
 
     /// <summary>
-    /// Creates a permission with the given service, name and target
+    ///   Creates a permission with the given service, name and target
     /// </summary>
     /// <param name="service">Service</param>
     /// <param name="name">Name</param>
-    /// <param name="target">Target, if null defaults to <value cref="Permissions.Default">Default</value></param>
+    /// <param name="target">Target, if null defaults to
+    ///   <value cref="Permissions.Default">Default</value>
+    /// </param>
     public Permission(string  service,
                       string  name,
                       string? target)
@@ -178,7 +187,7 @@ public static class Permissions
     }
 
     /// <summary>
-    /// String representation of the permission
+    ///   String representation of the permission
     /// </summary>
     /// <returns>Returns the full permission string</returns>
     public override string ToString()

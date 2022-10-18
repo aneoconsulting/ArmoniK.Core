@@ -40,7 +40,7 @@ public record UserAuthenticationResult(string              Id,
                                        IEnumerable<string> Permissions)
 {
   /// <summary>
-  /// Creates an empty result
+  ///   Creates an empty result
   /// </summary>
   public UserAuthenticationResult()
     : this("",

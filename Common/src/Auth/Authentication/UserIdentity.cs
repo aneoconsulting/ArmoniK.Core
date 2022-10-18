@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 public class UserIdentity : ClaimsPrincipal
 {
   /// <summary>
-  /// Creates a user identity used in authentication
+  ///   Creates a user identity used in authentication
   /// </summary>
   /// <param name="userAuth">Result of the authentication</param>
   /// <param name="authenticationType">Scheme by which the user is authenticated</param>
@@ -54,21 +54,22 @@ public class UserIdentity : ClaimsPrincipal
   }
 
   /// <summary>
-  /// Username
+  ///   Username
   /// </summary>
-  public string          UserName { get; set; }
-  /// <summary>
-  /// User Roles
-  /// </summary>
-  public HashSet<string> Roles    { get; set; }
+  public string UserName { get; set; }
 
   /// <summary>
-  /// User Permissions
+  ///   User Roles
+  /// </summary>
+  public HashSet<string> Roles { get; set; }
+
+  /// <summary>
+  ///   User Permissions
   /// </summary>
   public Permissions.Permission[] Permissions { get; set; }
 
   /// <summary>
-  /// User Id
+  ///   User Id
   /// </summary>
   public string UserId { get; set; }
 

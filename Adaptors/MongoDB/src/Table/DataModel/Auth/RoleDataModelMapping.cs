@@ -35,7 +35,7 @@ using MongoDB.Driver;
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
 /// <summary>
-/// MongoDB mapping of the Role document
+///   MongoDB mapping of the Role document
 /// </summary>
 public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
 {
