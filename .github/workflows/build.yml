@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Set up JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 11
@@ -23,14 +23,14 @@ jobs:
           submodules: true
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .\.sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -183,7 +183,7 @@ jobs:
         dotnet-version: 6.x
 
     - name: Setup queue
-      uses: isbang/compose-action@v1.1.0
+      uses: isbang/compose-action@v1.3.2
       with:
         compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
 
@@ -224,7 +224,7 @@ jobs:
         dotnet-version: 6.x
 
     - name: Setup queue
-      uses: isbang/compose-action@v1.1.0
+      uses: isbang/compose-action@v1.3.2
       with:
         compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
 
@@ -404,11 +404,11 @@ jobs:
         echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
     
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
