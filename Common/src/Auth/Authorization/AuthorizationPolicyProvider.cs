@@ -98,7 +98,7 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
     => Task.FromResult<AuthorizationPolicy?>(null);
 
   /// <summary>
-  ///   Get an authorization policy accepting accepting anything
+  ///   Get an authorization policy accepting anything
   /// </summary>
   /// <returns>Policy returning true all the time</returns>
   public static Task<AuthorizationPolicy> GetAlwaysTruePolicyAsync()
