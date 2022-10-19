@@ -58,12 +58,10 @@ jobs:
     - name: ReTag
       run: |
         set -xe
-        CONTENT_TYPE="application/vnd.docker.distribution.manifest.v2+json"
-        # CONTENT_TYPE="application/vnd.docker.distribution.manifest.list.v2+json" # we need a list when there is multiple tags for multi arch images
-        TOKEN="$(curl -fsSL -u dhaneo1:${{ secrets.DOCKER_HUB_TOKEN }} "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${{ matrix.image }}:pull,push" | jq --raw-output .token)"
-        curl -fsSL -H "Accept: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" "https://index.docker.io/v2/${{ matrix.image }}/manifests/${VERSION}" > manifest.json
-        curl -fsSL -X PUT -H "Content-Type: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" -d @manifest.json "https://index.docker.io/v2/${{ matrix.image }}/manifests/${RELEASE}"
-        curl -fsSL -X PUT -H "Content-Type: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" -d @manifest.json "https://index.docker.io/v2/${{ matrix.image }}/manifests/latest"
+        docker manifest inspect ${{ matrix.image }}:${VERSION} | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:${RELEASE} -a 
+        docker manifest inspect ${{ matrix.image }}:${VERSION} | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:latest -a 
+        docker manifest push ${{ matrix.image }}:${RELEASE}
+        docker manifest push ${{ matrix.image }}:latest
 
   tag:
     runs-on: ubuntu-latest
