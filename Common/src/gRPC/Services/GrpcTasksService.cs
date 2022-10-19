@@ -105,8 +105,9 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.Select(data => new TaskSummary(data)),
+                 taskData.tasks.Select(data => new TaskSummary(data)),
                },
+               Total = taskData.totalCount,
              };
     }
     catch (ArmoniKException e)

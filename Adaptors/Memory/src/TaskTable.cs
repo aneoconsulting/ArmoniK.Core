@@ -321,12 +321,12 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                    Expression<Func<TaskData, object?>> orderField,
-                                                    bool                                ascOrder,
-                                                    int                                 page,
-                                                    int                                 pageSize,
-                                                    CancellationToken                   cancellationToken = default)
+  public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                            Expression<Func<TaskData, object?>> orderField,
+                                                                            bool                                ascOrder,
+                                                                            int                                 page,
+                                                                            int                                 pageSize,
+                                                                            CancellationToken                   cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
@@ -336,8 +336,8 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(page * pageSize)
-                                                         .Take(pageSize));
+    return Task.FromResult<(IEnumerable<TaskData> tasks, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                  .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />

@@ -31,11 +31,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -180,12 +178,12 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                          Expression<Func<SessionData, object?>> orderField,
-                                                          bool                                   ascOrder,
-                                                          int                                    page,
-                                                          int                                    pageSize,
-                                                          CancellationToken                      cancellationToken = default)
+  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                     Expression<Func<SessionData, object?>> orderField,
+                                                                                     bool                                   ascOrder,
+                                                                                     int                                    page,
+                                                                                     int                                    pageSize,
+                                                                                     CancellationToken                      cancellationToken = default)
   {
     var queryable = storage_.AsQueryable()
                             .Select(pair => pair.Value)
@@ -195,8 +193,8 @@ public class SessionTable : ISessionTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<SessionData>>(ordered.Skip(page * pageSize)
-                                                            .Take(pageSize));
+    return Task.FromResult<(IEnumerable<SessionData> sessions, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                        .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />

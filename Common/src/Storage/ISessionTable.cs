@@ -133,12 +133,12 @@ public interface ISessionTable : IInitializable
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
   /// <returns>
-  ///   Collection of sessions metadata that matched the filter
+  ///   Collection of sessions metadata that matched the filter and total number of results without paging
   /// </returns>
-  Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                   Expression<Func<SessionData, object?>> orderField,
-                                                   bool                                   ascOrder,
-                                                   int                                    page,
-                                                   int                                    pageSize,
-                                                   CancellationToken                      cancellationToken = default);
+  Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                              Expression<Func<SessionData, object?>> orderField,
+                                                                              bool                                   ascOrder,
+                                                                              int                                    page,
+                                                                              int                                    pageSize,
+                                                                              CancellationToken                      cancellationToken = default);
 }

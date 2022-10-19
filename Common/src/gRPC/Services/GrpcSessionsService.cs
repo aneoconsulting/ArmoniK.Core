@@ -137,8 +137,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-                 sessionData.Select(data => new SessionSummary(data)),
+                 sessionData.sessions.Select(data => new SessionSummary(data)),
                },
+               Total = sessionData.totalCount,
              };
     }
     catch (ArmoniKException e)

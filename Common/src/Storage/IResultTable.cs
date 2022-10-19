@@ -143,14 +143,14 @@ public interface IResultTable : IInitializable
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
   /// <returns>
-  ///   Collection of results metadata that matched the filter
+  ///   Collection of results metadata that matched the filter and total number of results without paging
   /// </returns>
-  Task<IEnumerable<Result>> ListResultsAsync(Expression<Func<Result, bool>>    filter,
-                                             Expression<Func<Result, object?>> orderField,
-                                             bool                              ascOrder,
-                                             int                               page,
-                                             int                               pageSize,
-                                             CancellationToken                 cancellationToken = default);
+  Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                       Expression<Func<Result, object?>> orderField,
+                                                                       bool                              ascOrder,
+                                                                       int                               page,
+                                                                       int                               pageSize,
+                                                                       CancellationToken                 cancellationToken = default);
 
   /// <summary>
   ///   Update result with small payload

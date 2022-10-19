@@ -32,11 +32,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -160,12 +158,12 @@ public class ResultTable : IResultTable
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task<IEnumerable<Result>> ListResultsAsync(Expression<Func<Result, bool>>    filter,
-                                                    Expression<Func<Result, object?>> orderField,
-                                                    bool                              ascOrder,
-                                                    int                               page,
-                                                    int                               pageSize,
-                                                    CancellationToken                 cancellationToken = default)
+  public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                              Expression<Func<Result, object?>> orderField,
+                                                                              bool                              ascOrder,
+                                                                              int                               page,
+                                                                              int                               pageSize,
+                                                                              CancellationToken                 cancellationToken = default)
   {
     var queryable = results_.Values.SelectMany(results => results.Values)
                             .AsQueryable()
@@ -175,8 +173,8 @@ public class ResultTable : IResultTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<Result>>(ordered.Skip(page * pageSize)
-                                                       .Take(pageSize));
+    return Task.FromResult<(IEnumerable<Result> results, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                  .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />

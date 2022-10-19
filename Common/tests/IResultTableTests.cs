@@ -571,7 +571,7 @@ public class ResultTableTestBase
                                                      0,
                                                      3,
                                                      CancellationToken.None)
-                                   .ConfigureAwait(false)).ToList();
+                                   .ConfigureAwait(false)).results.ToList();
 
       Assert.AreEqual(2,
                       res.Count);
@@ -589,7 +589,7 @@ public class ResultTableTestBase
                                                      0,
                                                      1,
                                                      CancellationToken.None)
-                                   .ConfigureAwait(false)).ToList();
+                                   .ConfigureAwait(false)).results.ToList();
 
       Assert.AreEqual(1,
                       res.Count);
@@ -607,7 +607,7 @@ public class ResultTableTestBase
                                                      0,
                                                      4,
                                                      CancellationToken.None)
-                                   .ConfigureAwait(false)).ToList();
+                                   .ConfigureAwait(false)).results.ToList();
 
       Assert.AreEqual(4,
                       res.Count);

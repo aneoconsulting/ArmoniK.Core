@@ -218,14 +218,14 @@ public interface ITaskTable : IInitializable
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
   /// <returns>
-  ///   Collection of task metadata matching the request
+  ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                             Expression<Func<TaskData, object?>> orderField,
-                                             bool                                ascOrder,
-                                             int                                 page,
-                                             int                                 pageSize,
-                                             CancellationToken                   cancellationToken = default);
+  Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                     Expression<Func<TaskData, object?>> orderField,
+                                                                     bool                                ascOrder,
+                                                                     int                                 page,
+                                                                     int                                 pageSize,
+                                                                     CancellationToken                   cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to succeeded

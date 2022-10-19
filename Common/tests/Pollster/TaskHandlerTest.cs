@@ -32,7 +32,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
@@ -516,12 +515,12 @@ public class TaskHandlerTest
                                                    CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                      Expression<Func<TaskData, object?>> orderField,
-                                                      bool                                ascOrder,
-                                                      int                                 page,
-                                                      int                                 pageSize,
-                                                      CancellationToken                   cancellationToken = default)
+    public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                              Expression<Func<TaskData, object?>> orderField,
+                                                                              bool                                ascOrder,
+                                                                              int                                 page,
+                                                                              int                                 pageSize,
+                                                                              CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task SetTaskSuccessAsync(string            taskId,
@@ -700,12 +699,12 @@ public class TaskHandlerTest
                                                       CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                            Expression<Func<SessionData, object?>> orderField,
-                                                            bool                                   ascOrder,
-                                                            int                                    page,
-                                                            int                                    pageSize,
-                                                            CancellationToken                      cancellationToken = default)
+    public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                       Expression<Func<SessionData, object?>> orderField,
+                                                                                       bool                                   ascOrder,
+                                                                                       int                                    page,
+                                                                                       int                                    pageSize,
+                                                                                       CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
   }
 

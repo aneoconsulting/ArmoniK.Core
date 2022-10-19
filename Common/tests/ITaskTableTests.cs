@@ -1120,7 +1120,7 @@ public class TaskTableTestBase
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      var listTasksResponseTaskData = listTasks.ToList();
+      var listTasksResponseTaskData = listTasks.tasks.ToList();
       foreach (var task in listTasksResponseTaskData)
       {
         Console.WriteLine(task);
@@ -1145,7 +1145,7 @@ public class TaskTableTestBase
                                       .ConfigureAwait(false);
 
       Assert.AreEqual(6,
-                      listTasks.Count());
+                      listTasks.totalCount);
     }
   }
 

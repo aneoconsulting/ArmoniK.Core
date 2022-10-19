@@ -76,19 +76,23 @@ public class GrpcResultsService : Results.ResultsBase
 
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
                                                               ServerCallContext  context)
-    => new()
-       {
-         PageSize = request.PageSize,
-         Page     = request.Page,
-         Results =
-         {
-           (await resultTable_.ListResultsAsync(request.Filter.ToResultFilter(),
-                                                request.Sort.ToResultField(),
-                                                request.Sort.Order == ListResultsRequest.Types.SortOrder.Asc,
-                                                request.Page,
-                                                request.PageSize,
-                                                context.CancellationToken)
-                              .ConfigureAwait(false)).Select(result => new ResultRaw(result)),
-         },
-       };
+  {
+    var results = await resultTable_.ListResultsAsync(request.Filter.ToResultFilter(),
+                                                      request.Sort.ToResultField(),
+                                                      request.Sort.Order == ListResultsRequest.Types.SortOrder.Asc,
+                                                      request.Page,
+                                                      request.PageSize,
+                                                      context.CancellationToken)
+                                    .ConfigureAwait(false);
+    return new ListResultsResponse
+           {
+             PageSize = request.PageSize,
+             Page     = request.Page,
+             Results =
+             {
+               results.results.Select(result => new ResultRaw(result)),
+             },
+             Total = results.totalCount,
+           };
+  }
 }

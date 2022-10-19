@@ -155,12 +155,12 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<Result>> ListResultsAsync(Expression<Func<Result, bool>>    filter,
-                                                          Expression<Func<Result, object?>> orderField,
-                                                          bool                              ascOrder,
-                                                          int                               page,
-                                                          int                               pageSize,
-                                                          CancellationToken                 cancellationToken = default)
+  public async Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                                    Expression<Func<Result, object?>> orderField,
+                                                                                    bool                              ascOrder,
+                                                                                    int                               page,
+                                                                                    int                               pageSize,
+                                                                                    CancellationToken                 cancellationToken = default)
   {
     using var _                = Logger.LogFunction();
     using var activity         = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
@@ -175,10 +175,11 @@ public class ResultTable : IResultTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(page * pageSize)
-                        .Take(pageSize)
-                        .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                        .ConfigureAwait(false);
+    return (await ordered.Skip(page * pageSize)
+                         .Take(pageSize)
+                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
+                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                              .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

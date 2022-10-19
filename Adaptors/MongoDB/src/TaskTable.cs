@@ -406,12 +406,12 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<TaskData>> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                          Expression<Func<TaskData, object?>> orderField,
-                                                          bool                                ascOrder,
-                                                          int                                 page,
-                                                          int                                 pageSize,
-                                                          CancellationToken                   cancellationToken = default)
+  public async Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                                  Expression<Func<TaskData, object?>> orderField,
+                                                                                  bool                                ascOrder,
+                                                                                  int                                 page,
+                                                                                  int                                 pageSize,
+                                                                                  CancellationToken                   cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
@@ -424,10 +424,11 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(page * pageSize)
-                        .Take(pageSize)
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
+    return (await ordered.Skip(page * pageSize)
+                         .Take(pageSize)
+                         .ToListAsync(cancellationToken)
+                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                              .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

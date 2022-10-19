@@ -31,7 +31,6 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -379,14 +378,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName",
-                                                      data => data.Status,
-                                                      true,
-                                                      0,
-                                                      3,
-                                                      CancellationToken.None)
-                                   .ToListAsync()
-                                   .ConfigureAwait(false);
+      var res = (await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName",
+                                                       data => data.Status,
+                                                       true,
+                                                       0,
+                                                       3,
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false)).sessions.ToList();
 
       Assert.AreEqual(3,
                       res.Count);
@@ -398,14 +396,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName" && data.SessionId == rootSessionId_!,
-                                                      data => data.Status,
-                                                      true,
-                                                      0,
-                                                      3,
-                                                      CancellationToken.None)
-                                   .ToListAsync()
-                                   .ConfigureAwait(false);
+      var res = (await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName" && data.SessionId == rootSessionId_!,
+                                                       data => data.Status,
+                                                       true,
+                                                       0,
+                                                       3,
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false)).sessions.ToList();
 
 
       Assert.AreEqual(1,
@@ -418,14 +415,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName" && data.Status == SessionStatus.Running,
-                                                      data => data.Status,
-                                                      true,
-                                                      0,
-                                                      3,
-                                                      CancellationToken.None)
-                                   .ToListAsync()
-                                   .ConfigureAwait(false);
+      var res = (await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName" && data.Status == SessionStatus.Running,
+                                                       data => data.Status,
+                                                       true,
+                                                       0,
+                                                       3,
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false)).sessions.ToList();
 
       Assert.AreEqual(2,
                       res.Count);
@@ -437,14 +433,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(data => true,
-                                                      data => data.Status,
-                                                      true,
-                                                      0,
-                                                      3,
-                                                      CancellationToken.None)
-                                   .ToListAsync()
-                                   .ConfigureAwait(false);
+      var res = (await SessionTable!.ListSessionsAsync(data => true,
+                                                       data => data.Status,
+                                                       true,
+                                                       0,
+                                                       3,
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false)).sessions.ToList();
 
       Assert.AreEqual(3,
                       res.Count);

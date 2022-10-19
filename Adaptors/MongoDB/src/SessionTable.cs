@@ -33,14 +33,12 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -239,12 +237,12 @@ public class SessionTable : ISessionTable
     }
   }
 
-  public async Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                Expression<Func<SessionData, object?>> orderField,
-                                                                bool                                   ascOrder,
-                                                                int                                    page,
-                                                                int                                    pageSize,
-                                                                CancellationToken                      cancellationToken = default)
+  public async Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                           Expression<Func<SessionData, object?>> orderField,
+                                                                                           bool                                   ascOrder,
+                                                                                           int                                    page,
+                                                                                           int                                    pageSize,
+                                                                                           CancellationToken                      cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
     using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
@@ -258,10 +256,11 @@ public class SessionTable : ISessionTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(page * pageSize)
-                        .Take(pageSize)
-                        .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                        .ConfigureAwait(false);
+    return (await ordered.Skip(page * pageSize)
+                         .Take(pageSize)
+                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
+                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                              .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

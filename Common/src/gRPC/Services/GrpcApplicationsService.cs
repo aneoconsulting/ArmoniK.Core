@@ -48,25 +48,29 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
 
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
-    => new()
-       {
-         Page     = request.Page,
-         PageSize = request.PageSize,
-         Application =
-         {
-           (await taskTable_.ListTasksAsync(request.Filter.ToApplicationFilter(),
-                                            request.Sort.ToApplicationField(),
-                                            request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
-                                            request.Page,
-                                            request.PageSize,
-                                            context.CancellationToken)
-                            .ConfigureAwait(false)).Select(data => new ApplicationRaw
-                                                                   {
-                                                                     Name      = data.Options.ApplicationName,
-                                                                     Namespace = data.Options.ApplicationNamespace,
-                                                                     Version   = data.Options.ApplicationVersion,
-                                                                     Service   = data.Options.ApplicationService,
-                                                                   }),
-         },
-       };
+  {
+    var tasks = await taskTable_.ListTasksAsync(request.Filter.ToApplicationFilter(),
+                                                request.Sort.ToApplicationField(),
+                                                request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                request.Page,
+                                                request.PageSize,
+                                                context.CancellationToken)
+                                .ConfigureAwait(false);
+    return new ListApplicationsResponse
+           {
+             Page     = request.Page,
+             PageSize = request.PageSize,
+             Application =
+             {
+               tasks.tasks.Select(data => new ApplicationRaw
+                                          {
+                                            Name      = data.Options.ApplicationName,
+                                            Namespace = data.Options.ApplicationNamespace,
+                                            Version   = data.Options.ApplicationVersion,
+                                            Service   = data.Options.ApplicationService,
+                                          }),
+             },
+             Total = tasks.totalCount,
+           };
+  }
 }
