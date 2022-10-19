@@ -25,10 +25,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -136,13 +136,21 @@ public interface IResultTable : IInitializable
   /// <summary>
   ///   List all results matching the given request
   /// </summary>
-  /// <param name="request">Result request describing the results to be listed </param>
+  /// <param name="filter">Filter to select results</param>
+  /// <param name="orderField">Select the field that will be used to order the results</param>
+  /// <param name="ascOrder">Is the order ascending</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
   /// <returns>
   ///   Collection of results metadata that matched the filter
   /// </returns>
-  Task<IEnumerable<Result>> ListResultsAsync(ListResultsRequest request,
-                                             CancellationToken  cancellationToken = default);
+  Task<IEnumerable<Result>> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                             Expression<Func<Result, object?>> orderField,
+                                             bool                              ascOrder,
+                                             int                               page,
+                                             int                               pageSize,
+                                             CancellationToken                 cancellationToken = default);
 
   /// <summary>
   ///   Update result with small payload

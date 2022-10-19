@@ -30,12 +30,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -568,27 +565,11 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      var req = new ListResultsRequest
-                {
-                  Page     = 0,
-                  PageSize = 3,
-                  Filter = new ListResultsRequest.Types.Filter
-                           {
-                             Status    = ResultStatus.Created,
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListResultsRequest.Types.Sort
-                         {
-                           Order = ListResultsRequest.Types.SortOrder.Asc,
-                           Field = ListResultsRequest.Types.SortField.Status,
-                         },
-                };
-
-      ListResultsRequestValidator validator = new();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var res = (await ResultTable!.ListResultsAsync(req,
+      var res = (await ResultTable!.ListResultsAsync(result => result.Status == ResultStatus.Created && result.SessionId == "SessionId",
+                                                     result => result.Status,
+                                                     true,
+                                                     0,
+                                                     3,
                                                      CancellationToken.None)
                                    .ConfigureAwait(false)).ToList();
 
@@ -602,27 +583,11 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      var req = new ListResultsRequest
-                {
-                  Page     = 0,
-                  PageSize = 1,
-                  Filter = new ListResultsRequest.Types.Filter
-                           {
-                             Status    = ResultStatus.Created,
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListResultsRequest.Types.Sort
-                         {
-                           Order = ListResultsRequest.Types.SortOrder.Asc,
-                           Field = ListResultsRequest.Types.SortField.Status,
-                         },
-                };
-
-      ListResultsRequestValidator validator = new();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var res = (await ResultTable!.ListResultsAsync(req,
+      var res = (await ResultTable!.ListResultsAsync(result => result.Status == ResultStatus.Created && result.SessionId == "SessionId",
+                                                     result => result.Status,
+                                                     true,
+                                                     0,
+                                                     1,
                                                      CancellationToken.None)
                                    .ConfigureAwait(false)).ToList();
 
@@ -636,26 +601,13 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      var req = new ListResultsRequest
-                {
-                  Page     = 0,
-                  PageSize = 4,
-                  Filter   = new ListResultsRequest.Types.Filter(),
-                  Sort = new ListResultsRequest.Types.Sort
-                         {
-                           Order = ListResultsRequest.Types.SortOrder.Asc,
-                           Field = ListResultsRequest.Types.SortField.Status,
-                         },
-                };
-
-      ListResultsRequestValidator validator = new();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var res = await ResultTable!.ListResultsAsync(req,
-                                                    CancellationToken.None)
-                                  .ToListAsync()
-                                  .ConfigureAwait(false);
+      var res = (await ResultTable!.ListResultsAsync(result => true,
+                                                     result => result.Status,
+                                                     true,
+                                                     0,
+                                                     4,
+                                                     CancellationToken.None)
+                                   .ConfigureAwait(false)).ToList();
 
       Assert.AreEqual(4,
                       res.Count);

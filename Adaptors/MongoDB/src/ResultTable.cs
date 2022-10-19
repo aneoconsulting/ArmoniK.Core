@@ -26,19 +26,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -156,8 +155,12 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<Result>> ListResultsAsync(ListResultsRequest request,
-                                                          CancellationToken  cancellationToken = default)
+  public async Task<IEnumerable<Result>> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                          Expression<Func<Result, object?>> orderField,
+                                                          bool                              ascOrder,
+                                                          int                               page,
+                                                          int                               pageSize,
+                                                          CancellationToken                 cancellationToken = default)
   {
     using var _                = Logger.LogFunction();
     using var activity         = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
@@ -166,14 +169,14 @@ public class ResultTable : IResultTable
 
 
     var queryable = resultCollection.AsQueryable(sessionHandle)
-                                    .Where(request.Filter.ToResultFilter());
+                                    .Where(filter);
 
-    var ordered = request.Sort.Order == ListResultsRequest.Types.SortOrder.Asc
-                    ? queryable.OrderBy(request.Sort.ToResultField())
-                    : queryable.OrderByDescending(request.Sort.ToResultField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(request.Page * request.PageSize)
-                        .Take(request.PageSize)
+    return await ordered.Skip(page * pageSize)
+                        .Take(pageSize)
                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
                         .ConfigureAwait(false);
   }

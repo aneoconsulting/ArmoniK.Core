@@ -700,8 +700,12 @@ public class TaskHandlerTest
                                                       CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                            CancellationToken   cancellationToken = default)
+    public Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                            Expression<Func<SessionData, object?>> orderField,
+                                                            bool                                   ascOrder,
+                                                            int                                    page,
+                                                            int                                    pageSize,
+                                                            CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
   }
 

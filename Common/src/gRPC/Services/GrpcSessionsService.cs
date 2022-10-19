@@ -123,7 +123,11 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var sessionData = await sessionTable_.ListSessionsAsync(request,
+      var sessionData = await sessionTable_.ListSessionsAsync(request.Filter.ToSessionDataFilter(),
+                                                              request.Sort.ToSessionDataField(),
+                                                              request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc,
+                                                              request.Page,
+                                                              request.PageSize,
                                                               context.CancellationToken)
                                            .ConfigureAwait(false);
 

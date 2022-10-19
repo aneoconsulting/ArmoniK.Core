@@ -22,10 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -158,19 +160,23 @@ public class ResultTable : IResultTable
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task<IEnumerable<Result>> ListResultsAsync(ListResultsRequest request,
-                                                    CancellationToken  cancellationToken = default)
+  public Task<IEnumerable<Result>> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                    Expression<Func<Result, object?>> orderField,
+                                                    bool                              ascOrder,
+                                                    int                               page,
+                                                    int                               pageSize,
+                                                    CancellationToken                 cancellationToken = default)
   {
     var queryable = results_.Values.SelectMany(results => results.Values)
                             .AsQueryable()
-                            .Where(request.Filter.ToResultFilter());
+                            .Where(filter);
 
-    var ordered = request.Sort.Order == ListResultsRequest.Types.SortOrder.Asc
-                    ? queryable.OrderBy(request.Sort.ToResultField())
-                    : queryable.OrderByDescending(request.Sort.ToResultField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<Result>>(ordered.Skip(request.Page * request.PageSize)
-                                                       .Take(request.PageSize));
+    return Task.FromResult<IEnumerable<Result>>(ordered.Skip(page * pageSize)
+                                                       .Take(pageSize));
   }
 
   /// <inheritdoc />

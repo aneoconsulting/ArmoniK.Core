@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -238,8 +239,12 @@ public class SessionTable : ISessionTable
     }
   }
 
-  public async Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                                CancellationToken   cancellationToken = default)
+  public async Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                Expression<Func<SessionData, object?>> orderField,
+                                                                bool                                   ascOrder,
+                                                                int                                    page,
+                                                                int                                    pageSize,
+                                                                CancellationToken                      cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
     using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
@@ -247,14 +252,14 @@ public class SessionTable : ISessionTable
     var       sessionCollection = sessionCollectionProvider_.Get();
 
     var queryable = sessionCollection.AsQueryable(sessionHandle)
-                                     .Where(request.Filter.ToSessionDataFilter());
+                                     .Where(filter);
 
-    var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToSessionDataField())
-                    : queryable.OrderByDescending(request.Sort.ToSessionDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(request.Page * request.PageSize)
-                        .Take(request.PageSize)
+    return await ordered.Skip(page * pageSize)
+                        .Take(pageSize)
                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
                         .ConfigureAwait(false);
   }

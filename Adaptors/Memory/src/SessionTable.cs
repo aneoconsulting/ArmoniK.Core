@@ -26,6 +26,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -178,19 +179,24 @@ public class SessionTable : ISessionTable
                                       });
   }
 
-  public Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                          CancellationToken   cancellationToken = default)
+  /// <inheritdoc />
+  public Task<IEnumerable<SessionData>> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                          Expression<Func<SessionData, object?>> orderField,
+                                                          bool                                   ascOrder,
+                                                          int                                    page,
+                                                          int                                    pageSize,
+                                                          CancellationToken                      cancellationToken = default)
   {
     var queryable = storage_.AsQueryable()
                             .Select(pair => pair.Value)
-                            .Where(request.Filter.ToSessionDataFilter());
+                            .Where(filter);
 
-    var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToSessionDataField())
-                    : queryable.OrderByDescending(request.Sort.ToSessionDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<SessionData>>(ordered.Skip(request.Page * request.PageSize)
-                                                            .Take(request.PageSize));
+    return Task.FromResult<IEnumerable<SessionData>>(ordered.Skip(page * pageSize)
+                                                            .Take(pageSize));
   }
 
   /// <inheritdoc />
