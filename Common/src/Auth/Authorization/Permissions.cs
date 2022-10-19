@@ -33,27 +33,61 @@ using ArmoniK.Core.Common.gRPC.Services;
 
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
+/// <summary>
+///   Class containing permissions usual data
+/// </summary>
 public static class Permissions
 {
   // Ownership permission scopes
+  /// <summary>
+  ///   Permission Scope when it has access to resources of all owners
+  /// </summary>
   public const string AllUsersScope = "all";
-  public const string SelfScope     = "self";
-  public const string Default       = "";
+
+  /// <summary>
+  ///   Permission Scope when it has only access to resources of the user which created it
+  /// </summary>
+  public const string SelfScope = "self";
+
+  /// <summary>
+  ///   Default permission scope
+  /// </summary>
+  public const string Default = "";
 
   // Services
-  public const string General   = "General";
+  /// <summary>
+  ///   General service
+  /// </summary>
+  public const string General = "General";
+
+  /// <summary>
+  ///   Client submitter service
+  /// </summary>
   public const string Submitter = "Submitter";
 
   // Constants
+  /// <summary>
+  ///   Separator used in permission strings
+  /// </summary>
   public const char Separator = ':';
 
   // Base permissions
+  /// <summary>
+  ///   Base permission to allow the user to impersonate
+  /// </summary>
   public static readonly Permission Impersonate = new(General,
                                                       nameof(Impersonate));
 
   // Permissions list
+  /// <summary>
+  ///   List of available base permissions
+  /// </summary>
   public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
 
+  /// <summary>
+  ///   Get the list of all base permissions, based on the gRPC endpoints
+  /// </summary>
+  /// <returns>List of all base permissions</returns>
   private static ImmutableList<Permission> GetPermissionList()
   {
     var permissions = typeof(GrpcSubmitterService).GetMethods()
@@ -69,9 +103,24 @@ public static class Permissions
   /// </summary>
   public class Permission
   {
-    public readonly Claim  Claim;
+    /// <summary>
+    ///   C# Claim object equivalent to this permission
+    /// </summary>
+    public readonly Claim Claim;
+
+    /// <summary>
+    ///   Name of the permission, usually the affected method
+    /// </summary>
     public readonly string Name;
+
+    /// <summary>
+    ///   Service targeted by the permission
+    /// </summary>
     public readonly string Service;
+
+    /// <summary>
+    ///   target scope of the permission (All, self...)
+    /// </summary>
     public readonly string Target;
 
     /// <summary>
@@ -104,6 +153,12 @@ public static class Permissions
                         Target);
     }
 
+    /// <summary>
+    ///   Creates a permission with the given service and name, target is
+    ///   <value cref="Permissions.Default">Default</value>
+    /// </summary>
+    /// <param name="service">Service</param>
+    /// <param name="name">Name</param>
     public Permission(string service,
                       string name)
       : this(service,
@@ -112,6 +167,15 @@ public static class Permissions
     {
     }
 
+    /// <summary>
+    ///   Creates a permission with the given service, name and target
+    /// </summary>
+    /// <param name="service">Service</param>
+    /// <param name="name">Name</param>
+    /// <param name="target">
+    ///   Target, if null defaults to
+    ///   <value cref="Permissions.Default">Default</value>
+    /// </param>
     public Permission(string  service,
                       string  name,
                       string? target)
@@ -123,6 +187,10 @@ public static class Permissions
                         Target);
     }
 
+    /// <summary>
+    ///   String representation of the permission
+    /// </summary>
+    /// <returns>Returns the full permission string</returns>
     public override string ToString()
     {
       var action = ToBasePermission();

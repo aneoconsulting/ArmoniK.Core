@@ -28,8 +28,19 @@ using System.Linq;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
+/// <summary>
+///   Class used as the key for the authentication cache
+/// </summary>
 public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
 {
+  /// <summary>
+  ///   Creates an authentication cache key from request headers
+  /// </summary>
+  /// <param name="connectionId">Connection id</param>
+  /// <param name="cn">Certificate Common Name</param>
+  /// <param name="fingerprint">Certificate fingerprint</param>
+  /// <param name="impersonateId">User Id to impersonate</param>
+  /// <param name="impersonateUsername">Username to impersonate</param>
   public AuthenticationCacheKey(string  connectionId,
                                 string? cn                  = "",
                                 string? fingerprint         = "",
@@ -43,12 +54,32 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
     ImpersonateUsername = impersonateUsername ?? "";
   }
 
-  public string ConnectionId        { get; }
-  public string CN                  { get; }
-  public string Fingerprint         { get; }
-  public string ImpersonateId       { get; }
+  /// <summary>
+  ///   Id of the connection
+  /// </summary>
+  public string ConnectionId { get; }
+
+  /// <summary>
+  ///   Certificate common name
+  /// </summary>
+  public string CN { get; }
+
+  /// <summary>
+  ///   Certificate fingerprint
+  /// </summary>
+  public string Fingerprint { get; }
+
+  /// <summary>
+  ///   User id to impersonate
+  /// </summary>
+  public string ImpersonateId { get; }
+
+  /// <summary>
+  ///   Username to impersonate
+  /// </summary>
   public string ImpersonateUsername { get; }
 
+  /// <inheritdoc />
   public bool Equals(AuthenticationCacheKey? other)
   {
     if (other is null)
@@ -66,6 +97,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
            ImpersonateUsername == other.ImpersonateUsername;
   }
 
+  /// <inheritdoc />
   public override bool Equals(object? obj)
   {
     if (obj is null)
@@ -82,6 +114,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
     return obj is AuthenticationCacheKey key && Equals(key);
   }
 
+  /// <inheritdoc />
   public override int GetHashCode()
     => HashCode.Combine(ConnectionId,
                         CN,
@@ -90,13 +123,25 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
                         ImpersonateUsername);
 }
 
+/// <summary>
+///   Class used to cache the identity of a authenticated user from the request's headers.
+///   This saves precious time by not needing to ask the authentication database
+/// </summary>
 public class AuthenticationCache
 {
   private readonly ConcurrentDictionary<AuthenticationCacheKey, UserIdentity> identityStore_;
 
+  /// <summary>
+  ///   Creates a new authentication cache
+  /// </summary>
   public AuthenticationCache()
     => identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, UserIdentity>();
 
+  /// <summary>
+  ///   Get the UserIdentity associated with the given key, null if it doesn't exist
+  /// </summary>
+  /// <param name="key">Key obtained from the request header</param>
+  /// <returns>Identity of the user</returns>
   public virtual UserIdentity? Get(AuthenticationCacheKey key)
   {
     identityStore_.TryGetValue(key,
@@ -104,10 +149,20 @@ public class AuthenticationCache
     return result;
   }
 
+  /// <summary>
+  ///   Set the user identity associated with the given key
+  /// </summary>
+  /// <param name="key">Key obtained from the request header</param>
+  /// <param name="identity">User identity obtained thorough</param>
   public void Set(AuthenticationCacheKey key,
                   UserIdentity           identity)
     => identityStore_[key] = identity;
 
+  /// <summary>
+  ///   Removes all the user identities associated with a connection
+  ///   This is useful to reduce the size of the cache when a connection closes
+  /// </summary>
+  /// <param name="connectionId">Connection id to remove</param>
   public void FlushConnection(string connectionId)
   {
     foreach (var s in identityStore_.Where(kv => kv.Key.ConnectionId == connectionId)
@@ -118,6 +173,9 @@ public class AuthenticationCache
     }
   }
 
+  /// <summary>
+  ///   Clears all values from the cache
+  /// </summary>
   public void Clear()
     => identityStore_.Clear();
 }

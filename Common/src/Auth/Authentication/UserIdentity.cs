@@ -36,6 +36,11 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// </summary>
 public class UserIdentity : ClaimsPrincipal
 {
+  /// <summary>
+  ///   Creates a user identity used in authentication
+  /// </summary>
+  /// <param name="userAuth">Result of the authentication</param>
+  /// <param name="authenticationType">Scheme by which the user is authenticated</param>
   public UserIdentity(UserAuthenticationResult userAuth,
                       string?                  authenticationType)
     : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim),
@@ -48,16 +53,38 @@ public class UserIdentity : ClaimsPrincipal
                           .ToArray();
   }
 
-  public string          UserName { get; set; }
-  public HashSet<string> Roles    { get; set; }
+  /// <summary>
+  ///   Username
+  /// </summary>
+  public string UserName { get; set; }
 
+  /// <summary>
+  ///   User Roles
+  /// </summary>
+  public HashSet<string> Roles { get; set; }
+
+  /// <summary>
+  ///   User Permissions
+  /// </summary>
   public Permissions.Permission[] Permissions { get; set; }
 
+  /// <summary>
+  ///   User Id
+  /// </summary>
   public string UserId { get; set; }
 
+  /// <summary>
+  ///   Checks if the user has a specific role
+  /// </summary>
+  /// <param name="role">Name of the role</param>
+  /// <returns>True if the user as the role, false otherwise</returns>
   public override bool IsInRole(string role)
     => Roles.Contains(role);
 
+  /// <summary>
+  ///   Deeply clones a Useridentity
+  /// </summary>
+  /// <returns>Cloned user identity</returns>
   public override UserIdentity Clone()
     => new(new UserAuthenticationResult(UserId,
                                         UserName,

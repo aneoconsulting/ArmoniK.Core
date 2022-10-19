@@ -34,6 +34,9 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
+/// <summary>
+///   MongoDB mapping of the User document
+/// </summary>
 public class UserDataModelMapping : IMongoDataModelMapping<UserData>
 {
   static UserDataModelMapping()
