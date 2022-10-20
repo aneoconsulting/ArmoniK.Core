@@ -56,8 +56,8 @@ public static class ServiceCollectionExt
                                            ("port", amqpOptions.Port));
 
       serviceCollection.AddSingletonWithHealthCheck<IConnectionRabbit, ConnectionRabbit>(nameof(IConnectionRabbit));
-      serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
       serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
+      serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
 
       logger.LogInformation("RabbitMQ configuration complete");
     }

@@ -63,10 +63,15 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     var factory = new ConnectionFactory
                   {
-                    UserName               = options_.User,
-                    Password               = options_.Password,
-                    HostName               = options_.Host,
-                    Port                   = options_.Port,
+                    UserName = options_.User,
+                    Password = options_.Password,
+                    HostName = options_.Host,
+                    Port     = options_.Port,
+                    Ssl =
+                    {
+                      ServerName = options_.Host,
+                      Enabled    = false,
+                    },
                     DispatchConsumersAsync = true,
                   };
 
