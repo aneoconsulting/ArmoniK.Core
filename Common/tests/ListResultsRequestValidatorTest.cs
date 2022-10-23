@@ -41,8 +41,8 @@ public class ListResultsRequestValidatorTest
                                     Filter = new ListResultsRequest.Types.Filter(),
                                     Sort = new ListResultsRequest.Types.Sort
                                            {
-                                             Order = ListResultsRequest.Types.SortOrder.Asc,
-                                             Field = ListResultsRequest.Types.SortField.CreatedAt,
+                                             Direction = ListResultsRequest.Types.OrderDirection.Asc,
+                                             Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
                                            },
                                     Page     = 0,
                                     PageSize = 1,
@@ -84,7 +84,7 @@ public class ListResultsRequestValidatorTest
   {
     validListResultsRequest_!.Sort = new ListResultsRequest.Types.Sort
                                      {
-                                       Order = ListResultsRequest.Types.SortOrder.Desc,
+                                       Direction = ListResultsRequest.Types.OrderDirection.Desc,
                                      };
     foreach (var error in validator_.Validate(validListResultsRequest_)
                                     .Errors)
@@ -101,7 +101,7 @@ public class ListResultsRequestValidatorTest
   {
     validListResultsRequest_!.Sort = new ListResultsRequest.Types.Sort
                                      {
-                                       Field = ListResultsRequest.Types.SortField.Name,
+                                       Field = ListResultsRequest.Types.OrderByField.Name,
                                      };
     foreach (var error in validator_.Validate(validListResultsRequest_)
                                     .Errors)

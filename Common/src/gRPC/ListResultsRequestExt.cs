@@ -39,22 +39,22 @@ public static class ListResultsRequestExt
   {
     switch (sort.Field)
     {
-      case ListResultsRequest.Types.SortField.SessionId:
+      case ListResultsRequest.Types.OrderByField.SessionId:
         return result => result.SessionId;
 
-      case ListResultsRequest.Types.SortField.Name:
+      case ListResultsRequest.Types.OrderByField.Name:
         return result => result.Name;
 
-      case ListResultsRequest.Types.SortField.OwnerTaskId:
+      case ListResultsRequest.Types.OrderByField.OwnerTaskId:
         return result => result.OwnerTaskId;
 
-      case ListResultsRequest.Types.SortField.Status:
+      case ListResultsRequest.Types.OrderByField.Status:
         return result => result.Status;
 
-      case ListResultsRequest.Types.SortField.CreatedAt:
+      case ListResultsRequest.Types.OrderByField.CreatedAt:
         return result => result.CreationDate;
 
-      case ListResultsRequest.Types.SortField.Unspecified:
+      case ListResultsRequest.Types.OrderByField.Unspecified:
       default:
         throw new InvalidOperationException();
     }

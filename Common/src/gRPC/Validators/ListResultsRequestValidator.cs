@@ -56,10 +56,10 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
       .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}")
       .DependentRules(() =>
                       {
-                        RuleFor(request => request.Sort.Order)
+                        RuleFor(request => request.Sort.Direction)
                           .NotNull()
                           .NotEmpty()
-                          .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Order)}");
+                          .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Direction)}");
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()

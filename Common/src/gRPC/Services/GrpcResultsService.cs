@@ -79,7 +79,7 @@ public class GrpcResultsService : Results.ResultsBase
   {
     var results = await resultTable_.ListResultsAsync(request.Filter.ToResultFilter(),
                                                       request.Sort.ToResultField(),
-                                                      request.Sort.Order == ListResultsRequest.Types.SortOrder.Asc,
+                                                      request.Sort.Direction == ListResultsRequest.Types.OrderDirection.Asc,
                                                       request.Page,
                                                       request.PageSize,
                                                       context.CancellationToken)

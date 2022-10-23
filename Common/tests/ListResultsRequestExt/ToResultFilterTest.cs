@@ -56,8 +56,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -76,8 +76,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -96,8 +96,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -116,8 +116,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -136,8 +136,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -156,8 +156,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -176,8 +176,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -196,8 +196,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -216,8 +216,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -236,8 +236,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -259,8 +259,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
@@ -282,8 +282,8 @@ public class ToResultFilterTest
                           },
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field = ListResultsRequest.Types.SortField.CreatedAt,
-                          Order = ListResultsRequest.Types.SortOrder.Asc,
+                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
                         },
                }.Filter.ToResultFilter()
                 .Compile();
