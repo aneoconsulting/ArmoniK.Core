@@ -515,7 +515,9 @@ public class PollsterTest
         mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                                                        It.IsAny<CancellationToken>()))
                              .Throws(new ApplicationException("Failed WorkerStreamHandler"));
-        yield return (mockStreamHandlerFail, mockPullQueueStorage, mockAgentHandler);
+        yield return new TestCaseData(mockStreamHandlerFail,
+                                      mockPullQueueStorage,
+                                      mockAgentHandler).SetArgDisplayNames("WorkerStreamHandler");
       }
 
       {
@@ -525,7 +527,9 @@ public class PollsterTest
                                                                             It.IsAny<CancellationToken>()))
                                 .Throws(new ApplicationException("Failed queue"));
 
-        yield return (mockStreamHandler, mockPullQueueStorageFail, mockAgentHandler);
+        yield return new TestCaseData(mockStreamHandler,
+                                      mockPullQueueStorageFail,
+                                      mockAgentHandler).SetArgDisplayNames("PullQueueStorage");
       }
 
       {
@@ -538,20 +542,23 @@ public class PollsterTest
                                                         It.IsAny<CancellationToken>()))
                             .Throws(new ApplicationException("Failed agent"));
 
-        yield return (mockStreamHandler, mockPullQueueStorage, mockAgentHandlerFail);
+        yield return new TestCaseData(mockStreamHandler,
+                                      mockPullQueueStorage,
+                                      mockAgentHandlerFail).SetArgDisplayNames("AgentHandler");
       }
     }
   }
 
   [Test]
   [TestCaseSource(nameof(ExecuteTooManyErrorShouldFailTestCase))]
-  public async Task ExecuteTooManyErrorShouldFail((Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>) mocks)
+  public async Task ExecuteTooManyErrorShouldFail(Mock<IWorkerStreamHandler> mockStreamHandler,
+                                                  Mock<IPullQueueStorage>    mockPullQueueStorage,
+                                                  Mock<IAgentHandler>        mockAgentHandler)
   {
-    var (mockStreamHandler, mockPullQueueStorage, mockAgentHandler) = mocks;
-
     using var testServiceProvider = new TestPollsterProvider(mockStreamHandler.Object,
                                                              mockAgentHandler.Object,
                                                              mockPullQueueStorage.Object);
+
     var pollster = testServiceProvider.Pollster;
 
     await pollster.Init(CancellationToken.None)
@@ -567,5 +574,64 @@ public class PollsterTest
                     pollster.TaskProcessing);
     Assert.AreSame(string.Empty,
                    pollster.TaskProcessing);
+  }
+
+
+  [Test]
+  public async Task UnavailableWorkerShouldFail()
+  {
+    var mockPullQueueStorage = new Mock<IPullQueueStorage>();
+    var simpleAgentHandler   = new SimpleAgentHandler();
+
+    var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
+    mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                                                   It.IsAny<CancellationToken>()))
+                         .Throws(new TestUnavailableRpcException("Unavailable worker"));
+
+
+    using var testServiceProvider = new TestPollsterProvider(mockStreamHandlerFail.Object,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage.Object);
+
+    var tuple = await InitSubmitter(testServiceProvider.Submitter,
+                                    testServiceProvider.PartitionTable,
+                                    CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+                                                                    It.IsAny<CancellationToken>()))
+                        .Returns(() => new List<IQueueMessageHandler>
+                                       {
+                                         new SimpleQueueMessageHandler
+                                         {
+                                           CancellationToken = CancellationToken.None,
+                                           Status            = QueueMessageStatus.Waiting,
+                                           MessageId = Guid.NewGuid()
+                                                           .ToString(),
+                                           TaskId = tuple.taskSubmitted,
+                                         },
+                                       }.ToAsyncEnumerable());
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
+    Assert.True(testServiceProvider.Pollster.Failed);
+    Assert.False(source.Token.IsCancellationRequested);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                                       {
+                                                                         tuple.taskSubmitted,
+                                                                       },
+                                                                       CancellationToken.None)
+                                              .ConfigureAwait(false)).Single()
+                                                                     .Status);
+    Assert.AreEqual(string.Empty,
+                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.AreSame(string.Empty,
+                   testServiceProvider.Pollster.TaskProcessing);
   }
 }

@@ -37,6 +37,8 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 
+using Grpc.Core;
+
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -315,6 +317,12 @@ public class Pollster : IInitializable
                 }
               }
             }
+            catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+            {
+              // This exception should stop pollster
+              RecordError(e);
+              throw;
+            }
             catch (Exception e)
             {
               RecordError(e);
@@ -324,6 +332,11 @@ public class Pollster : IInitializable
               TaskProcessing = string.Empty;
             }
           }
+        }
+        catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+        {
+          // This exception should stop pollster
+          throw;
         }
         catch (TooManyException)
         {
