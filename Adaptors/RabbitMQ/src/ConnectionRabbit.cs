@@ -23,6 +23,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,8 +37,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
-
-using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
@@ -63,17 +63,35 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     var factory = new ConnectionFactory
                   {
-                    UserName = options_.User,
-                    Password = options_.Password,
-                    HostName = options_.Host,
-                    Port     = options_.Port,
-                    Ssl =
-                    {
-                      ServerName = options_.Host,
-                      Enabled    = false,
-                    },
+                    UserName               = options_.User,
+                    Password               = options_.Password,
+                    HostName               = options_.Host,
+                    Port                   = options_.Port,
                     DispatchConsumersAsync = true,
                   };
+
+
+    if (options_.Scheme.Equals("AMQPS"))
+    {
+      factory.Ssl.Enabled    = true;
+      factory.Ssl.ServerName = options_.Host;
+      factory.Ssl.CertificateValidationCallback = delegate(object           _,
+                                                           X509Certificate? _,
+                                                           X509Chain?       _,
+                                                           SslPolicyErrors  errors)
+                                                  {
+                                                    switch (errors)
+                                                    {
+                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options_.AllowHostMismatch:
+                                                      case SslPolicyErrors.None:
+                                                        return true;
+                                                      default:
+                                                        logger_.LogError("SSL error : {error}",
+                                                                         errors);
+                                                        return false;
+                                                    }
+                                                  };
+    }
 
     var retry = 0;
     for (; retry < options_.MaxRetries; retry++)
@@ -81,7 +99,18 @@ public class ConnectionRabbit : IConnectionRabbit
       try
       {
         connection_ = factory.CreateConnection();
-        Channel     = connection_.CreateModel();
+        connection_.ConnectionShutdown += (obj,
+                                           ea) => OnShutDown(obj,
+                                                             ea,
+                                                             "Connection",
+                                                             logger_);
+
+        Channel = connection_.CreateModel();
+        Channel.ModelShutdown += (obj,
+                                  ea) => OnShutDown(obj,
+                                                    ea,
+                                                    "Channel",
+                                                    logger_);
         break;
       }
       catch (Exception ex)
@@ -99,7 +128,7 @@ public class ConnectionRabbit : IConnectionRabbit
       throw new TimeoutException($"{nameof(options_.MaxRetries)} reached");
     }
 
-    isInitialized_ = Channel is not null && Channel.IsOpen;
+    isInitialized_ = true;
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -111,7 +140,7 @@ public class ConnectionRabbit : IConnectionRabbit
                                : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
     }
 
-    if (connection_ is null || !connection_.IsOpen)
+    if (connection_ is null || !connection_.IsOpen || Channel is null || Channel.IsClosed)
     {
       return Task.FromResult(HealthCheckResult.Unhealthy("Rabbit connection dropped."));
     }
@@ -131,5 +160,21 @@ public class ConnectionRabbit : IConnectionRabbit
     }
 
     GC.SuppressFinalize(this);
+  }
+
+  private static void OnShutDown(object?           obj,
+                                 ShutdownEventArgs ea,
+                                 string            model,
+                                 ILogger           logger)
+  {
+    if (ea.Cause is null)
+    {
+      logger.LogInformation($"RabbitMQ {model} closed with no error");
+    }
+    else
+    {
+      logger.LogWarning($"RabbitMQ {model} closed with error: {0}",
+                        ea.Cause);
+    }
   }
 }

@@ -22,6 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Security.Cryptography.X509Certificates;
+
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
@@ -54,6 +57,47 @@ public static class ServiceCollectionExt
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("host", amqpOptions.Host),
                                            ("port", amqpOptions.Port));
+
+      if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
+      {
+        configuration.AddJsonFile(amqpOptions.CredentialsPath,
+                                  false,
+                                  false);
+        logger.LogTrace("Loaded amqp credentials from file {path}",
+                        amqpOptions.CredentialsPath);
+
+        serviceCollection.AddOption(configuration,
+                                    Amqp.SettingSection,
+                                    out amqpOptions);
+      }
+      else
+      {
+        logger.LogTrace("No credential path provided");
+      }
+
+      if (!string.IsNullOrEmpty(amqpOptions.CaPath))
+      {
+        var localTrustStore       = new X509Store(StoreName.Root);
+        var certificateCollection = new X509Certificate2Collection();
+        try
+        {
+          certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
+          localTrustStore.Open(OpenFlags.ReadWrite);
+          localTrustStore.AddRange(certificateCollection);
+          logger.LogTrace("Imported AMQP certificate from file {path}",
+                          amqpOptions.CaPath);
+        }
+        catch (Exception ex)
+        {
+          logger.LogError("Root certificate import failed: {error}",
+                          ex.Message);
+          throw;
+        }
+        finally
+        {
+          localTrustStore.Close();
+        }
+      }
 
       serviceCollection.AddSingletonWithHealthCheck<IConnectionRabbit, ConnectionRabbit>(nameof(IConnectionRabbit));
       serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
