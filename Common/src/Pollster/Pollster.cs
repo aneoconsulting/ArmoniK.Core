@@ -320,7 +320,6 @@ public class Pollster : IInitializable
             catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
             {
               // This exception should stop pollster
-              RecordError(e);
               throw;
             }
             catch (Exception e)
@@ -336,6 +335,9 @@ public class Pollster : IInitializable
         catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
         {
           // This exception should stop pollster
+          healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Worker unavailable",
+                                                                 e);
+          cts.Cancel();
           throw;
         }
         catch (TooManyException)
