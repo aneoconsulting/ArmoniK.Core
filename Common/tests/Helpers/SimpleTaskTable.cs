@@ -24,28 +24,51 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
 
 using Task = System.Threading.Tasks.Task;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
+
+using Google.Protobuf.WellKnownTypes;
+
+using Microsoft.Extensions.Logging;
+
 public class SimpleTaskTable : ITaskTable
 {
+  public static readonly TaskOptions TaskOptions;
+  static SimpleTaskTable()
+  {
+    TaskOptions = new TaskOptions
+                  {
+                    MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
+                    MaxRetries  = 4,
+                    Priority    = 2,
+                    PartitionId = PartitionId,
+                  };
+  }
+
+  public const string SessionId   = "MySessionId";
+  public const string OwnerPodId  = "MyOwnerPodId";
+  public const string PayloadId   = "MyPayloadId";
+  public const string OutputId    = "MyOutputId";
+  public const string TaskId      = "MyTaskId";
+  public const string PartitionId = "MyPartitionId";
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => throw new NotImplementedException();
+    => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
 
   public Task Init(CancellationToken cancellationToken)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public TimeSpan PollingDelayMin { get; }
   public TimeSpan PollingDelayMax { get; }
@@ -53,48 +76,57 @@ public class SimpleTaskTable : ITaskTable
 
   public Task CreateTasks(IEnumerable<TaskData> tasks,
                           CancellationToken     cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public Task<TaskData> ReadTaskAsync(string            taskId,
                                       CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(new TaskData(SessionId, taskId, OwnerPodId, PayloadId, new List<string>(), new List<string>(), new List<string>(){OutputId}, new List<string>(), TaskStatus.Completed, TaskOptions, new Storage.Output(true, "")));
 
   public Task UpdateTaskStatusAsync(string            id,
                                     TaskStatus        status,
                                     CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                             TaskStatus        status,
                                             CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(42);
 
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(false);
 
   public Task StartTask(string            taskId,
                         CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public Task CancelSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                             CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>()
+                                                     {
+                                                       new(TaskStatus.Completed,
+                                                           42),
+                                                     });
 
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult<IEnumerable<PartitionTaskStatusCount>>(new List<PartitionTaskStatusCount>()
+                                                              {
+                                                                new(PartitionId,
+                                                                    TaskStatus.Completed,
+                                                                    42),
+                                                              });
 
   public Task<int> CountAllTasksAsync(TaskStatus        status,
                                       CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(42);
 
   public Task DeleteTaskAsync(string            id,
                               CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
                                                  CancellationToken cancellationToken = default)
@@ -106,48 +138,85 @@ public class SimpleTaskTable : ITaskTable
 
   public Task SetTaskSuccessAsync(string            taskId,
                                   CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public Task SetTaskCanceledAsync(string            taskId,
                                    CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.CompletedTask;
 
   public Task<bool> SetTaskErrorAsync(string            taskId,
                                       string            errorDetail,
                                       CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(false);
 
-  public Task<Output> GetTaskOutput(string            taskId,
+  public Task<Storage.Output> GetTaskOutput(string            taskId,
                                     CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(new Storage.Output(true, ""));
 
   public Task<TaskData> AcquireTask(string            taskId,
                                     string            ownerPodId,
                                     CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(new TaskData(SessionId,
+                                    taskId,
+                                    ownerPodId,
+                                    PayloadId,
+                                    new List<string>(),
+                                    new List<string>(),
+                                    new List<string>
+                                    {
+                                      OutputId,
+                                    },
+                                    new List<string>(),
+                                    TaskStatus.Completed,
+                                    TaskOptions,
+                                    new Storage.Output(true,
+                                                       "")));
 
   public Task<TaskData> ReleaseTask(string            taskId,
                                     string            ownerPodId,
                                     CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(new TaskData(SessionId,
+                                    taskId,
+                                    ownerPodId,
+                                    PayloadId,
+                                    new List<string>(),
+                                    new List<string>(),
+                                    new List<string>
+                                    {
+                                      OutputId,
+                                    },
+                                    new List<string>(),
+                                    TaskStatus.Completed,
+                                    TaskOptions,
+                                    new Storage.Output(true,
+                                                       "")));
 
   public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
                                                                             CancellationToken   cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult<IEnumerable<GetTaskStatusReply.Types.IdStatus>>(new List<GetTaskStatusReply.Types.IdStatus>
+                                                                       {
+                                                                         new(),
+                                                                       });
 
   public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
                                                                                                               CancellationToken   cancellationToken = default)
-    => throw new NotImplementedException();
+    => new List<(string taskId, IEnumerable<string> expectedOutputKeys)>
+       {
+         (TaskId, new List<string>()),
+       }.ToAsyncEnumerable();
 
   public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
                                                     CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult<IEnumerable<string>>(new List<string>
+                                            {
+                                              TaskId,
+                                            });
 
   public Task<string> RetryTask(TaskData          taskData,
                                 CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(TaskId);
 
   public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
                                         CancellationToken   cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(42);
 }
