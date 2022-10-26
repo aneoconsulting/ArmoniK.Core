@@ -30,7 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -74,7 +74,7 @@ public class AuthenticationTableTestBase
                   new[]
                   {
                     "category1:name1",
-                    "category1:name2:" + Permissions.AllUsersScope,
+                    "category1:name2:" + PermissionScope.AllUsersScope,
                     "category2:name4",
                   }),
               new("RoleId3",
@@ -404,7 +404,7 @@ public class AuthenticationTableTestBase
             "category1:name2",
             true)]
   [TestCase("User2",
-            "category1:name2:" + Permissions.AllUsersScope,
+            "category1:name2:" + PermissionScope.AllUsersScope,
             true)]
   public void UserHasClaimShouldMatch(string username,
                                       string claim,
@@ -419,10 +419,10 @@ public class AuthenticationTableTestBase
                                                                  username,
                                                                  CancellationToken.None)
                                        .Result;
-    var expected = new Permissions.Permission(claim).Claim;
+    var expected = new Permission(claim).Claim;
     Assert.NotNull(identity);
-    Assert.AreEqual(identity!.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
-                             .Any(c => c.Type == expected.Type && (expected.Value == Permissions.Default || c.Value == expected.Value)),
+    Assert.AreEqual(identity!.Permissions.Select(perm => new Permission(perm).Claim)
+                             .Any(c => c.Type == expected.Type && (expected.Value == PermissionScope.Default || c.Value == expected.Value)),
                     hasClaim);
   }
 
@@ -442,8 +442,8 @@ public class AuthenticationTableTestBase
                                                    ?.Permissions ?? Array.Empty<string>())
                       .All(p =>
                            {
-                             var expected = new Permissions.Permission(p).Claim;
-                             return identity!.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
+                             var expected = new Permission(p).Claim;
+                             return identity!.Permissions.Select(perm => new Permission(perm).Claim)
                                              .Any(c => c.Type == expected.Type && c.Value == expected.Value);
                            }));
   }

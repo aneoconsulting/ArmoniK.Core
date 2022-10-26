@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
 
@@ -38,7 +38,7 @@ public class MockIdentity : UserIdentity
                       string                              username,
                       IEnumerable<MockCertificate>        certificates,
                       IEnumerable<string>                 roles,
-                      IEnumerable<Permissions.Permission> permissions,
+                      IEnumerable<Permission> permissions,
                       string?                             authenticationType)
     : base(new UserAuthenticationResult(userId,
                                         username,

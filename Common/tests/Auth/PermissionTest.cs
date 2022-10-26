@@ -23,7 +23,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
 using NUnit.Framework;
 
@@ -39,13 +39,13 @@ public class PermissionTest
   [TestCase("prefix:name",
             "prefix",
             "name",
-            Permissions.Default)]
+            PermissionScope.Default)]
   public void PermissionFromStringShouldMatch(string  actionName,
                                               string? prefix,
                                               string? name,
                                               string? suffix)
   {
-    var perm = new Permissions.Permission(actionName);
+    var perm = new Permission(actionName);
     Assert.AreEqual(perm.Service,
                     prefix);
     Assert.AreEqual(perm.Name,
@@ -59,12 +59,12 @@ public class PermissionTest
             "suffix")]
   [TestCase("prefix:name",
             "prefix:name",
-            Permissions.Default)]
+            PermissionScope.Default)]
   public void PermissionToClaimShouldMatch(string actionName,
                                            string claimType,
                                            string claimValue)
   {
-    var perm = new Permissions.Permission(actionName);
+    var perm = new Permission(actionName);
     Assert.AreEqual(perm.Claim.Type,
                     claimType);
     Assert.AreEqual(perm.Claim.Value,
@@ -80,6 +80,6 @@ public class PermissionTest
   public void PermissionCreationShouldThrow(string actionstring)
     => Assert.NotNull(Assert.Catch(() =>
                                    {
-                                     var _ = new Permissions.Permission(actionstring);
+                                     var _ = new Permission(actionstring);
                                    }));
 }

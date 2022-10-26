@@ -51,7 +51,7 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   }
 
   /// <summary>
-  ///   Get the policy associtaed with the given name
+  ///   Get the policy associated with the given name
   /// </summary>
   /// <param name="policyName">Name of the policy</param>
   /// <returns>Authorization policy</returns>

@@ -23,7 +23,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using Microsoft.AspNetCore.Authorization;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
@@ -37,28 +39,28 @@ public class RequiresPermissionAttribute : AuthorizeAttribute
   /// </summary>
   public const string PolicyPrefix = "RequiresPermission:";
 
-  private Permissions.Permission? permission_;
+  private Permission? permission_;
 
   /// <summary>
   ///   Creates the method attribute for the given category and method
   /// </summary>
   /// <param name="category">Category of the attribute, usually the service</param>
   /// <param name="function">Function guarded by the attribute, usually the method name</param>
-  public RequiresPermissionAttribute(string category,
+  public RequiresPermissionAttribute(Type category,
                                      string function)
-    => Permission = new Permissions.Permission(category,
+    => Permission = new Permission(ServicesPermissions.FromType(category),
                                                function);
 
   /// <summary>
   ///   Get or set the permission required by the method
   /// </summary>
-  public Permissions.Permission? Permission
+  public Permission? Permission
   {
     get => permission_;
     set
     {
       Policy      = $"{PolicyPrefix}{value}";
-      permission_ = new Permissions.Permission(Policy[PolicyPrefix.Length..]);
+      permission_ = new Permission(Policy[PolicyPrefix.Length..]);
     }
   }
 }

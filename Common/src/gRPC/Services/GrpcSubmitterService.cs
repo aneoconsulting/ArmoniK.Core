@@ -55,7 +55,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetServiceConfiguration))]
   public override async Task<Configuration> GetServiceConfiguration(Empty             request,
                                                                     ServerCallContext context)
@@ -82,7 +82,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CancelSession))]
   public override async Task<Empty> CancelSession(Session           request,
                                                   ServerCallContext context)
@@ -117,7 +117,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CancelTasks))]
   public override async Task<Empty> CancelTasks(TaskFilter        request,
                                                 ServerCallContext context)
@@ -148,7 +148,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateSession))]
   public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                                ServerCallContext    context)
@@ -183,7 +183,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateSmallTasks))]
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
@@ -246,7 +246,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateLargeTasks))]
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
                                                                ServerCallContext                          context)
@@ -335,7 +335,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CountTasks))]
   public override async Task<Count> CountTasks(TaskFilter        request,
                                                ServerCallContext context)
@@ -363,7 +363,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(TryGetResultStream))]
   public override async Task TryGetResultStream(ResultRequest                    request,
                                                 IServerStreamWriter<ResultReply> responseStream,
@@ -414,7 +414,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(WaitForCompletion))]
   public override async Task<Count> WaitForCompletion(WaitRequest       request,
                                                       ServerCallContext context)
@@ -448,7 +448,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(TryGetTaskOutput))]
   public override async Task<Output> TryGetTaskOutput(TaskOutputRequest request,
                                                       ServerCallContext context)
@@ -489,7 +489,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(WaitForAvailability))]
   public override async Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
                                                                     ServerCallContext context)
@@ -530,7 +530,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetTaskStatus))]
   public override async Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
                                                                ServerCallContext    context)
@@ -564,7 +564,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetResultStatus))]
   public override async Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
                                                                    ServerCallContext      context)
@@ -598,7 +598,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(ListTasks))]
   public override async Task<TaskIdList> ListTasks(TaskFilter        request,
                                                    ServerCallContext context)
@@ -632,7 +632,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter,
+  [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(ListSessions))]
   public override async Task<SessionIdList> ListSessions(SessionFilter     request,
                                                          ServerCallContext context)

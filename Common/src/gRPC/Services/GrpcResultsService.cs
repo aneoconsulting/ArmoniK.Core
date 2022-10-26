@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -50,6 +51,7 @@ public class GrpcResultsService : Results.ResultsBase
     resultTable_ = resultTable;
   }
 
+  [RequiresPermission(typeof(GrpcResultsService), nameof(GetOwnerTaskId))]
   public override async Task<GetOwnerTaskIdResponse> GetOwnerTaskId(GetOwnerTaskIdRequest request,
                                                                     ServerCallContext     context)
   {

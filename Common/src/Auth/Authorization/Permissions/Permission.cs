@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
-// 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
+//
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -9,100 +9,35 @@
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
 //   D. Brasseur       <dbrasseur@aneo.fr>
-// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Reflection;
 using System.Security.Claims;
 
-using ArmoniK.Core.Common.gRPC.Services;
-
-namespace ArmoniK.Core.Common.Auth.Authorization;
-
-/// <summary>
-///   Class containing permissions usual data
-/// </summary>
-public static class Permissions
+namespace ArmoniK.Core.Common.Auth.Authorization.Permissions
 {
-  // Ownership permission scopes
-  /// <summary>
-  ///   Permission Scope when it has access to resources of all owners
-  /// </summary>
-  public const string AllUsersScope = "all";
-
-  /// <summary>
-  ///   Permission Scope when it has only access to resources of the user which created it
-  /// </summary>
-  public const string SelfScope = "self";
-
-  /// <summary>
-  ///   Default permission scope
-  /// </summary>
-  public const string Default = "";
-
-  // Services
-  /// <summary>
-  ///   General service
-  /// </summary>
-  public const string General = "General";
-
-  /// <summary>
-  ///   Client submitter service
-  /// </summary>
-  public const string Submitter = "Submitter";
-
-  // Constants
-  /// <summary>
-  ///   Separator used in permission strings
-  /// </summary>
-  public const char Separator = ':';
-
-  // Base permissions
-  /// <summary>
-  ///   Base permission to allow the user to impersonate
-  /// </summary>
-  public static readonly Permission Impersonate = new(General,
-                                                      nameof(Impersonate));
-
-  // Permissions list
-  /// <summary>
-  ///   List of available base permissions
-  /// </summary>
-  public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
-
-  /// <summary>
-  ///   Get the list of all base permissions, based on the gRPC endpoints
-  /// </summary>
-  /// <returns>List of all base permissions</returns>
-  private static ImmutableList<Permission> GetPermissionList()
-  {
-    var permissions = typeof(GrpcSubmitterService).GetMethods()
-                                                  .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
-                                                  .Select(a => a.Permission!)
-                                                  .ToList();
-    permissions.Add(Impersonate);
-    return permissions.ToImmutableList();
-  }
-
   /// <summary>
   ///   Class used to store a permission
   /// </summary>
+
   public class Permission
   {
+    /// <summary>
+    ///   Separator used in permission strings
+    /// </summary>
+    public const char Separator = ':';
+
     /// <summary>
     ///   C# Claim object equivalent to this permission
     /// </summary>
@@ -148,14 +83,14 @@ public static class Permissions
                : parts[1];
       Target = parts.Length == 3
                  ? parts[2]
-                 : Default;
+                 : PermissionScope.Default;
       Claim = new Claim(ToBasePermission(),
                         Target);
     }
 
     /// <summary>
     ///   Creates a permission with the given service and name, target is
-    ///   <value cref="Permissions.Default">Default</value>
+    ///   <value cref="PermissionScope.Default">Default</value>
     /// </summary>
     /// <param name="service">Service</param>
     /// <param name="name">Name</param>
@@ -163,7 +98,7 @@ public static class Permissions
                       string name)
       : this(service,
              name,
-             Default)
+             PermissionScope.Default)
     {
     }
 
@@ -174,7 +109,7 @@ public static class Permissions
     /// <param name="name">Name</param>
     /// <param name="target">
     ///   Target, if null defaults to
-    ///   <value cref="Permissions.Default">Default</value>
+    ///   <value cref="PermissionScope.Default">Default</value>
     /// </param>
     public Permission(string  service,
                       string  name,
@@ -182,7 +117,7 @@ public static class Permissions
     {
       Service = service;
       Name    = name;
-      Target  = target ?? Default;
+      Target  = target ?? PermissionScope.Default;
       Claim = new Claim(ToBasePermission(),
                         Target);
     }

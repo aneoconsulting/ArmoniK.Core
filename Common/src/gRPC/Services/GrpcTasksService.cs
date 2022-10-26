@@ -28,17 +28,21 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 using Task = ArmoniK.Api.gRPC.V1.Tasks.Task;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Tasks.TasksBase
 {
   private readonly ILogger<GrpcTasksService> logger_;
@@ -51,6 +55,7 @@ public class GrpcTasksService : Tasks.TasksBase
     taskTable_ = taskTable;
   }
 
+  [RequiresPermission(typeof(GrpcTasksService), nameof(GetTask))]
   public override async Task<GetTaskResponse> GetTask(GetTaskRequest    request,
                                                       ServerCallContext context)
   {
@@ -86,6 +91,8 @@ public class GrpcTasksService : Tasks.TasksBase
     }
   }
 
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(ListTasks))]
   public override async Task<ListTasksResponse> ListTasks(ListTasksRequest  request,
                                                           ServerCallContext context)
   {
@@ -121,6 +128,8 @@ public class GrpcTasksService : Tasks.TasksBase
     }
   }
 
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(GetResultIds))]
   public override async Task<GetResultIdsResponse> GetResultIds(GetResultIdsRequest request,
                                                                 ServerCallContext   context)
   {

@@ -36,6 +36,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
@@ -315,7 +316,7 @@ public class AuthenticationIntegrationTest
         {
           AllRightsRole,
         },
-        Permissions.PermissionList,
+        ServicesPermissions.PermissionsLists[ServicesPermissions.All],
         Authenticator.SchemeName),
     new("NoRightsId1",
         "NoRightsUsername1",
@@ -328,7 +329,7 @@ public class AuthenticationIntegrationTest
         {
           "AntiImpersonateRole",
         },
-        Array.Empty<Permissions.Permission>(),
+        Array.Empty<Permission>(),
         Authenticator.SchemeName),
     new("CanImpersonateId1",
         "CanImpersonateUsername1",
@@ -343,8 +344,8 @@ public class AuthenticationIntegrationTest
         },
         new[]
         {
-          new Permissions.Permission(Permissions.Impersonate.Service,
-                                     Permissions.Impersonate.Name,
+          new Permission(GeneralService.Impersonate.Service,
+                         GeneralService.Impersonate.Name,
                                      AllRightsRole),
         },
         Authenticator.SchemeName),
@@ -352,7 +353,7 @@ public class AuthenticationIntegrationTest
         "NoCertificateUsername",
         Array.Empty<MockIdentity.MockCertificate>(),
         Array.Empty<string>(),
-        Array.Empty<Permissions.Permission>(),
+        Array.Empty<Permission>(),
         null),
     new("SomeRightsId",
         "SomeRightsUsername",
@@ -365,7 +366,7 @@ public class AuthenticationIntegrationTest
         {
           "SomeRights",
         },
-        Permissions.PermissionList.Where((_,
+        ServicesPermissions.PermissionsLists[ServicesPermissions.All].Where((_,
                                           index) => index % 2 == 0),
         Authenticator.SchemeName),
     new("OtherRightsId",
@@ -379,8 +380,8 @@ public class AuthenticationIntegrationTest
         {
           "OtherRights",
         },
-        Permissions.PermissionList.Where((_,
-                                          index) => index % 2 == 1),
+        ServicesPermissions.PermissionsLists[ServicesPermissions.All].Where((_,
+                                                                               index) => index % 2 == 1),
         Authenticator.SchemeName),
   };
 
