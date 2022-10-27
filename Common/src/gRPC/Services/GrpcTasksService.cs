@@ -55,7 +55,8 @@ public class GrpcTasksService : Tasks.TasksBase
     taskTable_ = taskTable;
   }
 
-  [RequiresPermission(typeof(GrpcTasksService), nameof(GetTask))]
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(GetTask))]
   public override async Task<GetTaskResponse> GetTask(GetTaskRequest    request,
                                                       ServerCallContext context)
   {

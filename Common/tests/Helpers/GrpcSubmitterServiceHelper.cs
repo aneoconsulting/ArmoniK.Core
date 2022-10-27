@@ -27,7 +27,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -55,9 +54,9 @@ public class GrpcSubmitterServiceHelper : IDisposable
   private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
-                                    ITaskTable taskTable,
-                                    ISessionTable sessionTable,
-                                    IResultTable resultTable,
+                                    ITaskTable                  taskTable,
+                                    ISessionTable               sessionTable,
+                                    IResultTable                resultTable,
                                     List<MockIdentity>          authIdentities,
                                     AuthenticatorOptions        authOptions,
                                     LogLevel                    loglevel,

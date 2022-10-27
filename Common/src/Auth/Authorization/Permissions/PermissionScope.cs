@@ -22,31 +22,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
-namespace ArmoniK.Core.Common.Auth.Authorization.Permissions
+public class PermissionScope
 {
-  public class PermissionScope
-  {
+  // Ownership permission scopes
+  /// <summary>
+  ///   Permission Scope when it has access to resources of all owners
+  /// </summary>
+  public const string AllUsersScope = "all";
 
-    // Ownership permission scopes
-    /// <summary>
-    ///   Permission Scope when it has access to resources of all owners
-    /// </summary>
-    public const string AllUsersScope = "all";
+  /// <summary>
+  ///   Permission Scope when it has only access to resources of the user which created it
+  /// </summary>
+  public const string SelfScope = "self";
 
-    /// <summary>
-    ///   Permission Scope when it has only access to resources of the user which created it
-    /// </summary>
-    public const string SelfScope = "self";
-
-    /// <summary>
-    ///   Default permission scope
-    /// </summary>
-    public const string Default = "";
-  }
+  /// <summary>
+  ///   Default permission scope
+  /// </summary>
+  public const string Default = "";
 }

@@ -31,60 +31,59 @@ using System.Reflection;
 
 using ArmoniK.Core.Common.gRPC.Services;
 
-namespace ArmoniK.Core.Common.Auth.Authorization.Permissions
+namespace ArmoniK.Core.Common.Auth.Authorization.Permissions;
+
+public class ServicesPermissions
 {
-  public class ServicesPermissions
+  public const string Default = "Default";
+
+  public const string All = "*";
+
+  private static readonly ReadOnlyDictionary<Type, string> Type2NameMapping = new(new Dictionary<Type, string>
+                                                                                  {
+                                                                                    {
+                                                                                      typeof(GrpcSubmitterService), "Submitter"
+                                                                                    },
+                                                                                    {
+                                                                                      typeof(GrpcSessionsService), "Sessions"
+                                                                                    },
+                                                                                    {
+                                                                                      typeof(GrpcTasksService), "Tasks"
+                                                                                    },
+                                                                                    {
+                                                                                      typeof(GrpcResultsService), "Results"
+                                                                                    },
+                                                                                    {
+                                                                                      typeof(GeneralService), "General"
+                                                                                    },
+                                                                                  });
+
+  public static readonly ImmutableDictionary<string, ImmutableList<Permission>> PermissionsLists = GetPermissionList();
+
+  public static string FromType(Type t)
+    => Type2NameMapping.GetValueOrDefault(t,
+                                          Default);
+
+  private static ImmutableDictionary<string, ImmutableList<Permission>> GetPermissionList()
   {
-    private static readonly ReadOnlyDictionary<Type, string> Type2NameMapping = new(new Dictionary<Type, string>
-                                                                                     {
-                                                                                       {
-                                                                                         typeof(GrpcSubmitterService), "Submitter"
-                                                                                       },
-                                                                                       {
-                                                                                         typeof(GrpcSessionsService), "Sessions"
-                                                                                       },
-                                                                                       {
-                                                                                         typeof(GrpcTasksService), "Tasks"
-                                                                                       },
-                                                                                       {
-                                                                                         typeof(GrpcResultsService), "Results"
-                                                                                       },
-                                                                                       {
-                                                                                         typeof(GeneralService), "General"
-                                                                                       },
-                                                                                     });
+    var servicePermissions = new Dictionary<string, ImmutableList<Permission>>();
 
-    public static readonly ImmutableDictionary<string, ImmutableList<Permission>> PermissionsLists = GetPermissionList();
-    public static string FromType(Type t)
+    foreach (var (t, name) in Type2NameMapping)
     {
-      return Type2NameMapping.GetValueOrDefault(t, Default);
+      servicePermissions[name] = t.GetMethods()
+                                  .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
+                                  .Select(a => a.Permission!)
+                                  .ToImmutableList();
     }
 
-    private static ImmutableDictionary<string, ImmutableList<Permission>> GetPermissionList()
+    var allPermissions = new List<Permission>();
+    foreach (var (_, perms) in servicePermissions)
     {
-      var servicePermissions = new Dictionary<string, ImmutableList<Permission>>();
-
-      foreach (var (t, name) in Type2NameMapping)
-      {
-        servicePermissions[name] = t.GetMethods()
-                                    .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
-                                    .Select(a => a.Permission!)
-                                    .ToImmutableList();
-      }
-
-      var allPermissions = new List<Permission>();
-      foreach (var (_, perms) in servicePermissions)
-      {
-        allPermissions.AddRange(perms);
-      }
-
-      servicePermissions[All] = allPermissions.ToImmutableList();
-      
-      return servicePermissions.ToImmutableDictionary();
+      allPermissions.AddRange(perms);
     }
 
-    public const string Default = "Default";
+    servicePermissions[All] = allPermissions.ToImmutableList();
 
-    public const string All = "*";
+    return servicePermissions.ToImmutableDictionary();
   }
 }

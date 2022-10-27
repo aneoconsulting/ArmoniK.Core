@@ -29,8 +29,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
@@ -44,17 +44,6 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleSessionTable : ISessionTable
 {
-  static SimpleSessionTable()
-  {
-    TaskOptions = new Api.gRPC.V1.TaskOptions
-                  {
-                    MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                    MaxRetries  = 4,
-                    Priority    = 2,
-                    PartitionId = PartitionId,
-                  };
-  }
-
   public const string SessionId   = "MySessionId";
   public const string OwnerPodId  = "MyOwnerPodId";
   public const string PayloadId   = "MyPayloadId";
@@ -63,6 +52,15 @@ public class SimpleSessionTable : ISessionTable
   public const string PartitionId = "MyPartitionId";
 
   public static readonly TaskOptions TaskOptions;
+
+  static SimpleSessionTable()
+    => TaskOptions = new Api.gRPC.V1.TaskOptions
+                     {
+                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
+                       MaxRetries  = 4,
+                       Priority    = 2,
+                       PartitionId = PartitionId,
+                     };
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
@@ -102,7 +100,7 @@ public class SimpleSessionTable : ISessionTable
     => Task.FromResult(new SessionData(SessionId,
                                        SessionStatus.Canceled,
                                        DateTime.Today.ToUniversalTime(),
-                                       DateTime.Now.ToUniversalTime(), 
+                                       DateTime.Now.ToUniversalTime(),
                                        new List<string>
                                        {
                                          PartitionId,
@@ -115,7 +113,7 @@ public class SimpleSessionTable : ISessionTable
 
   public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
                                                     CancellationToken cancellationToken = default)
-    => new List<string>()
+    => new List<string>
        {
          SessionId,
        }.ToAsyncEnumerable();

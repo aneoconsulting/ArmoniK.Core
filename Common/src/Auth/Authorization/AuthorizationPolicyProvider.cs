@@ -26,6 +26,7 @@
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -76,7 +77,7 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
     }
 
     // Require the authenticated user to have the right permission type
-    var permission = new Permissions.Permission(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
+    var permission = new Permission(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
     return Task.FromResult<AuthorizationPolicy?>(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
                                                                                                          .RequireClaim(permission.ToBasePermission())
                                                                                                          .Build());

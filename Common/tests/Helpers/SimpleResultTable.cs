@@ -87,12 +87,23 @@ public class SimpleResultTable : IResultTable
                                              CancellationToken   cancellationToken = default)
     => new List<Result>
        {
-         new(SessionId, OutputId, TaskId, ResultStatus.Completed, DateTime.Now.ToUniversalTime(), new byte[]{42}),
+         new(SessionId,
+             OutputId,
+             TaskId,
+             ResultStatus.Completed,
+             DateTime.Now.ToUniversalTime(),
+             new byte[]
+             {
+               42,
+             }),
        }.ToAsyncEnumerable();
 
   public IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
                                                    CancellationToken cancellationToken = default)
-    => new List<string>{OutputId}.ToAsyncEnumerable();
+    => new List<string>
+       {
+         OutputId,
+       }.ToAsyncEnumerable();
 
   public Task SetResult(string            sessionId,
                         string            ownerTaskId,

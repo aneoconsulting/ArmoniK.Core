@@ -51,7 +51,8 @@ public class GrpcResultsService : Results.ResultsBase
     resultTable_ = resultTable;
   }
 
-  [RequiresPermission(typeof(GrpcResultsService), nameof(GetOwnerTaskId))]
+  [RequiresPermission(typeof(GrpcResultsService),
+                      nameof(GetOwnerTaskId))]
   public override async Task<GetOwnerTaskIdResponse> GetOwnerTaskId(GetOwnerTaskIdRequest request,
                                                                     ServerCallContext     context)
   {

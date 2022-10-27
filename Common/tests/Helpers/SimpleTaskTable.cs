@@ -28,42 +28,40 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf.WellKnownTypes;
+
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using Task = System.Threading.Tasks.Task;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
-
-using Google.Protobuf.WellKnownTypes;
-
-using Microsoft.Extensions.Logging;
-
 public class SimpleTaskTable : ITaskTable
 {
+  public const           string      SessionId   = "MySessionId";
+  public const           string      OwnerPodId  = "MyOwnerPodId";
+  public const           string      PayloadId   = "MyPayloadId";
+  public const           string      OutputId    = "MyOutputId";
+  public const           string      TaskId      = "MyTaskId";
+  public const           string      PartitionId = "MyPartitionId";
   public static readonly TaskOptions TaskOptions;
-  static SimpleTaskTable()
-  {
-    TaskOptions = new TaskOptions
-                  {
-                    MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                    MaxRetries  = 4,
-                    Priority    = 2,
-                    PartitionId = PartitionId,
-                  };
-  }
 
-  public const string SessionId   = "MySessionId";
-  public const string OwnerPodId  = "MyOwnerPodId";
-  public const string PayloadId   = "MyPayloadId";
-  public const string OutputId    = "MyOutputId";
-  public const string TaskId      = "MyTaskId";
-  public const string PartitionId = "MyPartitionId";
+  static SimpleTaskTable()
+    => TaskOptions = new TaskOptions
+                     {
+                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
+                       MaxRetries  = 4,
+                       Priority    = 2,
+                       PartitionId = PartitionId,
+                     };
+
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
 
@@ -88,13 +86,13 @@ public class SimpleTaskTable : ITaskTable
                                     new List<string>(),
                                     new List<string>
                                     {
-                                      OutputId
+                                      OutputId,
                                     },
                                     new List<string>(),
                                     TaskStatus.Completed,
                                     TaskOptions,
-                                    new Storage.Output(true,
-                                                       "")));
+                                    new Output(true,
+                                               "")));
 
   public Task UpdateTaskStatusAsync(string            id,
                                     TaskStatus        status,
@@ -120,14 +118,14 @@ public class SimpleTaskTable : ITaskTable
 
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                             CancellationToken cancellationToken = default)
-    => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>()
+    => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
                                                      {
                                                        new(TaskStatus.Completed,
                                                            42),
                                                      });
 
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
-    => Task.FromResult<IEnumerable<PartitionTaskStatusCount>>(new List<PartitionTaskStatusCount>()
+    => Task.FromResult<IEnumerable<PartitionTaskStatusCount>>(new List<PartitionTaskStatusCount>
                                                               {
                                                                 new(PartitionId,
                                                                     TaskStatus.Completed,
@@ -166,8 +164,8 @@ public class SimpleTaskTable : ITaskTable
                                                              new List<string>(),
                                                              TaskStatus.Completed,
                                                              TaskOptions,
-                                                             new Storage.Output(true,
-                                                                                "")),
+                                                             new Output(true,
+                                                                        "")),
                                               });
 
   public Task SetTaskSuccessAsync(string            taskId,
@@ -183,9 +181,10 @@ public class SimpleTaskTable : ITaskTable
                                       CancellationToken cancellationToken = default)
     => Task.FromResult(false);
 
-  public Task<Storage.Output> GetTaskOutput(string            taskId,
+  public Task<Output> GetTaskOutput(string            taskId,
                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(new Storage.Output(true, ""));
+    => Task.FromResult(new Output(true,
+                                  ""));
 
   public Task<TaskData> AcquireTask(string            taskId,
                                     string            ownerPodId,
@@ -203,8 +202,8 @@ public class SimpleTaskTable : ITaskTable
                                     new List<string>(),
                                     TaskStatus.Completed,
                                     TaskOptions,
-                                    new Storage.Output(true,
-                                                       "")));
+                                    new Output(true,
+                                               "")));
 
   public Task<TaskData> ReleaseTask(string            taskId,
                                     string            ownerPodId,
@@ -222,8 +221,8 @@ public class SimpleTaskTable : ITaskTable
                                     new List<string>(),
                                     TaskStatus.Completed,
                                     TaskOptions,
-                                    new Storage.Output(true,
-                                                       "")));
+                                    new Output(true,
+                                               "")));
 
   public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
                                                                             CancellationToken   cancellationToken = default)

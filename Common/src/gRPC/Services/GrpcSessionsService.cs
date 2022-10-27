@@ -52,7 +52,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
     sessionTable_ = sessionTable;
   }
 
-  [RequiresPermission(typeof(GrpcSessionsService), nameof(CancelSession))]
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(CancelSession))]
   public override async Task<CancelSessionResponse> CancelSession(CancelSessionRequest request,
                                                                   ServerCallContext    context)
   {

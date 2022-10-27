@@ -34,12 +34,12 @@ public class MockIdentity : UserIdentity
 {
   public readonly IEnumerable<MockCertificate> Certificates;
 
-  public MockIdentity(string                              userId,
-                      string                              username,
-                      IEnumerable<MockCertificate>        certificates,
-                      IEnumerable<string>                 roles,
-                      IEnumerable<Permission> permissions,
-                      string?                             authenticationType)
+  public MockIdentity(string                       userId,
+                      string                       username,
+                      IEnumerable<MockCertificate> certificates,
+                      IEnumerable<string>          roles,
+                      IEnumerable<Permission>      permissions,
+                      string?                      authenticationType)
     : base(new UserAuthenticationResult(userId,
                                         username,
                                         roles,

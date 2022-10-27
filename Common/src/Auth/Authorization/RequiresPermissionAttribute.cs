@@ -24,8 +24,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using Microsoft.AspNetCore.Authorization;
+
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
+
+using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
@@ -46,10 +48,10 @@ public class RequiresPermissionAttribute : AuthorizeAttribute
   /// </summary>
   /// <param name="category">Category of the attribute, usually the service</param>
   /// <param name="function">Function guarded by the attribute, usually the method name</param>
-  public RequiresPermissionAttribute(Type category,
+  public RequiresPermissionAttribute(Type   category,
                                      string function)
     => Permission = new Permission(ServicesPermissions.FromType(category),
-                                               function);
+                                   function);
 
   /// <summary>
   ///   Get or set the permission required by the method

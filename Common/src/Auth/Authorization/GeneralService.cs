@@ -38,13 +38,12 @@ public static class GeneralService
                                                       nameof(Impersonate));
 
   /// <summary>
-  /// Get the impersonate permission
-  /// Used for reflection
+  ///   Get the impersonate permission
+  ///   Used for reflection
   /// </summary>
   /// <returns>Impersonation permission</returns>
-  [RequiresPermission(typeof(GeneralService), nameof(Impersonate))]
+  [RequiresPermission(typeof(GeneralService),
+                      nameof(Impersonate))]
   public static Permission GetImpersonatePermission()
-  {
-    return Impersonate;
-  }
+    => Impersonate;
 }
