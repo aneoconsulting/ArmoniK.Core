@@ -12,10 +12,10 @@ services:
       - ./activemq/jetty.xml:/opt/activemq/conf/jetty.xml
       - ./activemq/activemq.xml:/opt/activemq/conf/activemq.xml
     healthcheck:
-        test: curl -f  -u admin:admin -s http://localhost:8161/api/jolokia/exec/org.apache.activemq:type=Broker,brokerName=localhost,service=Health/healthStatus -H "Origin:http://localhost" | grep '"value":"Good"' || exit 1 && echo $?
+        test: ["CMD-SHELL", "curl -f -u admin:admin -s http://localhost:8161/api/jolokia/exec/org.apache.activemq:type=Broker,brokerName=localhost,service=Health/healthStatus -H Origin:http://localhost | grep Good || exit 1 && echo \"$$?"]
         interval: 5s
         timeout: 3s
-        start_period: 10s
+        start_period: 5s
         retries: 10
 
   armonik.control.submitter:
