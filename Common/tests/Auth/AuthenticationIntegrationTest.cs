@@ -26,6 +26,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -33,10 +34,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
@@ -49,6 +54,13 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
+using SubmitterClient = ArmoniK.Api.gRPC.V1.Submitter.Submitter.SubmitterClient;
+using TasksClient = ArmoniK.Api.gRPC.V1.Tasks.Tasks.TasksClient;
+using SessionsClient = ArmoniK.Api.gRPC.V1.Sessions.Sessions.SessionsClient;
+using ResultsClient = ArmoniK.Api.gRPC.V1.Results.Results.ResultsClient;
+using Task = System.Threading.Tasks.Task;
+using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
+using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
 
@@ -65,6 +77,9 @@ public class AuthenticationIntegrationTest
   {
     var submitter = new SimpleSubmitter();
     helper_ = new GrpcSubmitterServiceHelper(submitter,
+                                             new SimpleTaskTable(),
+                                             new SimpleSessionTable(),
+                                             new SimpleResultTable(),
                                              Identities.ToList(),
                                              options_!,
                                              LogLevel.Information);
@@ -104,6 +119,13 @@ public class AuthenticationIntegrationTest
   private static readonly CreateLargeTaskRequest CreateLargeTaskRequestPayload;
   private static readonly CreateLargeTaskRequest CreateLargeTaskRequestPayloadComplete;
   private static readonly CreateLargeTaskRequest CreateLargeTaskRequestLastTask;
+  private static readonly CancelSessionRequest   CancelSessionRequest;
+  private static readonly GetSessionRequest      GetSessionRequest;
+  private static readonly ListSessionsRequest    ListSessionsRequest;
+  private static readonly GetResultIdsRequest    GetResultIdsRequest;
+  private static readonly GetTaskRequest         GetTaskRequest;
+  private static readonly ListTasksRequest       ListTasksRequest;
+  private static readonly GetOwnerTaskIdRequest  GetOwnerTaskIdRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -209,6 +231,54 @@ public class AuthenticationIntegrationTest
                                                     LastTask = true,
                                                   },
                                      };
+
+    CancelSessionRequest = new CancelSessionRequest
+                           {
+                             SessionId = SessionId,
+                           };
+
+    GetSessionRequest = new GetSessionRequest
+                        {
+                          SessionId = SessionId,
+                        };
+
+    ListSessionsRequest = new ListSessionsRequest
+                          {
+                            Filter = new ListSessionsRequest.Types.Filter
+                                     {
+                                       SessionId = SessionId,
+                                     },
+                            Page     = 1,
+                            PageSize = 10,
+                            Sort = new ListSessionsRequest.Types.Sort
+                                   {
+                                     Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                                     Field     = ListSessionsRequest.Types.OrderByField.SessionId,
+                                   },
+                          };
+
+    GetResultIdsRequest = new GetResultIdsRequest();
+    GetResultIdsRequest.TaskId.Add(TaskId);
+    GetTaskRequest = new GetTaskRequest{Id = TaskId};
+    ListTasksRequest = new ListTasksRequest
+                       {
+                         Filter = new ListTasksRequest.Types.Filter
+                                  {
+                                    SessionId = SessionId,
+                                  },
+                         Page     = 1,
+                         PageSize = 10,
+                         Sort = new ListTasksRequest.Types.Sort
+                                {
+                                  Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                                  Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                                },
+                       };
+    GetOwnerTaskIdRequest = new GetOwnerTaskIdRequest
+                            {
+                              SessionId = SessionId,
+                            };
+    GetOwnerTaskIdRequest.ResultId.Add(ResultKey);
   }
 
   public enum AuthenticationType
@@ -268,9 +338,6 @@ public class AuthenticationIntegrationTest
     }
 
     TestContext.Progress.WriteLine(options_.ImpersonationUsernameHeader);
-    TestContext.Progress.WriteLine(options_.ImpersonationIdHeader);
-    TestContext.Progress.WriteLine(options_.RequireAuthentication);
-    TestContext.Progress.WriteLine(options_.RequireAuthorization);
   }
 
   public enum IdentityIndex
@@ -552,7 +619,7 @@ public class AuthenticationIntegrationTest
                                                             },
                                                           };
 
-  public static IEnumerable GetCases(List<(string, object?)> methodsAndObjects)
+  public static IEnumerable GetCases(List<(Type, string, object?)> methodsAndObjects)
   {
     // Generator
     foreach (var parameters in ParametersList)
@@ -564,7 +631,7 @@ public class AuthenticationIntegrationTest
       var impersonationType = (ImpersonationType)parameters[4];
       foreach (var methodAndObject in methodsAndObjects)
       {
-        yield return (methodAndObject.Item1, identityIndex, impersonationType, impersonate, GetArgs(methodAndObject.Item2,
+        yield return (methodAndObject.Item1, methodAndObject.Item2, identityIndex, impersonationType, impersonate, GetArgs(methodAndObject.Item3,
                                                                                                     identityIndex,
                                                                                                     impersonationType,
                                                                                                     impersonate), shouldSucceed, statusCode);
@@ -572,55 +639,60 @@ public class AuthenticationIntegrationTest
     }
   }
 
-  public static IEnumerable GetTestCases()
+  public static readonly IReadOnlyDictionary<Type, Type> ClientServerTypeMapping = new ReadOnlyDictionary<Type, Type>(new Dictionary<Type, Type>
+                                                                                                                                    {
+                                                                                                                                      {
+                                                                                                                                        typeof(SubmitterClient),
+                                                                                                                                        typeof(GrpcSubmitterService)
+                                                                                                                                      },
+                                                                                                                                      {
+                                                                                                                                        typeof(TasksClient),
+                                                                                                                                        typeof(GrpcTasksService)
+                                                                                                                                      },
+                                                                                                                                      {
+                                                                                                                                        typeof(SessionsClient),
+                                                                                                                                        typeof(GrpcSessionsService)
+                                                                                                                                      },
+                                                                                                                                      {
+                                                                                                                                        typeof(ResultsClient),
+                                                                                                                                        typeof(GrpcResultsService)
+                                                                                                                                      },
+                                                                                                                                    });
+
+  public static IEnumerable GetTestCases(string suffix)
   {
-    var methodsAndObjects = new List<(string, object?)>
+    List<(Type, string, object?)> methodObjectList = new()
                             {
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CancelSession), SessionRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CancelTasks), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CountTasks), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CreateSession), CreateSessionRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CreateSmallTasks), CreateSmallTasksRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetResultStatus), GetResultStatusRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetServiceConfiguration), Empty),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetTaskStatus), GetTaskStatusRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListSessions), SessionFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListTasks), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetTaskOutput), TaskOutputRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForAvailability), ResultRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForCompletion), WaitRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.CancelSession), SessionRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.CancelTasks), TaskFilter),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.CountTasks), TaskFilter),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.CreateSession), CreateSessionRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.CreateSmallTasks), CreateSmallTasksRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.GetResultStatus), GetResultStatusRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.GetServiceConfiguration), Empty),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.GetTaskStatus), GetTaskStatusRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.ListSessions), SessionFilter),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.ListTasks), TaskFilter),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.TryGetTaskOutput), TaskOutputRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.WaitForAvailability), ResultRequest),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.WaitForCompletion), WaitRequest),
+                              (typeof(SessionsClient), nameof(SessionsClient.CancelSession), CancelSessionRequest),
+                              (typeof(SessionsClient), nameof(SessionsClient.GetSession), GetSessionRequest),
+                              (typeof(SessionsClient), nameof(SessionsClient.ListSessions), ListSessionsRequest),
+                              (typeof(TasksClient), nameof(TasksClient.GetResultIds), GetResultIdsRequest),
+                              (typeof(TasksClient), nameof(TasksClient.GetTask), GetTaskRequest),
+                              (typeof(TasksClient), nameof(TasksClient.ListTasks), ListTasksRequest),
+                              (typeof(ResultsClient), nameof(ResultsClient.GetOwnerTaskId), GetOwnerTaskIdRequest),
                             };
 
-    return GetCases(methodsAndObjects);
-  }
-
-  public static IEnumerable GetAsyncTestCases()
-  {
-    var methodsAndObjects = new List<(string, object?)>
-                            {
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CancelSessionAsync), SessionRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CancelTasksAsync), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CountTasksAsync), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CreateSessionAsync), CreateSessionRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CreateSmallTasksAsync), CreateSmallTasksRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetResultStatusAsync), GetResultStatusRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetServiceConfigurationAsync), Empty),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetTaskStatusAsync), GetTaskStatusRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListSessionsAsync), SessionFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListTasksAsync), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetTaskOutputAsync), TaskOutputRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForAvailabilityAsync), ResultRequest),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForCompletionAsync), WaitRequest),
-                            };
-
-    return GetCases(methodsAndObjects);
+    return GetCases(methodObjectList.Select(t=>(t.Item1, t.Item2+suffix, t.Item3)).ToList());
   }
 
   public static IEnumerable GetCreateLargeTaskTestCases()
   {
-    var methodsAndObjects = new List<(string, object?)>
+    var methodsAndObjects = new List<(Type, string, object?)>
                             {
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.CreateLargeTasks), null),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.CreateLargeTasks), null),
                             };
 
     return GetCases(methodsAndObjects);
@@ -628,16 +700,16 @@ public class AuthenticationIntegrationTest
 
   public static IEnumerable GetTryGetResultStreamTestCases()
   {
-    var methodsAndObjects = new List<(string, object?)>
+    var methodsAndObjects = new List<(Type, string, object?)>
                             {
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetResultStream), null),
+                              (typeof(SubmitterClient), nameof(SubmitterClient.TryGetResultStream), null),
                             };
 
     return GetCases(methodsAndObjects);
   }
 
   public void TransformResult(
-    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
       errorCode) tuple,
     out int        userIndex,
     out ResultType shouldSucceed,
@@ -730,9 +802,9 @@ public class AuthenticationIntegrationTest
     }
   }
 
-  [TestCaseSource(nameof(GetTestCases))]
+  [TestCaseSource(nameof(GetTestCases), new object?[]{""})]
   public async Task AuthMatchesBehavior(
-    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
       errorCode) tuple)
   {
     TransformResult(tuple,
@@ -741,13 +813,19 @@ public class AuthenticationIntegrationTest
                     out var errorCode);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(channel);
+    var client = Activator.CreateInstance(tuple.clientType,
+                                          channel);
+    Assert.IsNotNull(client);
+    Assert.IsInstanceOf<ClientBase>(client);
+
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
+
     if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Name == tuple.method)))
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == tuple.method)))
     {
       Assert.DoesNotThrow(delegate
                           {
-                            client.GetType()
+                            client!.GetType()
                                   .InvokeMember(tuple.method,
                                                 BindingFlags.InvokeMethod,
                                                 null,
@@ -759,7 +837,7 @@ public class AuthenticationIntegrationTest
     {
       var exception = Assert.Catch(delegate
                                    {
-                                     client.GetType()
+                                     client!.GetType()
                                            .InvokeMember(tuple.method,
                                                          BindingFlags.InvokeMethod,
                                                          null,
@@ -777,9 +855,9 @@ public class AuthenticationIntegrationTest
                  .ConfigureAwait(false);
   }
 
-  [TestCaseSource(nameof(GetAsyncTestCases))]
+  [TestCaseSource(nameof(GetTestCases), new object?[]{"Async"})]
   public async Task AsyncAuthMatchesBehavior(
-    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
       errorCode) tuple)
   {
     TransformResult(tuple,
@@ -788,13 +866,19 @@ public class AuthenticationIntegrationTest
                     out var errorCode);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(channel);
+    var client = Activator.CreateInstance(tuple.clientType,
+                                          channel);
+    Assert.IsNotNull(client);
+    Assert.IsInstanceOf<ClientBase>(client);
+
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
+
     if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Name + "Async" == tuple.method)))
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name + "Async" == tuple.method)))
     {
       Assert.DoesNotThrowAsync(delegate
                                {
-                                 dynamic call = client.GetType()
+                                 dynamic call = client!.GetType()
                                                       .InvokeMember(tuple.method,
                                                                     BindingFlags.InvokeMethod,
                                                                     null,
@@ -810,7 +894,7 @@ public class AuthenticationIntegrationTest
     {
       var exception = Assert.CatchAsync(delegate
                                         {
-                                          dynamic call = client.GetType()
+                                          dynamic call = client!.GetType()
                                                                .InvokeMember(tuple.method,
                                                                              BindingFlags.InvokeMethod,
                                                                              null,
@@ -854,7 +938,7 @@ public class AuthenticationIntegrationTest
   [Ignore("Somehow throws a RPCException but with OK Status in pipeline. Can't reproduce locally, both in windows and wsl. Investigation ticket : #405")]
   [TestCaseSource(nameof(GetCreateLargeTaskTestCases))]
   public async Task CreateLargeTasksAuthShouldMatch(
-    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
       errorCode) tuple)
   {
     TransformResult(tuple,
@@ -863,10 +947,11 @@ public class AuthenticationIntegrationTest
                     out var errorCode);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(channel);
+    var client      = new SubmitterClient(channel);
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
 
     if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Name == tuple.method)))
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == tuple.method)))
     {
       Assert.DoesNotThrowAsync(async () =>
                                {
@@ -899,7 +984,7 @@ public class AuthenticationIntegrationTest
 
   [TestCaseSource(nameof(GetTryGetResultStreamTestCases))]
   public async Task TryGetResultStreamAuthShouldMatch(
-    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
       errorCode) tuple)
   {
     TransformResult(tuple,
@@ -908,9 +993,10 @@ public class AuthenticationIntegrationTest
                     out var errorCode);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(channel);
+    var client      = new SubmitterClient(channel);
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
     if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Name == tuple.method)))
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == tuple.method)))
     {
       Assert.DoesNotThrowAsync(() => client.TryGetResultStream(ResultRequest,
                                                                (Metadata)tuple.args[1])

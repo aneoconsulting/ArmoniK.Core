@@ -70,9 +70,9 @@ public class SimpleTaskTable : ITaskTable
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public TimeSpan PollingDelayMin { get; }
-  public TimeSpan PollingDelayMax { get; }
-  public ILogger  Logger          { get; }
+  public TimeSpan PollingDelayMin { get; } = TimeSpan.FromSeconds(1);
+  public TimeSpan PollingDelayMax { get; } = TimeSpan.FromSeconds(2);
+  public ILogger  Logger          { get; } = new Logger<SimpleTaskTable>(new LoggerFactory());
 
   public Task CreateTasks(IEnumerable<TaskData> tasks,
                           CancellationToken     cancellationToken = default)
@@ -80,7 +80,21 @@ public class SimpleTaskTable : ITaskTable
 
   public Task<TaskData> ReadTaskAsync(string            taskId,
                                       CancellationToken cancellationToken = default)
-    => Task.FromResult(new TaskData(SessionId, taskId, OwnerPodId, PayloadId, new List<string>(), new List<string>(), new List<string>(){OutputId}, new List<string>(), TaskStatus.Completed, TaskOptions, new Storage.Output(true, "")));
+    => Task.FromResult(new TaskData(SessionId,
+                                    taskId,
+                                    OwnerPodId,
+                                    PayloadId,
+                                    new List<string>(),
+                                    new List<string>(),
+                                    new List<string>
+                                    {
+                                      OutputId
+                                    },
+                                    new List<string>(),
+                                    TaskStatus.Completed,
+                                    TaskOptions,
+                                    new Storage.Output(true,
+                                                       "")));
 
   public Task UpdateTaskStatusAsync(string            id,
                                     TaskStatus        status,
@@ -130,11 +144,31 @@ public class SimpleTaskTable : ITaskTable
 
   public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
                                                  CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => new List<string>
+       {
+         TaskId,
+       }.ToAsyncEnumerable();
 
   public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
                                                     CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult<IEnumerable<TaskData>>(new[]
+                                              {
+                                                new TaskData(SessionId,
+                                                             TaskId,
+                                                             OwnerPodId,
+                                                             PayloadId,
+                                                             new List<string>(),
+                                                             new List<string>(),
+                                                             new List<string>
+                                                             {
+                                                               OutputId,
+                                                             },
+                                                             new List<string>(),
+                                                             TaskStatus.Completed,
+                                                             TaskOptions,
+                                                             new Storage.Output(true,
+                                                                                "")),
+                                              });
 
   public Task SetTaskSuccessAsync(string            taskId,
                                   CancellationToken cancellationToken = default)
