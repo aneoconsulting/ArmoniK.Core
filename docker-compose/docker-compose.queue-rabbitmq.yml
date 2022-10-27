@@ -11,10 +11,10 @@ services:
       - 15672:15672
     healthcheck:
         test: rabbitmq-diagnostics check_port_connectivity
-        interval: 5s
+        interval: 10s
         timeout: 3s
         start_period: 10s
-        retries: 5
+        retries: 10
 
   armonik.control.submitter:
     depends_on:
