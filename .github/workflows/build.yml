@@ -186,7 +186,7 @@ jobs:
         dotnet-version: 6.x
 
     - name: Setup queue
-      uses: isbang/compose-action@v1.3.2
+      uses: isbang/compose-action@v1.4.0
       with:
         compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
 
@@ -227,7 +227,7 @@ jobs:
         dotnet-version: 6.x
 
     - name: Setup queue
-      uses: isbang/compose-action@v1.3.2
+      uses: isbang/compose-action@v1.4.0
       with:
         compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
 
