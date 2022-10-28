@@ -1581,7 +1581,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.Pollster.html",
-          "hash": "eM4ub7+aq1peTs7oabbPPS9RDZ4Hl+OWQwXf17xzxNU="
+          "hash": "/CathgNY8/6LdF350wyxbCRIUtFOwXYmzaQtNMeqNao="
         }
       },
       "is_incremental": false,
@@ -2609,11 +2609,23 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html",
+          "hash": "V1dqEBHPGG34SlZEyWXZBBDkKWhgzyhR3X/dfDgBm2k="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.html",
-          "hash": "Y8OsaiybwcIV/imi0nPnOzaCRPoaZd7kKyFP23XDtqw="
+          "hash": "dRGZHgzD7Ne8ngrrdy/jRpZK4MuPiMujf1meC3t9n/Y="
         }
       },
       "is_incremental": false,
@@ -2781,7 +2793,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html",
-          "hash": "87DFJ+d7NbKoIfGOQIvhMp+pJCFnHWOh66w9Y+iJn30="
+          "hash": "A4C21t1QWynxjT5L0Z1Ng1YYS8i4i6IzNnTDDHWHVQc="
         }
       },
       "is_incremental": false,
@@ -2865,7 +2877,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html",
-          "hash": "Q7zwt4qDOwFfWJMmLPpQcyx4Mu2nGkws8Le9L/45/yM="
+          "hash": "JQFgpvZPcAX4OfWMT/hfzlao+0NsnSH11Dzg3CBgi+g="
         }
       },
       "is_incremental": false,
@@ -4029,7 +4041,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "MdCBElIAXVoaYenZJ3nHEVweFw0lZyIapHLF4ySmsSM="
+          "hash": "aJjEveh1nRZc/BIIAR6Sl5lxMGOM5rb3arhJRudZGgw="
         }
       },
       "is_incremental": false,
@@ -4128,7 +4140,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 334,
+          "total_file_count": 335,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

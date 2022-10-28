@@ -15690,6 +15690,43 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
   nameWithType: TestTaskHandlerProvider.TaskTable
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException
+  name: TestUnavailableRpcException
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException
+  nameWithType: TestUnavailableRpcException
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor
+  name: TestUnavailableRpcException()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html#ArmoniK_Core_Common_Tests_Helpers_TestUnavailableRpcException__ctor
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.TestUnavailableRpcException()
+  nameWithType: TestUnavailableRpcException.TestUnavailableRpcException()
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor(Metadata)
+  name: TestUnavailableRpcException(Metadata)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html#ArmoniK_Core_Common_Tests_Helpers_TestUnavailableRpcException__ctor_Metadata_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor(Metadata)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.TestUnavailableRpcException(Metadata)
+  nameWithType: TestUnavailableRpcException.TestUnavailableRpcException(Metadata)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor(Metadata,System.String)
+  name: TestUnavailableRpcException(Metadata, String)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html#ArmoniK_Core_Common_Tests_Helpers_TestUnavailableRpcException__ctor_Metadata_System_String_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor(Metadata,System.String)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.TestUnavailableRpcException(Metadata, System.String)
+  nameWithType: TestUnavailableRpcException.TestUnavailableRpcException(Metadata, String)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor(System.String)
+  name: TestUnavailableRpcException(String)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html#ArmoniK_Core_Common_Tests_Helpers_TestUnavailableRpcException__ctor_System_String_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor(System.String)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.TestUnavailableRpcException(System.String)
+  nameWithType: TestUnavailableRpcException.TestUnavailableRpcException(String)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor*
+  name: TestUnavailableRpcException
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.html#ArmoniK_Core_Common_Tests_Helpers_TestUnavailableRpcException__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestUnavailableRpcException.TestUnavailableRpcException
+  nameWithType: TestUnavailableRpcException.TestUnavailableRpcException
 - uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt
   name: ArmoniK.Core.Common.Tests.ListSessionsRequestExt
   href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.html
@@ -16942,15 +16979,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed
   nameWithType: PollsterTest.ExecuteTaskShouldSucceed
-- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple{Mock{ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler},Mock{ArmoniK.Core.Common.Storage.IPullQueueStorage},Mock{ArmoniK.Core.Common.Pollster.IAgentHandler}})
-  name: ExecuteTooManyErrorShouldFail((Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>))
-  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFail_System_ValueTuple_Mock_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler__Mock_ArmoniK_Core_Common_Storage_IPullQueueStorage__Mock_ArmoniK_Core_Common_Pollster_IAgentHandler___
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple{Mock{ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler},Mock{ArmoniK.Core.Common.Storage.IPullQueueStorage},Mock{ArmoniK.Core.Common.Pollster.IAgentHandler}})
-  name.vb: ExecuteTooManyErrorShouldFail((Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler))(Of Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler)))
-  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple<Mock<ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler>, Mock<ArmoniK.Core.Common.Storage.IPullQueueStorage>, Mock<ArmoniK.Core.Common.Pollster.IAgentHandler>>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(System.ValueTuple(Of Mock(Of ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler), Mock(Of ArmoniK.Core.Common.Storage.IPullQueueStorage), Mock(Of ArmoniK.Core.Common.Pollster.IAgentHandler)))
-  nameWithType: PollsterTest.ExecuteTooManyErrorShouldFail((Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>))
-  nameWithType.vb: PollsterTest.ExecuteTooManyErrorShouldFail((Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler))(Of Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler)))
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(Mock{ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler},Mock{ArmoniK.Core.Common.Storage.IPullQueueStorage},Mock{ArmoniK.Core.Common.Pollster.IAgentHandler})
+  name: ExecuteTooManyErrorShouldFail(Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFail_Mock_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler__Mock_ArmoniK_Core_Common_Storage_IPullQueueStorage__Mock_ArmoniK_Core_Common_Pollster_IAgentHandler__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(Mock{ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler},Mock{ArmoniK.Core.Common.Storage.IPullQueueStorage},Mock{ArmoniK.Core.Common.Pollster.IAgentHandler})
+  name.vb: ExecuteTooManyErrorShouldFail(Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(Mock<ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler>, Mock<ArmoniK.Core.Common.Storage.IPullQueueStorage>, Mock<ArmoniK.Core.Common.Pollster.IAgentHandler>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail(Mock(Of ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler), Mock(Of ArmoniK.Core.Common.Storage.IPullQueueStorage), Mock(Of ArmoniK.Core.Common.Pollster.IAgentHandler))
+  nameWithType: PollsterTest.ExecuteTooManyErrorShouldFail(Mock<IWorkerStreamHandler>, Mock<IPullQueueStorage>, Mock<IAgentHandler>)
+  nameWithType.vb: PollsterTest.ExecuteTooManyErrorShouldFail(Mock(Of IWorkerStreamHandler), Mock(Of IPullQueueStorage), Mock(Of IAgentHandler))
 - uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTooManyErrorShouldFail*
   name: ExecuteTooManyErrorShouldFail
   href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTooManyErrorShouldFail_
@@ -17049,6 +17086,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.TearDown
   nameWithType: PollsterTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.UnavailableWorkerShouldFail
+  name: UnavailableWorkerShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_UnavailableWorkerShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.UnavailableWorkerShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.UnavailableWorkerShouldFail()
+  nameWithType: PollsterTest.UnavailableWorkerShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.UnavailableWorkerShouldFail*
+  name: UnavailableWorkerShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_UnavailableWorkerShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.UnavailableWorkerShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.UnavailableWorkerShouldFail
+  nameWithType: PollsterTest.UnavailableWorkerShouldFail
 - uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe
   name: PollsterTest.WaitAsyncPipe
   href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.WaitAsyncPipe.html
