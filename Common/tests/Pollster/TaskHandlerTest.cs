@@ -924,6 +924,12 @@ public class TaskHandlerTest
                                                                                       .SetArgDisplayNames("ExceptionTaskCancellation");
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(3000)).Returns(TaskStatus.Submitted)
                                                                                              .SetArgDisplayNames("RpcExceptionTaskCancellation");
+
+      // Worker unavailable and therefore should be considered as cancelled task and resend into queue
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns(TaskStatus.Submitted)
+                                                                                                     .SetArgDisplayNames("UnavailableBeforeCancellation");
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(3000)).Returns(TaskStatus.Submitted)
+                                                                                                        .SetArgDisplayNames("UnavailableAfterCancellation");
     }
   }
 
