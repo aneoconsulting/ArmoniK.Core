@@ -13,9 +13,9 @@ services:
       - ./activemq/activemq.xml:/opt/activemq/conf/activemq.xml
     healthcheck:
         test: ["CMD-SHELL", "curl -f -u admin:admin -s http://localhost:8161/api/jolokia/exec/org.apache.activemq:type=Broker,brokerName=localhost,service=Health/healthStatus -H Origin:http://localhost | grep Good || exit 1 && echo $$?"]
-        interval: 15s
+        interval: 10s
         timeout: 5s
-        start_period: 30s
+        start_period: 20s
         retries: 5
 
   armonik.control.submitter:
