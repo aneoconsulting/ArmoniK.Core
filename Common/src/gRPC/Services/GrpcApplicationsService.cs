@@ -60,7 +60,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
            {
              Page     = request.Page,
              PageSize = request.PageSize,
-             Application =
+             Applications =
              {
                tasks.tasks.Select(data => new ApplicationRaw
                                           {
