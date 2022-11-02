@@ -134,4 +134,12 @@ public class ListResultsRequestValidatorTest
     Assert.IsFalse(validator_.Validate(validListResultsRequest_)
                              .IsValid);
   }
+
+  [Test]
+  public void ListResultsRequestZeroPageSizeShouldFail()
+  {
+    validListResultsRequest_!.PageSize = 0;
+    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
+                             .IsValid);
+  }
 }
