@@ -13,23 +13,24 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Set up JDK 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: 1.11
-      - uses: actions/checkout@v2
+          distribution: 'zulu'
+          java-version: 11
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
           submodules: true
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: .\.sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -55,12 +56,13 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   versionning:
+    name: Versionning
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.genver.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
@@ -75,7 +77,9 @@ jobs:
           VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=main)
         fi
 
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version :" >> $GITHUB_STEP_SUMMARY
+        echo "$VERSION" >> $GITHUB_STEP_SUMMARY
         echo $VERSION
 
   format:
@@ -83,14 +87,14 @@ jobs:
     timeout-minutes: 15
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
         submodules: true
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
 
@@ -134,13 +138,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
 
@@ -157,7 +161,7 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueue:
+  testsQueueProto100:
     strategy:
       matrix:
         projects:
@@ -171,18 +175,59 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
 
     - name: Setup queue
-      uses: isbang/compose-action@v1.1.0
+      uses: isbang/compose-action@v1.3.2
+      with:
+        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
+
+    - name: Run tests
+      run: |
+        cd ${{ matrix.projects }}
+        dotnet test --logger "trx;LogFileName=test-results.trx"
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
+        path: ${{ matrix.projects }}/TestResults/test-results.trx
+        reporter: dotnet-trx
+
+  testsQueueProto091:
+    strategy:
+      matrix:
+        projects:
+          - Adaptors/RabbitMQ/tests
+        queue:
+          - rabbitmq-0.9.1
+        os:
+          - ubuntu-latest
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.x
+
+    - name: Setup queue
+      uses: isbang/compose-action@v1.3.2
       with:
         compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
 
@@ -211,13 +256,13 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
 
@@ -262,13 +307,13 @@ jobs:
           - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
 
@@ -307,7 +352,7 @@ jobs:
            path: ./Tests/HtcMock/Client/src/Dockerfile
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -352,7 +397,7 @@ jobs:
            path: ./Tests/HtcMock/Client/src/Dockerfile
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -362,11 +407,11 @@ jobs:
         echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
     
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
@@ -380,15 +425,11 @@ jobs:
           -f ${{ matrix.path }} . \
           --push
 
-    - name: Get manifest
-      run: |
-        docker manifest inspect --verbose ${{ matrix.img }}:${VERSION}-arm | jq '.Descriptor' > descr.json
-        cat descr.json
+    - name: Create multi-arch manifest
+      run: docker manifest create ${{ matrix.img }}:${VERSION} -a ${{ matrix.img }}:${VERSION} -a ${{ matrix.img }}:${VERSION}-arm
 
-    - name: Tag
-      continue-on-error: true
-      run: |
-        docker buildx imagetools create ${{ matrix.img }}:$VERSION -t ${{ matrix.img }}:$VERSION --append -f descr.json
+    - name: Push multi-arch manifest
+      run: docker manifest push ${{ matrix.img }}:${VERSION}
 
   testStreamDC:
     needs:
@@ -404,12 +445,13 @@ jobs:
           - activemqp
           - artemis
           - rabbitmq
+          - rabbitmq091
         log-level:
           - Information
           - Verbose
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -428,7 +470,10 @@ jobs:
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
-          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml --compatibility up -d --build --force-recreate --remove-orphans
+          OVERRIDE="docker-compose/docker-compose.override.yml"
+          QUEUE="docker-compose/docker-compose.queue-${{ matrix.queue }}.yml"
+          if [ "x${{ matrix.queue }}" == x"rabbitmq091" ]; then OVERRIDE="docker-compose/docker-compose.override-rabbitmq091.yml";  QUEUE="docker-compose/docker-compose.queue-rabbitmq.yml"; fi;
+          docker-compose -f ${OVERRIDE} -f docker-compose/docker-compose.yml -f ${QUEUE} --compatibility up -d --build --force-recreate --remove-orphans
           docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
           sleep 10
           ls -la docker-compose/logs/*.json
@@ -469,6 +514,7 @@ jobs:
         queue:
           - activemqp
           - rabbitmq
+          - rabbitmq091
         log-level:
           - Information
           - Verbose
@@ -478,7 +524,7 @@ jobs:
           - 1500
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -497,7 +543,10 @@ jobs:
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
-          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml --compatibility up -d --build --force-recreate --remove-orphans
+          OVERRIDE="docker-compose/docker-compose.override.yml"
+          QUEUE="docker-compose/docker-compose.queue-${{ matrix.queue }}.yml"
+          if [ "x${{ matrix.queue }}" == x"rabbitmq091" ]; then OVERRIDE="docker-compose/docker-compose.override-rabbitmq091.yml";  QUEUE="docker-compose/docker-compose.queue-rabbitmq.yml"; fi;
+          docker-compose -f ${OVERRIDE} -f docker-compose/docker-compose.yml -f ${QUEUE} --compatibility up -d --build --force-recreate --remove-orphans
           docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
           sleep 10
           ls -la docker-compose/logs/*.json
@@ -550,7 +599,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -603,7 +652,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -712,7 +761,8 @@ jobs:
     needs:
       - format
       - tests
-      - testsQueue
+      - testsQueueProto091
+      - testsQueueProto100
       - testsWinOnly
       - testHtcMockDC
       - defaultPartitionMock

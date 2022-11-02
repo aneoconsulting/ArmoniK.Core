@@ -247,7 +247,7 @@ public class QueueStorage : IQueueStorage
     }
 
     /// <inheritdoc />
-    public CancellationToken CancellationToken { get; init; } = CancellationToken.None;
+    public CancellationToken CancellationToken { get; set; } = CancellationToken.None;
 
     /// <inheritdoc />
     public string MessageId

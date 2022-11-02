@@ -9,33 +9,75 @@ services:
     ports:
       - 127.0.0.1:5672:5672
       - 15672:15672
+    healthcheck:
+        test: rabbitmq-diagnostics -q ping
+        interval: 10s
+        timeout: 5s
+        start_period: 20s
+        retries: 5
 
   armonik.control.submitter:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=5
 
   armonik.control.metrics:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=5
 
   armonik.control.partitionmetrics:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=5
 
   armonik.compute.pollingagent0:
     environment:
       - Amqp__User=guest
-      - Amqp__Password=guest
+      - Amqp__Password=guest      
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=5
 
   armonik.compute.pollingagent1:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=5
 
   armonik.compute.pollingagent2:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=5

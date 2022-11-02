@@ -40,9 +40,15 @@ using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
+/// <summary>
+///   Options for authentication
+/// </summary>
 [PublicAPI]
 public class AuthenticatorOptions : AuthenticationSchemeOptions
 {
+  /// <summary>
+  ///   Section name in the Appsettings file
+  /// </summary>
   public const string SectionName = nameof(Authenticator);
 
   /// <summary>
@@ -73,15 +79,40 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
   public static readonly AuthenticatorOptions Default = new();
 
   // ReSharper disable once InconsistentNaming
-  public string CNHeader                    { get; set; } = "";
-  public string FingerprintHeader           { get; set; } = "";
+  /// <summary>
+  ///   Header containing the certificate common name
+  /// </summary>
+  public string CNHeader { get; set; } = "";
+
+  /// <summary>
+  ///   Header containing the certificate fingerprint
+  /// </summary>
+  public string FingerprintHeader { get; set; } = "";
+
+  /// <summary>
+  ///   Header containing the username to impersonate
+  /// </summary>
   public string ImpersonationUsernameHeader { get; set; } = "";
 
+  /// <summary>
+  ///   Header containing the user id to impersonate
+  /// </summary>
   public string ImpersonationIdHeader { get; set; } = "";
 
+  /// <summary>
+  ///   Flag to activate authentication
+  /// </summary>
   public bool RequireAuthentication { get; set; } = true;
-  public bool RequireAuthorization  { get; set; } = true;
 
+  /// <summary>
+  ///   Flag to activate authorization
+  /// </summary>
+  public bool RequireAuthorization { get; set; } = true;
+
+  /// <summary>
+  ///   Copies the options of the other object
+  /// </summary>
+  /// <param name="other">Other options to copy from</param>
   public void CopyFrom(AuthenticatorOptions other)
   {
     CNHeader                    = other.CNHeader;
@@ -93,8 +124,14 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
   }
 }
 
+/// <summary>
+///   Authentication handler used in the authentication middleware
+/// </summary>
 public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 {
+  /// <summary>
+  ///   Name of the scheme for this handler
+  /// </summary>
   public const string SchemeName = "SubmitterAuthenticationScheme";
 
   private static readonly UserIdentity DefaultUser = new(new UserAuthenticationResult(),
@@ -110,6 +147,16 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 
   private readonly bool requireAuthentication_;
 
+  /// <summary>
+  ///   Creates an authentication handler
+  /// </summary>
+  /// <param name="options">Options (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="loggerFactory">Logger factory (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="encoder">Url Encoder (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="clock">System clock (See <see cref="AuthenticationHandler{TOptions}" />)</param>
+  /// <param name="authTable">Authentication table storage</param>
+  /// <param name="cache">Authentication cache</param>
+  /// <exception cref="ArmoniKException">Thrown if the authenticator is misconfigured (missing options)</exception>
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                        ILoggerFactory                        loggerFactory,
                        UrlEncoder                            encoder,
@@ -309,9 +356,10 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   }
 
   /// <summary>
+  ///   Tries to retrieve the given header from the request, return null if it doesn't exist or is empty
   /// </summary>
-  /// <param name="headerName"></param>
-  /// <returns></returns>
+  /// <param name="headerName">Name of the header</param>
+  /// <returns>Value of the header if found and not empty, null otherwise</returns>
   private string? TryGetHeader(string headerName)
   {
     if (!string.IsNullOrEmpty(headerName) && Request.Headers.TryGetValue(headerName,

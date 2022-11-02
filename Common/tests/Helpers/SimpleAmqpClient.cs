@@ -26,45 +26,49 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
+using Amqp;
 
+using ArmoniK.Core.Adapters.Amqp;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class QueueMessageHandler : IQueueMessageHandler
+public class SimpleAmqpClient : IConnectionAmqp, IAsyncDisposable
 {
-  private readonly Func<QueueMessageStatus, Task> disposeFunc_;
-  private readonly ILogger                        logger_;
+  private readonly Address           address_;
+  private readonly ConnectionFactory connectionFactory_;
+  private readonly ILoggerFactory    loggerFactory_;
 
-  public QueueMessageHandler(string                         messageId,
-                             string                         taskId,
-                             Func<QueueMessageStatus, Task> disposeFunc,
-                             ILogger                        logger,
-                             CancellationToken              cancellationToken)
+  public SimpleAmqpClient()
   {
-    disposeFunc_      = disposeFunc;
-    logger_           = logger;
-    MessageId         = messageId;
-    TaskId            = taskId;
-    CancellationToken = cancellationToken;
+    loggerFactory_ = new LoggerFactory();
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
+
+    address_ = new Address("amqp://guest:guest@localhost:5672");
+
+    connectionFactory_ = new ConnectionFactory();
   }
 
-  public string MessageId { get; init; }
-  public string TaskId    { get; init; }
-
-  /// <inheritdoc />
-  public QueueMessageStatus Status { get; set; }
-
-  public CancellationToken CancellationToken { get; set; }
-
-  /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    using var _ = logger_.LogFunction(MessageId,
-                                      functionName: $"{nameof(QueueMessageHandler)}.{nameof(DisposeAsync)}");
-    await disposeFunc_(Status)
-      .ConfigureAwait(false);
+    if (Connection is not null && Connection.ConnectionState == ConnectionState.Opened)
+    {
+      await Connection.CloseAsync()
+                      .ConfigureAwait(false);
+    }
+
+    loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
   }
+
+  public Connection? Connection { get; private set; }
+
+  public async Task Init(CancellationToken cancellation)
+    => Connection = await connectionFactory_.CreateAsync(address_)
+                                            .ConfigureAwait(false);
+
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
 }

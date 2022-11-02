@@ -22,41 +22,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading.Tasks;
+using JetBrains.Annotations;
 
-using Amqp;
+namespace ArmoniK.Core.Common.Injection.Options;
 
-using Microsoft.Extensions.Logging;
-
-namespace ArmoniK.Core.Common.Tests.Helpers;
-
-public class SimpleAmqpClientHelper : IAsyncDisposable
+[PublicAPI]
+public class Amqp
 {
-  private readonly ILoggerFactory loggerFactory_;
+  public const string SettingSection = nameof(Amqp);
 
-  public SimpleAmqpClientHelper()
-  {
-    loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
-
-    var address = new Address("amqp://guest:guest@localhost:5672");
-
-    Connection = new Connection(address);
-    Session    = new Session(Connection);
-  }
-
-  public Connection Connection { get; }
-
-  public Session Session { get; }
-
-  public async ValueTask DisposeAsync()
-  {
-    await Session.CloseAsync()
-                 .ConfigureAwait(false);
-    await Connection.CloseAsync()
-                    .ConfigureAwait(false);
-    loggerFactory_.Dispose();
-    GC.SuppressFinalize(this);
-  }
+  public string Host              { get; set; } = "";
+  public string CredentialsPath   { get; set; } = "";
+  public string User              { get; set; } = "";
+  public string Password          { get; set; } = "";
+  public string Scheme            { get; set; } = "";
+  public string CaPath            { get; set; } = "";
+  public string PartitionId       { get; set; } = "";
+  public int    Port              { get; set; }
+  public int    MaxPriority       { get; set; }
+  public bool   AllowHostMismatch { get; set; }
+  public int    MaxRetries        { get; set; }
+  public int    LinkCredit        { get; set; }
 }

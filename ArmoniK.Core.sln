@@ -63,6 +63,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Amqp.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Control.PartitionMetrics", "Control\PartitionMetrics\src\ArmoniK.Core.Control.PartitionMetrics.csproj", "{0A2722D2-0FB7-4004-9CC6-7EAEBC553798}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.RabbitMQ", "Adaptors\RabbitMQ\src\ArmoniK.Core.Adapters.RabbitMQ.csproj", "{1A305C85-6C34-413F-8763-424647557FC7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.RabbitMQ.Tests", "Adaptors\RabbitMQ\tests\ArmoniK.Core.Adapters.RabbitMQ.Tests.csproj", "{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -239,6 +243,22 @@ Global
 		{0A2722D2-0FB7-4004-9CC6-7EAEBC553798}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A2722D2-0FB7-4004-9CC6-7EAEBC553798}.Release|x64.ActiveCfg = Release|Any CPU
 		{0A2722D2-0FB7-4004-9CC6-7EAEBC553798}.Release|x64.Build.0 = Release|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Debug|x64.Build.0 = Debug|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Release|x64.ActiveCfg = Release|Any CPU
+		{1A305C85-6C34-413F-8763-424647557FC7}.Release|x64.Build.0 = Release|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Debug|x64.Build.0 = Debug|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Release|x64.ActiveCfg = Release|Any CPU
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -272,6 +292,8 @@ Global
 		{5C115C74-F75B-4471-A1E3-46ED9E03D5E4} = {79DE0448-1BF2-48D2-8A33-243E402CFD27}
 		{CD255A51-7002-452E-9B1D-6E621134A129} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
 		{0A2722D2-0FB7-4004-9CC6-7EAEBC553798} = {0E809C1E-CBF5-42E4-8624-2E244A52E422}
+		{1A305C85-6C34-413F-8763-424647557FC7} = {1A9BCE53-79D0-4761-B3A2-6967B610FA94}
+		{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1285A466-2AF6-43E6-8DCC-2F93A5D5F02E}

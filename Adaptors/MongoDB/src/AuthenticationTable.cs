@@ -46,6 +46,9 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <summary>
+///   Storage class containing the authentication data
+/// </summary>
 [PublicAPI]
 public class AuthenticationTable : IAuthenticationTable
 {
@@ -83,6 +86,15 @@ public class AuthenticationTable : IAuthenticationTable
     }
   }
 
+  /// <summary>
+  ///   Creates an authentication storage
+  /// </summary>
+  /// <param name="sessionProvider">MongoDB session provider</param>
+  /// <param name="userCollectionProvider">Provider for the collection containing user data</param>
+  /// <param name="authCollectionProvider">Provider for the collection containing certificate data</param>
+  /// <param name="roleCollectionProvider">Provider for the collection containing role data</param>
+  /// <param name="logger">Logger</param>
+  /// <param name="activitySource">Activity source</param>
   public AuthenticationTable(SessionProvider                                         sessionProvider,
                              MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider,
                              MongoCollectionProvider<AuthData, AuthDataModelMapping> authCollectionProvider,
@@ -99,6 +111,9 @@ public class AuthenticationTable : IAuthenticationTable
     activitySource_ = activitySource;
   }
 
+  /// <summary>
+  ///   Logger
+  /// </summary>
   public ILogger Logger { get; }
 
   /// <inheritdoc />
@@ -149,6 +164,7 @@ public class AuthenticationTable : IAuthenticationTable
     }
   }
 
+  /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                                string            fingerprint,
                                                                                CancellationToken cancellationToken = default)

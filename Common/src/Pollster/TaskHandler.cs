@@ -596,10 +596,22 @@ public class TaskHandler : IAsyncDisposable
       queueStatus = QueueMessageStatus.Cancelled;
     }
 
-    if (cancellationToken.IsCancellationRequested)
+    if (cancellationToken.IsCancellationRequested || e is RpcException
+                                                          {
+                                                            StatusCode: StatusCode.Unavailable,
+                                                          })
     {
-      logger_.LogWarning(e,
-                         "Cancellation triggered, task cancelled here and re executed elsewhere");
+      if (cancellationToken.IsCancellationRequested)
+      {
+        logger_.LogWarning(e,
+                           "Cancellation triggered, task cancelled here and re executed elsewhere");
+      }
+      else
+      {
+        logger_.LogWarning(e,
+                           "Worker not available, task cancelled here and re executed elsewhere");
+      }
+
       await taskTable_.ReleaseTask(taskData.TaskId,
                                    ownerPodId_,
                                    CancellationToken.None)
