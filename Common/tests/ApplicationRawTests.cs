@@ -30,7 +30,6 @@ using ArmoniK.Core.Common.gRPC;
 
 using NUnit.Framework;
 
-
 namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture(TestOf = typeof(RpcExt))]
@@ -59,10 +58,8 @@ public class ApplicationRawTests
 
   [Test]
   public void ApplicationRawShouldBeEquals()
-  {
-    Assert.AreEqual(app1_,
-                    app2_);
-  }
+    => Assert.AreEqual(app1_,
+                       app2_);
 
   [Test]
   public void DistinctShouldWork()
