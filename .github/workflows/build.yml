@@ -590,6 +590,15 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}.json.tar.gz
 
+      - name: Collect docker compose logs on failure
+        uses: jwalton/gh-docker-logs@v2
+        if: failure()
+        with:
+          dest: './container-logs'
+      - name: Upload docker compose logs on failure
+        run: |
+          tar -cvz - ./container-logs/* | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}-container-logs.tar.gz
+
   defaultPartitionMock:
     needs:
       - versionning
