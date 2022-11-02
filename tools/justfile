@@ -3,6 +3,42 @@ tag    := "test"
 queue  := "active"
 worker := "htcmock"
 
+# Base compose file
+export COMPOSE_BASE := "../docker-compose/docker-compose.yml"
+
+# loggin level of deployment
+export LOGGING_LEVEL:="Information"
+
+# Sets the queue
+export QUEUE := if queue == "rabbit" {
+  "../docker-compose/docker-compose.queue-rabbitmq.yml"
+}else if  queue == "rabbit091" {
+  "../docker-compose/docker-compose.queue-rabbitmq.yml"
+}else if queue == "artemis" {
+  "../docker-compose/docker-compose.queue-artemis.yml"
+}else{
+  "../docker-compose/docker-compose.queue-activemqp.yml"
+}
+
+
+# Sets the override to feed docker-compose
+export OVERRIDE := if  queue == "rabbit091" {
+  "../docker-compose/docker-compose.override-rabbitmq091.yml"
+}else{
+  "../docker-compose/docker-compose.override.yml"
+}
+
+# Defines worker and enviroment variables for deployment
+export ARMONIK_WORKER:= if worker == "stream" {
+  "dockerhubaneo/armonik_core_stream_test_worker:"+tag
+}else{
+  "dockerhubaneo/armonik_core_htcmock_test_worker:"+tag
+}
+export ARMONIK_METRICS:="dockerhubaneo/armonik_control_metrics:"+tag
+export ARMONIK_PARTITIONMETRICS:="dockerhubaneo/armonik_control_partitionmetrics:"+tag
+export ARMONIK_SUBMITTER:="dockerhubaneo/armonik_control:"+tag
+export ARMONIK_POLLINGAGENT:="dockerhubaneo/armonik_pollingagent:"+tag
+
 # List recipes and their usage
 @default:
   just --list
@@ -33,96 +69,54 @@ _usage:
         stream: for Stream worker
   EOF
 
-# Sets the queue
-_set-queue:
+# Custom command to build a single image
+_build-image imageTag dockerFile:
+  docker build -t {{ imageTag }} -f {{ dockerFile }} ../
+
+# Build all images necessary for the deployment 
+_build-armonik-components:
   #!/usr/bin/env bash
-  set -euo pipefail
-  
-  # Save variables in .env file to pass them to other recepies
-  echo "" > justcompose.env
-
-  OVERRIDE="../docker-compose/docker-compose.override.yml"
-  if [ "x{{ queue }}" == "xactive" ]
-  then
-    QUEUE="../docker-compose/docker-compose.queue-activemqp.yml"
-  elif [ "x{{ queue }}" == "xrabbit" ]
-  then
-    QUEUE="../docker-compose/docker-compose.queue-rabbitmq.yml"
-  elif [ "x{{ queue }}" == "xrabbit091" ]
-  then
-    QUEUE="../docker-compose/docker-compose.queue-rabbitmq.yml"
-    OVERRIDE="../docker-compose/docker-compose.override-rabbitmq091.yml"
-  elif [ "x{{ queue }}" == "xartemis" ]
-  then
-    QUEUE="../docker-compose/docker-compose.queue-artemis.yml"
-  else
-    echo "{{ queue }} is not a valid queue"
-    exit 1
-  fi
-  echo "export QUEUE=$QUEUE" >> justcompose.env
-  echo "export OVERRIDE=$OVERRIDE" >> justcompose.env
-
-# Defines worker and enviroment variables for deployment
-_set-vars:
- #!/usr/bin/env bash
   set -euo pipefail
   if [ "x{{ worker }}" == "xstream" ]
   then
-    export ARMONIK_WORKER="dockerhubaneo/armonik_core_stream_test_worker:{{ tag }}"
-    #docker rmi -f $ARMONIK_WORKER
-    docker build -t $ARMONIK_WORKER -f ../Tests/Stream/Server/Dockerfile ../
+    just _build-image $ARMONIK_WORKER  "../Tests/Stream/Server/Dockerfile" 
   elif [ "x{{ worker }}" == "xhtcmock" ]
   then
-    export ARMONIK_WORKER="dockerhubaneo/armonik_core_htcmock_test_worker:{{ tag }}"
-    #docker rmi -f $ARMONIK_WORKER
-    docker build -t $ARMONIK_WORKER -f ../Tests/HtcMock/Server/src/Dockerfile ../
-  else
-    echo "{{ worker }} is not a valid worker"
-    exit 1
+    just _build-image $ARMONIK_WORKER "../Tests/HtcMock/Server/src/Dockerfile"
   fi
-  echo "export ARMONIK_WORKER=$ARMONIK_WORKER" >> justcompose.env
 
-  export ARMONIK_METRICS="dockerhubaneo/armonik_control_metrics:{{ tag }}"
-  #docker rmi -f $ARMONIK_METRICS
-  docker build -t $ARMONIK_METRICS -f ../Control/Metrics/src/Dockerfile ../
-  echo "export ARMONIK_METRICS=$ARMONIK_METRICS" >> justcompose.env
+  just _build-image $ARMONIK_METRICS  "../Control/Metrics/src/Dockerfile"
 
-  export ARMONIK_PARTITIONMETRICS="dockerhubaneo/armonik_control_partitionmetrics:{{ tag }}"
-  #docker rmi -f $ARMONIK_PARTITIONMETRICS
-  docker build -t $ARMONIK_PARTITIONMETRICS -f ../Control/PartitionMetrics/src/Dockerfile ../
-  echo "export ARMONIK_PARTITIONMETRICS=$ARMONIK_PARTITIONMETRICS" >> justcompose.env
+  just _build-image $ARMONIK_PARTITIONMETRICS "../Control/PartitionMetrics/src/Dockerfile"
 
-  export ARMONIK_SUBMITTER="dockerhubaneo/armonik_control:{{ tag }}"
-  #docker rmi -f $ARMONIK_SUBMITTER
-  docker build -t $ARMONIK_SUBMITTER -f ../Control/Submitter/src/Dockerfile ../
-  echo "export ARMONIK_SUBMITTER=$ARMONIK_SUBMITTER" >> justcompose.env
+  just _build-image $ARMONIK_SUBMITTER "../Control/Submitter/src/Dockerfile"
 
-  export ARMONIK_POLLINGAGENT="dockerhubaneo/armonik_pollingagent:{{ tag }}"
-  #docker rmi -f $ARMONIK_POLLINGAGENT
-  docker build -t $ARMONIK_POLLINGAGENT -f ../Compute/PollingAgent/src/Dockerfile ../ 
-  echo "export ARMONIK_POLLINGAGENT=$ARMONIK_POLLINGAGENT" >> justcompose.env
+  just _build-image $ARMONIK_POLLINGAGENT "../Compute/PollingAgent/src/Dockerfile" 
 
 # Insert partitions in database
 _set-partitions:
   docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database \
     --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition2", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
 
-# Deploy with docker-compose up
-deploy: _set-queue _set-vars
+# Call custom docker-compose
+_compose-invoke serviceName:
+  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE rm -f -s {{ serviceName }}
+
+# Call custom docker-compose up
+_compose-up:
+  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE --compatibility up -d --build --force-recreate --remove-orphans
+
+# Deploy ArmoniK Core
+deploy: _build-armonik-components
   #!/usr/bin/env bash
-  source justcompose.env
   set -euo pipefail
-
-  wait
-  export LOGGING_LEVEL=Information
   
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s database
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s queue
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s object
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s seq
-  #docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE build
+  just _compose-invoke database
+  just _compose-invoke queue
+  just _compose-invoke object
+  just _compose-invoke seq
 
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE --compatibility up -d --build --force-recreate --remove-orphans
+  just _compose-up
 
   wait
   just _set-partitions
@@ -138,19 +132,13 @@ healthChecks:
   done
 
 # Remove dangling images
-@remove-dangling:
+remove-dangling:
   docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
 
 # Destroy deployment with docker-compose down
 destroy:
-  #!/usr/bin/env bash
-  source justcompose.env
-  set -euo pipefail
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE down
+  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE down
 
-# Restart the given service
-restart service:
-  #!/usr/bin/env bash
-  source justcompose.env
-  set -euo pipefail
-  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE restart {{ service }}
+# Custom command to restart the given service
+restart serviceName:
+  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE restart {{ serviceName }}
