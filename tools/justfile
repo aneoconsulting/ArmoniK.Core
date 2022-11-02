@@ -1,0 +1,134 @@
+# List recepies and their usage
+@default:
+  just --list
+  just _usage
+
+_usage:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  echo
+  echo "The recipe deploy takes three arguments"
+  echo
+  echo "usage: deploy >tag> <queue> <worker>"
+  echo "   tag: The core tag image to use, default is test"
+  echo "   queue: allowed values below"
+  cat <<-EOF
+        active   :  for activemq (1.0.0 protocol) (default)
+        rabbit   :  for rabbitmq (1.0.0 protocol)
+        rabbit091:  for rabbitmq (0.9.1 protocol)
+        artemis  :  for artemismq (1.0.0 protocol)
+  EOF
+  echo "   worker: allowed values below"
+  cat <<-EOF
+        htcmock: for HtcMock V3 (default)
+        stream: for Stream worker
+  EOF
+
+# Deploy with docker-compose up 
+deploy tag="test" queue="active" worker="htcmock": 
+  #!/usr/bin/env bash
+  set -euo pipefail
+  
+  # Save variables in .env file to pass them to other recepies
+  echo "" > justcompose.env
+
+  OVERRIDE="../docker-compose/docker-compose.override.yml"
+  if [ "x{{ queue }}" == "xactive" ]
+  then
+    QUEUE="../docker-compose/docker-compose.queue-activemqp.yml"
+  elif [ "x{{ queue }}" == "xrabbit" ]
+  then
+    QUEUE="../docker-compose/docker-compose.queue-rabbitmq.yml"
+  elif [ "x{{ queue }}" == "xrabbit091" ]
+  then
+    QUEUE="../docker-compose/docker-compose.queue-rabbitmq.yml"
+    OVERRIDE="../docker-compose/docker-compose.override-rabbitmq091.yml"
+  elif [ "x{{ queue }}" == "xartemis" ]
+  then
+    QUEUE="../docker-compose/docker-compose.queue-artemis.yml"
+  else
+    echo "{{ queue }} is not a valid queue"
+    exit 1
+  fi
+  echo "export QUEUE=$QUEUE" >> justcompose.env
+  echo "export OVERRIDE=$OVERRIDE" >> justcompose.env
+
+  if [ "x{{ worker }}" == "xstream" ]
+  then
+    export ARMONIK_WORKER="dockerhubaneo/armonik_core_stream_test_worker:{{ tag }}"
+    #docker rmi -f $ARMONIK_WORKER
+    docker build -t $ARMONIK_WORKER -f ../Tests/Stream/Server/Dockerfile ../
+  elif [ "x{{ worker }}" == "xhtcmock" ]
+  then
+    export ARMONIK_WORKER="dockerhubaneo/armonik_core_htcmock_test_worker:{{ tag }}"
+    #docker rmi -f $ARMONIK_WORKER
+    docker build -t $ARMONIK_WORKER -f ../Tests/HtcMock/Server/src/Dockerfile ../
+  else
+    echo "{{ worker }} is not a valid worker"
+    exit 1
+  fi
+  echo "export ARMONIK_WORKER=$ARMONIK_WORKER" >> justcompose.env
+
+  export ARMONIK_METRICS="dockerhubaneo/armonik_control_metrics:{{ tag }}"
+  #docker rmi -f $ARMONIK_METRICS
+  docker build -t $ARMONIK_METRICS -f ../Control/Metrics/src/Dockerfile ../
+  echo "export ARMONIK_METRICS=$ARMONIK_METRICS" >> justcompose.env
+
+  export ARMONIK_PARTITIONMETRICS="dockerhubaneo/armonik_control_partitionmetrics:{{ tag }}"
+  #docker rmi -f $ARMONIK_PARTITIONMETRICS
+  docker build -t $ARMONIK_PARTITIONMETRICS -f ../Control/PartitionMetrics/src/Dockerfile ../
+  echo "export ARMONIK_PARTITIONMETRICS=$ARMONIK_PARTITIONMETRICS" >> justcompose.env
+
+  export ARMONIK_SUBMITTER="dockerhubaneo/armonik_control:{{ tag }}"
+  #docker rmi -f $ARMONIK_SUBMITTER
+  docker build -t $ARMONIK_SUBMITTER -f ../Control/Submitter/src/Dockerfile ../
+  echo "export ARMONIK_SUBMITTER=$ARMONIK_SUBMITTER" >> justcompose.env
+
+  export ARMONIK_POLLINGAGENT="dockerhubaneo/armonik_pollingagent:{{ tag }}"
+  #docker rmi -f $ARMONIK_POLLINGAGENT
+  docker build -t $ARMONIK_POLLINGAGENT -f ../Compute/PollingAgent/src/Dockerfile ../ 
+  echo "export ARMONIK_POLLINGAGENT=$ARMONIK_POLLINGAGENT" >> justcompose.env
+
+  wait
+  export LOGGING_LEVEL=Information
+
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s database
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s queue
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s object
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s seq
+  #docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE build
+  
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE --compatibility up -d --build --force-recreate --remove-orphans
+
+  wait
+  # Insert partitions in database
+  docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database \
+    --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition2", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
+    
+# Run health checks  
+healthChecks:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  for i in {0..2}; do 
+    echo -e "\nHealth Checking PollingAggent${i}"
+    curl -f localhost:998${i}/readiness
+    curl -f localhost:998${i}/liveness
+  done
+
+# Remove dangling images
+@remove-dangling:
+  docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
+
+# Destroy deployment docker-compose down
+destroy:
+  #!/usr/bin/env bash
+  source justcompose.env
+  set -euo pipefail
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE down
+
+# Restart the given service
+restart service:
+  #!/usr/bin/env bash
+  source justcompose.env
+  set -euo pipefail
+  docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE restart {{ service }}
