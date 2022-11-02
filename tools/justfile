@@ -1,4 +1,9 @@
-# List recepies and their usage
+# Default values for the deployment
+tag    := "test"
+queue  := "active"
+worker := "htcmock"
+
+# List recipes and their usage
 @default:
   just --list
   just _usage
@@ -9,8 +14,11 @@ _usage:
   echo
   echo "The recipe deploy takes three arguments"
   echo
-  echo "usage: deploy >tag> <queue> <worker>"
-  echo "   tag: The core tag image to use, default is test"
+  echo "usage: just tag=<tag> queue=<queue> worker=<worker> deploy"
+  echo "       if any of the variables is not set, its default value is used"
+  echo
+  echo "   tag: The core tag image to use, defaults to test"
+  echo
   echo "   queue: allowed values below"
   cat <<-EOF
         active   :  for activemq (1.0.0 protocol) (default)
@@ -18,14 +26,15 @@ _usage:
         rabbit091:  for rabbitmq (0.9.1 protocol)
         artemis  :  for artemismq (1.0.0 protocol)
   EOF
+  echo
   echo "   worker: allowed values below"
   cat <<-EOF
         htcmock: for HtcMock V3 (default)
         stream: for Stream worker
   EOF
 
-# Deploy with docker-compose up 
-deploy tag="test" queue="active" worker="htcmock": 
+# Sets the queue
+_set-queue:
   #!/usr/bin/env bash
   set -euo pipefail
   
@@ -53,6 +62,10 @@ deploy tag="test" queue="active" worker="htcmock":
   echo "export QUEUE=$QUEUE" >> justcompose.env
   echo "export OVERRIDE=$OVERRIDE" >> justcompose.env
 
+# Defines worker and enviroment variables for deployment
+_set-vars:
+ #!/usr/bin/env bash
+  set -euo pipefail
   if [ "x{{ worker }}" == "xstream" ]
   then
     export ARMONIK_WORKER="dockerhubaneo/armonik_core_stream_test_worker:{{ tag }}"
@@ -89,22 +102,31 @@ deploy tag="test" queue="active" worker="htcmock":
   docker build -t $ARMONIK_POLLINGAGENT -f ../Compute/PollingAgent/src/Dockerfile ../ 
   echo "export ARMONIK_POLLINGAGENT=$ARMONIK_POLLINGAGENT" >> justcompose.env
 
+# Insert partitions in database
+_set-partitions:
+  docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database \
+    --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition2", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
+
+# Deploy with docker-compose up
+deploy: _set-queue _set-vars
+  #!/usr/bin/env bash
+  source justcompose.env
+  set -euo pipefail
+
   wait
   export LOGGING_LEVEL=Information
-
+  
   docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s database
   docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s queue
   docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s object
   docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE rm -f -s seq
   #docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE build
-  
+
   docker-compose -f ../docker-compose/docker-compose.yml -f $OVERRIDE -f $QUEUE --compatibility up -d --build --force-recreate --remove-orphans
 
   wait
-  # Insert partitions in database
-  docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database \
-    --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition2", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-    
+  just _set-partitions
+
 # Run health checks  
 healthChecks:
   #!/usr/bin/env bash
@@ -119,7 +141,7 @@ healthChecks:
 @remove-dangling:
   docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
 
-# Destroy deployment docker-compose down
+# Destroy deployment with docker-compose down
 destroy:
   #!/usr/bin/env bash
   source justcompose.env
