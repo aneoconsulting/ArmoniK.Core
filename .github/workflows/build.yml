@@ -596,6 +596,7 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker compose logs on failure
+        if: failure()
         run: |
           tar -cvz - ./container-logs/* | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}-container-logs.tar.gz
 
