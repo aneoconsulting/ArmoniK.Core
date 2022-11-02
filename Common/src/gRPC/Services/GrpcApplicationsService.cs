@@ -68,7 +68,8 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
                                             Namespace = data.Options.ApplicationNamespace,
                                             Version   = data.Options.ApplicationVersion,
                                             Service   = data.Options.ApplicationService,
-                                          }),
+                                          })
+                    .Distinct(),
              },
              Total = tasks.totalCount,
            };
