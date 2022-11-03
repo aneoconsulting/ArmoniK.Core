@@ -341,6 +341,31 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                             Expression<Func<Application, object?>> orderField,
+                                                                                             bool                                   ascOrder,
+                                                                                             int                                    page,
+                                                                                             int                                    pageSize,
+                                                                                             CancellationToken                      cancellationToken = default)
+  {
+    var queryable = taskId2TaskData_.AsQueryable()
+                                    .Select(pair => pair.Value)
+                                    .Where(filter)
+                                    .GroupBy(data => new Application(data.Options.ApplicationName,
+                                                                     data.Options.ApplicationNamespace,
+                                                                     data.Options.ApplicationVersion,
+                                                                     data.Options.ApplicationService))
+                                    .Select(group => group.Key);
+
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
+
+    return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                     .Take(pageSize), ordered.Count()));
+  }
+
+  /// <inheritdoc />
   public Task SetTaskSuccessAsync(string            taskId,
                                   CancellationToken cancellationToken = default)
   {

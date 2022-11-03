@@ -424,11 +424,44 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return (await ordered.Skip(page * pageSize)
-                         .Take(pageSize)
-                         .ToListAsync(cancellationToken)
-                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                              .ConfigureAwait(false));
+    var taskResult = ordered.Skip(page * pageSize)
+                            .Take(pageSize)
+                            .ToListAsync(cancellationToken);
+
+    return (await taskResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                                 .ConfigureAwait(false));
+  }
+
+  /// <inheritdoc />
+  public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                                   Expression<Func<Application, object?>> orderField,
+                                                                                                   bool                                   ascOrder,
+                                                                                                   int                                    page,
+                                                                                                   int                                    pageSize,
+                                                                                                   CancellationToken                      cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ListApplicationsAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var queryable = taskCollection.AsQueryable(sessionHandle)
+                                  .Where(filter)
+                                  .GroupBy(data => new Application(data.Options.ApplicationName,
+                                                                   data.Options.ApplicationNamespace,
+                                                                   data.Options.ApplicationVersion,
+                                                                   data.Options.ApplicationService))
+                                  .Select(group => group.Key);
+
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
+
+    var taskResult = ordered.Skip(page * pageSize)
+                            .Take(pageSize)
+                            .ToListAsync(cancellationToken);
+
+    return (await taskResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                                 .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

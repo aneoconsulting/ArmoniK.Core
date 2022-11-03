@@ -49,12 +49,12 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
-    var tasks = await taskTable_.ListTasksAsync(request.Filter.ToApplicationFilter(),
-                                                request.Sort.ToApplicationField(),
-                                                request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
-                                                request.Page,
-                                                request.PageSize,
-                                                context.CancellationToken)
+    var tasks = await taskTable_.ListApplicationsAsync(request.Filter.ToApplicationFilter(),
+                                                       request.Sort.ToApplicationField(),
+                                                       request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                       request.Page,
+                                                       request.PageSize,
+                                                       context.CancellationToken)
                                 .ConfigureAwait(false);
     return new ListApplicationsResponse
            {
@@ -62,14 +62,13 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
              PageSize = request.PageSize,
              Applications =
              {
-               tasks.tasks.Select(data => new ApplicationRaw
-                                          {
-                                            Name      = data.Options.ApplicationName,
-                                            Namespace = data.Options.ApplicationNamespace,
-                                            Version   = data.Options.ApplicationVersion,
-                                            Service   = data.Options.ApplicationService,
-                                          })
-                    .Distinct(),
+               tasks.applications.Select(data => new ApplicationRaw
+                                                 {
+                                                   Name      = data.Name,
+                                                   Namespace = data.Namespace,
+                                                   Version   = data.Version,
+                                                   Service   = data.Service,
+                                                 }),
              },
              Total = tasks.totalCount,
            };

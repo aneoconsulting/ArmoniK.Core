@@ -228,6 +228,25 @@ public interface ITaskTable : IInitializable
                                                                      CancellationToken                   cancellationToken = default);
 
   /// <summary>
+  ///   List all applications extracted from task metadata matching the given filter and ordering
+  /// </summary>
+  /// <param name="filter">Filter to select tasks</param>
+  /// <param name="orderField">Select the field that will be used to order the tasks</param>
+  /// <param name="ascOrder">Is the order ascending</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
+  /// <returns>
+  ///   Collection of applications metadata matching the request and total number of results without paging
+  /// </returns>
+  Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                      Expression<Func<Application, object?>> orderField,
+                                                                                      bool                                   ascOrder,
+                                                                                      int                                    page,
+                                                                                      int                                    pageSize,
+                                                                                      CancellationToken                      cancellationToken = default);
+
+  /// <summary>
   ///   Change the status of the task to succeeded
   /// </summary>
   /// <param name="taskId">Id of the task to tag as succeeded</param>

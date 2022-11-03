@@ -523,6 +523,14 @@ public class TaskHandlerTest
                                                                               CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                               Expression<Func<Application, object?>> orderField,
+                                                                                               bool                                   ascOrder,
+                                                                                               int                                    page,
+                                                                                               int                                    pageSize,
+                                                                                               CancellationToken                      cancellationToken = default)
+      => throw new NotImplementedException();
+
     public Task SetTaskSuccessAsync(string            taskId,
                                     CancellationToken cancellationToken)
       => throw new NotImplementedException();

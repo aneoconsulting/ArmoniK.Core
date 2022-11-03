@@ -1096,7 +1096,7 @@ public class TaskTableTestBase
       var req = new ListApplicationsRequest
                 {
                   Page     = 0,
-                  PageSize = 2,
+                  PageSize = 4,
                   Filter = new ListApplicationsRequest.Types.Filter
                            {
                              Name = options_.ApplicationName,
@@ -1112,22 +1112,25 @@ public class TaskTableTestBase
       Assert.IsTrue(validator.Validate(req)
                              .IsValid);
 
-      var listTasks = await TaskTable!.ListTasksAsync(req.Filter.ToApplicationFilter(),
-                                                      req.Sort.ToApplicationField(),
-                                                      false,
-                                                      req.Page,
-                                                      req.PageSize,
-                                                      CancellationToken.None)
+      var listTasks = await TaskTable!.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
+                                                             req.Sort.ToApplicationField(),
+                                                             false,
+                                                             req.Page,
+                                                             req.PageSize,
+                                                             CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      var listTasksResponseTaskData = listTasks.tasks.ToList();
+      var listTasksResponseTaskData = listTasks.applications.ToList();
       foreach (var task in listTasksResponseTaskData)
       {
         Console.WriteLine(task);
       }
 
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count());
+      Assert.AreEqual(new Application(options_.ApplicationName,
+                                      options_.ApplicationNamespace,
+                                      options_.ApplicationVersion,
+                                      options_.ApplicationService),
+                      listTasksResponseTaskData.Single());
     }
   }
 

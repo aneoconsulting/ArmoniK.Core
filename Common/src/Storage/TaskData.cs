@@ -202,4 +202,17 @@ public record TaskData(string        SessionId,
                        ? FromDateTime(taskData.StartDate.Value)
                        : null,
        };
+
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskData" /> to <see cref="Application" />
+  /// </summary>
+  /// <param name="taskData">The input task data</param>
+  /// <returns>
+  ///   The converted task data
+  /// </returns>
+  public static implicit operator Application(TaskData taskData)
+    => new(taskData.Options.ApplicationName,
+           taskData.Options.ApplicationNamespace,
+           taskData.Options.ApplicationVersion,
+           taskData.Options.ApplicationService);
 }
