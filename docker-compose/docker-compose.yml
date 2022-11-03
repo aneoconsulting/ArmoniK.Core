@@ -20,10 +20,14 @@ services:
   armonik.control.submitter:
     image: ${ARMONIK_SUBMITTER}
     depends_on:
-      - database
-      - object
-      - queue
-      - fluentbit
+      database:
+        condition: service_started
+      queue:
+        condition: service_started
+      object:
+        condition: service_started
+      fluentbit:
+        condition: service_started
     networks:
       - armonik-net
       - armonik-backend
@@ -112,9 +116,9 @@ services:
     depends_on:
       database:
         condition: service_started
-      object:
-        condition: service_started
       queue:
+        condition: service_started
+      object:
         condition: service_started
       fluentbit:
         condition: service_started
