@@ -82,4 +82,12 @@ public class PermissionTest
                                    {
                                      var _ = new Permission(actionstring);
                                    }));
+
+  [Test]
+  public void PrintPermissions()
+  {
+    TestContext.Progress.WriteLine(string.Join("\n",
+                                               ServicesPermissions.PermissionsLists[ServicesPermissions.All]));
+    Assert.Ignore();
+  }
 }

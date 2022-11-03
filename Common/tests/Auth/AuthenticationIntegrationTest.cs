@@ -620,6 +620,13 @@ public class AuthenticationIntegrationTest
                                                             },
                                                           };
 
+  /*public static nameFromArgs(Type type,
+                             string method,
+                             IdentityIndex identityIndex,
+                             ImpersonationType impersonationType,
+                             IdentityIndex impersonate,
+                             GetArgs(methodAndObject.Item3, identityIndex, impersonationType, impersonate), shouldSucceed, statusCode)*/
+
   public static IEnumerable GetCases(List<(Type, string, object?)> methodsAndObjects)
   {
     // Generator
@@ -632,10 +639,17 @@ public class AuthenticationIntegrationTest
       var impersonationType = (ImpersonationType)parameters[4];
       foreach (var methodAndObject in methodsAndObjects)
       {
-        yield return (methodAndObject.Item1, methodAndObject.Item2, identityIndex, impersonationType, impersonate, GetArgs(methodAndObject.Item3,
-                                                                                                                           identityIndex,
-                                                                                                                           impersonationType,
-                                                                                                                           impersonate), shouldSucceed, statusCode);
+        yield return new TestCaseData(methodAndObject.Item1,
+                                      methodAndObject.Item2,
+                                      identityIndex,
+                                      impersonationType,
+                                      impersonate,
+                                      GetArgs(methodAndObject.Item3,
+                                              identityIndex,
+                                              impersonationType,
+                                              impersonate),
+                                      shouldSucceed,
+                                      statusCode);
       }
     }
   }
@@ -725,48 +739,49 @@ public class AuthenticationIntegrationTest
     return GetCases(methodsAndObjects);
   }
 
-  public void TransformResult(
-    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed,
-      StatusCode errorCode) tuple,
-    out int        userIndex,
-    out ResultType shouldSucceed,
-    out StatusCode errorCode)
+  public void TransformResult(IdentityIndex     initialUserIndex,
+                              ImpersonationType impersonationType,
+                              ResultType        success,
+                              StatusCode        initialErrorCode,
+                              out int           userIndex,
+                              out ResultType    shouldSucceed,
+                              out StatusCode    errorCode)
   {
     switch (authType_)
     {
       case AuthenticationType.NoAuthentication:
-        userIndex     = (int)tuple.userIndex;
+        userIndex     = (int)initialUserIndex;
         shouldSucceed = ResultType.AlwaysTrue;
         errorCode     = StatusCode.OK;
         break;
       case AuthenticationType.NoAuthorization:
-        userIndex = (int)tuple.userIndex;
-        shouldSucceed = tuple.shouldSucceed == ResultType.AlwaysTrue
+        userIndex = (int)initialUserIndex;
+        shouldSucceed = success == ResultType.AlwaysTrue
                           ? ResultType.AlwaysTrue
-                          : tuple.errorCode == StatusCode.PermissionDenied || tuple.shouldSucceed == ResultType.AuthorizedForSome
+                          : initialErrorCode == StatusCode.PermissionDenied || success == ResultType.AuthorizedForSome
                             ? ResultType.AlwaysTrue
                             : ResultType.AlwaysFalse;
-        errorCode = tuple.errorCode == StatusCode.Unauthenticated
-                      ? tuple.errorCode
+        errorCode = initialErrorCode == StatusCode.Unauthenticated
+                      ? initialErrorCode
                       : StatusCode.OK;
         break;
       case AuthenticationType.NoImpersonation:
-        userIndex = (int)tuple.userIndex;
-        if (tuple.impersonationType == ImpersonationType.NoImpersonate)
+        userIndex = (int)initialUserIndex;
+        if (impersonationType == ImpersonationType.NoImpersonate)
         {
-          shouldSucceed = tuple.shouldSucceed;
-          errorCode     = tuple.errorCode;
+          shouldSucceed = success;
+          errorCode     = initialErrorCode;
         }
-        else if (tuple.userIndex <= IdentityIndex.DoesntExist)
+        else if (initialUserIndex <= IdentityIndex.DoesntExist)
         {
           shouldSucceed = ResultType.AlwaysFalse;
           errorCode     = StatusCode.Unauthenticated;
         }
         else
         {
-          if (tuple.errorCode == StatusCode.Unauthenticated)
+          if (initialErrorCode == StatusCode.Unauthenticated)
           {
-            if (tuple.userIndex == IdentityIndex.CanImpersonate)
+            if (initialUserIndex == IdentityIndex.CanImpersonate)
             {
               shouldSucceed = ResultType.AlwaysFalse;
               errorCode     = StatusCode.PermissionDenied;
@@ -786,19 +801,19 @@ public class AuthenticationIntegrationTest
 
         break;
       case AuthenticationType.NoImpersonationNoAuthorization:
-        userIndex = (int)tuple.userIndex;
-        if (tuple.impersonationType == ImpersonationType.NoImpersonate)
+        userIndex = (int)initialUserIndex;
+        if (impersonationType == ImpersonationType.NoImpersonate)
         {
-          shouldSucceed = tuple.shouldSucceed == ResultType.AlwaysTrue
+          shouldSucceed = success == ResultType.AlwaysTrue
                             ? ResultType.AlwaysTrue
-                            : tuple.errorCode == StatusCode.PermissionDenied || tuple.shouldSucceed == ResultType.AuthorizedForSome
+                            : initialErrorCode == StatusCode.PermissionDenied || success == ResultType.AuthorizedForSome
                               ? ResultType.AlwaysTrue
                               : ResultType.AlwaysFalse;
-          errorCode = tuple.errorCode == StatusCode.Unauthenticated
-                        ? tuple.errorCode
+          errorCode = initialErrorCode == StatusCode.Unauthenticated
+                        ? initialErrorCode
                         : StatusCode.OK;
         }
-        else if (tuple.userIndex <= IdentityIndex.DoesntExist)
+        else if (initialUserIndex <= IdentityIndex.DoesntExist)
         {
           shouldSucceed = ResultType.AlwaysFalse;
           errorCode     = StatusCode.Unauthenticated;
@@ -812,9 +827,9 @@ public class AuthenticationIntegrationTest
         break;
       default:
       case AuthenticationType.DefaultAuth:
-        userIndex     = (int)tuple.userIndex;
-        shouldSucceed = tuple.shouldSucceed;
-        errorCode     = tuple.errorCode;
+        userIndex     = (int)initialUserIndex;
+        shouldSucceed = success;
+        errorCode     = initialErrorCode;
         break;
     }
   }
@@ -824,35 +839,42 @@ public class AuthenticationIntegrationTest
                   {
                     "",
                   })]
-  public async Task AuthMatchesBehavior(
-    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed,
-      StatusCode errorCode) tuple)
+  public async Task AuthMatchesBehavior(Type              clientType,
+                                        string            method,
+                                        IdentityIndex     userIndex,
+                                        ImpersonationType impersonationType,
+                                        IdentityIndex     impersonating,
+                                        object[]          args,
+                                        ResultType        success,
+                                        StatusCode        errorCode)
   {
-    TransformResult(tuple,
-                    out var userIndex,
+    TransformResult(userIndex,
+                    impersonationType,
+                    success,
+                    errorCode,
+                    out var finalUserIndex,
                     out var shouldSucceed,
-                    out var errorCode);
+                    out var expectedError);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client = Activator.CreateInstance(tuple.clientType,
+    var client = Activator.CreateInstance(clientType,
                                           channel);
     Assert.IsNotNull(client);
     Assert.IsInstanceOf<ClientBase>(client);
 
-    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[clientType]);
 
-    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Service == serviceName &&
-                                                                                                                          p.Name    == tuple.method)))
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == method)))
     {
       Assert.DoesNotThrow(delegate
                           {
                             client!.GetType()
-                                   .InvokeMember(tuple.method,
+                                   .InvokeMember(method,
                                                  BindingFlags.InvokeMethod,
                                                  null,
                                                  client,
-                                                 tuple.args);
+                                                 args);
                           });
     }
     else
@@ -860,16 +882,16 @@ public class AuthenticationIntegrationTest
       var exception = Assert.Catch(delegate
                                    {
                                      client!.GetType()
-                                            .InvokeMember(tuple.method,
+                                            .InvokeMember(method,
                                                           BindingFlags.InvokeMethod,
                                                           null,
                                                           client,
-                                                          tuple.args);
+                                                          args);
                                    });
       Assert.IsNotNull(exception);
       Assert.IsNotNull(exception!.InnerException);
       Assert.IsInstanceOf<RpcException>(exception.InnerException);
-      Assert.AreEqual(errorCode,
+      Assert.AreEqual(expectedError,
                       ((RpcException)exception.InnerException!).StatusCode);
     }
 
@@ -882,35 +904,43 @@ public class AuthenticationIntegrationTest
                   {
                     "Async",
                   })]
-  public async Task AsyncAuthMatchesBehavior(
-    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed,
-      StatusCode errorCode) tuple)
+  public async Task AsyncAuthMatchesBehavior(Type              clientType,
+                                             string            method,
+                                             IdentityIndex     userIndex,
+                                             ImpersonationType impersonationType,
+                                             IdentityIndex     impersonating,
+                                             object[]          args,
+                                             ResultType        success,
+                                             StatusCode        errorCode)
   {
-    TransformResult(tuple,
-                    out var userIndex,
+    TransformResult(userIndex,
+                    impersonationType,
+                    success,
+                    errorCode,
+                    out var finalUserIndex,
                     out var shouldSucceed,
-                    out var errorCode);
+                    out var expectedError);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client = Activator.CreateInstance(tuple.clientType,
+    var client = Activator.CreateInstance(clientType,
                                           channel);
     Assert.IsNotNull(client);
     Assert.IsInstanceOf<ClientBase>(client);
 
-    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[clientType]);
 
-    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
                                                                                                     .Permissions.Any(p => p.Service        == serviceName &&
-                                                                                                                          p.Name + "Async" == tuple.method)))
+                                                                                                                          p.Name + "Async" == method)))
     {
       Assert.DoesNotThrowAsync(delegate
                                {
                                  dynamic call = client!.GetType()
-                                                       .InvokeMember(tuple.method,
+                                                       .InvokeMember(method,
                                                                      BindingFlags.InvokeMethod,
                                                                      null,
                                                                      client,
-                                                                     tuple.args)!;
+                                                                     args)!;
                                  var t = call.GetType();
                                  return t.GetProperty("ResponseAsync")
                                          .GetValue(call,
@@ -922,11 +952,11 @@ public class AuthenticationIntegrationTest
       var exception = Assert.CatchAsync(delegate
                                         {
                                           dynamic call = client!.GetType()
-                                                                .InvokeMember(tuple.method,
+                                                                .InvokeMember(method,
                                                                               BindingFlags.InvokeMethod,
                                                                               null,
                                                                               client,
-                                                                              tuple.args)!;
+                                                                              args)!;
                                           var t = call.GetType();
                                           return t.GetProperty("ResponseAsync")
                                                   .GetValue(call,
@@ -934,7 +964,7 @@ public class AuthenticationIntegrationTest
                                         });
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
-      Assert.AreEqual(errorCode,
+      Assert.AreEqual(expectedError,
                       ((RpcException)exception!).StatusCode);
     }
 
@@ -964,26 +994,33 @@ public class AuthenticationIntegrationTest
 
   [Ignore("Somehow throws a RPCException but with OK Status in pipeline. Can't reproduce locally, both in windows and wsl. Investigation ticket : #405")]
   [TestCaseSource(nameof(GetCreateLargeTaskTestCases))]
-  public async Task CreateLargeTasksAuthShouldMatch(
-    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed,
-      StatusCode errorCode) tuple)
+  public async Task CreateLargeTasksAuthShouldMatch(Type              clientType,
+                                                    string            method,
+                                                    IdentityIndex     initialUserIndex,
+                                                    ImpersonationType impersonationType,
+                                                    IdentityIndex     impersonating,
+                                                    object[]          args,
+                                                    ResultType        success,
+                                                    StatusCode        initialErrorCode)
   {
-    TransformResult(tuple,
-                    out var userIndex,
+    TransformResult(initialUserIndex,
+                    impersonationType,
+                    success,
+                    initialErrorCode,
+                    out var finalUserIndex,
                     out var shouldSucceed,
-                    out var errorCode);
+                    out var expectedError);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
     var client      = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(channel);
-    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[clientType]);
 
-    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Service == serviceName &&
-                                                                                                                          p.Name    == tuple.method)))
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == method)))
     {
       Assert.DoesNotThrowAsync(async () =>
                                {
-                                 var stream = client.CreateLargeTasks((Metadata)tuple.args[1]);
+                                 var stream = client.CreateLargeTasks((Metadata)args[1]);
                                  await CreateLargeTask(stream)
                                    .ConfigureAwait(false);
                                  await stream.RequestStream.CompleteAsync()
@@ -994,7 +1031,7 @@ public class AuthenticationIntegrationTest
     {
       var exception = Assert.CatchAsync(async () =>
                                         {
-                                          var stream = client.CreateLargeTasks((Metadata)tuple.args[1]);
+                                          var stream = client.CreateLargeTasks((Metadata)args[1]);
                                           await CreateLargeTask(stream)
                                             .ConfigureAwait(false);
                                           await stream.RequestStream.CompleteAsync()
@@ -1002,7 +1039,7 @@ public class AuthenticationIntegrationTest
                                         });
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
-      Assert.AreEqual(errorCode,
+      Assert.AreEqual(expectedError,
                       ((RpcException)exception!).StatusCode);
     }
 
@@ -1011,24 +1048,31 @@ public class AuthenticationIntegrationTest
   }
 
   [TestCaseSource(nameof(GetTryGetResultStreamTestCases))]
-  public async Task TryGetResultStreamAuthShouldMatch(
-    (Type clientType, string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed,
-      StatusCode errorCode) tuple)
+  public async Task TryGetResultStreamAuthShouldMatch(Type              clientType,
+                                                      string            method,
+                                                      IdentityIndex     initialUserIndex,
+                                                      ImpersonationType impersonationType,
+                                                      IdentityIndex     impersonating,
+                                                      object[]          args,
+                                                      ResultType        success,
+                                                      StatusCode        initialErrorCode)
   {
-    TransformResult(tuple,
-                    out var userIndex,
+    TransformResult(initialUserIndex,
+                    impersonationType,
+                    success,
+                    initialErrorCode,
+                    out var finalUserIndex,
                     out var shouldSucceed,
-                    out var errorCode);
+                    out var expectedError);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
     var client      = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(channel);
-    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[tuple.clientType]);
-    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
-                                                                                                    .Permissions.Any(p => p.Service == serviceName &&
-                                                                                                                          p.Name    == tuple.method)))
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[clientType]);
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == method)))
     {
       Assert.DoesNotThrowAsync(() => client.TryGetResultStream(ResultRequest,
-                                                               (Metadata)tuple.args[1])
+                                                               (Metadata)args[1])
                                            .ResponseStream.ReadAllAsync()
                                            .ToListAsync()
                                            .AsTask());
@@ -1036,13 +1080,13 @@ public class AuthenticationIntegrationTest
     else
     {
       var exception = Assert.CatchAsync(() => client.TryGetResultStream(ResultRequest,
-                                                                        (Metadata)tuple.args[1])
+                                                                        (Metadata)args[1])
                                                     .ResponseStream.ReadAllAsync()
                                                     .ToListAsync()
                                                     .AsTask());
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
-      Assert.AreEqual(errorCode,
+      Assert.AreEqual(expectedError,
                       ((RpcException)exception!).StatusCode);
     }
 
