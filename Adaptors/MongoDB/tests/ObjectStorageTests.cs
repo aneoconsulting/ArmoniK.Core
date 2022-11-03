@@ -34,14 +34,14 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class ObjectStorageTests : ObjectStorageTestBase
 {
-  private MongoDatabaseProvider? tableProvider_;
-
   public override void TearDown()
   {
     ObjectStorage = null;
     tableProvider_?.Dispose();
     RunTests = false;
   }
+
+  private MongoDatabaseProvider? tableProvider_;
 
   public override void GetObjectStorageInstance()
   {

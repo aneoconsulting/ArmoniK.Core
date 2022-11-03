@@ -22,23 +22,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-using Mongo2Go;
-
-using MongoDB.Driver;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Common.Injection.Options;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using Mongo2Go;
+
 using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Driver.Core.Events;
 
 using Serilog;
@@ -47,10 +45,10 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 internal class MongoDatabaseProvider : IDisposable
 {
-  private readonly        MongoDbRunner?  runner_;
   private const           string          DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
   private readonly        ServiceProvider provider_;
+  private readonly        MongoDbRunner?  runner_;
 
   public MongoDatabaseProvider(Action<IServiceCollection>? serviceConfigurator = null)
   {
@@ -116,12 +114,12 @@ internal class MongoDatabaseProvider : IDisposable
                                                        });
   }
 
-  public IServiceProvider GetServiceProvider()
-    => provider_;
-
   public void Dispose()
   {
     provider_.Dispose();
     runner_?.Dispose();
   }
+
+  public IServiceProvider GetServiceProvider()
+    => provider_;
 }

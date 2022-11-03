@@ -34,13 +34,13 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class ResultTableTests : ResultTableTestBase
 {
-  private MongoDatabaseProvider? tableProvider_;
-
   public override void TearDown()
   {
     tableProvider_?.Dispose();
     RunTests = false;
   }
+
+  private MongoDatabaseProvider? tableProvider_;
 
   public override void GetResultTableInstance()
   {
