@@ -22,71 +22,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Diagnostics;
-
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-
-using Mongo2Go;
-
-using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 public class SessionTableTests : SessionTableTestBase
 {
+  private MongoDatabaseProvider? tableProvider_;
+
   public override void TearDown()
   {
-    client_ = null;
-    runner_?.Dispose();
+    tableProvider_?.Dispose();
     RunTests = false;
   }
 
-  private                 MongoClient?   client_;
-  private                 MongoDbRunner? runner_;
-  private const           string         DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
-
   public override void GetSessionTableInstance()
   {
-    var logger = NullLogger.Instance;
-    runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
-                                  logger: logger);
-    client_ = new MongoClient(runner_.ConnectionString);
-
-    // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10"
-                                                 },
-                                               };
-
-    var configuration = new ConfigurationManager();
-    configuration.AddInMemoryCollection(minimalConfig);
-
-    var services = new ServiceCollection();
-    services.AddMongoStorages(configuration,
-                              logger);
-    services.AddSingleton(ActivitySource);
-    services.AddTransient<IMongoClient>(_ => client_);
-    services.AddLogging();
-
-    var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    tableProvider_ = new MongoDatabaseProvider();
+    var provider = tableProvider_.GetServiceProvider();
 
     SessionTable = provider.GetRequiredService<ISessionTable>();
     RunTests     = true;
