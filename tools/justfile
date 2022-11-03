@@ -1,3 +1,6 @@
+# Enable positional args
+set positional-arguments
+
 # Default values for the deployment
 tag    := "test"
 queue  := "active"
@@ -10,7 +13,7 @@ export COMPOSE_BASE := "../docker-compose/docker-compose.yml"
 export LOGGING_LEVEL := "Information"
 
 # Sets the queue
-export QUEUE := if queue == "rabbit"{
+export QUEUE := if queue == "rabbit" {
   "../docker-compose/docker-compose.queue-rabbitmq.yml"
 }else if queue == "rabbit091"{
   "../docker-compose/docker-compose.queue-rabbitmq.yml"
@@ -22,7 +25,7 @@ export QUEUE := if queue == "rabbit"{
 
 
 # Sets the override to feed docker-compose
-export OVERRIDE := if queue == "rabbit091"{
+export OVERRIDE := if queue == "rabbit091" {
   "../docker-compose/docker-compose.override-rabbitmq091.yml"
 }else{
   "../docker-compose/docker-compose.override.yml"
@@ -100,19 +103,16 @@ set-partitions:
 
 # Custom compose generic rule
 compose *args:
-  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE {{args}}
+  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE "$@"
 
 # Call custom docker-compose
-compose-invoke serviceName: (compose "rm -f -s " + serviceName)
+compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
 
 # Call custom docker-compose up
-compose-up: (compose "--compatibility up -d --build --force-recreate --remove-orphans")
+compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
 
 # Deploy ArmoniK Core
 deploy: build-all
-  #!/usr/bin/env bash
-  set -euo pipefail
-  
   just compose-invoke database
   just compose-invoke queue
   just compose-invoke object
@@ -141,4 +141,4 @@ remove-dangling:
 destroy: (compose "down")
 
 # Custom command to restart the given service
-restart serviceName: (compose "restart " + serviceName)
+restart serviceName: (compose "restart" serviceName)
