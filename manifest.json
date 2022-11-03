@@ -837,7 +837,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.RabbitMQ.ConnectionRabbit.html",
-          "hash": "lmxSNt8wTPPQDfk3Rcr4nhO27qS9g8Kw/hnoKW8Rq0s="
+          "hash": "8j2l7XToIO3AELwAGWMCfGap3OyUSAvMVeGEoEdfYUc="
         }
       },
       "is_incremental": false,
@@ -909,7 +909,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.RabbitMQ.ServiceCollectionExt.html",
-          "hash": "hmp2psZt/rEqJluG5E68HWz2x5u9Gj9Re5D+MZK0hBw="
+          "hash": "72aBA3iAQf14fqa69D+a4bz9R5hHUzKZj8g1BQVpC44="
         }
       },
       "is_incremental": false,
