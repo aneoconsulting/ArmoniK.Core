@@ -15,32 +15,38 @@ export LOGGING_LEVEL := "Information"
 # Sets the queue
 export QUEUE := if queue == "rabbit" {
   "../docker-compose/docker-compose.queue-rabbitmq.yml"
-}else if queue == "rabbit091"{
+} else if queue == "rabbit091" {
   "../docker-compose/docker-compose.queue-rabbitmq.yml"
-}else if queue == "artemis"{
+} else if queue == "artemis" {
   "../docker-compose/docker-compose.queue-artemis.yml"
-}else{
+} else {
   "../docker-compose/docker-compose.queue-activemqp.yml"
 }
-
 
 # Sets the override to feed docker-compose
 export OVERRIDE := if queue == "rabbit091" {
   "../docker-compose/docker-compose.override-rabbitmq091.yml"
-}else{
+} else {
   "../docker-compose/docker-compose.override.yml"
 }
 
 # Defines worker and enviroment variables for deployment
 export ARMONIK_WORKER := if worker == "stream" {
-  "dockerhubaneo/armonik_core_stream_test_worker:"+tag
-}else{
-  "dockerhubaneo/armonik_core_htcmock_test_worker:"+tag
+  "dockerhubaneo/armonik_core_stream_test_worker:" + tag
+} else {
+  "dockerhubaneo/armonik_core_htcmock_test_worker:" + tag
 }
-export ARMONIK_METRICS          := "dockerhubaneo/armonik_control_metrics:"+tag
-export ARMONIK_PARTITIONMETRICS := "dockerhubaneo/armonik_control_partitionmetrics:"+tag
-export ARMONIK_SUBMITTER        := "dockerhubaneo/armonik_control:"+tag
-export ARMONIK_POLLINGAGENT     := "dockerhubaneo/armonik_pollingagent:"+tag
+export ARMONIK_METRICS          := "dockerhubaneo/armonik_control_metrics:" + tag
+export ARMONIK_PARTITIONMETRICS := "dockerhubaneo/armonik_control_partitionmetrics:" + tag
+export ARMONIK_SUBMITTER        := "dockerhubaneo/armonik_control:" + tag
+export ARMONIK_POLLINGAGENT     := "dockerhubaneo/armonik_pollingagent:" + tag
+
+# Pick the correct docker file for the worker
+export WORKER_DOCKER_FILE := if worker == "stream" {
+  "../Tests/Stream/Server/Dockerfile"
+} else {
+  "../Tests/HtcMock/Server/src/Dockerfile"
+}
 
 # List recipes and their usage
 @default:
@@ -78,23 +84,11 @@ build imageTag dockerFile:
 
 # Build all images necessary for the deployment 
 build-all:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  if [ "x{{ worker }}" == "xstream" ]
-  then
-    just build $ARMONIK_WORKER  "../Tests/Stream/Server/Dockerfile"
-  elif [ "x{{ worker }}" == "xhtcmock" ]
-  then
-    just build $ARMONIK_WORKER "../Tests/HtcMock/Server/src/Dockerfile"
-  fi
-
-  just build $ARMONIK_METRICS  "../Control/Metrics/src/Dockerfile"
-
-  just build $ARMONIK_PARTITIONMETRICS "../Control/PartitionMetrics/src/Dockerfile"
-
-  just build $ARMONIK_SUBMITTER "../Control/Submitter/src/Dockerfile"
-
-  just build $ARMONIK_POLLINGAGENT "../Compute/PollingAgent/src/Dockerfile"
+  just build "$ARMONIK_WORKER" "$WORKER_DOCKER_FILE"
+  just build "$ARMONIK_METRICS" "../Control/Metrics/src/Dockerfile"
+  just build "$ARMONIK_PARTITIONMETRICS" "../Control/PartitionMetrics/src/Dockerfile"
+  just build "$ARMONIK_SUBMITTER" "../Control/Submitter/src/Dockerfile"
+  just build "$ARMONIK_POLLINGAGENT" "../Compute/PollingAgent/src/Dockerfile"
 
 # Insert partitions in database
 set-partitions:
@@ -103,7 +97,7 @@ set-partitions:
 
 # Custom compose generic rule
 compose *args:
-  docker-compose -f $COMPOSE_BASE -f $OVERRIDE -f $QUEUE "$@"
+  docker-compose -f "$COMPOSE_BASE" -f "$OVERRIDE" -f "$QUEUE" "$@"
 
 # Call custom docker-compose
 compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
@@ -117,9 +111,7 @@ deploy: build-all
   just compose-invoke queue
   just compose-invoke object
   just compose-invoke seq
-
   just compose-up
-
   wait
   just set-partitions
 
