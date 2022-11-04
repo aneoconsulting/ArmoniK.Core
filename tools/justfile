@@ -31,33 +31,34 @@ export OVERRIDE := if queue == "rabbit091" {
 }
 
 # Defines worker and enviroment variables for deployment
-export ARMONIK_WORKER := if worker == "stream" {
+defaultWorkerImage := if worker == "stream" {
   "dockerhubaneo/armonik_core_stream_test_worker:" + tag
 } else {
   "dockerhubaneo/armonik_core_htcmock_test_worker:" + tag
 }
-export ARMONIK_METRICS          := "dockerhubaneo/armonik_control_metrics:" + tag
-export ARMONIK_PARTITIONMETRICS := "dockerhubaneo/armonik_control_partitionmetrics:" + tag
-export ARMONIK_SUBMITTER        := "dockerhubaneo/armonik_control:" + tag
-export ARMONIK_POLLINGAGENT     := "dockerhubaneo/armonik_pollingagent:" + tag
-
-# Pick the correct docker file for the worker
-export WORKER_DOCKER_FILE := if worker == "stream" {
+defaultWorkerDockerFile := if worker == "stream" {
   "../Tests/Stream/Server/Dockerfile"
 } else {
   "../Tests/HtcMock/Server/src/Dockerfile"
 }
+export ARMONIK_WORKER             := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
+export ARMONIK_WORKER_DOCKER_FILE := env_var_or_default('WORKER_DOCKER_FILE', defaultWorkerDockerFile)
+export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + tag
+export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partitionmetrics:" + tag
+export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
+export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
 
 # List recipes and their usage
 @default:
   just --list
   just _usage
+  echo
 
 _usage:
   #!/usr/bin/env bash
   set -euo pipefail
   echo
-  echo "The recipe deploy takes three arguments"
+  echo "The recipe deploy uses three variables"
   echo
   echo "usage: just tag=<tag> queue=<queue> worker=<worker> deploy"
   echo "       if any of the variables is not set, its default value is used"
@@ -77,14 +78,20 @@ _usage:
         htcmock: for HtcMock V3 (default)
         stream: for Stream worker
   EOF
+  echo
+  echo "   It is possible to use a custom worker, this is handled by"
+  echo "   defining either of the following environment variables:"
+  cat <<-EOF
+        WORKER_IMAGE:       to pull an already compiled image
+        WORKER_DOCKER_FILE: to compile the image locally
+  EOF
 
 # Custom command to build a single image
 build $imageTag $dockerFile:
-  docker build -t "$imageTag" "$dockerFile" ../
-  docker build -t {{ imageTag }} -f {{ dockerFile }} ../
+  docker build -t "$imageTag" -f "$dockerFile" ../
 
 # Build all images necessary for the deployment 
-build-all: (build "$ARMONIK_WORKER" "$WORKER_DOCKER_FILE") (build "$ARMONIK_METRICS" "../Control/Metrics/src/Dockerfile") (build "$ARMONIK_PARTITIONMETRICS" "../Control/PartitionMetrics/src/Dockerfile") (build "$ARMONIK_SUBMITTER" "../Control/Submitter/src/Dockerfile") (build "$ARMONIK_POLLINGAGENT" "../Compute/PollingAgent/src/Dockerfile")
+build-all: (build ARMONIK_WORKER ARMONIK_WORKER_DOCKER_FILE) (build ARMONIK_METRICS "../Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "../Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "../Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "../Compute/PollingAgent/src/Dockerfile")
 
 # Insert partitions in database
 set-partitions:
