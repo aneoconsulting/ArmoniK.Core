@@ -50,6 +50,16 @@ public class BenchOptions
   public int TaskDurationMs { get; set; } = 100;
 
   /// <summary>
+  ///   Size of the payloads in kilobytes
+  /// </summary>
+  public int PayloadSize { get; set; } = 1;
+
+  /// <summary>
+  ///   Size of the results in kilobytes
+  /// </summary>
+  public int ResultSize { get; set; } = 1;
+
+  /// <summary>
   ///   Raise RpcException when task id ends by this string, ignored if empty string
   /// </summary>
   public string TaskRpcException { get; set; } = string.Empty;

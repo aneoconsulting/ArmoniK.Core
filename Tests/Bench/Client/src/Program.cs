@@ -24,7 +24,6 @@
 
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Options;
@@ -51,18 +50,23 @@ internal static class Program
   {
     var builder       = new ConfigurationBuilder().AddEnvironmentVariables();
     var configuration = builder.Build();
-    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
-                                          .Enrich.FromLogContext()
-                                          .WriteTo.Console(new CompactJsonFormatter())
-                                          .CreateBootstrapLogger();
+    var seriLogger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
+                                              .Enrich.FromLogContext()
+                                              .WriteTo.Console(new CompactJsonFormatter())
+                                              .CreateBootstrapLogger();
 
-    var factory = new LoggerFactory().AddSerilog();
+    var logger = new LoggerFactory().AddSerilog(seriLogger)
+                                    .CreateLogger("Bench Program");
 
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
-    var optionsHtcMock = new BenchOptions();
+    logger.LogInformation("gRPC options : {@grpcOptions}",
+                          options);
+    var benchOptions = new BenchOptions();
     configuration.GetSection(BenchOptions.SettingSection)
-                 .Bind(optionsHtcMock);
+                 .Bind(benchOptions);
+    logger.LogInformation("bench options : {@benchOptions}",
+                          benchOptions);
     var channel = GrpcChannelFactory.CreateChannel(options);
 
     var submitterClient = new Submitter.SubmitterClient(channel);
@@ -74,55 +78,71 @@ internal static class Program
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                                                        MaxRetries  = 2,
                                                        Priority    = 1,
-                                                       PartitionId = optionsHtcMock.Partition,
+                                                       PartitionId = benchOptions.Partition,
                                                        Options =
                                                        {
                                                          {
-                                                           "TaskDurationMs", optionsHtcMock.TaskDurationMs.ToString()
+                                                           "TaskDurationMs", benchOptions.TaskDurationMs.ToString()
                                                          },
                                                          {
-                                                           "TaskError", optionsHtcMock.TaskError
+                                                           "TaskError", benchOptions.TaskError
                                                          },
                                                          {
-                                                           "TaskRpcException", optionsHtcMock.TaskRpcException
+                                                           "TaskRpcException", benchOptions.TaskRpcException
+                                                         },
+                                                         {
+                                                           "PayloadSize", benchOptions.PayloadSize.ToString()
+                                                         },
+                                                         {
+                                                           "ResultSize", benchOptions.ResultSize.ToString()
                                                          },
                                                        },
                                                      },
                                  PartitionIds =
                                  {
-                                   optionsHtcMock.Partition,
+                                   benchOptions.Partition,
                                  },
                                };
     var createSessionReply = submitterClient.CreateSession(createSessionRequest);
+    logger.LogInformation("Session Id : {sessionId}",
+                          createSessionReply.SessionId);
 
     var results = Enumerable.Range(0,
-                                   optionsHtcMock.NTasks)
+                                   benchOptions.NTasks)
                             .Select(i => Guid.NewGuid() + "root" + i)
                             .ToList();
-
+    var rnd = new Random();
     var createTaskReply = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
                                                                  null,
-                                                                 results.Select(resultId => new TaskRequest
-                                                                                            {
-                                                                                              ExpectedOutputKeys =
-                                                                                              {
-                                                                                                resultId,
-                                                                                              },
-                                                                                              Payload =
-                                                                                                UnsafeByteOperations.UnsafeWrap(Encoding.ASCII.GetBytes(resultId)),
-                                                                                            }))
+                                                                 results.Select(resultId =>
+                                                                                {
+                                                                                  var dataBytes = new byte[benchOptions.PayloadSize * 1024];
+                                                                                  rnd.NextBytes(dataBytes);
+                                                                                  return new TaskRequest
+                                                                                         {
+                                                                                           ExpectedOutputKeys =
+                                                                                           {
+                                                                                             resultId,
+                                                                                           },
+                                                                                           Payload = UnsafeByteOperations.UnsafeWrap(dataBytes),
+                                                                                         };
+                                                                                }))
                                                .ConfigureAwait(false);
+
+    if (logger.IsEnabled(LogLevel.Debug))
+    {
+      foreach (var status in createTaskReply.CreationStatusList.CreationStatuses)
+      {
+        logger.LogDebug("task created {taskId}",
+                        status.TaskInfo.TaskId);
+      }
+    }
 
     var sessionClient = new SessionClient(submitterClient,
                                           createSessionReply.SessionId,
                                           NullLogger<SessionClient>.Instance);
 
-    foreach (var resultId in results)
-    {
-      var result = sessionClient.GetResult(resultId);
-    }
-
-    Console.CancelKeyPress += (sender,
+    Console.CancelKeyPress += (_,
                                args) =>
                               {
                                 args.Cancel = true;
@@ -132,5 +152,17 @@ internal static class Program
                                                               });
                                 Environment.Exit(0);
                               };
+
+    foreach (var resultId in results)
+    {
+      var result = sessionClient.GetResult(resultId);
+      if (result.Length != benchOptions.ResultSize * 1024)
+      {
+        logger.LogInformation("Received length {received}, expected length {expected}",
+                              result.Length,
+                              benchOptions.ResultSize * 1024);
+        throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
+      }
+    }
   }
 }

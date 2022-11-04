@@ -60,6 +60,19 @@ public class BenchComputerService : WorkerStreamWrapper
 
     try
     {
+      if (!taskHandler.TaskOptions.Options.TryGetValue("PayloadSize",
+                                                       out var payloadSizeStr))
+      {
+        throw new InvalidOperationException("PayloadSize should be defined in task options");
+      }
+
+      var payloadSize = int.Parse(payloadSizeStr);
+
+      if (taskHandler.Payload.Length != payloadSize * 1024)
+      {
+        throw new InvalidOperationException("Payload should have the same size as the one specified");
+      }
+
       var sleep = int.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("TaskDurationMs",
                                                                               "100"));
 
@@ -69,10 +82,21 @@ public class BenchComputerService : WorkerStreamWrapper
       await Task.Delay(sleep)
                 .ConfigureAwait(false);
 
+      if (!taskHandler.TaskOptions.Options.TryGetValue("ResultSize",
+                                                       out var resultSizeStr))
+      {
+        throw new InvalidOperationException("ResultSize should be defined in task options");
+      }
+
+      var resultSize = int.Parse(resultSizeStr);
+      var rnd        = new Random();
+
       foreach (var resultId in taskHandler.ExpectedResults)
       {
+        var dataBytes = new byte[resultSize * 1024];
+        rnd.NextBytes(dataBytes);
         await taskHandler.SendResult(resultId,
-                                     taskHandler.Payload)
+                                     dataBytes)
                          .ConfigureAwait(false);
       }
 
