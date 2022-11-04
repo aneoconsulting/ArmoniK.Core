@@ -83,12 +83,7 @@ build imageTag dockerFile:
   docker build -t {{ imageTag }} -f {{ dockerFile }} ../
 
 # Build all images necessary for the deployment 
-build-all:
-  just build "$ARMONIK_WORKER" "$WORKER_DOCKER_FILE"
-  just build "$ARMONIK_METRICS" "../Control/Metrics/src/Dockerfile"
-  just build "$ARMONIK_PARTITIONMETRICS" "../Control/PartitionMetrics/src/Dockerfile"
-  just build "$ARMONIK_SUBMITTER" "../Control/Submitter/src/Dockerfile"
-  just build "$ARMONIK_POLLINGAGENT" "../Compute/PollingAgent/src/Dockerfile"
+build-all: (build "$ARMONIK_WORKER" "$WORKER_DOCKER_FILE") (build "$ARMONIK_METRICS" "../Control/Metrics/src/Dockerfile") (build "$ARMONIK_PARTITIONMETRICS" "../Control/PartitionMetrics/src/Dockerfile") (build "$ARMONIK_SUBMITTER" "../Control/Submitter/src/Dockerfile") (build "$ARMONIK_POLLINGAGENT" "../Compute/PollingAgent/src/Dockerfile")
 
 # Insert partitions in database
 set-partitions:
@@ -106,16 +101,9 @@ compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
 compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
 
 # Deploy ArmoniK Core
-deploy: build-all
-  just compose-invoke database
-  just compose-invoke queue
-  just compose-invoke object
-  just compose-invoke seq
-  just compose-up
-  wait
-  just set-partitions
+deploy: build-all (compose-invoke "data") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
 
-# Run health checks  
+# Run health checks
 healthChecks:
   #!/usr/bin/env bash
   set -euo pipefail
