@@ -79,7 +79,8 @@ _usage:
   EOF
 
 # Custom command to build a single image
-build imageTag dockerFile:
+build $imageTag $dockerFile:
+  docker build -t "$imageTag" "$dockerFile" ../
   docker build -t {{ imageTag }} -f {{ dockerFile }} ../
 
 # Build all images necessary for the deployment 
