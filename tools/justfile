@@ -57,31 +57,26 @@ export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
 _usage:
   #!/usr/bin/env bash
   set -euo pipefail
-  echo
-  echo "The recipe deploy uses three variables"
-  echo
-  echo "usage: just tag=<tag> queue=<queue> worker=<worker> deploy"
-  echo "       if any of the variables is not set, its default value is used"
-  echo
-  echo "   tag: The core tag image to use, defaults to test"
-  echo
-  echo "   queue: allowed values below"
   cat <<-EOF
+
+  The recipe deploy uses three variables
+    usage: just tag=<tag> queue=<queue> worker=<worker> deploy
+            if any of the variables is not set, its default value is used
+
+      tag: The core tag image to use, defaults to test
+      queue: allowed values below
         active   :  for activemq (1.0.0 protocol) (default)
         rabbit   :  for rabbitmq (1.0.0 protocol)
         rabbit091:  for rabbitmq (0.9.1 protocol)
         artemis  :  for artemismq (1.0.0 protocol)
-  EOF
-  echo
-  echo "   worker: allowed values below"
-  cat <<-EOF
+
+      worker: allowed values below
         htcmock: for HtcMock V3 (default)
         stream: for Stream worker
-  EOF
-  echo
-  echo "   It is possible to use a custom worker, this is handled by"
-  echo "   defining either of the following environment variables:"
-  cat <<-EOF
+
+  It is possible to use a custom worker, this is handled by
+  defining either of the following environment variables:
+
         WORKER_IMAGE:       to pull an already compiled image
         WORKER_DOCKER_FILE: to compile the image locally
   EOF
