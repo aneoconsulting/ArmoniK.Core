@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,6 +42,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using Serilog;
 using Serilog.Formatting.Compact;
+
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Samples.Bench.Client;
 
@@ -103,7 +106,10 @@ internal static class Program
                                    benchOptions.Partition,
                                  },
                                };
+
+    var start              = Stopwatch.GetTimestamp();
     var createSessionReply = submitterClient.CreateSession(createSessionRequest);
+    var sessionCreated     = Stopwatch.GetTimestamp();
     logger.LogInformation("Session Id : {sessionId}",
                           createSessionReply.SessionId);
 
@@ -138,6 +144,7 @@ internal static class Program
       }
     }
 
+    var taskCreated = Stopwatch.GetTimestamp();
     var sessionClient = new SessionClient(submitterClient,
                                           createSessionReply.SessionId,
                                           NullLogger<SessionClient>.Instance);
@@ -164,5 +171,34 @@ internal static class Program
         throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
       }
     }
+
+    var resultsReceived = Stopwatch.GetTimestamp();
+
+    var countAll = await submitterClient.CountTasksAsync(new TaskFilter
+                                                         {
+                                                           Session = new TaskFilter.Types.IdsRequest
+                                                                     {
+                                                                       Ids =
+                                                                       {
+                                                                         createSessionReply.SessionId,
+                                                                       },
+                                                                     },
+                                                         });
+
+    var stats = new ExecutionStats
+                {
+                  ElapsedTime          = TimeSpan.FromTicks((resultsReceived - start)          / 100),
+                  SubmissionTime       = TimeSpan.FromTicks((taskCreated     - sessionCreated) / 100),
+                  ResultRetrievingTime = TimeSpan.FromTicks((resultsReceived - taskCreated)    / 100),
+                  TotalTasks           = countAll.Values.Sum(count => count.Count),
+                  CompletedTasks = countAll.Values.Where(count => count.Status == TaskStatus.Completed)
+                                           .Sum(count => count.Count),
+                  ErrorTasks = countAll.Values.Where(count => count.Status == TaskStatus.Error)
+                                       .Sum(count => count.Count),
+                  CanceledTasks = countAll.Values.Where(count => count.Status is TaskStatus.Canceled or TaskStatus.Canceling)
+                                          .Sum(count => count.Count),
+                };
+    logger.LogInformation("executions stats {@stats}",
+                          stats);
   }
 }
