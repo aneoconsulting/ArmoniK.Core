@@ -23,11 +23,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
@@ -58,3 +63,17 @@ public record UserDataAfterLookup([property: BsonId]
                                   string UserId,
                                   string                Username,
                                   IEnumerable<RoleData> Roles);
+
+public class IdSerializer : SerializerBase<string>
+{
+  public static readonly IdSerializer  Instance = new(); 
+  public override string Deserialize(BsonDeserializationContext context,
+                            BsonDeserializationArgs    args)
+    => context.Reader.ReadObjectId()
+              .ToString();
+
+  public override void Serialize(BsonSerializationContext context,
+                        BsonSerializationArgs    args,
+                        string                   value)
+    => context.Writer.WriteObjectId(ObjectId.Parse(value));
+}

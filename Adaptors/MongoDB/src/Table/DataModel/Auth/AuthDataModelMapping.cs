@@ -46,9 +46,11 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
       BsonClassMap.RegisterClassMap<AuthData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(AuthData.AuthId))
-                                                  .SetIsRequired(true);
+                                                  .SetIsRequired(true)
+                                                  .SetSerializer(IdSerializer.Instance);
                                                 cm.MapProperty(nameof(AuthData.UserId))
-                                                  .SetIsRequired(true);
+                                                  .SetIsRequired(true)
+                                                  .SetSerializer(IdSerializer.Instance);
                                                 cm.MapProperty(nameof(AuthData.CN))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.Fingerprint))

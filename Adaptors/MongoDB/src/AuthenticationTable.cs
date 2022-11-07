@@ -69,6 +69,7 @@ public class AuthenticationTable : IAuthenticationTable
       BsonClassMap.RegisterClassMap<UserAuthenticationResult>(cm =>
                                                               {
                                                                 cm.MapIdProperty(nameof(UserAuthenticationResult.Id))
+                                                                  .SetSerializer(IdSerializer.Instance)
                                                                   .SetIsRequired(true);
                                                                 cm.MapProperty(nameof(UserAuthenticationResult.Username))
                                                                   .SetIsRequired(true);

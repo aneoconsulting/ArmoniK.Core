@@ -46,7 +46,8 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
       BsonClassMap.RegisterClassMap<UserData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(UserData.UserId))
-                                                  .SetIsRequired(true);
+                                                  .SetIsRequired(true)
+                                                  .SetSerializer(IdSerializer.Instance);
                                                 cm.MapProperty(nameof(UserData.Username))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(UserData.Roles))
