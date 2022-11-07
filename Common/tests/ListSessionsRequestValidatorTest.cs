@@ -136,7 +136,7 @@ public class ListSessionsRequestValidatorTest
   }
 
   [Test]
-  public void ListSessionsZeroNegativePageSizeShouldFail()
+  public void ListSessionsRequestZeroPageSizeShouldFail()
   {
     validListSessionsRequest_!.PageSize = 0;
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
