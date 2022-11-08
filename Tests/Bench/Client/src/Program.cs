@@ -39,7 +39,6 @@ using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -116,6 +115,17 @@ internal static class Program
     logger.LogInformation("Session Id : {sessionId}",
                           createSessionReply.SessionId);
 
+    Console.CancelKeyPress += (_,
+                               args) =>
+                              {
+                                args.Cancel = true;
+                                submitterClient.CancelSession(new Session
+                                                              {
+                                                                Id = createSessionReply.SessionId,
+                                                              });
+                                Environment.Exit(0);
+                              };
+
     var results = Enumerable.Range(0,
                                    benchOptions.NTasks)
                             .Select(i => Guid.NewGuid() + "root" + i)
@@ -148,24 +158,45 @@ internal static class Program
     }
 
     var taskCreated = Stopwatch.GetTimestamp();
-    var sessionClient = new SessionClient(submitterClient,
-                                          createSessionReply.SessionId,
-                                          NullLogger<SessionClient>.Instance);
-
-    Console.CancelKeyPress += (_,
-                               args) =>
-                              {
-                                args.Cancel = true;
-                                submitterClient.CancelSession(new Session
-                                                              {
-                                                                Id = createSessionReply.SessionId,
-                                                              });
-                                Environment.Exit(0);
-                              };
 
     foreach (var resultId in results)
     {
-      var result = sessionClient.GetResult(resultId);
+      var resultRequest = new ResultRequest
+                          {
+                            ResultId = resultId,
+                            Session  = createSessionReply.SessionId,
+                          };
+
+      var availabilityReply = submitterClient.WaitForAvailability(resultRequest);
+
+      switch (availabilityReply.TypeCase)
+      {
+        case AvailabilityReply.TypeOneofCase.None:
+          throw new Exception("Issue with Server !");
+        case AvailabilityReply.TypeOneofCase.Ok:
+          break;
+        case AvailabilityReply.TypeOneofCase.Error:
+          throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
+        case AvailabilityReply.TypeOneofCase.NotCompletedTask:
+          throw new Exception($"Task not completed - result id {resultId}");
+        default:
+          throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
+      }
+    }
+
+    var resultsAvailable = Stopwatch.GetTimestamp();
+
+    foreach (var resultId in results)
+    {
+      var resultRequest = new ResultRequest
+                          {
+                            ResultId = resultId,
+                            Session  = createSessionReply.SessionId,
+                          };
+
+      var result = await submitterClient.GetResultAsync(resultRequest)
+                                        .ConfigureAwait(false);
+
       if (result.Length != benchOptions.ResultSize * 1024)
       {
         logger.LogInformation("Received length {received}, expected length {expected}",
@@ -188,11 +219,16 @@ internal static class Program
                                                                      },
                                                          });
 
+    var countFinished = Stopwatch.GetTimestamp();
+
+
     var stats = new ExecutionStats
                 {
-                  ElapsedTime          = TimeSpan.FromTicks((resultsReceived - start)          / 100),
-                  SubmissionTime       = TimeSpan.FromTicks((taskCreated     - sessionCreated) / 100),
-                  ResultRetrievingTime = TimeSpan.FromTicks((resultsReceived - taskCreated)    / 100),
+                  ElapsedTime          = TimeSpan.FromTicks((resultsReceived  - start)            / 100),
+                  SubmissionTime       = TimeSpan.FromTicks((taskCreated      - sessionCreated)   / 100),
+                  ResultRetrievingTime = TimeSpan.FromTicks((resultsReceived  - resultsAvailable) / 100),
+                  TasksExecutionTime   = TimeSpan.FromTicks((resultsAvailable - taskCreated)      / 100),
+                  CountExecutionTime   = TimeSpan.FromTicks((countFinished    - resultsReceived)  / 100),
                   TotalTasks           = countAll.Values.Sum(count => count.Count),
                   CompletedTasks = countAll.Values.Where(count => count.Status == TaskStatus.Completed)
                                            .Sum(count => count.Count),

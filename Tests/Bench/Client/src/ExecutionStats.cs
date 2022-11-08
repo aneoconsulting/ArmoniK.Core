@@ -31,14 +31,18 @@ namespace ArmoniK.Samples.Bench.Client;
 /// </summary>
 /// <param name="ElapsedTime">Elapsed time for running the complete application</param>
 /// <param name="SubmissionTime">Elapsed time for submitting the tasks</param>
+/// <param name="TasksExecutionTime">Elapsed time for the execution of the tasks</param>
 /// <param name="ResultRetrievingTime">Elapsed time for retrieving the results</param>
+/// <param name="CountExecutionTime">Elapsed time for counting the tasks in the application</param>
 /// <param name="TotalTasks">Total number of tasks executed in the application</param>
 /// <param name="ErrorTasks">Number of tasks in error in the application</param>
 /// <param name="CompletedTasks">Number of tasks completed in the application</param>
 /// <param name="CanceledTasks">Number of tasks canceled in the application</param>
 public record ExecutionStats(TimeSpan ElapsedTime          = default,
                              TimeSpan SubmissionTime       = default,
+                             TimeSpan TasksExecutionTime   = default,
                              TimeSpan ResultRetrievingTime = default,
+                             TimeSpan CountExecutionTime   = default,
                              int      TotalTasks           = default,
                              int      ErrorTasks           = default,
                              int      CompletedTasks       = default,
