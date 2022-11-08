@@ -26,13 +26,10 @@ using System;
 
 namespace ArmoniK.Samples.Bench.Client;
 
-public record ExecutionStats
-{
-  public TimeSpan ElapsedTime          { get; set; }
-  public TimeSpan SubmissionTime       { get; set; }
-  public TimeSpan ResultRetrievingTime { get; set; }
-  public int      TotalTasks           { get; set; }
-  public int      ErrorTasks           { get; set; }
-  public int      CompletedTasks       { get; set; }
-  public int      CanceledTasks        { get; set; }
-}
+public record ExecutionStats(TimeSpan ElapsedTime          = default,
+                             TimeSpan SubmissionTime       = default,
+                             TimeSpan ResultRetrievingTime = default,
+                             int      TotalTasks           = default,
+                             int      ErrorTasks           = default,
+                             int      CompletedTasks       = default,
+                             int      CanceledTasks        = default);
