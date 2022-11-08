@@ -31,7 +31,6 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
 
 using Grpc.Net.Client;
@@ -54,26 +53,21 @@ public class GrpcSubmitterServiceHelper : IDisposable
   private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
-                                    ITaskTable                  taskTable,
-                                    ISessionTable               sessionTable,
-                                    IResultTable                resultTable,
                                     List<MockIdentity>          authIdentities,
                                     AuthenticatorOptions        authOptions,
                                     LogLevel                    loglevel,
+                                    Action<IServiceCollection>? tablesConfiguration = null,
                                     Action<IServiceCollection>? serviceConfigurator = null)
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
-    var loggerAuth = loggerFactory_.CreateLogger<AuthenticationCache>();
 
     var builder = WebApplication.CreateBuilder();
 
     builder.Services.AddSingleton(loggerFactory_)
-           .AddSingleton(submitter)
-           .AddSingleton(taskTable)
-           .AddSingleton(sessionTable)
-           .AddSingleton(resultTable)
-           .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
+           .AddSingleton(submitter);
+    tablesConfiguration?.Invoke(builder.Services);
+    builder.Services.AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
            .AddSingleton(new AuthenticationCache())
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
@@ -106,12 +100,10 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
                                     Action<IServiceCollection>? serviceConfigurator = null)
     : this(submitter,
-           new SimpleTaskTable(),
-           new SimpleSessionTable(),
-           new SimpleResultTable(),
            new List<MockIdentity>(),
            AuthenticatorOptions.DefaultNoAuth,
            LogLevel.Trace,
+           null,
            serviceConfigurator)
   {
   }

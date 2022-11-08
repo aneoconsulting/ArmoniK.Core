@@ -42,6 +42,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
@@ -49,12 +50,14 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Task = System.Threading.Tasks.Task;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 using Type = System.Type;
 
@@ -73,12 +76,15 @@ public class AuthenticationIntegrationTest
   {
     var submitter = new SimpleSubmitter();
     helper_ = new GrpcSubmitterServiceHelper(submitter,
-                                             new SimpleTaskTable(),
-                                             new SimpleSessionTable(),
-                                             new SimpleResultTable(),
                                              Identities.ToList(),
                                              options_!,
-                                             LogLevel.Information);
+                                             LogLevel.Information,
+                                             s =>
+                                             {
+                                               s.AddSingleton<ITaskTable>(new SimpleTaskTable())
+                                                .AddSingleton<ISessionTable>(new SimpleSessionTable())
+                                                .AddSingleton<IResultTable>(new SimpleResultTable());
+                                             });
   }
 
   [OneTimeTearDown]

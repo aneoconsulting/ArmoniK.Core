@@ -64,7 +64,8 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
       BsonClassMap.RegisterClassMap<UserAuthenticationResult>(cm =>
                                                               {
                                                                 cm.MapIdProperty(nameof(UserAuthenticationResult.Id))
-                                                                  .SetSerializer(IdSerializer.Instance).SetShouldSerializeMethod(_=>true)
+                                                                  .SetSerializer(IdSerializer.Instance)
+                                                                  .SetShouldSerializeMethod(_ => true)
                                                                   .SetIsRequired(true);
                                                                 cm.MapProperty(nameof(UserAuthenticationResult.Username))
                                                                   .SetIsRequired(true);

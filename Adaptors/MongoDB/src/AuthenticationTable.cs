@@ -67,23 +67,23 @@ public class AuthenticationTable : IAuthenticationTable
     if (!BsonClassMap.IsClassMapRegistered(typeof(MongoAuthResult)))
     {
       BsonClassMap.RegisterClassMap<MongoAuthResult>(cm =>
-                                                              {
-                                                                cm.MapIdProperty(nameof(MongoAuthResult.Id))
-                                                                  .SetShouldSerializeMethod(_ => true)
-                                                                  .SetIsRequired(true);
-                                                                cm.MapProperty(nameof(MongoAuthResult.Username))
-                                                                  .SetIsRequired(true);
-                                                                cm.MapProperty(nameof(MongoAuthResult.Roles))
-                                                                  .SetIgnoreIfDefault(true)
-                                                                  .SetDefaultValue(Array.Empty<string>());
-                                                                cm.MapProperty(nameof(MongoAuthResult.Permissions))
-                                                                  .SetIgnoreIfDefault(true)
-                                                                  .SetDefaultValue(Array.Empty<string>());
-                                                                cm.MapCreator(model => new MongoAuthResult(model.Id,
-                                                                                                           model.Username,
-                                                                                                           model.Roles,
-                                                                                                           model.Permissions));
-                                                              });
+                                                     {
+                                                       cm.MapIdProperty(nameof(MongoAuthResult.Id))
+                                                         .SetShouldSerializeMethod(_ => true)
+                                                         .SetIsRequired(true);
+                                                       cm.MapProperty(nameof(MongoAuthResult.Username))
+                                                         .SetIsRequired(true);
+                                                       cm.MapProperty(nameof(MongoAuthResult.Roles))
+                                                         .SetIgnoreIfDefault(true)
+                                                         .SetDefaultValue(Array.Empty<string>());
+                                                       cm.MapProperty(nameof(MongoAuthResult.Permissions))
+                                                         .SetIgnoreIfDefault(true)
+                                                         .SetDefaultValue(Array.Empty<string>());
+                                                       cm.MapCreator(model => new MongoAuthResult(model.Id,
+                                                                                                  model.Username,
+                                                                                                  model.Roles,
+                                                                                                  model.Permissions));
+                                                     });
     }
   }
 
@@ -174,11 +174,11 @@ public class AuthenticationTable : IAuthenticationTable
     var       authCollection = authCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
     return (await GetIdentityFromPipelineAsync(sessionHandle,
-                                              authCollection,
-                                              GetAuthToIdentityPipeline(),
-                                              auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
-                                              cancellationToken)
-             .ConfigureAwait(false))?.ToUserAuthenticationResult();
+                                               authCollection,
+                                               GetAuthToIdentityPipeline(),
+                                               auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
+                                               cancellationToken)
+              .ConfigureAwait(false))?.ToUserAuthenticationResult();
   }
 
   /// <inheritdoc />
@@ -205,12 +205,11 @@ public class AuthenticationTable : IAuthenticationTable
     }
 
     return (await GetIdentityFromPipelineAsync(sessionHandle,
-                                              userCollection,
-                                              GetUserToIdentityPipeline(),
-                                              expression,
-                                              cancellationToken)
-             .ConfigureAwait(false))
-             ?.ToUserAuthenticationResult();
+                                               userCollection,
+                                               GetUserToIdentityPipeline(),
+                                               expression,
+                                               cancellationToken)
+              .ConfigureAwait(false))?.ToUserAuthenticationResult();
   }
 
   /// <summary>
@@ -227,15 +226,14 @@ public class AuthenticationTable : IAuthenticationTable
   ///   UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has
   ///   not been found
   /// </returns>
-  private static async Task<MongoAuthResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
+  private static async Task<MongoAuthResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle sessionHandle,
                                                                                                 IMongoCollection<TCollectionDataType> collection,
                                                                                                 PipelineDefinition<TCollectionDataType, MongoAuthResult> pipeline,
                                                                                                 Expression<Func<TCollectionDataType, bool>> matchingFunction,
                                                                                                 CancellationToken cancellationToken = default)
   {
-    var pipe =
-      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, MongoAuthResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
-                                                                                                      pipeline);
+    var pipe = new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, MongoAuthResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
+                                                                                                               pipeline);
 
     return await collection.AggregateAsync(sessionHandle,
                                            pipe,
@@ -308,21 +306,15 @@ public class AuthenticationTable : IAuthenticationTable
     */
     var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, MongoAuthResult>(ual => new MongoAuthResult(ual.UserId,
                                                                                                                                   ual.Username,
+                                                                                                                                  ual.Roles.Select(r => r.RoleName),
                                                                                                                                   ual.Roles
-                                                                                                                                     .Select(r => r
-                                                                                                                                               .RoleName),
-                                                                                                                                  ual.Roles
-                                                                                                                                     .Aggregate<
-                                                                                                                                       RoleData,
-                                                                                                                                       IEnumerable<
-                                                                                                                                         string>>(new
-                                                                                                                                                    HashSet
-                                                                                                                                                    <string>(),
-                                                                                                                                                  (set,
-                                                                                                                                                   data)
-                                                                                                                                                    => set
-                                                                                                                                                      .Union(data
-                                                                                                                                                               .Permissions))));
+                                                                                                                                     .Aggregate<RoleData,
+                                                                                                                                       IEnumerable<string>>(new HashSet<
+                                                                                                                                                              string>(),
+                                                                                                                                                            (set,
+                                                                                                                                                             data) => set
+                                                                                                                                                              .Union(data
+                                                                                                                                                                       .Permissions))));
     var pipeline = new IPipelineStageDefinition[]
                    {
                      lookup,

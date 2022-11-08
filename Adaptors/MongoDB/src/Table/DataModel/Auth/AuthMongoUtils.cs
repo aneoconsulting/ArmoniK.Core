@@ -40,14 +40,14 @@ public static class AuthMongoUtils
 
 public class IdSerializer : SerializerBase<string>
 {
-  public static readonly IdSerializer  Instance = new();
+  public static readonly IdSerializer Instance = new();
 
   public override string Deserialize(BsonDeserializationContext context,
                                      BsonDeserializationArgs    args)
     => Deserialize(context.Reader.ReadObjectId());
 
   public string Deserialize(ObjectId id)
-  => id.ToString();
+    => id.ToString();
 
   public ObjectId Serialize(string value)
     => ObjectId.Parse(value);
@@ -79,6 +79,7 @@ public class IdArraySerializer : SerializerBase<string[]>
     {
       res.Add(IdSerializer.Instance.Deserialize(context.Reader.ReadObjectId()));
     }
+
     context.Reader.ReadEndArray();
     return res.ToArray();
   }
@@ -92,6 +93,7 @@ public class IdArraySerializer : SerializerBase<string[]>
     {
       context.Writer.WriteObjectId(IdSerializer.Instance.Serialize(s));
     }
+
     context.Writer.WriteEndArray();
   }
 }
