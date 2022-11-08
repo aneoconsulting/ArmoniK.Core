@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Samples.Bench.Client.Options;
@@ -70,6 +71,8 @@ internal static class Program
                  .Bind(benchOptions);
     logger.LogInformation("bench options : {@benchOptions}",
                           benchOptions);
+    using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
+
     var channel = GrpcChannelFactory.CreateChannel(options);
 
     var submitterClient = new Submitter.SubmitterClient(channel);
