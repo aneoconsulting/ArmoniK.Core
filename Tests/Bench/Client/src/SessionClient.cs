@@ -23,15 +23,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-
-using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -78,74 +73,5 @@ public class SessionClient
 
     var response = client_.GetResultAsync(resultRequest);
     return response.Result;
-  }
-
-  public Task WaitSubtasksCompletion(string id)
-  {
-    var resultRequest = new ResultRequest
-                        {
-                          ResultId = id,
-                          Session  = sessionId_,
-                        };
-
-    var availabilityReply = client_.WaitForAvailability(resultRequest);
-
-    switch (availabilityReply.TypeCase)
-    {
-      case AvailabilityReply.TypeOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case AvailabilityReply.TypeOneofCase.Ok:
-        break;
-      case AvailabilityReply.TypeOneofCase.Error:
-        throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
-      case AvailabilityReply.TypeOneofCase.NotCompletedTask:
-        throw new Exception($"Task not completed - {id}");
-      default:
-        throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
-    }
-
-    return Task.CompletedTask;
-  }
-
-  public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
-  {
-    var taskRequests = new List<TaskRequest>();
-
-    foreach (var (payload, dependencies) in payloadsWithDependencies)
-    {
-      var taskRequest = new TaskRequest
-                        {
-                          Payload = ByteString.CopyFrom(payload),
-                          DataDependencies =
-                          {
-                            dependencies,
-                          },
-                          ExpectedOutputKeys =
-                          {
-                            Guid.NewGuid() + "%root",
-                          },
-                        };
-      ;
-      logger_.LogDebug("Dependencies : {dep}",
-                       string.Join(", ",
-                                   dependencies.Select(item => item.ToString())));
-      taskRequests.Add(taskRequest);
-    }
-
-    var createTaskReply = client_.CreateTasksAsync(sessionId_,
-                                                   null,
-                                                   taskRequests)
-                                 .Result;
-    switch (createTaskReply.ResponseCase)
-    {
-      case CreateTaskReply.ResponseOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.ResponseOneofCase.CreationStatusList:
-        return taskRequests.Select(request => request.ExpectedOutputKeys.Single());
-      case CreateTaskReply.ResponseOneofCase.Error:
-        throw new Exception("Error : " + createTaskReply.Error);
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
   }
 }
