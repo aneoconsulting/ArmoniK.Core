@@ -26,7 +26,7 @@ using System;
 
 namespace ArmoniK.Samples.Bench.Client;
 
-public class ExecutionStats
+public record ExecutionStats
 {
   public TimeSpan ElapsedTime          { get; set; }
   public TimeSpan SubmissionTime       { get; set; }
