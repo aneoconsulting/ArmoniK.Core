@@ -195,12 +195,12 @@ internal class BsonSerializerTest
   [Test]
   public void SerializeUserDataModel()
   {
-    var udm = new UserData("UserId",
+    var udm = new UserData(IdSerializer.ToValidIdString("UserId"),
                            "Username",
                            new[]
                            {
-                             "RoleId1",
-                             "RoleId2",
+                             IdSerializer.ToValidIdString("RoleId1"),
+                             IdSerializer.ToValidIdString("RoleId2"),
                            });
     var serialized = udm.ToBson();
 
@@ -223,7 +223,7 @@ internal class BsonSerializerTest
   [Test]
   public void SerializeRoleDataModel()
   {
-    var rdm = new RoleData("RoleId",
+    var rdm = new RoleData(IdSerializer.ToValidIdString("RoleId"),
                            "RoleName",
                            new[]
                            {
@@ -251,8 +251,8 @@ internal class BsonSerializerTest
   [Test]
   public void SerializeAuthDataModel()
   {
-    var adm = new AuthData("AuthId",
-                           "UserId",
+    var adm = new AuthData(IdSerializer.ToValidIdString("AuthId"),
+                           IdSerializer.ToValidIdString("UserId"),
                            "CN",
                            "Fingerprint");
     var serialized = adm.ToBson();
@@ -275,7 +275,7 @@ internal class BsonSerializerTest
   [Test]
   public void SerializeUserAuthenticationResult()
   {
-    var uirm = new UserAuthenticationResult("Id",
+    var uirm = new UserAuthenticationResult(IdSerializer.ToValidIdString("Id"),
                                             "Username",
                                             new[]
                                             {

@@ -52,6 +52,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(UserData.Roles))
                                                   .SetIgnoreIfDefault(true)
+                                                  .SetSerializer(IdArraySerializer.Instance)
                                                   .SetDefaultValue(Array.Empty<string>());
                                                 cm.SetIgnoreExtraElements(true);
                                                 cm.MapCreator(model => new UserData(model.UserId,
