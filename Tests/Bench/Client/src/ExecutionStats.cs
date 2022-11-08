@@ -26,6 +26,16 @@ using System;
 
 namespace ArmoniK.Samples.Bench.Client;
 
+/// <summary>
+///   Represents the statistics that are extracted from the execution of the application
+/// </summary>
+/// <param name="ElapsedTime">Elapsed time for running the complete application</param>
+/// <param name="SubmissionTime">Elapsed time for submitting the tasks</param>
+/// <param name="ResultRetrievingTime">Elapsed time for retrieving the results</param>
+/// <param name="TotalTasks">Total number of tasks executed in the application</param>
+/// <param name="ErrorTasks">Number of tasks in error in the application</param>
+/// <param name="CompletedTasks">Number of tasks completed in the application</param>
+/// <param name="CanceledTasks">Number of tasks canceled in the application</param>
 public record ExecutionStats(TimeSpan ElapsedTime          = default,
                              TimeSpan SubmissionTime       = default,
                              TimeSpan ResultRetrievingTime = default,
