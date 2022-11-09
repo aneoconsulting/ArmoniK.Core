@@ -3929,6 +3929,78 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Samples.Bench.Client.ExecutionStats.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Samples.Bench.Client.ExecutionStats.html",
+          "hash": "7dl1/jYbMHXGpjxSy/z7+eRPv3f+FCxzsFyCbcSe9GU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Samples.Bench.Client.Options.BenchOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Samples.Bench.Client.Options.BenchOptions.html",
+          "hash": "zz2eSue8hNhgZNDlV3rPu8XECRBHHRAawsjjpgtyzuE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Samples.Bench.Client.Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Samples.Bench.Client.Options.html",
+          "hash": "mkQwe3UcCx+k37VhKEjaVjLjhRfNPENkW/c9Js19t1w="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Samples.Bench.Client.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Samples.Bench.Client.html",
+          "hash": "DwjBjUltsyduexvJGZIQZNK+KP9io1Be9smGOCRPpxY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Samples.Bench.Server.BenchComputerService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Samples.Bench.Server.BenchComputerService.html",
+          "hash": "88RX81D0FhWEuTvbH+nZ+Z15Z4EFDQnejUv87z+BTUE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Samples.Bench.Server.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Samples.Bench.Server.html",
+          "hash": "QXk7Za+cUKUmTpL1XVchXB5jbrbQ/EPrylWERbaMR6Q="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Samples.HtcMock.Client.GridClient.yml",
       "output": {
         ".html": {
@@ -4041,7 +4113,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "aJjEveh1nRZc/BIIAR6Sl5lxMGOM5rb3arhJRudZGgw="
+          "hash": "FMwh7BZjYVWJvDnISL3gRcE+nBe0T+cSOzpdzCo/FOg="
         }
       },
       "is_incremental": false,
@@ -4140,7 +4212,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 335,
+          "total_file_count": 341,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
