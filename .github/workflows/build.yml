@@ -503,16 +503,10 @@ jobs:
           - activemqp
           - rabbitmq
           - rabbitmq091
-        ntasks:
-          - 1500
         log-level:
           - Information
           - Verbose
-        exclude:
-          - log-level: Verbose
-        include:
-          - log-level: Verbose
-            ntasks: 100
+    name: HtcMock ${{ matrix.queue }} ${{ matrix.log-level }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -546,11 +540,11 @@ jobs:
           curl localhost:9980/liveness
           curl -f localhost:9980/liveness
 
-      - name: Run HtcMock test
+      - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=${{ matrix.ntasks }} \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -558,13 +552,12 @@ jobs:
             -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
 
-      - name: Run HtcMock test
+      - name: Run HtcMock test 100 tasks 4 levels
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=${{ matrix.ntasks }} \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -572,14 +565,41 @@ jobs:
             -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+
+      - name: Run HtcMock test 1000 tasks 1 level
+        timeout-minutes: 10
+        if: ${{ matrix.log-level != 'Verbose' }}
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=1 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Run HtcMock test 1000 tasks 4 levels
+        timeout-minutes: 10
+        if: ${{ matrix.log-level != 'Verbose' }}
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=4 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}.json.tar.gz
+          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
 
       - name: Collect docker compose logs
         uses: jwalton/gh-docker-logs@v2
@@ -591,7 +611,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
 
 
   runBench:
