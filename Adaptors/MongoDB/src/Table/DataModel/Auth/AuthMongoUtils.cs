@@ -40,8 +40,8 @@ public static class AuthMongoUtils
   /// <summary>
   ///   Extension method to transform a string to an objectId
   /// </summary>
-  /// <param name="value"></param>
-  /// <returns></returns>
+  /// <param name="value">The string to convert</param>
+  /// <returns>Converted string</returns>
   public static string ToOidString(this string value)
     => IdSerializer.ToValidIdString(value);
 }
@@ -97,13 +97,17 @@ public class IdSerializer : SerializerBase<string>
   ///   Converts any string to a valid hex string to be used as a MongoDB ID
   /// </summary>
   /// <param name="value">the string to convert</param>
-  /// <returns></returns>
+  /// <returns>String as an ObjectId string</returns>
   public static string ToValidIdString(string value)
   {
-    var hash = BitConverter.GetBytes(value.GetHashCode());
-    return ObjectId.Parse(Convert.ToHexString(hash.Concat(hash)
-                                                  .Concat(hash)
-                                                  .ToArray()))
+    var hash = value.GetHashCode();
+    return ObjectId.Parse(Convert.ToHexString(new List<int>
+                                              {
+                                                hash,
+                                                hash,
+                                                hash,
+                                              }.SelectMany(BitConverter.GetBytes)
+                                               .ToArray()))
                    .ToString();
   }
 }
