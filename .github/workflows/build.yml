@@ -281,33 +281,6 @@ jobs:
 
   buildProjects:
     runs-on: ubuntu-latest
-    # find . -name "*.csproj" | xargs -I % echo - %
-    strategy:
-      fail-fast: false
-      matrix:
-        project:
-          - ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj
-          - ./Adaptors/Amqp/tests/ArmoniK.Core.Adapters.Amqp.Tests.csproj
-          - ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj
-          - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
-          - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
-          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
-          - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
-          - ./Adaptors/Redis/tests/ArmoniK.Core.Adapters.Redis.Tests.csproj
-          - ./Common/src/ArmoniK.Core.Common.csproj
-          - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
-          - ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj
-          - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
-          - ./Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj
-          - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
-          - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
-          - ./Tests/Bench/Client/src/ArmoniK.Samples.Bench.Client.csproj
-          - ./Tests/Bench/Server/src/ArmoniK.Samples.Bench.Server.csproj
-          - ./Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj
-          - ./Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj
-          - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
-          - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
-          - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -320,9 +293,8 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    - name: Build the projects
-      run: |
-        dotnet build ${{ matrix.project }} -c Release
+    - name: Build the solution
+      run: dotnet build ArmoniK.Core.sln -c Release
 
 
   buildImages:
@@ -330,7 +302,6 @@ jobs:
     needs:
       - versionning
       - buildProjects
-      - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
@@ -378,8 +349,6 @@ jobs:
     needs:
       - versionning
       - buildProjects
-      - buildImages
-      - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
@@ -907,6 +876,7 @@ jobs:
       - testStreamDC
       - buildImages
       - runBench
+      - healthCheckTest
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
