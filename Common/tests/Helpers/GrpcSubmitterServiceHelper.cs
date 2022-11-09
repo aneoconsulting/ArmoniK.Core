@@ -56,7 +56,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
                                     List<MockIdentity>          authIdentities,
                                     AuthenticatorOptions        authOptions,
                                     LogLevel                    loglevel,
-                                    Action<IServiceCollection>? tablesConfiguration = null,
                                     Action<IServiceCollection>? serviceConfigurator = null)
   {
     loggerFactory_ = new LoggerFactory();
@@ -66,7 +65,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     builder.Services.AddSingleton(loggerFactory_)
            .AddSingleton(submitter);
-    tablesConfiguration?.Invoke(builder.Services);
     builder.Services.AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
            .AddSingleton(new AuthenticationCache())
@@ -103,7 +101,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
            new List<MockIdentity>(),
            AuthenticatorOptions.DefaultNoAuth,
            LogLevel.Trace,
-           null,
            serviceConfigurator)
   {
   }

@@ -24,9 +24,11 @@
 
 namespace ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
-public class PermissionScope
+/// <summary>
+///   Ownership permission scopes
+/// </summary>
+public static class PermissionScope
 {
-  // Ownership permission scopes
   /// <summary>
   ///   Permission Scope when it has access to resources of all owners
   /// </summary>

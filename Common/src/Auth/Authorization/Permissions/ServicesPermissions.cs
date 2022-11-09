@@ -33,7 +33,10 @@ using ArmoniK.Core.Common.gRPC.Services;
 
 namespace ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
-public class ServicesPermissions
+/// <summary>
+///   Permissions related to each service
+/// </summary>
+public static class ServicesPermissions
 {
   public const string Default = "Default";
 
@@ -58,8 +61,16 @@ public class ServicesPermissions
                                                                                     },
                                                                                   });
 
+  /// <summary>
+  ///   Dictionary with the list of permissions for each service
+  /// </summary>
   public static readonly ImmutableDictionary<string, ImmutableList<Permission>> PermissionsLists = GetPermissionList();
 
+  /// <summary>
+  ///   Determines the service name from the given service type
+  /// </summary>
+  /// <param name="t">Type of the service</param>
+  /// <returns>Name of the service used in permissions</returns>
   public static string FromType(Type t)
     => Type2NameMapping.GetValueOrDefault(t,
                                           Default);

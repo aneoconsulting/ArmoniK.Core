@@ -60,14 +60,25 @@ public record UserDataAfterLookup([property: BsonId]
                                   string                Username,
                                   IEnumerable<RoleData> Roles);
 
+/// <summary>
+///   Pipeline result using MongoDB syntax
+/// </summary>
+/// <param name="Id">User Id</param>
+/// <param name="Username">Username</param>
+/// <param name="Roles">User's roles</param>
+/// <param name="Permissions">User's permissions</param>
 public record MongoAuthResult([property: BsonId]
                               ObjectId Id,
                               string              Username,
                               IEnumerable<string> Roles,
                               IEnumerable<string> Permissions)
 {
+  /// <summary>
+  ///   Converts this MongoDB pipeline result into a UserAuthenticationResult
+  /// </summary>
+  /// <returns>UserAuthenticationResult from this object</returns>
   public UserAuthenticationResult ToUserAuthenticationResult()
-    => new(IdSerializer.Instance.Deserialize(Id),
+    => new(IdSerializer.Deserialize(Id),
            Username,
            Roles,
            Permissions);

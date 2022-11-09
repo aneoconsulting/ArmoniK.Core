@@ -28,6 +28,9 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
+/// <summary>
+///   General service
+/// </summary>
 [PublicAPI]
 public static class GeneralService
 {
