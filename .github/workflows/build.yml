@@ -503,13 +503,13 @@ jobs:
           - activemqp
           - rabbitmq
           - rabbitmq091
-        log-level:
-          - Information
-          - Verbose
-        ntasks:
-          - 100
-          - 1000
-          - 1500
+        include:
+          - log-level: Verbose
+            ntasks: 100
+          - log-level: Information
+            ntasks: 100
+          - log-level: Information
+            ntasks: 1500
     steps:
       - name: Checkout
         uses: actions/checkout@v3
