@@ -24,8 +24,6 @@
 
 using System.Diagnostics;
 
-using ArmoniK.Core.Common.Utils;
-
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
