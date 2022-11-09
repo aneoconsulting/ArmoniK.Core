@@ -348,7 +348,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - versionning
-      - buildProjects
+      - buildImages
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
@@ -503,13 +503,16 @@ jobs:
           - activemqp
           - rabbitmq
           - rabbitmq091
+        ntasks:
+          - 1500
+        log-level:
+          - Information
+          - Verbose
+        exclude:
+          - log-level: Verbose
         include:
           - log-level: Verbose
             ntasks: 100
-          - log-level: Information
-            ntasks: 100
-          - log-level: Information
-            ntasks: 1500
     steps:
       - name: Checkout
         uses: actions/checkout@v3
