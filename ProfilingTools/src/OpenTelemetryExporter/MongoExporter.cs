@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -78,4 +78,8 @@ internal class MongoExporter : BaseExporter<Activity>
       return ExportResult.Failure;
     }
   }
+
+  /// <inheritdoc />
+  protected override void Dispose(bool disposing)
+    => session_.Dispose();
 }
