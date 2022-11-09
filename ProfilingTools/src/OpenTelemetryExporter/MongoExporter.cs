@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,6 +23,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Diagnostics;
+
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -78,4 +80,8 @@ internal class MongoExporter : BaseExporter<Activity>
       return ExportResult.Failure;
     }
   }
+
+  /// <inheritdoc />
+  protected override void Dispose(bool disposing)
+    => session_.Dispose();
 }
