@@ -136,7 +136,7 @@ public class ListApplicationsRequestValidatorTest
   }
 
   [Test]
-  public void ListApplicationsZeroNegativePageSizeShouldFail()
+  public void ListApplicationsRequestZeroPageSizeShouldFail()
   {
     validListApplicationsRequest_!.PageSize = 0;
     Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
