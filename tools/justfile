@@ -33,18 +33,22 @@ export OVERRIDE := if queue == "rabbit091" {
 # Defines worker and enviroment variables for deployment
 defaultWorkerImage := if worker == "stream" {
   "dockerhubaneo/armonik_core_stream_test_worker:" + tag
+} else if worker == "bench" {
+  "dockerhubaneo/armonik_core_bench_test_worker:" + tag
 } else {
   "dockerhubaneo/armonik_core_htcmock_test_worker:" + tag
 }
 defaultWorkerDockerFile := if worker == "stream" {
   "../Tests/Stream/Server/Dockerfile"
+} else if worker == "bench" {
+  "../Tests/Bench/Server/src/Dockerfile"
 } else {
   "../Tests/HtcMock/Server/src/Dockerfile"
 }
 export ARMONIK_WORKER             := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
 export ARMONIK_WORKER_DOCKER_FILE := env_var_or_default('WORKER_DOCKER_FILE', defaultWorkerDockerFile)
 export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + tag
-export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partitionmetrics:" + tag
+export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
 export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
 export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
 
@@ -104,7 +108,10 @@ compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
 compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
 
 # Deploy ArmoniK Core
-deploy: build-all (compose-invoke "data") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
+deploy: (compose-invoke "data") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
+
+# Build and Deploy ArmoniK Core
+build-deploy: build-all deploy
 
 # Run health checks
 healthChecks:
