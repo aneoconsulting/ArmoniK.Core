@@ -281,33 +281,6 @@ jobs:
 
   buildProjects:
     runs-on: ubuntu-latest
-    # find . -name "*.csproj" | xargs -I % echo - %
-    strategy:
-      fail-fast: false
-      matrix:
-        project:
-          - ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj
-          - ./Adaptors/Amqp/tests/ArmoniK.Core.Adapters.Amqp.Tests.csproj
-          - ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj
-          - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
-          - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
-          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
-          - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
-          - ./Adaptors/Redis/tests/ArmoniK.Core.Adapters.Redis.Tests.csproj
-          - ./Common/src/ArmoniK.Core.Common.csproj
-          - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
-          - ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj
-          - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
-          - ./Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj
-          - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
-          - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
-          - ./Tests/Bench/Client/src/ArmoniK.Samples.Bench.Client.csproj
-          - ./Tests/Bench/Server/src/ArmoniK.Samples.Bench.Server.csproj
-          - ./Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj
-          - ./Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj
-          - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
-          - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
-          - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -320,9 +293,8 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    - name: Build the projects
-      run: |
-        dotnet build ${{ matrix.project }} -c Release
+    - name: Build the solution
+      run: dotnet build ArmoniK.Core.sln -c Release
 
 
   buildImages:
@@ -330,7 +302,6 @@ jobs:
     needs:
       - versionning
       - buildProjects
-      - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
@@ -377,9 +348,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - versionning
-      - buildProjects
       - buildImages
-      - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
@@ -537,10 +506,7 @@ jobs:
         log-level:
           - Information
           - Verbose
-        ntasks:
-          - 100
-          - 1000
-          - 1500
+    name: HtcMock ${{ matrix.queue }} ${{ matrix.log-level }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -574,11 +540,11 @@ jobs:
           curl localhost:9980/liveness
           curl -f localhost:9980/liveness
 
-      - name: Run HtcMock test
+      - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=${{ matrix.ntasks }} \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -586,13 +552,12 @@ jobs:
             -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
 
-      - name: Run HtcMock test
+      - name: Run HtcMock test 100 tasks 4 levels
         timeout-minutes: 10
         run: |
           docker run --net armonik-net --rm \
-            -e HtcMock__NTasks=${{ matrix.ntasks }} \
+            -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
@@ -600,14 +565,41 @@ jobs:
             -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+
+      - name: Run HtcMock test 1000 tasks 1 level
+        timeout-minutes: 10
+        if: ${{ matrix.log-level != 'Verbose' }}
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=1 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Run HtcMock test 1000 tasks 4 levels
+        timeout-minutes: 10
+        if: ${{ matrix.log-level != 'Verbose' }}
+        run: |
+          docker run --net armonik-net --rm \
+            -e HtcMock__NTasks=1000 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=4 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}.json.tar.gz
+          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
 
       - name: Collect docker compose logs
         uses: jwalton/gh-docker-logs@v2
@@ -619,7 +611,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.ntasks }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
 
 
   runBench:
@@ -907,6 +899,7 @@ jobs:
       - testStreamDC
       - buildImages
       - runBench
+      - healthCheckTest
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
