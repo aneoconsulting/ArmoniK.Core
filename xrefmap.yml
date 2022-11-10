@@ -2875,15 +2875,15 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup
   nameWithType: AuthDataAfterLookup
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.#ctor(System.String,System.String,System.String,System.String,ArmoniK.Core.Common.Auth.Authentication.UserData[])
-  name: AuthDataAfterLookup(String, String, String, String, UserData[])
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthDataAfterLookup__ctor_System_String_System_String_System_String_System_String_ArmoniK_Core_Common_Auth_Authentication_UserData___
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.#ctor(System.String,System.String,System.String,System.String,ArmoniK.Core.Common.Auth.Authentication.UserData[])
-  name.vb: AuthDataAfterLookup(String, String, String, String, UserData())
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.AuthDataAfterLookup(System.String, System.String, System.String, System.String, ArmoniK.Core.Common.Auth.Authentication.UserData[])
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.AuthDataAfterLookup(System.String, System.String, System.String, System.String, ArmoniK.Core.Common.Auth.Authentication.UserData())
-  nameWithType: AuthDataAfterLookup.AuthDataAfterLookup(String, String, String, String, UserData[])
-  nameWithType.vb: AuthDataAfterLookup.AuthDataAfterLookup(String, String, String, String, UserData())
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.#ctor(ObjectId,ObjectId,System.String,System.String,ArmoniK.Core.Common.Auth.Authentication.UserData[])
+  name: AuthDataAfterLookup(ObjectId, ObjectId, String, String, UserData[])
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthDataAfterLookup__ctor_ObjectId_ObjectId_System_String_System_String_ArmoniK_Core_Common_Auth_Authentication_UserData___
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.#ctor(ObjectId,ObjectId,System.String,System.String,ArmoniK.Core.Common.Auth.Authentication.UserData[])
+  name.vb: AuthDataAfterLookup(ObjectId, ObjectId, String, String, UserData())
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.AuthDataAfterLookup(ObjectId, ObjectId, System.String, System.String, ArmoniK.Core.Common.Auth.Authentication.UserData[])
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.AuthDataAfterLookup(ObjectId, ObjectId, System.String, System.String, ArmoniK.Core.Common.Auth.Authentication.UserData())
+  nameWithType: AuthDataAfterLookup.AuthDataAfterLookup(ObjectId, ObjectId, String, String, UserData[])
+  nameWithType.vb: AuthDataAfterLookup.AuthDataAfterLookup(ObjectId, ObjectId, String, String, UserData())
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.#ctor*
   name: AuthDataAfterLookup
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthDataAfterLookup__ctor_
@@ -2991,6 +2991,216 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataModelMapping.InitializeIndexesAsync
   nameWithType: AuthDataModelMapping.InitializeIndexesAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils
+  name: AuthMongoUtils
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils
+  nameWithType: AuthMongoUtils
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.ToOidString(System.String)
+  name: ToOidString(String)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthMongoUtils_ToOidString_System_String_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.ToOidString(System.String)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.ToOidString(System.String)
+  nameWithType: AuthMongoUtils.ToOidString(String)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.ToOidString*
+  name: ToOidString
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthMongoUtils_ToOidString_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.ToOidString
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthMongoUtils.ToOidString
+  nameWithType: AuthMongoUtils.ToOidString
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer
+  name: IdArraySerializer
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer
+  nameWithType: IdArraySerializer
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Deserialize(BsonDeserializationContext,BsonDeserializationArgs)
+  name: Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdArraySerializer_Deserialize_BsonDeserializationContext_BsonDeserializationArgs_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Deserialize(BsonDeserializationContext,BsonDeserializationArgs)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
+  nameWithType: IdArraySerializer.Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Deserialize*
+  name: Deserialize
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdArraySerializer_Deserialize_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Deserialize
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Deserialize
+  nameWithType: IdArraySerializer.Deserialize
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Instance
+  name: Instance
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdArraySerializer_Instance
+  commentId: F:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Instance
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Instance
+  nameWithType: IdArraySerializer.Instance
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize(BsonSerializationContext,BsonSerializationArgs,System.String[])
+  name: Serialize(BsonSerializationContext, BsonSerializationArgs, String[])
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdArraySerializer_Serialize_BsonSerializationContext_BsonSerializationArgs_System_String___
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize(BsonSerializationContext,BsonSerializationArgs,System.String[])
+  name.vb: Serialize(BsonSerializationContext, BsonSerializationArgs, String())
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize(BsonSerializationContext, BsonSerializationArgs, System.String[])
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize(BsonSerializationContext, BsonSerializationArgs, System.String())
+  nameWithType: IdArraySerializer.Serialize(BsonSerializationContext, BsonSerializationArgs, String[])
+  nameWithType.vb: IdArraySerializer.Serialize(BsonSerializationContext, BsonSerializationArgs, String())
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize*
+  name: Serialize
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdArraySerializer_Serialize_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdArraySerializer.Serialize
+  nameWithType: IdArraySerializer.Serialize
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer
+  name: IdSerializer
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer
+  nameWithType: IdSerializer
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize(BsonDeserializationContext,BsonDeserializationArgs)
+  name: Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Deserialize_BsonDeserializationContext_BsonDeserializationArgs_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize(BsonDeserializationContext,BsonDeserializationArgs)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
+  nameWithType: IdSerializer.Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize(ObjectId)
+  name: Deserialize(ObjectId)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Deserialize_ObjectId_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize(ObjectId)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize(ObjectId)
+  nameWithType: IdSerializer.Deserialize(ObjectId)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize*
+  name: Deserialize
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Deserialize_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Deserialize
+  nameWithType: IdSerializer.Deserialize
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Instance
+  name: Instance
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Instance
+  commentId: F:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Instance
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Instance
+  nameWithType: IdSerializer.Instance
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize(BsonSerializationContext,BsonSerializationArgs,System.String)
+  name: Serialize(BsonSerializationContext, BsonSerializationArgs, String)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Serialize_BsonSerializationContext_BsonSerializationArgs_System_String_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize(BsonSerializationContext,BsonSerializationArgs,System.String)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize(BsonSerializationContext, BsonSerializationArgs, System.String)
+  nameWithType: IdSerializer.Serialize(BsonSerializationContext, BsonSerializationArgs, String)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize(System.String)
+  name: Serialize(String)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Serialize_System_String_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize(System.String)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize(System.String)
+  nameWithType: IdSerializer.Serialize(String)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize*
+  name: Serialize
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_Serialize_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.Serialize
+  nameWithType: IdSerializer.Serialize
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.ToValidIdString(System.String)
+  name: ToValidIdString(String)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_ToValidIdString_System_String_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.ToValidIdString(System.String)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.ToValidIdString(System.String)
+  nameWithType: IdSerializer.ToValidIdString(String)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.ToValidIdString*
+  name: ToValidIdString
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_IdSerializer_ToValidIdString_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.ToValidIdString
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.IdSerializer.ToValidIdString
+  nameWithType: IdSerializer.ToValidIdString
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult
+  name: MongoAuthResult
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult
+  nameWithType: MongoAuthResult
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.#ctor(ObjectId,System.String,IEnumerable{System.String},IEnumerable{System.String})
+  name: MongoAuthResult(ObjectId, String, IEnumerable<String>, IEnumerable<String>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult__ctor_ObjectId_System_String_IEnumerable_System_String__IEnumerable_System_String__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.#ctor(ObjectId,System.String,IEnumerable{System.String},IEnumerable{System.String})
+  name.vb: MongoAuthResult(ObjectId, String, IEnumerable(Of String), IEnumerable(Of String))
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.MongoAuthResult(ObjectId, System.String, IEnumerable<System.String>, IEnumerable<System.String>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.MongoAuthResult(ObjectId, System.String, IEnumerable(Of System.String), IEnumerable(Of System.String))
+  nameWithType: MongoAuthResult.MongoAuthResult(ObjectId, String, IEnumerable<String>, IEnumerable<String>)
+  nameWithType.vb: MongoAuthResult.MongoAuthResult(ObjectId, String, IEnumerable(Of String), IEnumerable(Of String))
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.#ctor*
+  name: MongoAuthResult
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.MongoAuthResult
+  nameWithType: MongoAuthResult.MongoAuthResult
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Id
+  name: Id
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Id
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Id
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Id
+  nameWithType: MongoAuthResult.Id
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Id*
+  name: Id
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Id_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Id
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Id
+  nameWithType: MongoAuthResult.Id
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Permissions
+  name: Permissions
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Permissions
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Permissions
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Permissions
+  nameWithType: MongoAuthResult.Permissions
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Permissions*
+  name: Permissions
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Permissions_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Permissions
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Permissions
+  nameWithType: MongoAuthResult.Permissions
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Roles
+  name: Roles
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Roles
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Roles
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Roles
+  nameWithType: MongoAuthResult.Roles
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Roles*
+  name: Roles
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Roles_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Roles
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Roles
+  nameWithType: MongoAuthResult.Roles
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.ToUserAuthenticationResult
+  name: ToUserAuthenticationResult()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_ToUserAuthenticationResult
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.ToUserAuthenticationResult
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.ToUserAuthenticationResult()
+  nameWithType: MongoAuthResult.ToUserAuthenticationResult()
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.ToUserAuthenticationResult*
+  name: ToUserAuthenticationResult
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_ToUserAuthenticationResult_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.ToUserAuthenticationResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.ToUserAuthenticationResult
+  nameWithType: MongoAuthResult.ToUserAuthenticationResult
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Username
+  name: Username
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Username
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Username
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Username
+  nameWithType: MongoAuthResult.Username
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Username*
+  name: Username
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_MongoAuthResult_Username_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Username
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.MongoAuthResult.Username
+  nameWithType: MongoAuthResult.Username
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping
   name: RoleDataModelMapping
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping.html
@@ -3032,15 +3242,15 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup
   nameWithType: UserDataAfterLookup
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.#ctor(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Auth.Authentication.RoleData})
-  name: UserDataAfterLookup(String, String, IEnumerable<RoleData>)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_UserDataAfterLookup__ctor_System_String_System_String_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_RoleData__
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.#ctor(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Auth.Authentication.RoleData})
-  name.vb: UserDataAfterLookup(String, String, IEnumerable(Of RoleData))
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.UserDataAfterLookup(System.String, System.String, IEnumerable<ArmoniK.Core.Common.Auth.Authentication.RoleData>)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.UserDataAfterLookup(System.String, System.String, IEnumerable(Of ArmoniK.Core.Common.Auth.Authentication.RoleData))
-  nameWithType: UserDataAfterLookup.UserDataAfterLookup(String, String, IEnumerable<RoleData>)
-  nameWithType.vb: UserDataAfterLookup.UserDataAfterLookup(String, String, IEnumerable(Of RoleData))
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.#ctor(ObjectId,System.String,IEnumerable{ArmoniK.Core.Common.Auth.Authentication.RoleData})
+  name: UserDataAfterLookup(ObjectId, String, IEnumerable<RoleData>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_UserDataAfterLookup__ctor_ObjectId_System_String_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_RoleData__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.#ctor(ObjectId,System.String,IEnumerable{ArmoniK.Core.Common.Auth.Authentication.RoleData})
+  name.vb: UserDataAfterLookup(ObjectId, String, IEnumerable(Of RoleData))
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.UserDataAfterLookup(ObjectId, System.String, IEnumerable<ArmoniK.Core.Common.Auth.Authentication.RoleData>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.UserDataAfterLookup(ObjectId, System.String, IEnumerable(Of ArmoniK.Core.Common.Auth.Authentication.RoleData))
+  nameWithType: UserDataAfterLookup.UserDataAfterLookup(ObjectId, String, IEnumerable<RoleData>)
+  nameWithType.vb: UserDataAfterLookup.UserDataAfterLookup(ObjectId, String, IEnumerable(Of RoleData))
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.#ctor*
   name: UserDataAfterLookup
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_UserDataAfterLookup__ctor_
@@ -5666,54 +5876,55 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Auth.Authorization.AuthorizationPolicyProvider.GetPolicyAsync
   nameWithType: AuthorizationPolicyProvider.GetPolicyAsync
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions
-  name: Permissions
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html
-  commentId: T:ArmoniK.Core.Common.Auth.Authorization.Permissions
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions
-  nameWithType: Permissions
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.AllUsersScope
-  name: AllUsersScope
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_AllUsersScope
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.AllUsersScope
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.AllUsersScope
-  nameWithType: Permissions.AllUsersScope
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Default
-  name: Default
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Default
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Default
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Default
-  nameWithType: Permissions.Default
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.General
-  name: General
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_General
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.General
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.General
-  nameWithType: Permissions.General
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Impersonate
+- uid: ArmoniK.Core.Common.Auth.Authorization.GeneralService
+  name: GeneralService
+  href: api/ArmoniK.Core.Common.Auth.Authorization.GeneralService.html
+  commentId: T:ArmoniK.Core.Common.Auth.Authorization.GeneralService
+  fullName: ArmoniK.Core.Common.Auth.Authorization.GeneralService
+  nameWithType: GeneralService
+- uid: ArmoniK.Core.Common.Auth.Authorization.GeneralService.GetImpersonatePermission
+  name: GetImpersonatePermission()
+  href: api/ArmoniK.Core.Common.Auth.Authorization.GeneralService.html#ArmoniK_Core_Common_Auth_Authorization_GeneralService_GetImpersonatePermission
+  commentId: M:ArmoniK.Core.Common.Auth.Authorization.GeneralService.GetImpersonatePermission
+  fullName: ArmoniK.Core.Common.Auth.Authorization.GeneralService.GetImpersonatePermission()
+  nameWithType: GeneralService.GetImpersonatePermission()
+- uid: ArmoniK.Core.Common.Auth.Authorization.GeneralService.GetImpersonatePermission*
+  name: GetImpersonatePermission
+  href: api/ArmoniK.Core.Common.Auth.Authorization.GeneralService.html#ArmoniK_Core_Common_Auth_Authorization_GeneralService_GetImpersonatePermission_
+  commentId: Overload:ArmoniK.Core.Common.Auth.Authorization.GeneralService.GetImpersonatePermission
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Auth.Authorization.GeneralService.GetImpersonatePermission
+  nameWithType: GeneralService.GetImpersonatePermission
+- uid: ArmoniK.Core.Common.Auth.Authorization.GeneralService.Impersonate
   name: Impersonate
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Impersonate
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Impersonate
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Impersonate
-  nameWithType: Permissions.Impersonate
+  href: api/ArmoniK.Core.Common.Auth.Authorization.GeneralService.html#ArmoniK_Core_Common_Auth_Authorization_GeneralService_Impersonate
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.GeneralService.Impersonate
+  fullName: ArmoniK.Core.Common.Auth.Authorization.GeneralService.Impersonate
+  nameWithType: GeneralService.Impersonate
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions
+  name: ArmoniK.Core.Common.Auth.Authorization.Permissions
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html
+  commentId: N:ArmoniK.Core.Common.Auth.Authorization.Permissions
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions
+  nameWithType: ArmoniK.Core.Common.Auth.Authorization.Permissions
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission
-  name: Permissions.Permission
+  name: Permission
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html
   commentId: T:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission
-  nameWithType: Permissions.Permission
+  nameWithType: Permission
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String)
   name: Permission(String)
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_
   commentId: M:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String)
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Permission(System.String)
-  nameWithType: Permissions.Permission.Permission(String)
+  nameWithType: Permission.Permission(String)
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String)
   name: Permission(String, String)
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_System_String_
   commentId: M:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String)
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Permission(System.String, System.String)
-  nameWithType: Permissions.Permission.Permission(String, String)
+  nameWithType: Permission.Permission(String, String)
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String,System.Nullable{System.String})
   name: Permission(String, String, Nullable<String>)
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_System_String_System_Nullable_System_String__
@@ -5721,101 +5932,144 @@ references:
   name.vb: Permission(String, String, Nullable(Of String))
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Permission(System.String, System.String, System.Nullable<System.String>)
   fullName.vb: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Permission(System.String, System.String, System.Nullable(Of System.String))
-  nameWithType: Permissions.Permission.Permission(String, String, Nullable<String>)
-  nameWithType.vb: Permissions.Permission.Permission(String, String, Nullable(Of String))
+  nameWithType: Permission.Permission(String, String, Nullable<String>)
+  nameWithType.vb: Permission.Permission(String, String, Nullable(Of String))
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor*
   name: Permission
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_
   commentId: Overload:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Permission
-  nameWithType: Permissions.Permission.Permission
+  nameWithType: Permission.Permission
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Claim
   name: Claim
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Claim
   commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Claim
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Claim
-  nameWithType: Permissions.Permission.Claim
+  nameWithType: Permission.Claim
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Name
   name: Name
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Name
   commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Name
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Name
-  nameWithType: Permissions.Permission.Name
+  nameWithType: Permission.Name
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Separator
+  name: Separator
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Separator
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Separator
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Separator
+  nameWithType: Permission.Separator
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Service
   name: Service
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Service
   commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Service
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Service
-  nameWithType: Permissions.Permission.Service
+  nameWithType: Permission.Service
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Target
   name: Target
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Target
   commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Target
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Target
-  nameWithType: Permissions.Permission.Target
+  nameWithType: Permission.Target
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission
   name: ToBasePermission()
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ToBasePermission
   commentId: M:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission()
-  nameWithType: Permissions.Permission.ToBasePermission()
+  nameWithType: Permission.ToBasePermission()
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission*
   name: ToBasePermission
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ToBasePermission_
   commentId: Overload:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission
-  nameWithType: Permissions.Permission.ToBasePermission
+  nameWithType: Permission.ToBasePermission
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToString
   name: ToString()
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ToString
   commentId: M:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToString
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToString()
-  nameWithType: Permissions.Permission.ToString()
+  nameWithType: Permission.ToString()
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToString*
   name: ToString
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ToString_
   commentId: Overload:ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToString
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToString
-  nameWithType: Permissions.Permission.ToString
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionList
-  name: PermissionList
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_PermissionList
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionList
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionList
-  nameWithType: Permissions.PermissionList
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.SelfScope
+  nameWithType: Permission.ToString
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope
+  name: PermissionScope
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.html
+  commentId: T:ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope
+  nameWithType: PermissionScope
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.AllUsersScope
+  name: AllUsersScope
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_PermissionScope_AllUsersScope
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.AllUsersScope
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.AllUsersScope
+  nameWithType: PermissionScope.AllUsersScope
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.Default
+  name: Default
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_PermissionScope_Default
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.Default
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.Default
+  nameWithType: PermissionScope.Default
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.SelfScope
   name: SelfScope
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_SelfScope
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.SelfScope
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.SelfScope
-  nameWithType: Permissions.SelfScope
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Separator
-  name: Separator
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Separator
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Separator
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Separator
-  nameWithType: Permissions.Separator
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Submitter
-  name: Submitter
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Submitter
-  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Submitter
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Submitter
-  nameWithType: Permissions.Submitter
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_PermissionScope_SelfScope
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.SelfScope
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.PermissionScope.SelfScope
+  nameWithType: PermissionScope.SelfScope
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions
+  name: ServicesPermissions
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.html
+  commentId: T:ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions
+  nameWithType: ServicesPermissions
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.All
+  name: All
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_ServicesPermissions_All
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.All
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.All
+  nameWithType: ServicesPermissions.All
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.Default
+  name: Default
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_ServicesPermissions_Default
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.Default
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.Default
+  nameWithType: ServicesPermissions.Default
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.FromType(Type)
+  name: FromType(Type)
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_ServicesPermissions_FromType_Type_
+  commentId: M:ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.FromType(Type)
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.FromType(Type)
+  nameWithType: ServicesPermissions.FromType(Type)
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.FromType*
+  name: FromType
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_ServicesPermissions_FromType_
+  commentId: Overload:ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.FromType
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.FromType
+  nameWithType: ServicesPermissions.FromType
+- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.PermissionsLists
+  name: PermissionsLists
+  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_ServicesPermissions_PermissionsLists
+  commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.PermissionsLists
+  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.ServicesPermissions.PermissionsLists
+  nameWithType: ServicesPermissions.PermissionsLists
 - uid: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute
   name: RequiresPermissionAttribute
   href: api/ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.html
   commentId: T:ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute
   fullName: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute
   nameWithType: RequiresPermissionAttribute
-- uid: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.#ctor(System.String,System.String)
-  name: RequiresPermissionAttribute(String, String)
-  href: api/ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.html#ArmoniK_Core_Common_Auth_Authorization_RequiresPermissionAttribute__ctor_System_String_System_String_
-  commentId: M:ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.#ctor(System.String,System.String)
-  fullName: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.RequiresPermissionAttribute(System.String, System.String)
-  nameWithType: RequiresPermissionAttribute.RequiresPermissionAttribute(String, String)
+- uid: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.#ctor(Type,System.String)
+  name: RequiresPermissionAttribute(Type, String)
+  href: api/ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.html#ArmoniK_Core_Common_Auth_Authorization_RequiresPermissionAttribute__ctor_Type_System_String_
+  commentId: M:ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.#ctor(Type,System.String)
+  fullName: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.RequiresPermissionAttribute(Type, System.String)
+  nameWithType: RequiresPermissionAttribute.RequiresPermissionAttribute(Type, String)
 - uid: ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.#ctor*
   name: RequiresPermissionAttribute
   href: api/ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.html#ArmoniK_Core_Common_Auth_Authorization_RequiresPermissionAttribute__ctor_
@@ -12806,15 +13060,15 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AllRightsUsername
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AllRightsUsername
   nameWithType: AuthenticationIntegrationTest.AllRightsUsername
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name: AsyncAuthMatchesBehavior((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_AsyncAuthMatchesBehavior_System_ValueTuple_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode__
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name.vb: AsyncAuthMatchesBehavior((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.ValueTuple<System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.ValueTuple(Of System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode))
-  nameWithType: AuthenticationIntegrationTest.AsyncAuthMatchesBehavior((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  nameWithType.vb: AuthenticationIntegrationTest.AsyncAuthMatchesBehavior((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name: AsyncAuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_AsyncAuthMatchesBehavior_System_Type_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode_
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name.vb: AsyncAuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType: AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType.vb: AuthenticationIntegrationTest.AsyncAuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AsyncAuthMatchesBehavior*
   name: AsyncAuthMatchesBehavior
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_AsyncAuthMatchesBehavior_
@@ -12858,15 +13112,15 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthenticationType.NoImpersonationNoAuthorization
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthenticationType.NoImpersonationNoAuthorization
   nameWithType: AuthenticationIntegrationTest.AuthenticationType.NoImpersonationNoAuthorization
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name: AuthMatchesBehavior((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_AuthMatchesBehavior_System_ValueTuple_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode__
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name.vb: AuthMatchesBehavior((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.ValueTuple<System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.ValueTuple(Of System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode))
-  nameWithType: AuthenticationIntegrationTest.AuthMatchesBehavior((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  nameWithType.vb: AuthenticationIntegrationTest.AuthMatchesBehavior((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name: AuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_AuthMatchesBehavior_System_Type_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode_
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name.vb: AuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType: AuthenticationIntegrationTest.AuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType.vb: AuthenticationIntegrationTest.AuthMatchesBehavior(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthMatchesBehavior*
   name: AuthMatchesBehavior
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_AuthMatchesBehavior_
@@ -12887,6 +13141,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.BeforeAll
   nameWithType: AuthenticationIntegrationTest.BeforeAll
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ClientServerTypeMapping
+  name: ClientServerTypeMapping
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ClientServerTypeMapping
+  commentId: F:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ClientServerTypeMapping
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ClientServerTypeMapping
+  nameWithType: AuthenticationIntegrationTest.ClientServerTypeMapping
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTask(AsyncClientStreamingCall{CreateLargeTaskRequest,CreateTaskReply})
   name: CreateLargeTask(AsyncClientStreamingCall<CreateLargeTaskRequest, CreateTaskReply>)
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_CreateLargeTask_AsyncClientStreamingCall_CreateLargeTaskRequest_CreateTaskReply__
@@ -12903,15 +13163,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTask
   nameWithType: AuthenticationIntegrationTest.CreateLargeTask
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name: CreateLargeTasksAuthShouldMatch((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_CreateLargeTasksAuthShouldMatch_System_ValueTuple_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode__
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name.vb: CreateLargeTasksAuthShouldMatch((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.ValueTuple<System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.ValueTuple(Of System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode))
-  nameWithType: AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  nameWithType.vb: AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name: CreateLargeTasksAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_CreateLargeTasksAuthShouldMatch_System_Type_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode_
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name.vb: CreateLargeTasksAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType: AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType.vb: AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.CreateLargeTasksAuthShouldMatch*
   name: CreateLargeTasksAuthShouldMatch
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_CreateLargeTasksAuthShouldMatch_
@@ -12935,28 +13195,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetArgs
   nameWithType: AuthenticationIntegrationTest.GetArgs
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetAsyncTestCases
-  name: GetAsyncTestCases()
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetAsyncTestCases
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetAsyncTestCases
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetAsyncTestCases()
-  nameWithType: AuthenticationIntegrationTest.GetAsyncTestCases()
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetAsyncTestCases*
-  name: GetAsyncTestCases
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetAsyncTestCases_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetAsyncTestCases
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetAsyncTestCases
-  nameWithType: AuthenticationIntegrationTest.GetAsyncTestCases
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List{System.ValueTuple{System.String,System.Nullable{System.Object}}})
-  name: GetCases(List<(String, Nullable<Object>)>)
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetCases_List_System_ValueTuple_System_String_System_Nullable_System_Object____
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List{System.ValueTuple{System.String,System.Nullable{System.Object}}})
-  name.vb: GetCases(List(Of (String, Nullable(Of Object))(Of String, Nullable(Of Object))))
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List<System.ValueTuple<System.String, System.Nullable<System.Object>>>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List(Of System.ValueTuple(Of System.String, System.Nullable(Of System.Object))))
-  nameWithType: AuthenticationIntegrationTest.GetCases(List<(String, Nullable<Object>)>)
-  nameWithType.vb: AuthenticationIntegrationTest.GetCases(List(Of (String, Nullable(Of Object))(Of String, Nullable(Of Object))))
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List{System.ValueTuple{System.Type,System.String,System.Nullable{System.Object}}})
+  name: GetCases(List<(System.Type, String, Nullable<Object>)>)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetCases_List_System_ValueTuple_System_Type_System_String_System_Nullable_System_Object____
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List{System.ValueTuple{System.Type,System.String,System.Nullable{System.Object}}})
+  name.vb: GetCases(List(Of (System.Type, String, Nullable(Of Object))(Of System.Type, String, Nullable(Of Object))))
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List<System.ValueTuple<System.Type, System.String, System.Nullable<System.Object>>>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases(List(Of System.ValueTuple(Of System.Type, System.String, System.Nullable(Of System.Object))))
+  nameWithType: AuthenticationIntegrationTest.GetCases(List<(System.Type, String, Nullable<Object>)>)
+  nameWithType.vb: AuthenticationIntegrationTest.GetCases(List(Of (System.Type, String, Nullable(Of Object))(Of System.Type, String, Nullable(Of Object))))
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCases*
   name: GetCases
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetCases_
@@ -12990,12 +13237,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetHeaders
   nameWithType: AuthenticationIntegrationTest.GetHeaders
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases
-  name: GetTestCases()
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetTestCases
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases()
-  nameWithType: AuthenticationIntegrationTest.GetTestCases()
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases(System.String)
+  name: GetTestCases(String)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetTestCases_System_String_
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases(System.String)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases(System.String)
+  nameWithType: AuthenticationIntegrationTest.GetTestCases(String)
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetTestCases*
   name: GetTestCases
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetTestCases_
@@ -13137,15 +13384,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TearDown
   nameWithType: AuthenticationIntegrationTest.TearDown
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode},System.Int32@,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType@,StatusCode@)
-  name: TransformResult((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode), out Int32, out AuthenticationIntegrationTest.ResultType, out StatusCode)
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_TransformResult_System_ValueTuple_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode__System_Int32__ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType__StatusCode__
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode},System.Int32@,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType@,StatusCode@)
-  name.vb: TransformResult((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode), ByRef Int32, ByRef AuthenticationIntegrationTest.ResultType, ByRef StatusCode)
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(System.ValueTuple<System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode>, out System.Int32, out ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, out StatusCode)
-  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(System.ValueTuple(Of System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode), ByRef System.Int32, ByRef ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, ByRef StatusCode)
-  nameWithType: AuthenticationIntegrationTest.TransformResult((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode), out Int32, out AuthenticationIntegrationTest.ResultType, out StatusCode)
-  nameWithType.vb: AuthenticationIntegrationTest.TransformResult((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode), ByRef Int32, ByRef AuthenticationIntegrationTest.ResultType, ByRef StatusCode)
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode,System.Int32@,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType@,StatusCode@)
+  name: TransformResult(AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.ResultType, StatusCode, out Int32, out AuthenticationIntegrationTest.ResultType, out StatusCode)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_TransformResult_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode_System_Int32__ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType__StatusCode__
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode,System.Int32@,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType@,StatusCode@)
+  name.vb: TransformResult(AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.ResultType, StatusCode, ByRef Int32, ByRef AuthenticationIntegrationTest.ResultType, ByRef StatusCode)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode, out System.Int32, out ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, out StatusCode)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult(ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode, ByRef System.Int32, ByRef ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, ByRef StatusCode)
+  nameWithType: AuthenticationIntegrationTest.TransformResult(AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.ResultType, StatusCode, out Int32, out AuthenticationIntegrationTest.ResultType, out StatusCode)
+  nameWithType.vb: AuthenticationIntegrationTest.TransformResult(AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.ResultType, StatusCode, ByRef Int32, ByRef AuthenticationIntegrationTest.ResultType, ByRef StatusCode)
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult*
   name: TransformResult
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_TransformResult_
@@ -13153,15 +13400,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TransformResult
   nameWithType: AuthenticationIntegrationTest.TransformResult
-- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name: TryGetResultStreamAuthShouldMatch((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_TryGetResultStreamAuthShouldMatch_System_ValueTuple_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode__
-  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.ValueTuple{System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode})
-  name.vb: TryGetResultStreamAuthShouldMatch((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
-  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.ValueTuple<System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.ValueTuple(Of System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode))
-  nameWithType: AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch((String method, AuthenticationIntegrationTest.IdentityIndex userIndex, AuthenticationIntegrationTest.ImpersonationType impersonationType, AuthenticationIntegrationTest.IdentityIndex impersonating, Object[] args, AuthenticationIntegrationTest.ResultType shouldSucceed, StatusCode errorCode))
-  nameWithType.vb: AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch((method As String, userIndex As AuthenticationIntegrationTest.IdentityIndex, impersonationType As AuthenticationIntegrationTest.ImpersonationType, impersonating As AuthenticationIntegrationTest.IdentityIndex, args As Object(), shouldSucceed As AuthenticationIntegrationTest.ResultType, errorCode As StatusCode)(Of String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode))
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name: TryGetResultStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_TryGetResultStreamAuthShouldMatch_System_Type_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode_
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name.vb: TryGetResultStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType: AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType.vb: AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.TryGetResultStreamAuthShouldMatch*
   name: TryGetResultStreamAuthShouldMatch
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_TryGetResultStreamAuthShouldMatch_
@@ -13488,14 +13735,14 @@ references:
   fullName: ArmoniK.Core.Common.Tests.Auth.MockIdentity
   nameWithType: MockIdentity
 - uid: ArmoniK.Core.Common.Tests.Auth.MockIdentity.#ctor(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockCertificate},IEnumerable{System.String},IEnumerable{ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission},System.Nullable{System.String})
-  name: MockIdentity(String, String, IEnumerable<MockIdentity.MockCertificate>, IEnumerable<String>, IEnumerable<Permissions.Permission>, Nullable<String>)
+  name: MockIdentity(String, String, IEnumerable<MockIdentity.MockCertificate>, IEnumerable<String>, IEnumerable<Permission>, Nullable<String>)
   href: api/ArmoniK.Core.Common.Tests.Auth.MockIdentity.html#ArmoniK_Core_Common_Tests_Auth_MockIdentity__ctor_System_String_System_String_IEnumerable_ArmoniK_Core_Common_Tests_Auth_MockIdentity_MockCertificate__IEnumerable_System_String__IEnumerable_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__System_Nullable_System_String__
   commentId: M:ArmoniK.Core.Common.Tests.Auth.MockIdentity.#ctor(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockCertificate},IEnumerable{System.String},IEnumerable{ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission},System.Nullable{System.String})
-  name.vb: MockIdentity(String, String, IEnumerable(Of MockIdentity.MockCertificate), IEnumerable(Of String), IEnumerable(Of Permissions.Permission), Nullable(Of String))
+  name.vb: MockIdentity(String, String, IEnumerable(Of MockIdentity.MockCertificate), IEnumerable(Of String), IEnumerable(Of Permission), Nullable(Of String))
   fullName: ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockIdentity(System.String, System.String, IEnumerable<ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockCertificate>, IEnumerable<System.String>, IEnumerable<ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission>, System.Nullable<System.String>)
   fullName.vb: ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockIdentity(System.String, System.String, IEnumerable(Of ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockCertificate), IEnumerable(Of System.String), IEnumerable(Of ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission), System.Nullable(Of System.String))
-  nameWithType: MockIdentity.MockIdentity(String, String, IEnumerable<MockIdentity.MockCertificate>, IEnumerable<String>, IEnumerable<Permissions.Permission>, Nullable<String>)
-  nameWithType.vb: MockIdentity.MockIdentity(String, String, IEnumerable(Of MockIdentity.MockCertificate), IEnumerable(Of String), IEnumerable(Of Permissions.Permission), Nullable(Of String))
+  nameWithType: MockIdentity.MockIdentity(String, String, IEnumerable<MockIdentity.MockCertificate>, IEnumerable<String>, IEnumerable<Permission>, Nullable<String>)
+  nameWithType.vb: MockIdentity.MockIdentity(String, String, IEnumerable(Of MockIdentity.MockCertificate), IEnumerable(Of String), IEnumerable(Of Permission), Nullable(Of String))
 - uid: ArmoniK.Core.Common.Tests.Auth.MockIdentity.#ctor*
   name: MockIdentity
   href: api/ArmoniK.Core.Common.Tests.Auth.MockIdentity.html#ArmoniK_Core_Common_Tests_Auth_MockIdentity__ctor_
@@ -13628,6 +13875,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.PermissionTest.PermissionToClaimShouldMatch
   nameWithType: PermissionTest.PermissionToClaimShouldMatch
+- uid: ArmoniK.Core.Common.Tests.Auth.PermissionTest.PrintPermissions
+  name: PrintPermissions()
+  href: api/ArmoniK.Core.Common.Tests.Auth.PermissionTest.html#ArmoniK_Core_Common_Tests_Auth_PermissionTest_PrintPermissions
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.PermissionTest.PrintPermissions
+  fullName: ArmoniK.Core.Common.Tests.Auth.PermissionTest.PrintPermissions()
+  nameWithType: PermissionTest.PrintPermissions()
+- uid: ArmoniK.Core.Common.Tests.Auth.PermissionTest.PrintPermissions*
+  name: PrintPermissions
+  href: api/ArmoniK.Core.Common.Tests.Auth.PermissionTest.html#ArmoniK_Core_Common_Tests_Auth_PermissionTest_PrintPermissions_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Auth.PermissionTest.PrintPermissions
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Auth.PermissionTest.PrintPermissions
+  nameWithType: PermissionTest.PrintPermissions
 - uid: ArmoniK.Core.Common.Tests.CreateLargeTaskRequestValidatorTest
   name: CreateLargeTaskRequestValidatorTest
   href: api/ArmoniK.Core.Common.Tests.CreateLargeTaskRequestValidatorTest.html
@@ -14966,6 +15226,428 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleRabbitClient.Init
   nameWithType: SimpleRabbitClient.Init
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable
+  name: SimpleResultTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable
+  nameWithType: SimpleResultTable
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  name: AbortTaskResults(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_AbortTaskResults_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AbortTaskResults(System.String, System.String, CancellationToken)
+  nameWithType: SimpleResultTable.AbortTaskResults(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AbortTaskResults*
+  name: AbortTaskResults
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_AbortTaskResults_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AbortTaskResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AbortTaskResults
+  nameWithType: SimpleResultTable.AbortTaskResults
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync(System.String,IEnumerable{System.String},CancellationToken)
+  name: AreResultsAvailableAsync(String, IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_AreResultsAvailableAsync_System_String_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync(System.String,IEnumerable{System.String},CancellationToken)
+  name.vb: AreResultsAvailableAsync(String, IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync(System.String, IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync(System.String, IEnumerable(Of System.String), CancellationToken)
+  nameWithType: SimpleResultTable.AreResultsAvailableAsync(String, IEnumerable<String>, CancellationToken)
+  nameWithType.vb: SimpleResultTable.AreResultsAvailableAsync(String, IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync*
+  name: AreResultsAvailableAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_AreResultsAvailableAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.AreResultsAvailableAsync
+  nameWithType: SimpleResultTable.AreResultsAvailableAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name: ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_ChangeResultOwnership_System_String_System_String_IEnumerable_ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name.vb: ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable<ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable(Of ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  nameWithType: SimpleResultTable.ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  nameWithType.vb: SimpleResultTable.ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership*
+  name: ChangeResultOwnership
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_ChangeResultOwnership_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ChangeResultOwnership
+  nameWithType: SimpleResultTable.ChangeResultOwnership
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: SimpleResultTable.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Check
+  nameWithType: SimpleResultTable.Check
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
+  name: Create(IEnumerable<Result>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Create_IEnumerable_ArmoniK_Core_Common_Storage_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
+  name.vb: Create(IEnumerable(Of Result), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create(IEnumerable<ArmoniK.Core.Common.Storage.Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create(IEnumerable(Of ArmoniK.Core.Common.Storage.Result), CancellationToken)
+  nameWithType: SimpleResultTable.Create(IEnumerable<Result>, CancellationToken)
+  nameWithType.vb: SimpleResultTable.Create(IEnumerable(Of Result), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create*
+  name: Create
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Create_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Create
+  nameWithType: SimpleResultTable.Create
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResult(System.String,System.String,CancellationToken)
+  name: DeleteResult(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_DeleteResult_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResult(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResult(System.String, System.String, CancellationToken)
+  nameWithType: SimpleResultTable.DeleteResult(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResult*
+  name: DeleteResult
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_DeleteResult_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResult
+  nameWithType: SimpleResultTable.DeleteResult
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResults(System.String,CancellationToken)
+  name: DeleteResults(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_DeleteResults_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResults(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResults(System.String, CancellationToken)
+  nameWithType: SimpleResultTable.DeleteResults(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResults*
+  name: DeleteResults
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_DeleteResults_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.DeleteResults
+  nameWithType: SimpleResultTable.DeleteResults
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name: GetResults(String, IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_GetResults_System_String_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults(System.String,IEnumerable{System.String},CancellationToken)
+  name.vb: GetResults(String, IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults(System.String, IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults(System.String, IEnumerable(Of System.String), CancellationToken)
+  nameWithType: SimpleResultTable.GetResults(String, IEnumerable<String>, CancellationToken)
+  nameWithType.vb: SimpleResultTable.GetResults(String, IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults*
+  name: GetResults
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_GetResults_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResults
+  nameWithType: SimpleResultTable.GetResults
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name.vb: GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus(IEnumerable<System.String>, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus(IEnumerable(Of System.String), System.String, CancellationToken)
+  nameWithType: SimpleResultTable.GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  nameWithType.vb: SimpleResultTable.GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus*
+  name: GetResultStatus
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_GetResultStatus_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.GetResultStatus
+  nameWithType: SimpleResultTable.GetResultStatus
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Init(CancellationToken)
+  nameWithType: SimpleResultTable.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Init
+  nameWithType: SimpleResultTable.Init
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ListResultsAsync(System.String,CancellationToken)
+  name: ListResultsAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_ListResultsAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ListResultsAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ListResultsAsync(System.String, CancellationToken)
+  nameWithType: SimpleResultTable.ListResultsAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ListResultsAsync*
+  name: ListResultsAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_ListResultsAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ListResultsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.ListResultsAsync
+  nameWithType: SimpleResultTable.ListResultsAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Logger
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Logger
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Logger
+  nameWithType: SimpleResultTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_Logger_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.Logger
+  nameWithType: SimpleResultTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.OutputId
+  name: OutputId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_OutputId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.OutputId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.OutputId
+  nameWithType: SimpleResultTable.OutputId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.OwnerPodId
+  name: OwnerPodId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_OwnerPodId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.OwnerPodId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.OwnerPodId
+  nameWithType: SimpleResultTable.OwnerPodId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_PartitionId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.PartitionId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.PartitionId
+  nameWithType: SimpleResultTable.PartitionId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.PayloadId
+  name: PayloadId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_PayloadId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.PayloadId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.PayloadId
+  nameWithType: SimpleResultTable.PayloadId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_SessionId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SessionId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SessionId
+  nameWithType: SimpleResultTable.SessionId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String,System.String,System.String,CancellationToken)
+  name: SetResult(String, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_SetResult_System_String_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String,System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String, System.String, System.String, CancellationToken)
+  nameWithType: SimpleResultTable.SetResult(String, String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String,System.String,System.String,System.Byte[],CancellationToken)
+  name: SetResult(String, String, String, Byte[], CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_SetResult_System_String_System_String_System_String_System_Byte___CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String,System.String,System.String,System.Byte[],CancellationToken)
+  name.vb: SetResult(String, String, String, Byte(), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String, System.String, System.String, System.Byte[], CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult(System.String, System.String, System.String, System.Byte(), CancellationToken)
+  nameWithType: SimpleResultTable.SetResult(String, String, String, Byte[], CancellationToken)
+  nameWithType.vb: SimpleResultTable.SetResult(String, String, String, Byte(), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult*
+  name: SetResult
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_SetResult_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.SetResult
+  nameWithType: SimpleResultTable.SetResult
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleResultTable_TaskId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.TaskId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleResultTable.TaskId
+  nameWithType: SimpleResultTable.TaskId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable
+  name: SimpleSessionTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable
+  nameWithType: SimpleSessionTable
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.CancelSessionAsync(System.String,CancellationToken)
+  name: CancelSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_CancelSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.CancelSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.CancelSessionAsync(System.String, CancellationToken)
+  nameWithType: SimpleSessionTable.CancelSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.CancelSessionAsync*
+  name: CancelSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_CancelSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.CancelSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.CancelSessionAsync
+  nameWithType: SimpleSessionTable.CancelSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: SimpleSessionTable.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Check
+  nameWithType: SimpleSessionTable.Check
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.DeleteSessionAsync(System.String,CancellationToken)
+  name: DeleteSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_DeleteSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.DeleteSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.DeleteSessionAsync(System.String, CancellationToken)
+  nameWithType: SimpleSessionTable.DeleteSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.DeleteSessionAsync*
+  name: DeleteSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_DeleteSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.DeleteSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.DeleteSessionAsync
+  nameWithType: SimpleSessionTable.DeleteSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetDefaultTaskOptionAsync(System.String,CancellationToken)
+  name: GetDefaultTaskOptionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_GetDefaultTaskOptionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetDefaultTaskOptionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetDefaultTaskOptionAsync(System.String, CancellationToken)
+  nameWithType: SimpleSessionTable.GetDefaultTaskOptionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetDefaultTaskOptionAsync*
+  name: GetDefaultTaskOptionAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_GetDefaultTaskOptionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetDefaultTaskOptionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetDefaultTaskOptionAsync
+  nameWithType: SimpleSessionTable.GetDefaultTaskOptionAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetSessionAsync(System.String,CancellationToken)
+  name: GetSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_GetSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetSessionAsync(System.String, CancellationToken)
+  nameWithType: SimpleSessionTable.GetSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetSessionAsync*
+  name: GetSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_GetSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.GetSessionAsync
+  nameWithType: SimpleSessionTable.GetSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Init(CancellationToken)
+  nameWithType: SimpleSessionTable.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Init
+  nameWithType: SimpleSessionTable.Init
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.IsSessionCancelledAsync(System.String,CancellationToken)
+  name: IsSessionCancelledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_IsSessionCancelledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.IsSessionCancelledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.IsSessionCancelledAsync(System.String, CancellationToken)
+  nameWithType: SimpleSessionTable.IsSessionCancelledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.IsSessionCancelledAsync*
+  name: IsSessionCancelledAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_IsSessionCancelledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.IsSessionCancelledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.IsSessionCancelledAsync
+  nameWithType: SimpleSessionTable.IsSessionCancelledAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  name: ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_ListSessionsAsync_ListSessionsRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  nameWithType: SimpleSessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: SimpleSessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync*
+  name: ListSessionsAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_ListSessionsAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.ListSessionsAsync
+  nameWithType: SimpleSessionTable.ListSessionsAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_Logger
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Logger
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Logger
+  nameWithType: SimpleSessionTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_Logger_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.Logger
+  nameWithType: SimpleSessionTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.OutputId
+  name: OutputId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_OutputId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.OutputId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.OutputId
+  nameWithType: SimpleSessionTable.OutputId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.OwnerPodId
+  name: OwnerPodId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_OwnerPodId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.OwnerPodId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.OwnerPodId
+  nameWithType: SimpleSessionTable.OwnerPodId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_PartitionId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.PartitionId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.PartitionId
+  nameWithType: SimpleSessionTable.PartitionId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.PayloadId
+  name: PayloadId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_PayloadId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.PayloadId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.PayloadId
+  nameWithType: SimpleSessionTable.PayloadId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_SessionId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SessionId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SessionId
+  nameWithType: SimpleSessionTable.SessionId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_SetSessionDataAsync_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name.vb: SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync(IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync(IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: SimpleSessionTable.SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: SimpleSessionTable.SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync*
+  name: SetSessionDataAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_SetSessionDataAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.SetSessionDataAsync
+  nameWithType: SimpleSessionTable.SetSessionDataAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_TaskId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.TaskId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.TaskId
+  nameWithType: SimpleSessionTable.TaskId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.TaskOptions
+  name: TaskOptions
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSessionTable_TaskOptions
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.TaskOptions
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSessionTable.TaskOptions
+  nameWithType: SimpleSessionTable.TaskOptions
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter
   name: SimpleSubmitter
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html
@@ -15253,6 +15935,436 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.WaitForCompletion
   nameWithType: SimpleSubmitter.WaitForCompletion
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable
+  name: SimpleTaskTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable
+  nameWithType: SimpleTaskTable
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  name: AcquireTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_AcquireTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.AcquireTask(System.String, System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.AcquireTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.AcquireTask*
+  name: AcquireTask
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_AcquireTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.AcquireTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.AcquireTask
+  nameWithType: SimpleTaskTable.AcquireTask
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CancelSessionAsync(System.String,CancellationToken)
+  name: CancelSessionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CancelSessionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CancelSessionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CancelSessionAsync(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.CancelSessionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CancelSessionAsync*
+  name: CancelSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CancelSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CancelSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CancelSessionAsync
+  nameWithType: SimpleTaskTable.CancelSessionAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: SimpleTaskTable.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Check
+  nameWithType: SimpleTaskTable.Check
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  name: CountAllTasksAsync(TaskStatus, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountAllTasksAsync_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus, CancellationToken)
+  nameWithType: SimpleTaskTable.CountAllTasksAsync(TaskStatus, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountAllTasksAsync*
+  name: CountAllTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountAllTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountAllTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountAllTasksAsync
+  nameWithType: SimpleTaskTable.CountAllTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync(CancellationToken)
+  name: CountPartitionTasksAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountPartitionTasksAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync(CancellationToken)
+  nameWithType: SimpleTaskTable.CountPartitionTasksAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync*
+  name: CountPartitionTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountPartitionTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync
+  nameWithType: SimpleTaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(TaskFilter,CancellationToken)
+  name: CountTasksAsync(TaskFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountTasksAsync_TaskFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(TaskFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(TaskFilter, CancellationToken)
+  nameWithType: SimpleTaskTable.CountTasksAsync(TaskFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync*
+  name: CountTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync
+  nameWithType: SimpleTaskTable.CountTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
+  name: CreateTasks(IEnumerable<TaskData>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CreateTasks_IEnumerable_ArmoniK_Core_Common_Storage_TaskData__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
+  name.vb: CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks(IEnumerable<ArmoniK.Core.Common.Storage.TaskData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskData), CancellationToken)
+  nameWithType: SimpleTaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
+  nameWithType.vb: SimpleTaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks*
+  name: CreateTasks
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CreateTasks_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CreateTasks
+  nameWithType: SimpleTaskTable.CreateTasks
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.DeleteTaskAsync(System.String,CancellationToken)
+  name: DeleteTaskAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_DeleteTaskAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.DeleteTaskAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.DeleteTaskAsync(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.DeleteTaskAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.DeleteTaskAsync*
+  name: DeleteTaskAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_DeleteTaskAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.DeleteTaskAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.DeleteTaskAsync
+  nameWithType: SimpleTaskTable.DeleteTaskAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation(IEnumerable{System.String},CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_FinalizeTaskCreation_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation(IEnumerable{System.String},CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: SimpleTaskTable.FinalizeTaskCreation(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: SimpleTaskTable.FinalizeTaskCreation(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation*
+  name: FinalizeTaskCreation
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_FinalizeTaskCreation_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.FinalizeTaskCreation
+  nameWithType: SimpleTaskTable.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetParentTaskIds(System.String,CancellationToken)
+  name: GetParentTaskIds(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetParentTaskIds_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetParentTaskIds(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetParentTaskIds(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.GetParentTaskIds(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetParentTaskIds*
+  name: GetParentTaskIds
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetParentTaskIds_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetParentTaskIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetParentTaskIds
+  nameWithType: SimpleTaskTable.GetParentTaskIds
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskOutput(System.String,CancellationToken)
+  name: GetTaskOutput(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetTaskOutput_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskOutput(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskOutput(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.GetTaskOutput(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskOutput*
+  name: GetTaskOutput
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetTaskOutput_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskOutput
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskOutput
+  nameWithType: SimpleTaskTable.GetTaskOutput
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name: GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetTasksExpectedOutputKeys_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: SimpleTaskTable.GetTasksExpectedOutputKeys(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: SimpleTaskTable.GetTasksExpectedOutputKeys(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys*
+  name: GetTasksExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetTasksExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTasksExpectedOutputKeys
+  nameWithType: SimpleTaskTable.GetTasksExpectedOutputKeys
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name: GetTaskStatus(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTaskStatus(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: SimpleTaskTable.GetTaskStatus(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: SimpleTaskTable.GetTaskStatus(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus*
+  name: GetTaskStatus
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_GetTaskStatus_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.GetTaskStatus
+  nameWithType: SimpleTaskTable.GetTaskStatus
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Init(CancellationToken)
+  nameWithType: SimpleTaskTable.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Init
+  nameWithType: SimpleTaskTable.Init
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.IsTaskCancelledAsync(System.String,CancellationToken)
+  name: IsTaskCancelledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_IsTaskCancelledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.IsTaskCancelledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.IsTaskCancelledAsync(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.IsTaskCancelledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.IsTaskCancelledAsync*
+  name: IsTaskCancelledAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_IsTaskCancelledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.IsTaskCancelledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.IsTaskCancelledAsync
+  nameWithType: SimpleTaskTable.IsTaskCancelledAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  name: ListTasksAsync(ListTasksRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ListTasksAsync_ListTasksRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+  nameWithType: SimpleTaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync(TaskFilter,CancellationToken)
+  name: ListTasksAsync(TaskFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ListTasksAsync_TaskFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync(TaskFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync(TaskFilter, CancellationToken)
+  nameWithType: SimpleTaskTable.ListTasksAsync(TaskFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync*
+  name: ListTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ListTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ListTasksAsync
+  nameWithType: SimpleTaskTable.ListTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_Logger
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Logger
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Logger
+  nameWithType: SimpleTaskTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_Logger_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.Logger
+  nameWithType: SimpleTaskTable.Logger
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.OutputId
+  name: OutputId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_OutputId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.OutputId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.OutputId
+  nameWithType: SimpleTaskTable.OutputId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.OwnerPodId
+  name: OwnerPodId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_OwnerPodId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.OwnerPodId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.OwnerPodId
+  nameWithType: SimpleTaskTable.OwnerPodId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_PartitionId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PartitionId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PartitionId
+  nameWithType: SimpleTaskTable.PartitionId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PayloadId
+  name: PayloadId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_PayloadId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PayloadId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PayloadId
+  nameWithType: SimpleTaskTable.PayloadId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMax
+  name: PollingDelayMax
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_PollingDelayMax
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMax
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMax
+  nameWithType: SimpleTaskTable.PollingDelayMax
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMax*
+  name: PollingDelayMax
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_PollingDelayMax_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMax
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMax
+  nameWithType: SimpleTaskTable.PollingDelayMax
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMin
+  name: PollingDelayMin
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_PollingDelayMin
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMin
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMin
+  nameWithType: SimpleTaskTable.PollingDelayMin
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMin*
+  name: PollingDelayMin
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_PollingDelayMin_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMin
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.PollingDelayMin
+  nameWithType: SimpleTaskTable.PollingDelayMin
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReadTaskAsync(System.String,CancellationToken)
+  name: ReadTaskAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ReadTaskAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReadTaskAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReadTaskAsync(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.ReadTaskAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReadTaskAsync*
+  name: ReadTaskAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ReadTaskAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReadTaskAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReadTaskAsync
+  nameWithType: SimpleTaskTable.ReadTaskAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  name: ReleaseTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ReleaseTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReleaseTask(System.String, System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.ReleaseTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReleaseTask*
+  name: ReleaseTask
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_ReleaseTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReleaseTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.ReleaseTask
+  nameWithType: SimpleTaskTable.ReleaseTask
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  name: RetryTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
+  nameWithType: SimpleTaskTable.RetryTask(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.RetryTask*
+  name: RetryTask
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_RetryTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.RetryTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.RetryTask
+  nameWithType: SimpleTaskTable.RetryTask
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SessionId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SessionId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SessionId
+  nameWithType: SimpleTaskTable.SessionId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  name: SetTaskCanceledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SetTaskCanceledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskCanceledAsync(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.SetTaskCanceledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskCanceledAsync*
+  name: SetTaskCanceledAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SetTaskCanceledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskCanceledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskCanceledAsync
+  nameWithType: SimpleTaskTable.SetTaskCanceledAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
+  name: SetTaskErrorAsync(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SetTaskErrorAsync_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskErrorAsync(System.String, System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.SetTaskErrorAsync(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskErrorAsync*
+  name: SetTaskErrorAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SetTaskErrorAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskErrorAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskErrorAsync
+  nameWithType: SimpleTaskTable.SetTaskErrorAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskSuccessAsync(System.String,CancellationToken)
+  name: SetTaskSuccessAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SetTaskSuccessAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskSuccessAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskSuccessAsync(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.SetTaskSuccessAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskSuccessAsync*
+  name: SetTaskSuccessAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_SetTaskSuccessAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskSuccessAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.SetTaskSuccessAsync
+  nameWithType: SimpleTaskTable.SetTaskSuccessAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.StartTask(System.String,CancellationToken)
+  name: StartTask(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_StartTask_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.StartTask(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.StartTask(System.String, CancellationToken)
+  nameWithType: SimpleTaskTable.StartTask(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.StartTask*
+  name: StartTask
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_StartTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.StartTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.StartTask
+  nameWithType: SimpleTaskTable.StartTask
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_TaskId
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.TaskId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.TaskId
+  nameWithType: SimpleTaskTable.TaskId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.TaskOptions
+  name: TaskOptions
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_TaskOptions
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.TaskOptions
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.TaskOptions
+  nameWithType: SimpleTaskTable.TaskOptions
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateAllTaskStatusAsync(TaskFilter,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  name: UpdateAllTaskStatusAsync(TaskFilter, TaskStatus, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_UpdateAllTaskStatusAsync_TaskFilter_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateAllTaskStatusAsync(TaskFilter,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateAllTaskStatusAsync(TaskFilter, ArmoniK.Api.gRPC.V1.TaskStatus, CancellationToken)
+  nameWithType: SimpleTaskTable.UpdateAllTaskStatusAsync(TaskFilter, TaskStatus, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateAllTaskStatusAsync*
+  name: UpdateAllTaskStatusAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_UpdateAllTaskStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateAllTaskStatusAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateAllTaskStatusAsync
+  nameWithType: SimpleTaskTable.UpdateAllTaskStatusAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  name: UpdateTaskStatusAsync(String, TaskStatus, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_UpdateTaskStatusAsync_System_String_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateTaskStatusAsync(System.String, ArmoniK.Api.gRPC.V1.TaskStatus, CancellationToken)
+  nameWithType: SimpleTaskTable.UpdateTaskStatusAsync(String, TaskStatus, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateTaskStatusAsync*
+  name: UpdateTaskStatusAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_UpdateTaskStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateTaskStatusAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.UpdateTaskStatusAsync
+  nameWithType: SimpleTaskTable.UpdateTaskStatusAsync
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler
   name: SimpleWorkerStreamHandler
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html
