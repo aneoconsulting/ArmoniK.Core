@@ -438,21 +438,14 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Docker compose up
+      - name: Setup just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: '1.8.0'
+
+      - name: Deploy Core
         run: |
-          export ARMONIK_WORKER=dockerhubaneo/armonik_core_stream_test_worker:$VERSION
-          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
-          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
-          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
-          export LOGGING_LEVEL=${{ matrix.log-level }}
-          OVERRIDE="docker-compose/docker-compose.override.yml"
-          QUEUE="docker-compose/docker-compose.queue-${{ matrix.queue }}.yml"
-          if [ "x${{ matrix.queue }}" == x"rabbitmq091" ]; then OVERRIDE="docker-compose/docker-compose.override-rabbitmq091.yml";  QUEUE="docker-compose/docker-compose.queue-rabbitmq.yml"; fi;
-          docker-compose -f docker-compose/docker-compose.yml -f ${OVERRIDE} -f ${QUEUE} --compatibility up -d --build --force-recreate --remove-orphans
-          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-          sleep 10
-          ls -la docker-compose/logs/*.json
+          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
 
       - name: Run Stream Test
         timeout-minutes: 10
@@ -520,25 +513,14 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Docker compose up
+      - name: Setup just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: '1.8.0'
+
+      - name: Deploy Core
         run: |
-          export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
-          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
-          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
-          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
-          export LOGGING_LEVEL=${{ matrix.log-level }}
-          OVERRIDE="docker-compose/docker-compose.override.yml"
-          QUEUE="docker-compose/docker-compose.queue-${{ matrix.queue }}.yml"
-          if [ "x${{ matrix.queue }}" == x"rabbitmq091" ]; then OVERRIDE="docker-compose/docker-compose.override-rabbitmq091.yml";  QUEUE="docker-compose/docker-compose.queue-rabbitmq.yml"; fi;
-          docker-compose  -f docker-compose/docker-compose.yml -f ${OVERRIDE} -f ${QUEUE} --compatibility up -d --build --force-recreate --remove-orphans
-          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-          sleep 10
-          ls -la docker-compose/logs/*.json
-          curl localhost:9980/readiness
-          curl -f localhost:9980/readiness
-          curl localhost:9980/liveness
-          curl -f localhost:9980/liveness
+          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
@@ -633,17 +615,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
-      - name: Docker compose up
+
+      - name: Setup just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: '1.8.0'
+
+      - name: Deploy Core
         run: |
-          export ARMONIK_WORKER=dockerhubaneo/armonik_core_bench_test_worker:$VERSION
-          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
-          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
-          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
-          export LOGGING_LEVEL=Information
-          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml --compatibility up -d --build --force-recreate --remove-orphans
-          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-          sleep 10
+          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=bench deploy
+
       - name: Run Bench test tasks - many tasks (200)
         timeout-minutes: 10
         run: |
@@ -719,18 +700,14 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Docker compose up
+      - name: Setup just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: '1.8.0'
+
+      - name: Deploy Core
         run: |
-          export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
-          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
-          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
-          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
-          export LOGGING_LEVEL=Information
-          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.queue-activemqp.yml --compatibility up -d --build --force-recreate --remove-orphans
-          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-          sleep 10
-          ls -la docker-compose/logs/*.json
+          just LOGGING_LEVEL=Information tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -784,18 +761,14 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Docker compose up
+      - name: Setup just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: '1.8.0'
+
+      - name: Deploy Core
         run: |
-          export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
-          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
-          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
-          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
-          export LOGGING_LEVEL=Information
-          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.queue-activemqp.yml --compatibility up -d --build --force-recreate --remove-orphans
-          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-          sleep 10
-          ls -la docker-compose/logs/*.json
+          just LOGGING_LEVEL=Information tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
 
       - name: Run HtcMock test
         timeout-minutes: 10
