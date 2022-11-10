@@ -7,27 +7,27 @@ queue  := "active"
 worker := "htcmock"
 
 # Base compose file
-export COMPOSE_BASE := "../docker-compose/docker-compose.yml"
+export COMPOSE_BASE := "./docker-compose/docker-compose.yml"
 
 # loggin level of deployment
 export LOGGING_LEVEL := "Information"
 
 # Sets the queue
 export QUEUE := if queue == "rabbit" {
-  "../docker-compose/docker-compose.queue-rabbitmq.yml"
+  "./docker-compose/docker-compose.queue-rabbitmq.yml"
 } else if queue == "rabbit091" {
-  "../docker-compose/docker-compose.queue-rabbitmq.yml"
+  "./docker-compose/docker-compose.queue-rabbitmq.yml"
 } else if queue == "artemis" {
-  "../docker-compose/docker-compose.queue-artemis.yml"
+  "./docker-compose/docker-compose.queue-artemis.yml"
 } else {
-  "../docker-compose/docker-compose.queue-activemqp.yml"
+  "./docker-compose/docker-compose.queue-activemqp.yml"
 }
 
 # Sets the override to feed docker-compose
 export OVERRIDE := if queue == "rabbit091" {
-  "../docker-compose/docker-compose.override-rabbitmq091.yml"
+  "./docker-compose/docker-compose.override-rabbitmq091.yml"
 } else {
-  "../docker-compose/docker-compose.override.yml"
+  "./docker-compose/docker-compose.override.yml"
 }
 
 # Defines worker and enviroment variables for deployment
@@ -39,11 +39,11 @@ defaultWorkerImage := if worker == "stream" {
   "dockerhubaneo/armonik_core_htcmock_test_worker:" + tag
 }
 defaultWorkerDockerFile := if worker == "stream" {
-  "../Tests/Stream/Server/Dockerfile"
+  "./Tests/Stream/Server/Dockerfile"
 } else if worker == "bench" {
-  "../Tests/Bench/Server/src/Dockerfile"
+  "./Tests/Bench/Server/src/Dockerfile"
 } else {
-  "../Tests/HtcMock/Server/src/Dockerfile"
+  "./Tests/HtcMock/Server/src/Dockerfile"
 }
 export ARMONIK_WORKER             := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
 export ARMONIK_WORKER_DOCKER_FILE := env_var_or_default('WORKER_DOCKER_FILE', defaultWorkerDockerFile)
@@ -77,6 +77,7 @@ _usage:
       worker: allowed values below
         htcmock: for HtcMock V3 (default)
         stream: for Stream worker
+        bench:  for Benchmark worker
 
   It is possible to use a custom worker, this is handled by
   defining either of the following environment variables:
@@ -87,10 +88,10 @@ _usage:
 
 # Custom command to build a single image
 build $imageTag $dockerFile:
-  docker build -t "$imageTag" -f "$dockerFile" ../
+  docker build -t "$imageTag" -f "$dockerFile" ./
 
 # Build all images necessary for the deployment 
-build-all: (build ARMONIK_WORKER ARMONIK_WORKER_DOCKER_FILE) (build ARMONIK_METRICS "../Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "../Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "../Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "../Compute/PollingAgent/src/Dockerfile")
+build-all: (build ARMONIK_WORKER ARMONIK_WORKER_DOCKER_FILE) (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
 
 # Insert partitions in database
 set-partitions:
