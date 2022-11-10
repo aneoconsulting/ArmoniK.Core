@@ -22,6 +22,7 @@ RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -c Release -o /app
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY ./tools/fcurl.sh /bin/fcurl.sh
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
 RUN mkdir /cache && chown armonikuser: /cache
 USER armonikuser

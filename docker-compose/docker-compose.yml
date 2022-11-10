@@ -146,6 +146,13 @@ services:
       driver: fluentd
       options:
         fluentd-address: 127.0.0.1:24224
+    healthcheck:
+      test: ["CMD", "fcurl.sh", "localhost", "1080", "/readiness"]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+
     # deploy:
     #   resources:
     #     limits:
