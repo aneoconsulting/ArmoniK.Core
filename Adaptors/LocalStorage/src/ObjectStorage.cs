@@ -31,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -42,7 +43,6 @@ public class ObjectStorage : IObjectStorage
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 path_;
-  private readonly int                    pid_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for LocalStorage
@@ -56,7 +56,6 @@ public class ObjectStorage : IObjectStorage
   {
     path_      = path;
     logger_    = logger;
-    pid_       = Environment.ProcessId;
     chunkSize_ = chunkSize;
 
     Directory.CreateDirectory(path);
@@ -75,35 +74,27 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)
   {
-    var tid = Environment.CurrentManagedThreadId;
     var filename = Path.Combine(path_,
                                 key);
-    var tmpFilename = $"{filename}.{pid_}.{tid}";
 
     using var _ = logger_.LogFunction(filename);
 
+    // Write to temporary file
+    await using var file = File.Open(filename,
+                                     FileMode.OpenOrCreate,
+                                     FileAccess.Write);
+
+    // TODO: Overlap chunk reading and chunk writing
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+                                           .ConfigureAwait(false))
     {
-      // Write to temporary file
-      await using var file = File.Open(tmpFilename,
-                                       FileMode.Create,
-                                       FileAccess.Write);
-
-      // TODO: Overlap chunk reading and chunk writing
-      await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                             .ConfigureAwait(false))
-      {
-        await file.WriteAsync(chunk,
-                              cancellationToken)
-                  .ConfigureAwait(false);
-      }
-
-      await file.FlushAsync(cancellationToken)
+      await file.WriteAsync(chunk,
+                            cancellationToken)
                 .ConfigureAwait(false);
     }
 
-    // Atomically update destination file
-    File.Move(tmpFilename,
-              filename);
+    await file.FlushAsync(cancellationToken)
+              .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -114,6 +105,11 @@ public class ObjectStorage : IObjectStorage
                                 key);
 
     using var _ = logger_.LogFunction(filename);
+
+    if (!File.Exists(filename))
+    {
+      throw new ObjectDataNotFoundException($"The object {key} has not been found in {path_}");
+    }
 
     await using var file = File.Open(filename,
                                      FileMode.Open,

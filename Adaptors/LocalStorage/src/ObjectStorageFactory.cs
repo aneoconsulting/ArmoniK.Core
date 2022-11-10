@@ -48,8 +48,13 @@ public class ObjectStorageFactory : IObjectStorageFactory
                               int            chunkSize,
                               ILoggerFactory loggerFactory)
   {
-    rootPath_      = rootPath;
-    chunkSize_     = chunkSize;
+    rootPath_ = rootPath == ""
+                  ? Path.Combine(Path.GetTempPath(),
+                                 "ArmoniK")
+                  : rootPath;
+    chunkSize_ = chunkSize == 0
+                   ? 64 * 1024
+                   : chunkSize;
     loggerFactory_ = loggerFactory;
   }
 

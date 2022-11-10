@@ -22,10 +22,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Core.Adapters.LocalStorage.Options;
 
-internal record LocalStorage(string Path      = "/tmp",
-                             int    ChunkSize = 64 * 1024)
+[UsedImplicitly]
+internal record LocalStorage(string Path      = "",
+                             int    ChunkSize = 0)
 {
   public const string SettingSection = nameof(LocalStorage);
 }

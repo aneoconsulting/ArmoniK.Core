@@ -22,7 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.IO;
+
 using ArmoniK.Core.Common.Tests;
+
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
@@ -31,4 +36,27 @@ namespace ArmoniK.Core.Adapters.LocalStorage.Tests;
 [TestFixture]
 public class ObjectStorageTests : ObjectStorageTestBase
 {
+  public override void TearDown()
+  {
+    ObjectStorage = null;
+    RunTests      = false;
+  }
+
+  public override void GetObjectStorageInstance()
+  {
+    var rootPath = Path.Combine(Path.GetTempPath(),
+                                $"ArmoniK.{Environment.ProcessId}");
+
+    if (Directory.Exists(rootPath))
+    {
+      Directory.Delete(rootPath,
+                       true);
+    }
+
+    ObjectStorageFactory = new ObjectStorageFactory(rootPath,
+                                                    8,
+                                                    NullLoggerFactory.Instance);
+    ObjectStorage = ObjectStorageFactory.CreateObjectStorage("LocalStorageTests");
+    RunTests      = true;
+  }
 }

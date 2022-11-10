@@ -45,7 +45,7 @@ public static class ServiceCollectionExt
   {
     var components = configuration.GetSection(Components.SettingSection);
 
-    if (components["ObjectStorage"] != "ArmoniK.Adapters.ObjectLocal.ObjectStorage")
+    if (components["ObjectStorage"] != "ArmoniK.Adapters.LocalStorage.ObjectStorage")
     {
       return serviceCollection;
     }
