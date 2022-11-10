@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -25,6 +25,7 @@
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -40,6 +41,19 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
       BsonClassMap.RegisterClassMap<Result>(cm =>
                                             {
                                               cm.MapIdProperty(nameof(Result.Id));
+                                              cm.MapProperty(nameof(Result.SessionId))
+                                                .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.Name))
+                                                .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.OwnerTaskId))
+                                                .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.Status))
+                                                .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.CreationDate))
+                                                .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.Data))
+                                                .SetIsRequired(true);
+                                              cm.SetIgnoreExtraElements(true);
                                               cm.MapCreator(model => new Result(model.SessionId,
                                                                                 model.Name,
                                                                                 model.OwnerTaskId,

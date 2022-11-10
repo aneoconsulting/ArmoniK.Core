@@ -26,20 +26,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -137,7 +136,7 @@ public class SessionTable : ISessionTable
 
     return (await GetSessionAsync(sessionId,
                                   cancellationToken)
-              .ConfigureAwait(false)).Status == SessionStatus.Canceled;
+              .ConfigureAwait(false)).Status == SessionStatus.Cancelled;
   }
 
   /// <inheritdoc />
@@ -180,7 +179,7 @@ public class SessionTable : ISessionTable
 
     var resSession = await sessionCollection.FindOneAndUpdateAsync(filterDefinition,
                                                                    Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                                    SessionStatus.Canceled)
+                                                                                                    SessionStatus.Cancelled)
                                                                                         .Set(model => model.CancellationDate,
                                                                                              DateTime.UtcNow),
                                                                    new FindOneAndUpdateOptions<SessionData>
@@ -238,8 +237,12 @@ public class SessionTable : ISessionTable
     }
   }
 
-  public async Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                                CancellationToken   cancellationToken = default)
+  public async Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                           Expression<Func<SessionData, object?>> orderField,
+                                                                                           bool                                   ascOrder,
+                                                                                           int                                    page,
+                                                                                           int                                    pageSize,
+                                                                                           CancellationToken                      cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
     using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
@@ -247,16 +250,17 @@ public class SessionTable : ISessionTable
     var       sessionCollection = sessionCollectionProvider_.Get();
 
     var queryable = sessionCollection.AsQueryable(sessionHandle)
-                                     .Where(request.Filter.ToSessionDataFilter());
+                                     .Where(filter);
 
-    var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToSessionDataField())
-                    : queryable.OrderByDescending(request.Sort.ToSessionDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return await ordered.Skip(request.Page * request.PageSize)
-                        .Take(request.PageSize)
-                        .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                        .ConfigureAwait(false);
+    return (await ordered.Skip(page * pageSize)
+                         .Take(pageSize)
+                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
+                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                              .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

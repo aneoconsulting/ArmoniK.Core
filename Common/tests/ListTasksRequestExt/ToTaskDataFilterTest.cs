@@ -437,7 +437,7 @@ public class ToTaskDataFilterTest
 
     Assert.IsFalse(func.Invoke(taskData_ with
                                {
-                                 Status = TaskStatus.Canceling,
+                                 Status = TaskStatus.Cancelling,
                                }));
   }
 }

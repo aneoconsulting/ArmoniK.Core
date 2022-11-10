@@ -22,48 +22,48 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.Results;
 
 using FluentValidation;
 
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
 /// <summary>
-///   Validator for <see cref="ListSessionsRequest" />
+///   Validator for <see cref="ListResultsRequest" />
 /// </summary>
-public class ListSessionsRequestValidator : AbstractValidator<ListSessionsRequest>
+public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
 {
   /// <summary>
-  ///   Initializes a validator for <see cref="ListSessionsRequest" />
+  ///   Initializes a validator for <see cref="ListResultsRequest" />
   /// </summary>
-  public ListSessionsRequestValidator()
+  public ListResultsRequestValidator()
   {
     RuleFor(request => request.Page)
       .NotNull()
       .GreaterThanOrEqualTo(0)
-      .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Page)}");
+      .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Page)}");
     RuleFor(request => request.PageSize)
       .NotNull()
       .GreaterThanOrEqualTo(1)
-      .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.PageSize)}");
+      .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.PageSize)}");
     RuleFor(request => request.Filter)
       .NotNull()
       .NotEmpty()
-      .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Filter)}");
+      .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Filter)}");
     RuleFor(request => request.Sort)
       .NotNull()
       .NotEmpty()
-      .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Sort)}")
+      .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}")
       .DependentRules(() =>
                       {
                         RuleFor(request => request.Sort.Direction)
                           .NotNull()
                           .NotEmpty()
-                          .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Sort)}.{nameof(ListSessionsRequest.Sort.Direction)}");
+                          .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Direction)}");
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()
-                          .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Sort)}.{nameof(ListSessionsRequest.Sort.Field)}");
+                          .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Field)}");
                       });
   }
 }

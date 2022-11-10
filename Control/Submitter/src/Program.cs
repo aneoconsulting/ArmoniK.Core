@@ -155,14 +155,21 @@ public static class Program
       app.UseAuthentication();
 
       app.UseRouting();
+      app.UseGrpcWeb();
 
       app.UseAuthorization();
       app.UseSerilogRequestLogging();
 
-      app.MapGrpcService<GrpcSubmitterService>();
-      app.MapGrpcService<GrpcTasksService>();
-      app.MapGrpcService<GrpcSessionsService>();
-      app.MapGrpcService<GrpcResultsService>();
+      app.MapGrpcService<GrpcSubmitterService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcTasksService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcSessionsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcResultsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcApplicationsService>()
+         .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",
                           1081,

@@ -73,4 +73,26 @@ public class GrpcResultsService : Results.ResultsBase
              },
            };
   }
+
+  public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
+                                                              ServerCallContext  context)
+  {
+    var results = await resultTable_.ListResultsAsync(request.Filter.ToResultFilter(),
+                                                      request.Sort.ToResultField(),
+                                                      request.Sort.Direction == ListResultsRequest.Types.OrderDirection.Asc,
+                                                      request.Page,
+                                                      request.PageSize,
+                                                      context.CancellationToken)
+                                    .ConfigureAwait(false);
+    return new ListResultsResponse
+           {
+             PageSize = request.PageSize,
+             Page     = request.Page,
+             Results =
+             {
+               results.results.Select(result => new ResultRaw(result)),
+             },
+             Total = results.totalCount,
+           };
+  }
 }

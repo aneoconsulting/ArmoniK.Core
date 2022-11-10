@@ -27,21 +27,19 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.Memory;
@@ -109,7 +107,7 @@ public class TaskTable : ITaskTable
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)
   {
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Canceled)))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state or isn't initialized properly");
     }
@@ -135,7 +133,7 @@ public class TaskTable : ITaskTable
     }
 
     return Task.FromResult(taskId2TaskData_[taskId]
-                             .Status is TaskStatus.Canceling or TaskStatus.Canceled);
+                             .Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
   }
 
   /// <inheritdoc />
@@ -180,9 +178,41 @@ public class TaskTable : ITaskTable
                         };
 
     await UpdateAllTaskStatusAsync(sessionFilter,
-                                   TaskStatus.Canceling,
+                                   TaskStatus.Cancelling,
                                    cancellationToken)
       .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                               CancellationToken   cancellationToken = default)
+  {
+    foreach (var taskId in taskIds)
+    {
+      if (!taskId2TaskData_.TryGetValue(taskId,
+                                        out var taskData))
+      {
+        continue;
+      }
+
+      if (taskData.Status is TaskStatus.Completed or TaskStatus.Cancelled or TaskStatus.Cancelling or TaskStatus.Error)
+      {
+        continue;
+      }
+
+      taskId2TaskData_.AddOrUpdate(taskId,
+                                   _ => throw new InvalidOperationException("The task does not exist."),
+                                   (_,
+                                    data) => data with
+                                             {
+                                               Status = TaskStatus.Cancelling,
+                                               EndDate = DateTime.UtcNow,
+                                             });
+    }
+
+    return Task.FromResult(taskId2TaskData_.Where(pair => taskIds.Contains(pair.Key))
+                                           .Select(pair => pair.Value)
+                                           .ToList() as IList<TaskData>);
   }
 
   /// <inheritdoc />
@@ -290,19 +320,49 @@ public class TaskTable : ITaskTable
                   .ToAsyncEnumerable();
   }
 
-  public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                    CancellationToken cancellationToken = default)
+  /// <inheritdoc />
+  public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                            Expression<Func<TaskData, object?>> orderField,
+                                                                            bool                                ascOrder,
+                                                                            int                                 page,
+                                                                            int                                 pageSize,
+                                                                            CancellationToken                   cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
-                                    .Where(request.Filter.ToTaskDataFilter());
+                                    .Where(filter);
 
-    var ordered = request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToTaskDataField())
-                    : queryable.OrderByDescending(request.Sort.ToTaskDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
-                                                         .Take(request.PageSize));
+    return Task.FromResult<(IEnumerable<TaskData> tasks, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                  .Take(pageSize), ordered.Count()));
+  }
+
+  /// <inheritdoc />
+  public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                             Expression<Func<Application, object?>> orderField,
+                                                                                             bool                                   ascOrder,
+                                                                                             int                                    page,
+                                                                                             int                                    pageSize,
+                                                                                             CancellationToken                      cancellationToken = default)
+  {
+    var queryable = taskId2TaskData_.AsQueryable()
+                                    .Select(pair => pair.Value)
+                                    .Where(filter)
+                                    .GroupBy(data => new Application(data.Options.ApplicationName,
+                                                                     data.Options.ApplicationNamespace,
+                                                                     data.Options.ApplicationVersion,
+                                                                     data.Options.ApplicationService))
+                                    .Select(group => group.Key);
+
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
+
+    return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                     .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />
@@ -329,7 +389,7 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
                                    {
                                      throw new ArmoniKException("Task already in a final status");
                                    }
@@ -354,7 +414,7 @@ public class TaskTable : ITaskTable
 
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
                           taskId,
-                          TaskStatus.Canceled,
+                          TaskStatus.Cancelled,
                           taskOutput);
 
     if (!taskId2TaskData_.ContainsKey(taskId))
@@ -367,14 +427,14 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
                                    {
                                      throw new ArmoniKException("Task already in a final status");
                                    }
 
                                    return data with
                                           {
-                                            Status = TaskStatus.Canceled,
+                                            Status = TaskStatus.Cancelled,
                                             Output = taskOutput,
                                           };
                                  });
@@ -407,7 +467,7 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
                                    {
                                      updated = false;
                                    }
@@ -585,12 +645,12 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (status is not TaskStatus.Canceling && data.Status is TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (status is not TaskStatus.Cancelling && data.Status is TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error)
                                    {
                                      throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
                                    }
 
-                                   if (data.Status == status || data.Status is TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status == status || data.Status is TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error)
                                    {
                                      return data;
                                    }

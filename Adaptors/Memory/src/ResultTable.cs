@@ -22,10 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -154,6 +156,26 @@ public class ResultTable : IResultTable
     => results_.Values.SelectMany(results => results.Keys)
                .ToImmutableList()
                .ToAsyncEnumerable();
+
+  /// <inheritdoc />
+  public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                              Expression<Func<Result, object?>> orderField,
+                                                                              bool                              ascOrder,
+                                                                              int                               page,
+                                                                              int                               pageSize,
+                                                                              CancellationToken                 cancellationToken = default)
+  {
+    var queryable = results_.Values.SelectMany(results => results.Values)
+                            .AsQueryable()
+                            .Where(filter);
+
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
+
+    return Task.FromResult<(IEnumerable<Result> results, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                  .Take(pageSize), ordered.Count()));
+  }
 
   /// <inheritdoc />
   public Task SetResult(string            sessionId,

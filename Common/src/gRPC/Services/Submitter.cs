@@ -268,8 +268,8 @@ public class Submitter : ISubmitter
           break;
         case TaskStatus.Error:
         case TaskStatus.Timeout:
-        case TaskStatus.Canceled:
-        case TaskStatus.Canceling:
+        case TaskStatus.Cancelled:
+        case TaskStatus.Cancelling:
           await responseStream.WriteAsync(new ResultReply
                                           {
                                             Error = new TaskError
@@ -377,11 +377,11 @@ public class Submitter : ISubmitter
           case TaskStatus.Timeout:
             notCompleted += count;
             break;
-          case TaskStatus.Canceling:
+          case TaskStatus.Cancelling:
             notCompleted += count;
             cancelled    =  true;
             break;
-          case TaskStatus.Canceled:
+          case TaskStatus.Cancelled:
             notCompleted += count;
             cancelled    =  true;
             break;

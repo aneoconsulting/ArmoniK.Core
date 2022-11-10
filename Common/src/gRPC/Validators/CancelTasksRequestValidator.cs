@@ -22,32 +22,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests;
+using ArmoniK.Api.gRPC.V1.Tasks;
 
-using Microsoft.Extensions.DependencyInjection;
+using FluentValidation;
 
-using NUnit.Framework;
+namespace ArmoniK.Core.Common.gRPC.Validators;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Tests;
-
-[TestFixture]
-public class PartitionTableTests : PartitionTableTestBase
+/// <summary>
+///   Validator for <see cref="CancelTasksRequest" />
+/// </summary>
+public class CancelTasksRequestValidator : AbstractValidator<CancelTasksRequest>
 {
-  public override void TearDown()
-  {
-    tableProvider_?.Dispose();
-    RunTests = false;
-  }
-
-  private MongoDatabaseProvider? tableProvider_;
-
-  public override void GetPartitionTableInstance()
-  {
-    tableProvider_ = new MongoDatabaseProvider();
-    var provider = tableProvider_.GetServiceProvider();
-
-    PartitionTable = provider.GetRequiredService<IPartitionTable>();
-    RunTests       = true;
-  }
+  /// <summary>
+  ///   Initializes a validator for <see cref="CancelTasksRequest" />
+  /// </summary>
+  public CancelTasksRequestValidator()
+    => RuleFor(request => request.TaskIds)
+       .NotNull()
+       .WithName(nameof(CancelTasksRequest.TaskIds));
 }

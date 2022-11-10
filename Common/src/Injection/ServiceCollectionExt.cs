@@ -412,10 +412,13 @@ public static class ServiceCollectionExt
                .Services.AddValidator<CreateLargeTaskRequestValidator>()
                .AddValidator<CreateSmallTaskRequestValidator>()
                .AddValidator<CreateSessionRequestValidator>()
+               .AddValidator<CancelTasksRequestValidator>()
                .AddValidator<TaskOptionsValidator>()
                .AddValidator<TaskFilterValidator>()
                .AddValidator<SessionFilterValidator>()
                .AddValidator<ListSessionsRequestValidator>()
                .AddValidator<ListTasksRequestValidator>()
+               .AddValidator<ListResultsRequestValidator>()
+               .AddValidator<ListApplicationsRequestValidator>()
                .AddGrpcValidation();
 }
