@@ -601,6 +601,8 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public async Task<TaskData> AcquireTask(string            taskId,
                                           string            ownerPodId,
+                                          string            ownerPodName,
+                                          DateTime          receptionDate,
                                           CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(AcquireTask)}");
@@ -608,6 +610,12 @@ public class TaskTable : ITaskTable
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
                                                                        ownerPodId)
+                                                                  .Set(tdm => tdm.OwnerPodName,
+                                                                       ownerPodName)
+                                                                  .Set(tdm => tdm.ReceptionDate,
+                                                                       receptionDate)
+                                                                  .Set(tdm => tdm.AcquisitionDate,
+                                                                       DateTime.UtcNow)
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Dispatched);
 
@@ -640,6 +648,12 @@ public class TaskTable : ITaskTable
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
                                                                        "")
+                                                                  .Set(tdm => tdm.OwnerPodName,
+                                                                       "")
+                                                                  .Set(tdm => tdm.AcquisitionDate,
+                                                                       null)
+                                                                  .Set(tdm => tdm.ReceptionDate,
+                                                                       null)
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Submitted);
 
@@ -772,6 +786,7 @@ public class TaskTable : ITaskTable
     var newTaskData = new TaskData(taskData.SessionId,
                                    newTaskId,
                                    "",
+                                   "",
                                    taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
@@ -782,6 +797,8 @@ public class TaskTable : ITaskTable
                                    "",
                                    taskData.Options,
                                    DateTime.UtcNow,
+                                   null,
+                                   null,
                                    null,
                                    null,
                                    null,

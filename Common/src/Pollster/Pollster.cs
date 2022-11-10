@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,6 +56,7 @@ public class Pollster : IInitializable
   private readonly int                        messageBatchSize_;
   private readonly IObjectStorageFactory      objectStorageFactory_;
   private readonly string                     ownerPodId_;
+  private readonly string                     ownerPodName_;
   private readonly Injection.Options.Pollster pollsterOptions_;
   private readonly IPullQueueStorage          pullQueueStorage_;
   private readonly IResultTable               resultTable_;
@@ -106,6 +108,7 @@ public class Pollster : IInitializable
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    ownerPodName_          = Dns.GetHostName();
     Failed                 = false;
   }
 
@@ -284,6 +287,7 @@ public class Pollster : IInitializable
                                                             message,
                                                             taskProcessingChecker_,
                                                             ownerPodId_,
+                                                            ownerPodName_,
                                                             activitySource_,
                                                             agentHandler_,
                                                             logger_,

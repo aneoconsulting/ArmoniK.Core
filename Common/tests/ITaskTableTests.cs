@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,6 +60,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskCompletedId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -81,6 +83,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskCreatingId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -102,6 +105,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskProcessingId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -123,6 +127,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskAnotherProcessingId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -143,6 +148,7 @@ public class TaskTableTestBase
                                                        "")),
                                new TaskData("SessionId",
                                             "TaskSubmittedId",
+                                            "",
                                             "",
                                             "PayloadId",
                                             new[]
@@ -168,6 +174,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskFailedId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -855,17 +862,75 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodname  = Dns.GetHostName();
+      var receptionDate = DateTime.UtcNow.Date;
 
       var result = await TaskTable!.AcquireTask("TaskSubmittedId",
-                                                hostname,
+                                                ownerpodid,
+                                                ownerpodname,
+                                                receptionDate,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
       Assert.AreEqual("TaskSubmittedId",
                       result.TaskId);
-      Assert.AreEqual(hostname,
+      Assert.AreEqual(ownerpodid,
                       result.OwnerPodId);
+      Assert.AreEqual(ownerpodname,
+                      result.OwnerPodName);
+      Assert.AreEqual(receptionDate,
+                      result.ReceptionDate);
+      Assert.Greater(DateTime.UtcNow,
+                     result.AcquisitionDate);
+      Assert.Greater(result.AcquisitionDate,
+                     result.ReceptionDate);
+    }
+  }
+
+  [Test]
+  public async Task ReleaseTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodname  = Dns.GetHostName();
+      var receptionDate = DateTime.UtcNow.Date;
+
+      var result = await TaskTable!.AcquireTask("TaskSubmittedId",
+                                                ownerpodid,
+                                                ownerpodname,
+                                                receptionDate,
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual("TaskSubmittedId",
+                      result.TaskId);
+      Assert.AreEqual(ownerpodid,
+                      result.OwnerPodId);
+      Assert.AreEqual(ownerpodname,
+                      result.OwnerPodName);
+      Assert.AreEqual(receptionDate,
+                      result.ReceptionDate);
+      Assert.Greater(DateTime.UtcNow,
+                     result.AcquisitionDate);
+      Assert.Greater(result.AcquisitionDate,
+                     result.ReceptionDate);
+
+      var resultRelease = await TaskTable!.ReleaseTask("TaskSubmittedId",
+                                                       ownerpodid,
+                                                       CancellationToken.None)
+                                          .ConfigureAwait(false);
+      Assert.AreEqual("TaskSubmittedId",
+                      resultRelease.TaskId);
+      Assert.AreEqual("",
+                      resultRelease.OwnerPodId);
+      Assert.AreEqual("",
+                      resultRelease.OwnerPodName);
+      Assert.AreEqual(null,
+                      resultRelease.ReceptionDate);
+      Assert.AreEqual(null,
+                      resultRelease.AcquisitionDate);
     }
   }
 
@@ -878,6 +943,8 @@ public class TaskTableTestBase
 
       var result1 = await TaskTable!.AcquireTask("TaskSubmittedId",
                                                  hostname,
+                                                 hostname,
+                                                 DateTime.UtcNow,
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -888,6 +955,8 @@ public class TaskTableTestBase
 
       var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
                                                 hostname,
+                                                hostname,
+                                                DateTime.UtcNow,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.AreEqual(result1.Status,
@@ -895,6 +964,15 @@ public class TaskTableTestBase
 
       Assert.AreEqual(result1.OwnerPodId,
                       result2.OwnerPodId);
+
+      Assert.AreEqual(result1.OwnerPodName,
+                      result2.OwnerPodName);
+
+      Assert.AreEqual(result1.ReceptionDate,
+                      result2.ReceptionDate);
+
+      Assert.AreEqual(result1.AcquisitionDate,
+                      result2.AcquisitionDate);
     }
   }
 
@@ -905,11 +983,45 @@ public class TaskTableTestBase
     {
       var result = await TaskTable!.AcquireTask("TaskFailedId",
                                                 LocalIPv4.GetLocalIPv4Ethernet(),
+                                                Dns.GetHostName(),
+                                                DateTime.UtcNow,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
       Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
                          result.OwnerPodId);
+
+      Assert.AreEqual(TaskStatus.Error,
+                      result.Status);
+    }
+  }
+
+  [Test]
+  public async Task AcquireCreatingTaskShouldFail()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable!.AcquireTask("TaskCreatingId",
+                                                LocalIPv4.GetLocalIPv4Ethernet(),
+                                                Dns.GetHostName(),
+                                                DateTime.UtcNow,
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
+                         result.OwnerPodId);
+
+      Assert.AreEqual(TaskStatus.Creating,
+                      result.Status);
+
+      Assert.AreEqual(null,
+                      result.AcquisitionDate);
+
+      Assert.AreEqual(null,
+                      result.ReceptionDate);
+
+      Assert.AreEqual(null,
+                      result.SubmittedDate);
     }
   }
 
@@ -1168,6 +1280,7 @@ public class TaskTableTestBase
                                      new TaskData("SessionId",
                                                   taskId,
                                                   "OwnerPodId",
+                                                  "OwnerPodName",
                                                   "PayloadId",
                                                   new[]
                                                   {

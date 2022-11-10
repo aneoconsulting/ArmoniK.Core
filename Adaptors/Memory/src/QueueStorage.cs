@@ -258,6 +258,9 @@ public class QueueStorage : IQueueStorage
 
     /// <inheritdoc />
     public QueueMessageStatus Status { get; set; } = 0;
+
+    /// <inheritdoc />
+    public DateTime ReceptionDateTime { get; init; }
   }
 
   private class MessageComparer : IComparer<MessageHandler>

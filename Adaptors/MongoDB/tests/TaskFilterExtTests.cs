@@ -69,6 +69,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("Session",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -109,6 +110,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -157,6 +159,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -204,6 +207,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -252,6 +256,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -300,6 +305,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -347,6 +353,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -394,6 +401,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -442,6 +450,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -490,6 +499,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -531,6 +541,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -573,6 +584,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -614,6 +626,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -656,6 +669,7 @@ internal class TaskFilterExtTests
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {

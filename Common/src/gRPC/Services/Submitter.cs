@@ -734,6 +734,7 @@ public class Submitter : ISubmitter
     await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionData.SessionId,
                                                                          request.Id,
                                                                          "",
+                                                                         "",
                                                                          request.Id,
                                                                          parentTaskIds,
                                                                          request.DataDependencies.ToList(),

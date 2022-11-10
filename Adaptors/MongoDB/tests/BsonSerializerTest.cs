@@ -122,6 +122,7 @@ internal class BsonSerializerTest
     var tdm = new TaskData("SessionId",
                            "TaskCompletedId",
                            "OwnerPodId",
+                           "OwnerPodName",
                            "PayloadId",
                            new[]
                            {

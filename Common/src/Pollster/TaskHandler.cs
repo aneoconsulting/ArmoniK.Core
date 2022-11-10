@@ -56,6 +56,7 @@ public class TaskHandler : IAsyncDisposable
   private readonly ILogger                                     logger_;
   private readonly IQueueMessageHandler                        messageHandler_;
   private readonly string                                      ownerPodId_;
+  private readonly string                                      ownerPodName_;
   private readonly CancellationTokenRegistration               reg1_;
   private readonly IResultTable                                resultTable_;
   private readonly ISessionTable                               sessionTable_;
@@ -79,6 +80,7 @@ public class TaskHandler : IAsyncDisposable
                      IQueueMessageHandler       messageHandler,
                      ITaskProcessingChecker     taskProcessingChecker,
                      string                     ownerPodId,
+                     string                     ownerPodName,
                      ActivitySource             activitySource,
                      IAgentHandler              agentHandler,
                      ILogger                    logger,
@@ -98,6 +100,7 @@ public class TaskHandler : IAsyncDisposable
     logger_                  = logger;
     cancellationTokenSource_ = cancellationTokenSource;
     ownerPodId_              = ownerPodId;
+    ownerPodName_            = ownerPodName;
     taskData_                = null;
     sessionData_             = null;
     token_ = Guid.NewGuid()
@@ -311,6 +314,8 @@ public class TaskHandler : IAsyncDisposable
       logger_.LogDebug("Trying to acquire task");
       taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
                                                ownerPodId_,
+                                               ownerPodName_,
+                                               messageHandler_.ReceptionDateTime,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 

@@ -17,6 +17,7 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,4 +34,5 @@ public class SimpleQueueMessageHandler : IQueueMessageHandler
   public string             MessageId         { get; init; } = "";
   public string             TaskId            { get; set; }  = "";
   public QueueMessageStatus Status            { get; set; }
+  public DateTime           ReceptionDateTime { get; init; } = DateTime.UtcNow;
 }
