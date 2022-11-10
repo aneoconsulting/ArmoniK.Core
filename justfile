@@ -3,7 +3,7 @@ set positional-arguments
 
 # Default values for the deployment
 tag    := "test"
-queue  := "active"
+queue  := "activemqp"
 worker := "htcmock"
 
 # Base compose file
@@ -13,9 +13,9 @@ export COMPOSE_BASE := "./docker-compose/docker-compose.yml"
 export LOGGING_LEVEL := "Information"
 
 # Sets the queue
-export QUEUE := if queue == "rabbit" {
+export QUEUE := if queue == "rabbitmq" {
   "./docker-compose/docker-compose.queue-rabbitmq.yml"
-} else if queue == "rabbit091" {
+} else if queue == "rabbitmq091" {
   "./docker-compose/docker-compose.queue-rabbitmq.yml"
 } else if queue == "artemis" {
   "./docker-compose/docker-compose.queue-artemis.yml"
@@ -24,7 +24,7 @@ export QUEUE := if queue == "rabbit" {
 }
 
 # Sets the override to feed docker-compose
-export OVERRIDE := if queue == "rabbit091" {
+export OVERRIDE := if queue == "rabbitmq091" {
   "./docker-compose/docker-compose.override-rabbitmq091.yml"
 } else {
   "./docker-compose/docker-compose.override.yml"
@@ -69,10 +69,10 @@ _usage:
 
       tag: The core tag image to use, defaults to test
       queue: allowed values below
-        active   :  for activemq (1.0.0 protocol) (default)
-        rabbit   :  for rabbitmq (1.0.0 protocol)
-        rabbit091:  for rabbitmq (0.9.1 protocol)
-        artemis  :  for artemismq (1.0.0 protocol)
+        activemqp   :  for activemq (1.0.0 protocol) (default)
+        rabbitmq    :  for rabbitmq (1.0.0 protocol)
+        rabbitmq091 :  for rabbitmq (0.9.1 protocol)
+        artemis     :  for artemismq (1.0.0 protocol)
 
       worker: allowed values below
         htcmock: for HtcMock V3 (default)
@@ -109,7 +109,7 @@ compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
 compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
 
 # Deploy ArmoniK Core
-deploy: (compose-invoke "data") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
+deploy: (compose-invoke "database") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
 
 # Build and Deploy ArmoniK Core
 build-deploy: build-all deploy
