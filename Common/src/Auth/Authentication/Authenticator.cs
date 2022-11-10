@@ -132,7 +132,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   /// <summary>
   ///   Name of the scheme for this handler
   /// </summary>
-  public const string SchemeName = "SubmitterAuthenticationScheme";
+  public const string SchemeName = "ArmoniKAuthenticationScheme";
 
   private static readonly UserIdentity DefaultUser = new(new UserAuthenticationResult(),
                                                          SchemeName);
@@ -244,7 +244,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     if (impersonationId != null || impersonationUsername != null)
     {
       // Only users with the impersonate permission can impersonate
-      if (identity.HasClaim(c => c.Type == Permissions.Impersonate.Claim.Type))
+      if (identity.HasClaim(c => c.Type == GeneralService.Impersonate.Claim.Type))
       {
         try
         {
@@ -343,7 +343,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 
 
     // User exists and can be impersonated according to the impersonation permissions of the base user
-    if (result.Roles.All(role => baseIdentity.HasClaim(Permissions.Impersonate.Claim.Type,
+    if (result.Roles.All(role => baseIdentity.HasClaim(GeneralService.Impersonate.Claim.Type,
                                                        role)))
     {
       return new UserIdentity(result,

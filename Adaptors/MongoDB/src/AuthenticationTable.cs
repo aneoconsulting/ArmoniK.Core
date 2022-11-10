@@ -57,32 +57,33 @@ public class AuthenticationTable : IAuthenticationTable
   private readonly MongoCollectionProvider<RoleData, RoleDataModelMapping> roleCollectionProvider_;
   private readonly SessionProvider                                         sessionProvider_;
   private readonly MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider_;
-  private          PipelineDefinition<AuthData, UserAuthenticationResult>? authToIdentityPipeline_;
+  private          PipelineDefinition<AuthData, MongoAuthResult>?          authToIdentityPipeline_;
   private          bool                                                    isInitialized_;
 
-  private PipelineDefinition<UserData, UserAuthenticationResult>? userToIdentityPipeline_;
+  private PipelineDefinition<UserData, MongoAuthResult>? userToIdentityPipeline_;
 
   static AuthenticationTable()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(UserAuthenticationResult)))
+    if (!BsonClassMap.IsClassMapRegistered(typeof(MongoAuthResult)))
     {
-      BsonClassMap.RegisterClassMap<UserAuthenticationResult>(cm =>
-                                                              {
-                                                                cm.MapIdProperty(nameof(UserAuthenticationResult.Id))
-                                                                  .SetIsRequired(true);
-                                                                cm.MapProperty(nameof(UserAuthenticationResult.Username))
-                                                                  .SetIsRequired(true);
-                                                                cm.MapProperty(nameof(UserAuthenticationResult.Roles))
-                                                                  .SetIgnoreIfDefault(true)
-                                                                  .SetDefaultValue(Array.Empty<string>());
-                                                                cm.MapProperty(nameof(UserAuthenticationResult.Permissions))
-                                                                  .SetIgnoreIfDefault(true)
-                                                                  .SetDefaultValue(Array.Empty<string>());
-                                                                cm.MapCreator(model => new UserAuthenticationResult(model.Id,
-                                                                                                                    model.Username,
-                                                                                                                    model.Roles,
-                                                                                                                    model.Permissions));
-                                                              });
+      BsonClassMap.RegisterClassMap<MongoAuthResult>(cm =>
+                                                     {
+                                                       cm.MapIdProperty(nameof(MongoAuthResult.Id))
+                                                         .SetShouldSerializeMethod(_ => true)
+                                                         .SetIsRequired(true);
+                                                       cm.MapProperty(nameof(MongoAuthResult.Username))
+                                                         .SetIsRequired(true);
+                                                       cm.MapProperty(nameof(MongoAuthResult.Roles))
+                                                         .SetIgnoreIfDefault(true)
+                                                         .SetDefaultValue(Array.Empty<string>());
+                                                       cm.MapProperty(nameof(MongoAuthResult.Permissions))
+                                                         .SetIgnoreIfDefault(true)
+                                                         .SetDefaultValue(Array.Empty<string>());
+                                                       cm.MapCreator(model => new MongoAuthResult(model.Id,
+                                                                                                  model.Username,
+                                                                                                  model.Roles,
+                                                                                                  model.Permissions));
+                                                     });
     }
   }
 
@@ -172,12 +173,12 @@ public class AuthenticationTable : IAuthenticationTable
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromCertificateAsync)}");
     var       authCollection = authCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
-    return await GetIdentityFromPipelineAsync(sessionHandle,
-                                              authCollection,
-                                              GetAuthToIdentityPipeline(),
-                                              auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
-                                              cancellationToken)
-             .ConfigureAwait(false);
+    return (await GetIdentityFromPipelineAsync(sessionHandle,
+                                               authCollection,
+                                               GetAuthToIdentityPipeline(),
+                                               auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
+                                               cancellationToken)
+              .ConfigureAwait(false))?.ToUserAuthenticationResult();
   }
 
   /// <inheritdoc />
@@ -203,12 +204,12 @@ public class AuthenticationTable : IAuthenticationTable
       return null;
     }
 
-    return await GetIdentityFromPipelineAsync(sessionHandle,
-                                              userCollection,
-                                              GetUserToIdentityPipeline(),
-                                              expression,
-                                              cancellationToken)
-             .ConfigureAwait(false);
+    return (await GetIdentityFromPipelineAsync(sessionHandle,
+                                               userCollection,
+                                               GetUserToIdentityPipeline(),
+                                               expression,
+                                               cancellationToken)
+              .ConfigureAwait(false))?.ToUserAuthenticationResult();
   }
 
   /// <summary>
@@ -225,15 +226,13 @@ public class AuthenticationTable : IAuthenticationTable
   ///   UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has
   ///   not been found
   /// </returns>
-  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
-                                                                                                         IMongoCollection<TCollectionDataType> collection,
-                                                                                                         PipelineDefinition<TCollectionDataType,
-                                                                                                           UserAuthenticationResult> pipeline,
-                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunction,
-                                                                                                         CancellationToken cancellationToken = default)
+  private static async Task<MongoAuthResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle sessionHandle,
+                                                                                                IMongoCollection<TCollectionDataType> collection,
+                                                                                                PipelineDefinition<TCollectionDataType, MongoAuthResult> pipeline,
+                                                                                                Expression<Func<TCollectionDataType, bool>> matchingFunction,
+                                                                                                CancellationToken cancellationToken = default)
   {
-    var pipe =
-      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
+    var pipe = new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, MongoAuthResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
                                                                                                                pipeline);
 
     return await collection.AggregateAsync(sessionHandle,
@@ -287,7 +286,7 @@ public class AuthenticationTable : IAuthenticationTable
   /// </remarks>
   /// @SONAR-IGNORE-END
   /// <returns>The user to identity pipeline</returns>
-  private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
+  private PipelineDefinition<UserData, MongoAuthResult> GetUserToIdentityPipeline()
   {
     if (userToIdentityPipeline_ != null)
     {
@@ -305,29 +304,23 @@ public class AuthenticationTable : IAuthenticationTable
     - Roles : user's role names
     - Permissions : permissions list, extracted from the roles. Permissions are not repeated
     */
-    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserAuthenticationResult>(ual => new UserAuthenticationResult(ual.UserId,
-                                                                                                                                                    ual.Username,
-                                                                                                                                                    ual.Roles
-                                                                                                                                                       .Select(r => r
-                                                                                                                                                                 .RoleName),
-                                                                                                                                                    ual.Roles
-                                                                                                                                                       .Aggregate<
-                                                                                                                                                         RoleData,
-                                                                                                                                                         IEnumerable<
-                                                                                                                                                           string>>(new
-                                                                                                                                                                      HashSet
-                                                                                                                                                                      <string>(),
-                                                                                                                                                                    (set,
-                                                                                                                                                                     data)
-                                                                                                                                                                      => set
-                                                                                                                                                                        .Union(data
-                                                                                                                                                                                 .Permissions))));
+    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, MongoAuthResult>(ual => new MongoAuthResult(ual.UserId,
+                                                                                                                                  ual.Username,
+                                                                                                                                  ual.Roles.Select(r => r.RoleName),
+                                                                                                                                  ual.Roles
+                                                                                                                                     .Aggregate<RoleData,
+                                                                                                                                       IEnumerable<string>>(new HashSet<
+                                                                                                                                                              string>(),
+                                                                                                                                                            (set,
+                                                                                                                                                             data) => set
+                                                                                                                                                              .Union(data
+                                                                                                                                                                       .Permissions))));
     var pipeline = new IPipelineStageDefinition[]
                    {
                      lookup,
                      projectionStage,
                    };
-    userToIdentityPipeline_ = new PipelineStagePipelineDefinition<UserData, UserAuthenticationResult>(pipeline);
+    userToIdentityPipeline_ = new PipelineStagePipelineDefinition<UserData, MongoAuthResult>(pipeline);
     return userToIdentityPipeline_;
   }
 
@@ -409,7 +402,7 @@ public class AuthenticationTable : IAuthenticationTable
   /// </remarks>
   /// @SONAR-IGNORE-END
   /// <returns>Pipeline to obtain the identity from the certificate</returns>
-  private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
+  private PipelineDefinition<AuthData, MongoAuthResult> GetAuthToIdentityPipeline()
   {
     if (authToIdentityPipeline_ != null)
     {
@@ -445,7 +438,7 @@ public class AuthenticationTable : IAuthenticationTable
                      checkIfValid,
                      replaceRoot,
                    }.Concat(userToIdentityPipeline.Stages);
-    authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserAuthenticationResult>(pipeline);
+    authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, MongoAuthResult>(pipeline);
     return authToIdentityPipeline_;
   }
 }
