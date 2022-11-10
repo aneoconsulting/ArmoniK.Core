@@ -497,6 +497,8 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<TaskData> AcquireTask(string            taskId,
                                     string            ownerPodId,
+                                    string            ownerPodName,
+                                    DateTime          receptionDate,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
                                                     _ => throw new InvalidOperationException("The task does not exist."),
@@ -511,6 +513,9 @@ public class TaskTable : ITaskTable
                                                       return data with
                                                              {
                                                                OwnerPodId = ownerPodId,
+                                                               OwnerPodName = ownerPodName,
+                                                               ReceptionDate = receptionDate,
+                                                               AcquisitionDate = DateTime.UtcNow,
                                                              };
                                                     }));
 
@@ -532,6 +537,9 @@ public class TaskTable : ITaskTable
                                                       return data with
                                                              {
                                                                OwnerPodId = "",
+                                                               OwnerPodName = "",
+                                                               AcquisitionDate = null,
+                                                               ReceptionDate = null,
                                                              };
                                                     }));
 
@@ -576,6 +584,7 @@ public class TaskTable : ITaskTable
     var newTaskData = new TaskData(taskData.SessionId,
                                    newTaskId,
                                    "",
+                                   "",
                                    taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
@@ -586,6 +595,8 @@ public class TaskTable : ITaskTable
                                    "",
                                    taskData.Options,
                                    DateTime.UtcNow,
+                                   null,
+                                   null,
                                    null,
                                    null,
                                    null,

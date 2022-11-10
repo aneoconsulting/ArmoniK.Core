@@ -298,12 +298,16 @@ public interface ITaskTable : IInitializable
   /// </summary>
   /// <param name="taskId">Id of the task to acquire</param>
   /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
+  /// <param name="ownerPodName">Hostname of the pollster</param>
+  /// <param name="receptionDate">Date when the message from the queue storage is received</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to acquire
   /// </returns>
   Task<TaskData> AcquireTask(string            taskId,
                              string            ownerPodId,
+                             string            ownerPodName,
+                             DateTime          receptionDate,
                              CancellationToken cancellationToken = default);
 
   /// <summary>

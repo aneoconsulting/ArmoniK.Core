@@ -308,6 +308,7 @@ public class SubmitterTests
     var taskData = new TaskData(sessionId,
                                 taskCompletedId,
                                 "OwnerPodId",
+                                "OwnerPodName",
                                 "PayloadId",
                                 new List<string>(),
                                 new List<string>(),

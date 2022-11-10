@@ -48,6 +48,7 @@ public class QueueMessageHandler : IQueueMessageHandler
     MessageId         = messageId;
     TaskId            = taskId;
     CancellationToken = cancellationToken;
+    ReceptionDateTime = DateTime.UtcNow;
   }
 
   public string MessageId { get; init; }
@@ -56,6 +57,10 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public QueueMessageStatus Status { get; set; }
 
+  /// <inheritdoc />
+  public DateTime ReceptionDateTime { get; init; }
+
+  /// <inheritdoc />
   public CancellationToken CancellationToken { get; set; }
 
   /// <inheritdoc />

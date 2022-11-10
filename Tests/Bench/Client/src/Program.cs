@@ -234,8 +234,8 @@ internal static class Program
                                            .Sum(count => count.Count),
                   ErrorTasks = countAll.Values.Where(count => count.Status == TaskStatus.Error)
                                        .Sum(count => count.Count),
-                  CanceledTasks = countAll.Values.Where(count => count.Status is TaskStatus.Canceled or TaskStatus.Canceling)
-                                          .Sum(count => count.Count),
+                  CancelledTasks = countAll.Values.Where(count => count.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
+                                           .Sum(count => count.Count),
                 };
     logger.LogInformation("executions stats {@stats}",
                           stats);

@@ -355,6 +355,7 @@ public class TaskHandlerTest
                                 Guid.NewGuid()
                                     .ToString(),
                                 "ownerpodid",
+                                "ownerpodname",
                                 "payload",
                                 new List<string>(),
                                 new List<string>(),
@@ -374,6 +375,8 @@ public class TaskHandlerTest
                                                 "",
                                                 ""),
                                 DateTime.Now,
+                                null,
+                                null,
                                 null,
                                 null,
                                 null,
@@ -442,7 +445,8 @@ public class TaskHandlerTest
 
       return new TaskData("SessionId",
                           "taskId",
-                          "owner",
+                          "ownerpodid",
+                          "ownerpodname",
                           "payload",
                           new List<string>(),
                           new List<string>(),
@@ -461,6 +465,8 @@ public class TaskHandlerTest
                                           "",
                                           "",
                                           ""),
+                          DateTime.Now,
+                          DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
@@ -550,6 +556,8 @@ public class TaskHandlerTest
 
     public async Task<TaskData> AcquireTask(string            taskId,
                                             string            ownerPodId,
+                                            string            ownerPodName,
+                                            DateTime          receptionDate,
                                             CancellationToken cancellationToken = default)
     {
       if (waitMethod_ == WaitMethod.Acquire)
@@ -561,6 +569,7 @@ public class TaskHandlerTest
       return new TaskData("SessionId",
                           taskId,
                           ownerPodId,
+                          ownerPodName,
                           "payload",
                           new List<string>(),
                           new List<string>(),
@@ -583,6 +592,8 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
+                          receptionDate,
+                          DateTime.Now,
                           DateTime.Now,
                           new Output(false,
                                      ""));
@@ -593,6 +604,7 @@ public class TaskHandlerTest
                                       CancellationToken cancellationToken = default)
       => Task.FromResult(new TaskData("SessionId",
                                       taskId,
+                                      ownerPodId,
                                       ownerPodId,
                                       "payload",
                                       new List<string>(),
@@ -612,6 +624,8 @@ public class TaskHandlerTest
                                                       "",
                                                       "",
                                                       ""),
+                                      DateTime.Now,
+                                      DateTime.Now,
                                       DateTime.Now,
                                       DateTime.Now,
                                       DateTime.Now,

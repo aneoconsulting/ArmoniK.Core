@@ -60,6 +60,7 @@ public class ToApplicationFieldTest
   private readonly TaskData taskData_ = new("SessionId",
                                             "TaskCompletedId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {

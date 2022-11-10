@@ -53,6 +53,7 @@ public class QueueMessageHandler : IQueueMessageHandler
     deliverEvent_     = deliverEvent;
     CancellationToken = cancellationToken;
     channel_          = channel;
+    ReceptionDateTime = DateTime.UtcNow;
   }
 
   /// <inheritdoc />
@@ -67,6 +68,9 @@ public class QueueMessageHandler : IQueueMessageHandler
 
   /// <inheritdoc />
   public QueueMessageStatus Status { get; set; }
+
+  /// <inheritdoc />
+  public DateTime ReceptionDateTime { get; init; }
 
   public ValueTask DisposeAsync()
   {
