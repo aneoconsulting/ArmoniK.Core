@@ -56,7 +56,8 @@ public class ObjectStorageFactory : IObjectStorageFactory
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
   {
-    _              = cancellationToken;
+    _ = cancellationToken;
+    Directory.CreateDirectory(rootPath_);
     isInitialized_ = true;
     return Task.CompletedTask;
   }
@@ -72,7 +73,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
                                  ? HealthCheckResult.Healthy()
                                  : HealthCheckResult.Unhealthy("Local storage not initialized yet."));
       case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && File.Exists(rootPath_)
+        return Task.FromResult(isInitialized_ && Directory.Exists(rootPath_)
                                  ? HealthCheckResult.Healthy()
                                  : HealthCheckResult.Unhealthy("Local storage not initialized or folder has been deleted."));
       default:

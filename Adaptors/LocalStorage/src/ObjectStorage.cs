@@ -45,7 +45,7 @@ public class ObjectStorage : IObjectStorage
   private readonly int                    pid_;
 
   /// <summary>
-  ///   <see cref="IObjectStorage" /> implementation for Redis
+  ///   <see cref="IObjectStorage" /> implementation for LocalStorage
   /// </summary>
   /// <param name="path">Path where the objects are stored</param>
   /// <param name="chunkSize">Size of the chunks when reading</param>
@@ -58,6 +58,8 @@ public class ObjectStorage : IObjectStorage
     logger_    = logger;
     pid_       = Environment.ProcessId;
     chunkSize_ = chunkSize;
+
+    Directory.CreateDirectory(path);
   }
 
   /// <inheritdoc />
@@ -116,26 +118,34 @@ public class ObjectStorage : IObjectStorage
     await using var file = File.Open(filename,
                                      FileMode.Open,
                                      FileAccess.Read);
-    // TODO: overlap read and yield
+
+    // Task is not awaited here in order to overlap reading and yielding
+    var buffer = new byte[chunkSize_];
+    var readTask = file.ReadAsync(buffer,
+                                  cancellationToken);
     while (true)
     {
-      var buffer = new byte[chunkSize_];
-      var read = await file.ReadAsync(buffer,
-                                      cancellationToken)
-                           .ConfigureAwait(false);
+      // We need to await the read task before starting to read another chunk
+      var read       = await readTask.ConfigureAwait(false);
+      var readBuffer = buffer;
 
-      if (read != buffer.Length)
+      if (read == 0)
       {
-        if (read == 0)
-        {
-          yield break;
-        }
+        yield break;
+      }
 
-        Array.Resize(ref buffer,
+      // Start reading new chunk
+      buffer = new byte[chunkSize_];
+      readTask = file.ReadAsync(buffer,
+                                cancellationToken);
+
+      if (read != readBuffer.Length)
+      {
+        Array.Resize(ref readBuffer,
                      read);
       }
 
-      yield return buffer;
+      yield return readBuffer;
     }
   }
 
