@@ -707,7 +707,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
+          just tag=${VERSION} worker=htcmock deploy
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -768,7 +768,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
+          just tag=${VERSION} deploy
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -786,8 +786,12 @@ jobs:
       - name: Health Check Test when database is down
         timeout-minutes: 10
         run: |
-          set -e
-          bash tools/test_healthcheck.sh database
+          just tag=${VERSION} restart database
+          just tag=${VERSION} restart armonik.control.submitter
+          just tag=${VERSION} restart armonik.compute.pollingagent0
+          just tag=${VERSION} restart armonik.compute.pollingagent1
+          just tag=${VERSION} restart armonik.compute.pollingagent2
+          just healthChecks
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -801,13 +805,16 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
           ls -la docker-compose/logs/*.json
-
 
       - name: Health Check Test when queue is down
         timeout-minutes: 10
         run: |
-          set -e
-          bash tools/test_healthcheck.sh queue
+          just tag=${VERSION} restart queue
+          just tag=${VERSION} restart armonik.control.submitter
+          just tag=${VERSION} restart armonik.compute.pollingagent0
+          just tag=${VERSION} restart armonik.compute.pollingagent1
+          just tag=${VERSION} restart armonik.compute.pollingagent2
+          just healthChecks
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -822,12 +829,15 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
           ls -la docker-compose/logs/*.json
 
-
       - name: Health Check Test when object is down
         timeout-minutes: 10
         run: |
-          set -e
-          bash tools/test_healthcheck.sh object
+          just tag=${VERSION} restart object
+          just tag=${VERSION} restart armonik.control.submitter
+          just tag=${VERSION} restart armonik.compute.pollingagent0
+          just tag=${VERSION} restart armonik.compute.pollingagent1
+          just tag=${VERSION} restart armonik.compute.pollingagent2
+          just healthChecks
 
       - name: Run HtcMock test
         timeout-minutes: 10
