@@ -106,7 +106,7 @@ compose *args:
 compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
 
 # Call custom docker-compose up
-compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans" "--wait")
+compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
 
 # Deploy ArmoniK Core
 deploy: (compose-invoke "database") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
