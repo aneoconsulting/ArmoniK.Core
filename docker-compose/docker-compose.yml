@@ -60,7 +60,7 @@ services:
         - |
           exec 3<>"/dev/tcp/localhost/1081"
           echo -e "GET /liveness HTTP/1.1\r\nHost: localhost:1081\r\nConnection: close\r\n\r\n">&3 &
-          cat <&3 | grep Healthy || exit 1 && echo $?
+          cat <&3 | grep Healthy || exit 1 && echo "$$?"
       interval: 5s
       timeout: 3s
       start_period: 10s
@@ -167,7 +167,7 @@ services:
         - |
           exec 3<>"/dev/tcp/localhost/1080"
           echo -e "GET /liveness HTTP/1.1\r\nHost: localhost:1080\r\nConnection: close\r\n\r\n">&3 &
-          cat <&3 | grep Healthy || exit 1 && echo $?
+          cat <&3 | grep Healthy || exit 1 && echo "$$?"
       interval: 5s
       timeout: 3s
       start_period: 10s
