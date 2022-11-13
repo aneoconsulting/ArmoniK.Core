@@ -120,14 +120,14 @@ healthChecks:
   set -euo pipefail
   for i in {0..2}; do 
     echo -e "\nHealth Checking PollingAggent${i}"
-    echo -n "  startup: " && curl -f localhost:998${i}/startup
-    echo -n "  liveness: " && curl -f localhost:998${i}/liveness
-    echo -n "  readiness: " && curl -f localhost:998${i}/readiness
+    echo -n "  startup: " && curl -sS localhost:998${i}/startup
+    echo -n "  liveness: " && curl -sS localhost:998${i}/liveness
+    echo -n "  readiness: " && curl -sS localhost:998${i}/readiness
   done
 
   echo -e "\nHealth Checking Submitter"
-  echo -n "  startup: " && curl -fsSL localhost:5011/startup
-  echo -n "  liveness: " && curl -fsSL localhost:5011/liveness
+  echo -n "  startup: " && curl -sSL localhost:5011/startup
+  echo -n "  liveness: " && curl -sSL localhost:5011/liveness
 
 # Remove dangling images
 remove-dangling:
@@ -142,3 +142,9 @@ destroy: (compose "down")
 
 # Custom command to restart the given service
 restart serviceName: (compose "restart" serviceName)
+
+# Custom command to stop the given service
+stop serviceName: (compose "stop" serviceName)
+
+# Custom command to restore a deployment after restarting a given service
+restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter") (restart "armonik.compute.pollingagent0") (restart "armonik.compute.pollingagent1") (restart "armonik.compute.pollingagent2")

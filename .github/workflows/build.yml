@@ -786,11 +786,9 @@ jobs:
       - name: Health Check Test when database is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} restart database
-          just tag=${VERSION} restart armonik.control.submitter
-          just tag=${VERSION} restart armonik.compute.pollingagent0
-          just tag=${VERSION} restart armonik.compute.pollingagent1
-          just tag=${VERSION} restart armonik.compute.pollingagent2
+          just tag=${VERSION} stop database
+          just healthChecks
+          just tag=${VERSION} restoreDeployment database
           just healthChecks
 
       - name: Run HtcMock test
@@ -809,11 +807,9 @@ jobs:
       - name: Health Check Test when queue is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} restart queue
-          just tag=${VERSION} restart armonik.control.submitter
-          just tag=${VERSION} restart armonik.compute.pollingagent0
-          just tag=${VERSION} restart armonik.compute.pollingagent1
-          just tag=${VERSION} restart armonik.compute.pollingagent2
+          just tag=${VERSION} stop queue
+          just healthChecks
+          just tag=${VERSION} restoreDeployment queue
           just healthChecks
 
       - name: Run HtcMock test
@@ -832,11 +828,9 @@ jobs:
       - name: Health Check Test when object is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} restart object
-          just tag=${VERSION} restart armonik.control.submitter
-          just tag=${VERSION} restart armonik.compute.pollingagent0
-          just tag=${VERSION} restart armonik.compute.pollingagent1
-          just tag=${VERSION} restart armonik.compute.pollingagent2
+          just tag=${VERSION} stop object
+          just healthChecks
+          just tag=${VERSION} restoreDeployment object
           just healthChecks
 
       - name: Run HtcMock test
