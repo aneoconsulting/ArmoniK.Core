@@ -447,6 +447,7 @@ jobs:
         run: |
           just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
+          ls -la docker-compose/logs/*.json
 
       - name: Run Stream Test
         timeout-minutes: 10
@@ -523,6 +524,7 @@ jobs:
         run: |
           just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
           sleep 10
+          ls -la docker-compose/logs/*.json
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
@@ -627,6 +629,7 @@ jobs:
         run: |
           just LOGGING_LEVEL=Information tag=${VERSION} queue=activemqp worker=bench deploy
           sleep 10
+          ls -la docker-compose/logs/*.json
 
       - name: Run Bench test tasks - many tasks (200)
         timeout-minutes: 10
@@ -712,6 +715,7 @@ jobs:
         run: |
           just LOGGING_LEVEL=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
           sleep 10
+          ls -la docker-compose/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 10
@@ -774,6 +778,7 @@ jobs:
         run: |
           just LOGGING_LEVEL=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
           sleep 10
+          ls -la docker-compose/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 10
