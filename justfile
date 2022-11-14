@@ -120,14 +120,14 @@ healthChecks:
   set -euo pipefail
   for i in {0..2}; do 
     echo -e "\nHealth Checking PollingAggent${i}"
-    echo -n "  startup: " && curl -sSL localhost:998${i}/startup
-    echo -n "  liveness: " && curl -sSL localhost:998${i}/liveness
-    echo -n "  readiness: " && curl -sSL localhost:998${i}/readiness
+    echo -n "  startup: " && curl -fsSL localhost:998${i}/startup
+    echo -n "  liveness: " && curl -fsSL localhost:998${i}/liveness
+    echo -n "  readiness: " && curl -fsSL localhost:998${i}/readiness
   done
 
   echo -e "\nHealth Checking Submitter"
-  echo -n "  startup: " && curl -sSL localhost:5011/startup
-  echo -n "  liveness: " && curl -sSL localhost:5011/liveness
+  echo -n "  startup: " && curl -fsSL localhost:5011/startup
+  echo -n "  liveness: " && curl -fsSL localhost:5011/liveness
 
 # Remove dangling images
 remove-dangling:
