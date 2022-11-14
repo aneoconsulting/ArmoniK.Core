@@ -72,7 +72,7 @@ jobs:
       run: |
         if [[ "${{ github.ref_name }}" == "releases/"* ]]
         then
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=${{ github.ref_name }}) 
+          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=${{ github.ref_name }})
         else
           VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=main)
         fi
@@ -384,7 +384,7 @@ jobs:
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
-    
+
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v2
@@ -438,6 +438,16 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
+      - name: Update compose
+        run: |
+          docker-compose --version
+          sudo apt-get remove docker-compose
+          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+          DESTINATION=/usr/local/bin/docker-compose
+          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+          sudo chmod 755 $DESTINATION
+          docker-compose --version
+
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
@@ -483,7 +493,6 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
 
-
   testHtcMockDC:
     needs:
       - versionning
@@ -514,6 +523,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
+
+      - name: Update compose
+        run: |
+          docker-compose --version
+          sudo apt-get remove docker-compose
+          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+          DESTINATION=/usr/local/bin/docker-compose
+          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+          sudo chmod 755 $DESTINATION
+          docker-compose --version
 
       - name: Setup just
         uses: extractions/setup-just@v1
@@ -620,6 +639,16 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
+      - name: Update compose
+        run: |
+          docker-compose --version
+          sudo apt-get remove docker-compose
+          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+          DESTINATION=/usr/local/bin/docker-compose
+          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+          sudo chmod 755 $DESTINATION
+          docker-compose --version
+
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
@@ -706,6 +735,16 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
+      - name: Update compose
+        run: |
+          docker-compose --version
+          sudo apt-get remove docker-compose
+          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+          DESTINATION=/usr/local/bin/docker-compose
+          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+          sudo chmod 755 $DESTINATION
+          docker-compose --version
+
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
@@ -768,6 +807,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
+
+      - name: Update compose
+        run: |
+          docker-compose --version
+          sudo apt-get remove docker-compose
+          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+          DESTINATION=/usr/local/bin/docker-compose
+          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+          sudo chmod 755 $DESTINATION
+          docker-compose --version
 
       - name: Setup just
         uses: extractions/setup-just@v1
