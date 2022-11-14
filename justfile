@@ -120,9 +120,9 @@ healthChecks:
   set -euo pipefail
   for i in {0..2}; do 
     echo -e "\nHealth Checking PollingAggent${i}"
-    echo -n "  startup: " && curl -sS localhost:998${i}/startup
-    echo -n "  liveness: " && curl -sS localhost:998${i}/liveness
-    echo -n "  readiness: " && curl -sS localhost:998${i}/readiness
+    echo -n "  startup: " && curl -sSL localhost:998${i}/startup
+    echo -n "  liveness: " && curl -sSL localhost:998${i}/liveness
+    echo -n "  readiness: " && curl -sSL localhost:998${i}/readiness
   done
 
   echo -e "\nHealth Checking Submitter"
