@@ -533,12 +533,11 @@ jobs:
           if [ "x${{ matrix.queue }}" == x"rabbitmq091" ]; then OVERRIDE="docker-compose/docker-compose.override-rabbitmq091.yml";  QUEUE="docker-compose/docker-compose.queue-rabbitmq.yml"; fi;
           docker-compose  -f docker-compose/docker-compose.yml -f ${OVERRIDE} -f ${QUEUE} --compatibility up -d --build --force-recreate --remove-orphans
           docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-          sleep 10
           ls -la docker-compose/logs/*.json
-          curl localhost:9980/readiness
-          curl -f localhost:9980/readiness
-          curl localhost:9980/liveness
-          curl -f localhost:9980/liveness
+          while ! curl -fsSL localhost:9980/readiness; do
+            sleep 1
+          done
+          curl -fsSL localhost:9980/liveness
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
