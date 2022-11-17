@@ -33,6 +33,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Graphs;
 
 using JetBrains.Annotations;
 
@@ -78,7 +79,9 @@ public static class ServiceCollectionExt
               .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
               .AddTransient<IResultTable, ResultTable>()
-              .AddTransient<IPartitionTable, PartitionTable>();
+              .AddTransient<IPartitionTable, PartitionTable>()
+              .AddTransient<ITaskWatcher, TaskWatcher>()
+              .AddTransient<IResultWatcher, ResultWatcher>();
     }
 
     if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")

@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.2.1" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.2.2-jggraphapi.5.b57df5c" />
   </ItemGroup>
 
   <ItemGroup>
