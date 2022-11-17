@@ -39,9 +39,9 @@ namespace ArmoniK.Core.Adapters.LocalStorage;
 public static class ServiceCollectionExt
 {
   [PublicAPI]
-  public static IServiceCollection AddObjectLocal(this IServiceCollection serviceCollection,
-                                                  ConfigurationManager    configuration,
-                                                  ILogger                 logger)
+  public static IServiceCollection AddLocalStorage(this IServiceCollection serviceCollection,
+                                                   ConfigurationManager    configuration,
+                                                   ILogger                 logger)
   {
     var components = configuration.GetSection(Components.SettingSection);
 
