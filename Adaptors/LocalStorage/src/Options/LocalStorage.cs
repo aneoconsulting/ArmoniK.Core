@@ -26,9 +26,24 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Adapters.LocalStorage.Options;
 
-[UsedImplicitly]
-internal record LocalStorage(string Path      = "",
-                             int    ChunkSize = 0)
+internal class LocalStorage
 {
   public const string SettingSection = nameof(LocalStorage);
+
+  internal static readonly LocalStorage Default = new();
+
+  public string Path
+  {
+    get;
+    [UsedImplicitly]
+    init;
+  } = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                             "ArmoniK");
+
+  public int ChunkSize
+  {
+    get;
+    [UsedImplicitly]
+    init;
+  } = 64 * 1024;
 }

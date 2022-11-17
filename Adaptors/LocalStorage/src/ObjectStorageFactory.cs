@@ -49,11 +49,10 @@ public class ObjectStorageFactory : IObjectStorageFactory
                               ILoggerFactory loggerFactory)
   {
     rootPath_ = rootPath == ""
-                  ? Path.Combine(Path.GetTempPath(),
-                                 "ArmoniK")
+                  ? Options.LocalStorage.Default.Path
                   : rootPath;
     chunkSize_ = chunkSize == 0
-                   ? 64 * 1024
+                   ? Options.LocalStorage.Default.ChunkSize
                    : chunkSize;
     loggerFactory_ = loggerFactory;
   }
