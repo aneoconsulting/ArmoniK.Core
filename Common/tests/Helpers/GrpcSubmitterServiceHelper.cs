@@ -93,6 +93,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcResultsService>();
     app_.MapGrpcService<GrpcSessionsService>();
     app_.MapGrpcService<GrpcTasksService>();
+    app_.MapGrpcService<GrpcApplicationsService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,

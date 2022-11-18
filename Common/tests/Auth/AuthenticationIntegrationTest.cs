@@ -34,6 +34,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -56,7 +57,6 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using Task = System.Threading.Tasks.Task;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 using Type = System.Type;
@@ -101,43 +101,47 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
-  private const           string                 SessionId   = "MySession";
-  private const           string                 TaskId      = "MyTask";
-  private const           string                 ResultKey   = "ResultKey";
-  private const           string                 PartitionId = "PartitionId";
-  private static readonly TaskFilter             TaskFilter;
-  private static readonly CreateSmallTaskRequest CreateSmallTasksRequest;
-  private static readonly CreateSessionRequest   CreateSessionRequest;
-  private static readonly Session                SessionRequest;
-  private static readonly GetResultStatusRequest GetResultStatusRequest;
-  private static readonly GetTaskStatusRequest   GetTaskStatusRequest;
-  private static readonly Empty                  Empty;
-  private static readonly SessionFilter          SessionFilter;
-  private static readonly ResultRequest          ResultRequest;
-  private static readonly TaskOutputRequest      TaskOutputRequest;
-  private static readonly WaitRequest            WaitRequest;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestInit;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestInitTask;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestPayload;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestPayloadComplete;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestLastTask;
-  private static readonly CancelSessionRequest   CancelSessionRequest;
-  private static readonly GetSessionRequest      GetSessionRequest;
-  private static readonly ListSessionsRequest    ListSessionsRequest;
-  private static readonly GetResultIdsRequest    GetResultIdsRequest;
-  private static readonly GetTaskRequest         GetTaskRequest;
-  private static readonly ListTasksRequest       ListTasksRequest;
-  private static readonly GetOwnerTaskIdRequest  GetOwnerTaskIdRequest;
+  private const           string                  SessionId   = "MySession";
+  private const           string                  TaskId      = "MyTask";
+  private const           string                  ResultKey   = "ResultKey";
+  private const           string                  PartitionId = "PartitionId";
+  private static readonly TaskFilter              TaskFilter;
+  private static readonly CreateSmallTaskRequest  CreateSmallTasksRequest;
+  private static readonly CreateSessionRequest    CreateSessionRequest;
+  private static readonly Session                 SessionRequest;
+  private static readonly GetResultStatusRequest  GetResultStatusRequest;
+  private static readonly GetTaskStatusRequest    GetTaskStatusRequest;
+  private static readonly Empty                   Empty;
+  private static readonly SessionFilter           SessionFilter;
+  private static readonly ResultRequest           ResultRequest;
+  private static readonly TaskOutputRequest       TaskOutputRequest;
+  private static readonly WaitRequest             WaitRequest;
+  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestInit;
+  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestInitTask;
+  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestPayload;
+  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestPayloadComplete;
+  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestLastTask;
+  private static readonly CancelSessionRequest    CancelSessionRequest;
+  private static readonly GetSessionRequest       GetSessionRequest;
+  private static readonly ListSessionsRequest     ListSessionsRequest;
+  private static readonly GetResultIdsRequest     GetResultIdsRequest;
+  private static readonly GetTaskRequest          GetTaskRequest;
+  private static readonly ListTasksRequest        ListTasksRequest;
+  private static readonly GetOwnerTaskIdRequest   GetOwnerTaskIdRequest;
+  private static readonly ListApplicationsRequest ListApplicationsRequest;
+  private static readonly CancelTasksRequest      CancelTasksRequest;
+  private static readonly ListResultsRequest      ListResultsRequest;
 
   static AuthenticationIntegrationTest()
   {
     // Prepare requests
     var taskOptions = new TaskOptions
                       {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                        MaxRetries  = 4,
-                        Priority    = 2,
-                        PartitionId = PartitionId,
+                        MaxDuration     = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
+                        MaxRetries      = 4,
+                        Priority        = 2,
+                        PartitionId     = PartitionId,
+                        ApplicationName = "TestName",
                       };
     var idsrequest = new TaskFilter.Types.IdsRequest();
     idsrequest.Ids.Add(TaskId);
@@ -263,7 +267,7 @@ public class AuthenticationIntegrationTest
     GetResultIdsRequest.TaskId.Add(TaskId);
     GetTaskRequest = new GetTaskRequest
                      {
-                       Id = TaskId,
+                       TaskId = TaskId,
                      };
     ListTasksRequest = new ListTasksRequest
                        {
@@ -284,6 +288,39 @@ public class AuthenticationIntegrationTest
                               SessionId = SessionId,
                             };
     GetOwnerTaskIdRequest.ResultId.Add(ResultKey);
+
+    ListApplicationsRequest = new ListApplicationsRequest
+                              {
+                                Filter = new ListApplicationsRequest.Types.Filter
+                                         {
+                                           Name = taskOptions.ApplicationName,
+                                         },
+                                Page     = 0,
+                                PageSize = 10,
+                                Sort = new ListApplicationsRequest.Types.Sort
+                                       {
+                                         Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                                         Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                                       },
+                              };
+
+    CancelTasksRequest = new CancelTasksRequest();
+    CancelTasksRequest.TaskIds.Add(TaskId);
+
+    ListResultsRequest = new ListResultsRequest
+                         {
+                           Filter = new ListResultsRequest.Types.Filter
+                                    {
+                                      SessionId = SessionId,
+                                    },
+                           Page     = 0,
+                           PageSize = 10,
+                           Sort = new ListResultsRequest.Types.Sort
+                                  {
+                                    Direction = ListResultsRequest.Types.OrderDirection.Asc,
+                                    Field     = ListResultsRequest.Types.OrderByField.Name,
+                                  },
+                         };
   }
 
   public enum AuthenticationType
@@ -679,6 +716,10 @@ public class AuthenticationIntegrationTest
                                                                                                                           typeof(Results.ResultsClient),
                                                                                                                           typeof(GrpcResultsService)
                                                                                                                         },
+                                                                                                                        {
+                                                                                                                          typeof(Applications.ApplicationsClient),
+                                                                                                                          typeof(GrpcApplicationsService)
+                                                                                                                        },
                                                                                                                       });
 
   public static IEnumerable GetTestCases(string suffix)
@@ -714,10 +755,14 @@ public class AuthenticationIntegrationTest
                                                        (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.CancelSession), CancelSessionRequest),
                                                        (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.GetSession), GetSessionRequest),
                                                        (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.ListSessions), ListSessionsRequest),
+                                                       (typeof(Applications.ApplicationsClient), nameof(Applications.ApplicationsClient.ListApplications),
+                                                        ListApplicationsRequest),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.GetResultIds), GetResultIdsRequest),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.GetTask), GetTaskRequest),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.ListTasks), ListTasksRequest),
+                                                       (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.CancelTasks), CancelTasksRequest),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.GetOwnerTaskId), GetOwnerTaskIdRequest),
+                                                       (typeof(Results.ResultsClient), nameof(Results.ResultsClient.ListResults), ListResultsRequest),
                                                      };
 
     return GetCases(methodObjectList.Select(t => (t.Item1, t.Item2 + suffix, t.Item3))

@@ -77,6 +77,8 @@ public class GrpcResultsService : Results.ResultsBase
            };
   }
 
+  [RequiresPermission(typeof(GrpcResultsService),
+                      nameof(ListResults))]
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
                                                               ServerCallContext  context)
   {

@@ -176,6 +176,8 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(CancelTasks))]
   public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
                                                               ServerCallContext  context)
   {
