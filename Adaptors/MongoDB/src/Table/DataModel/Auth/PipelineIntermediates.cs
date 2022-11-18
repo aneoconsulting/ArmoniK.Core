@@ -27,6 +27,7 @@ using System.Collections.Generic;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -41,8 +42,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 /// <param name="UserData">List of users that have the id UserId</param>
 [BsonIgnoreExtraElements]
 public record AuthDataAfterLookup([property: BsonId]
-                                  string AuthId,
-                                  string     UserId,
+                                  ObjectId AuthId,
+                                  ObjectId   UserId,
                                   string     CN,
                                   string     Fingerprint,
                                   UserData[] UserData);
@@ -55,6 +56,30 @@ public record AuthDataAfterLookup([property: BsonId]
 /// <param name="Roles">List of roles of the user</param>
 [BsonIgnoreExtraElements]
 public record UserDataAfterLookup([property: BsonId]
-                                  string UserId,
+                                  ObjectId UserId,
                                   string                Username,
                                   IEnumerable<RoleData> Roles);
+
+/// <summary>
+///   Pipeline result using MongoDB syntax
+/// </summary>
+/// <param name="Id">User Id</param>
+/// <param name="Username">Username</param>
+/// <param name="Roles">User's roles</param>
+/// <param name="Permissions">User's permissions</param>
+public record MongoAuthResult([property: BsonId]
+                              ObjectId Id,
+                              string              Username,
+                              IEnumerable<string> Roles,
+                              IEnumerable<string> Permissions)
+{
+  /// <summary>
+  ///   Converts this MongoDB pipeline result into a UserAuthenticationResult
+  /// </summary>
+  /// <returns>UserAuthenticationResult from this object</returns>
+  public UserAuthenticationResult ToUserAuthenticationResult()
+    => new(IdSerializer.Deserialize(Id),
+           Username,
+           Roles,
+           Permissions);
+}

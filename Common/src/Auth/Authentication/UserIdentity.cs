@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
@@ -43,13 +43,13 @@ public class UserIdentity : ClaimsPrincipal
   /// <param name="authenticationType">Scheme by which the user is authenticated</param>
   public UserIdentity(UserAuthenticationResult userAuth,
                       string?                  authenticationType)
-    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim),
+    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permission(perm).Claim),
                               authenticationType))
   {
     UserId   = userAuth.Id;
     UserName = userAuth.Username;
     Roles    = new HashSet<string>(userAuth.Roles);
-    Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm))
+    Permissions = userAuth.Permissions.Select(perm => new Permission(perm))
                           .ToArray();
   }
 
@@ -66,7 +66,7 @@ public class UserIdentity : ClaimsPrincipal
   /// <summary>
   ///   User Permissions
   /// </summary>
-  public Permissions.Permission[] Permissions { get; set; }
+  public Permission[] Permissions { get; set; }
 
   /// <summary>
   ///   User Id
