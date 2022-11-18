@@ -24,8 +24,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -33,10 +31,7 @@ using ArmoniK.Core.Common.Tests.Auth;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Mongo2Go;
-
 using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
