@@ -4,10 +4,13 @@ services:
 
   database:
     image: mongo
+    command: --replSet "replSet0"
     networks:
       - armonik-backend
     ports:
       - 27017:27017
+    volumes:
+      - ./mongodb:/docker-entrypoint-initdb.d/
 
   object:
     image: redis:bullseye
