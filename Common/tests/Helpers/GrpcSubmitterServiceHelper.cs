@@ -60,13 +60,12 @@ public class GrpcSubmitterServiceHelper : IDisposable
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
-    var loggerAuth = loggerFactory_.CreateLogger<AuthenticationCache>();
 
     var builder = WebApplication.CreateBuilder();
 
     builder.Services.AddSingleton(loggerFactory_)
-           .AddSingleton(submitter)
-           .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
+           .AddSingleton(submitter);
+    builder.Services.AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
            .AddSingleton(new AuthenticationCache())
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
@@ -91,6 +90,10 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.UseAuthentication();
     app_.UseAuthorization();
     app_.MapGrpcService<GrpcSubmitterService>();
+    app_.MapGrpcService<GrpcResultsService>();
+    app_.MapGrpcService<GrpcSessionsService>();
+    app_.MapGrpcService<GrpcTasksService>();
+    app_.MapGrpcService<GrpcApplicationsService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,

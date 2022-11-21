@@ -26,14 +26,18 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcApplicationsService : Applications.ApplicationsBase
 {
   private readonly ILogger<GrpcApplicationsService> logger_;
@@ -46,6 +50,8 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
     taskTable_ = taskTable;
   }
 
+  [RequiresPermission(typeof(GrpcApplicationsService),
+                      nameof(ListApplications))]
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {

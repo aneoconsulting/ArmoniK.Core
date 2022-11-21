@@ -27,15 +27,19 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
@@ -48,6 +52,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
     sessionTable_ = sessionTable;
   }
 
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(CancelSession))]
   public override async Task<CancelSessionResponse> CancelSession(CancelSessionRequest request,
                                                                   ServerCallContext    context)
   {
@@ -83,6 +89,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(GetSession))]
   public override async Task<GetSessionResponse> GetSession(GetSessionRequest request,
                                                             ServerCallContext context)
   {
@@ -118,6 +126,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(ListSessions))]
   public override async Task<ListSessionsResponse> ListSessions(ListSessionsRequest request,
                                                                 ServerCallContext   context)
   {
