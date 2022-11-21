@@ -87,14 +87,27 @@ public class ObjectStorage : IObjectStorage
                                      FileMode.OpenOrCreate,
                                      FileAccess.Write);
 
-    // TODO: Overlap chunk reading and chunk writing
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
+    await using var enumerator = valueChunks.GetAsyncEnumerator(cancellationToken);
+
+    // Prepare overlapped read and write
+    var readTask = enumerator.MoveNextAsync()
+                             .ConfigureAwait(false);
+    var writeTask = ValueTask.CompletedTask.ConfigureAwait(false);
+
+    while (await readTask)
     {
-      await file.WriteAsync(chunk,
-                            cancellationToken)
-                .ConfigureAwait(false);
+      var chunk = enumerator.Current;
+
+      readTask = enumerator.MoveNextAsync()
+                           .ConfigureAwait(false);
+      await writeTask;
+      writeTask = file.WriteAsync(chunk,
+                                  cancellationToken)
+                      .ConfigureAwait(false);
     }
+
+    // Last write must be complete before flushing
+    await writeTask;
 
     await file.FlushAsync(cancellationToken)
               .ConfigureAwait(false);
@@ -121,24 +134,24 @@ public class ObjectStorage : IObjectStorage
     // Task is not awaited here in order to overlap reading and yielding
     var buffer = new byte[chunkSize_];
     var readTask = file.ReadAsync(buffer,
-                                  cancellationToken);
-    while (true)
-    {
-      // We need to await the read task before starting to read another chunk
-      var read       = await readTask.ConfigureAwait(false);
-      var readBuffer = buffer;
+                                  cancellationToken)
+                       .ConfigureAwait(false);
 
-      if (read == 0)
-      {
-        yield break;
-      }
+    int read;
+
+    // While chunk is not empty
+    while ((read = await readTask) > 0)
+    {
+      var readBuffer = buffer;
 
       // Start reading new chunk
       buffer = new byte[chunkSize_];
       readTask = file.ReadAsync(buffer,
-                                cancellationToken);
+                                cancellationToken)
+                     .ConfigureAwait(false);
 
-      if (read != readBuffer.Length)
+      // Partial chunk requires a resize
+      if (read < chunkSize_)
       {
         Array.Resize(ref readBuffer,
                      read);
