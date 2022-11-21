@@ -30,7 +30,7 @@ namespace ArmoniK.Core.Common.Auth.Authorization.Permissions;
 /// <summary>
 ///   Class used to store a permission
 /// </summary>
-public class Permission
+public sealed class Permission : IEquatable<Permission>
 {
   /// <summary>
   ///   Separator used in permission strings
@@ -121,6 +121,22 @@ public class Permission
                       Target);
   }
 
+  public bool Equals(Permission? other)
+  {
+    if (other is null)
+    {
+      return false;
+    }
+
+    if (ReferenceEquals(this,
+                        other))
+    {
+      return true;
+    }
+
+    return Name == other.Name && Service == other.Service && Target == other.Target;
+  }
+
   /// <summary>
   ///   String representation of the permission
   /// </summary>
@@ -142,4 +158,23 @@ public class Permission
   /// <returns>The base permission string of this permission, no target</returns>
   public string ToBasePermission()
     => Service + Separator + Name;
+
+  public override bool Equals(object? obj)
+    => ReferenceEquals(this,
+                       obj) || (obj is Permission other && Equals(other));
+
+  public override int GetHashCode()
+    => HashCode.Combine(Name,
+                        Service,
+                        Target);
+
+  public static bool operator ==(Permission? left,
+                                 Permission? right)
+    => Equals(left,
+              right);
+
+  public static bool operator !=(Permission? left,
+                                 Permission? right)
+    => !Equals(left,
+               right);
 }

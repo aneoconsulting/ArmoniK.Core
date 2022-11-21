@@ -94,6 +94,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcSessionsService>();
     app_.MapGrpcService<GrpcTasksService>();
     app_.MapGrpcService<GrpcApplicationsService>();
+    app_.MapGrpcService<GrpcAuthService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,

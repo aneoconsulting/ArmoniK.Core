@@ -35,6 +35,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
+using ArmoniK.Api.gRPC.V1.Auth;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -131,6 +132,7 @@ public class AuthenticationIntegrationTest
   private static readonly ListApplicationsRequest ListApplicationsRequest;
   private static readonly CancelTasksRequest      CancelTasksRequest;
   private static readonly ListResultsRequest      ListResultsRequest;
+  private static readonly GetCurrentUserRequest   GetCurrentUserRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -321,6 +323,7 @@ public class AuthenticationIntegrationTest
                                     Field     = ListResultsRequest.Types.OrderByField.Name,
                                   },
                          };
+    GetCurrentUserRequest = new GetCurrentUserRequest();
   }
 
   public enum AuthenticationType
@@ -793,6 +796,7 @@ public class AuthenticationIntegrationTest
   public void TransformResult(IdentityIndex     initialUserIndex,
                               ImpersonationType impersonationType,
                               ResultType        success,
+                              IdentityIndex     impersonating,
                               StatusCode        initialErrorCode,
                               out int           userIndex,
                               out ResultType    shouldSucceed,
@@ -806,7 +810,9 @@ public class AuthenticationIntegrationTest
         errorCode     = StatusCode.OK;
         break;
       case AuthenticationType.NoAuthorization:
-        userIndex = (int)initialUserIndex;
+        userIndex = impersonationType == ImpersonationType.NoImpersonate
+                      ? (int)initialUserIndex
+                      : (int)impersonating;
         shouldSucceed = success == ResultType.AlwaysTrue
                           ? ResultType.AlwaysTrue
                           : initialErrorCode == StatusCode.PermissionDenied || success == ResultType.AuthorizedForSome
@@ -878,7 +884,9 @@ public class AuthenticationIntegrationTest
         break;
       default:
       case AuthenticationType.DefaultAuth:
-        userIndex     = (int)initialUserIndex;
+        userIndex = impersonationType == ImpersonationType.NoImpersonate
+                      ? (int)initialUserIndex
+                      : (int)impersonating;
         shouldSucceed = success;
         errorCode     = initialErrorCode;
         break;
@@ -902,6 +910,7 @@ public class AuthenticationIntegrationTest
     TransformResult(userIndex,
                     impersonationType,
                     success,
+                    impersonating,
                     errorCode,
                     out var finalUserIndex,
                     out var shouldSucceed,
@@ -967,6 +976,7 @@ public class AuthenticationIntegrationTest
     TransformResult(userIndex,
                     impersonationType,
                     success,
+                    impersonating,
                     errorCode,
                     out var finalUserIndex,
                     out var shouldSucceed,
@@ -1057,6 +1067,7 @@ public class AuthenticationIntegrationTest
     TransformResult(initialUserIndex,
                     impersonationType,
                     success,
+                    impersonating,
                     initialErrorCode,
                     out var finalUserIndex,
                     out var shouldSucceed,
@@ -1111,6 +1122,7 @@ public class AuthenticationIntegrationTest
     TransformResult(initialUserIndex,
                     impersonationType,
                     success,
+                    impersonating,
                     initialErrorCode,
                     out var finalUserIndex,
                     out var shouldSucceed,
@@ -1139,6 +1151,107 @@ public class AuthenticationIntegrationTest
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(expectedError,
                       ((RpcException)exception!).StatusCode);
+    }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
+  }
+
+  public static IEnumerable GetAuthServiceTestCaseSource()
+  {
+    List<(Type, string, object?)> methodObjectList = new()
+                                                     {
+                                                       (typeof(Authentication.AuthenticationClient), nameof(Authentication.AuthenticationClient.GetCurrentUser),
+                                                        GetCurrentUserRequest),
+                                                     };
+    return GetCases(methodObjectList);
+  }
+
+  [TestCaseSource(nameof(GetAuthServiceTestCaseSource))]
+  public async Task AuthServiceShouldGiveUserInfo(Type              clientType,
+                                                  string            method,
+                                                  IdentityIndex     initialUserIndex,
+                                                  ImpersonationType impersonationType,
+                                                  IdentityIndex     impersonating,
+                                                  object[]          args,
+                                                  ResultType        success,
+                                                  StatusCode        initialErrorCode)
+  {
+    TransformResult(initialUserIndex,
+                    impersonationType,
+                    success,
+                    impersonating,
+                    initialErrorCode,
+                    out var finalUserIndex,
+                    out var shouldSucceed,
+                    out var expectedError);
+
+    // This endpoint doesn't check permission
+    if (expectedError == StatusCode.PermissionDenied)
+    {
+      shouldSucceed = ResultType.AlwaysTrue;
+      expectedError = StatusCode.OK;
+    }
+
+    var channel = await helper_!.CreateChannel()
+                                .ConfigureAwait(false);
+    var client = Activator.CreateInstance(clientType,
+                                          channel);
+    Assert.IsNotNull(client);
+    Assert.IsInstanceOf<ClientBase>(client);
+
+    if (shouldSucceed is ResultType.AlwaysTrue or ResultType.AuthorizedForSome)
+    {
+      object? response = null;
+      Assert.DoesNotThrow(delegate
+                          {
+                            response = client!.GetType()
+                                              .InvokeMember(method,
+                                                            BindingFlags.InvokeMethod,
+                                                            null,
+                                                            client,
+                                                            args);
+                          });
+      Assert.IsNotNull(response);
+      Assert.IsInstanceOf<GetCurrentUserResponse>(response);
+      var castedResponse = (GetCurrentUserResponse)response!;
+      // Check if the returned username is correct
+      Assert.AreEqual(options_!.RequireAuthentication
+                        ? Identities[finalUserIndex]
+                          .UserName
+                        : "Anonymous",
+                      castedResponse.User.Username);
+      // Check if the role list is empty when there is no authorization, otherwise returns the roles
+      Assert.IsTrue(options_!.RequireAuthorization
+                      ? !Identities[finalUserIndex]
+                         .Roles.Except(castedResponse.User.Roles)
+                         .Any()
+                      : castedResponse.User.Roles.Count == 0);
+      // Check if the permission list corresponds to 
+      Assert.IsTrue(options_!.RequireAuthorization
+                      ? !Identities[finalUserIndex]
+                         .Permissions.Except(castedResponse.User.Permissions.Select(s => new Permission(s)))
+                         .Any()
+                      : !ServicesPermissions.PermissionsLists[ServicesPermissions.All]
+                                            .Except(castedResponse.User.Permissions.Select(s => new Permission(s)))
+                                            .Any());
+    }
+    else
+    {
+      var exception = Assert.Catch(delegate
+                                   {
+                                     client!.GetType()
+                                            .InvokeMember(method,
+                                                          BindingFlags.InvokeMethod,
+                                                          null,
+                                                          client,
+                                                          args);
+                                   });
+      Assert.IsNotNull(exception);
+      Assert.IsNotNull(exception!.InnerException);
+      Assert.IsInstanceOf<RpcException>(exception.InnerException);
+      Assert.AreEqual(expectedError,
+                      ((RpcException)exception.InnerException!).StatusCode);
     }
 
     await helper_.DeleteChannel()

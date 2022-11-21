@@ -42,8 +42,8 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
-  private readonly ILogger<GrpcAuthService> logger_;
   private readonly IAuthenticationTable     authTable_;
+  private readonly ILogger<GrpcAuthService> logger_;
   private readonly bool                     requireAuthentication_;
   private readonly bool                     requireAuthorization_;
 
@@ -60,13 +60,12 @@ public class GrpcAuthService : Authentication.AuthenticationBase
   public override Task<GetCurrentUserResponse> GetCurrentUser(GetCurrentUserRequest request,
                                                               ServerCallContext     context)
   {
+    var user = new User();
+
     // No authentication required, anonymous user with all permissions
     if (!requireAuthentication_)
     {
-      var user = new User
-                 {
-                   Username = "Anonymous",
-                 };
+      user.Username = "Anonymous";
       user.Permissions.AddRange(ServicesPermissions.PermissionsLists[ServicesPermissions.All]
                                                    .Select(p => p.ToString()));
       return Task.FromResult(new GetCurrentUserResponse
@@ -75,34 +74,31 @@ public class GrpcAuthService : Authentication.AuthenticationBase
                              });
     }
 
-    // Authentication is required, the user should have been authenticated to access this endpoint so we should have all the necessary information
+
     var principal = context.GetHttpContext()
                            .User;
-    if (principal.Identity is
-        {
-          IsAuthenticated: true,
-          AuthenticationType: Authenticator.SchemeName,
-        } && principal is UserIdentity userIdentity)
+    if (principal.Identity is not ({
+                                     IsAuthenticated   : true,
+                                     AuthenticationType: Authenticator.SchemeName,
+                                   } and UserIdentity userIdentity))
     {
-      var user = new User
-                 {
-                   Username = userIdentity.UserName,
-                 };
-      // Do not return roles if authorization is not required
-      user.Roles.AddRange(requireAuthorization_ ? userIdentity.Roles : Enumerable.Empty<string>());
-      // Return the user's permissions if authorization is required, otherwise they have all permissions
-      user.Permissions.AddRange(((IEnumerable<Permission>)(requireAuthorization_
-                                                             ? userIdentity.Permissions
-                                                             : ServicesPermissions.PermissionsLists[ServicesPermissions.All])).Select(p => p.ToString()));
-      return Task.FromResult(new GetCurrentUserResponse
-                             {
-                               User = user,
-                             });
+      // Authenticated, but not with the required scheme or not authenticated or the principal is not of the right type... something's wrong
+      throw new ArmoniKException("Failed to get the authenticated user's info, something's wrong");
     }
 
-    // Authenticated, but not with the required scheme or not authenticated or the principal is not of the right type... something's wrong
-    throw new ArmoniKException("Failed to get the authenticated user's info, something's wrong");
-
+    // Authentication is required, the user should have been authenticated to access this endpoint so we should have all the necessary information
+    user.Username = userIdentity.UserName;
+    // Do not return roles if authorization is not required
+    user.Roles.AddRange(requireAuthorization_
+                          ? userIdentity.Roles
+                          : Enumerable.Empty<string>());
+    // Return the user's permissions if authorization is required, otherwise they have all permissions
+    user.Permissions.AddRange(((IEnumerable<Permission>)(requireAuthorization_
+                                                           ? userIdentity.Permissions
+                                                           : ServicesPermissions.PermissionsLists[ServicesPermissions.All])).Select(p => p.ToString()));
+    return Task.FromResult(new GetCurrentUserResponse
+                           {
+                             User = user,
+                           });
   }
-    
 }

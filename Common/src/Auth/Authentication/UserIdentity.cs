@@ -34,7 +34,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// <summary>
 ///   User identity. Used in the authentication middleware
 /// </summary>
-public class UserIdentity : ClaimsPrincipal
+public class UserIdentity : ClaimsIdentity
 {
   /// <summary>
   ///   Creates a user identity used in authentication
@@ -43,8 +43,12 @@ public class UserIdentity : ClaimsPrincipal
   /// <param name="authenticationType">Scheme by which the user is authenticated</param>
   public UserIdentity(UserAuthenticationResult userAuth,
                       string?                  authenticationType)
-    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permission(perm).Claim),
-                              authenticationType))
+    : base(userAuth.Permissions.Select(perm => new Permission(perm).Claim)
+                   .Concat(userAuth.Roles.Select(r => new Claim(ClaimTypes.Role,
+                                                                r))
+                                   .Append(new Claim(ClaimTypes.Name,
+                                                     userAuth.Username))),
+           authenticationType)
   {
     UserId   = userAuth.Id;
     UserName = userAuth.Username;
@@ -72,23 +76,4 @@ public class UserIdentity : ClaimsPrincipal
   ///   User Id
   /// </summary>
   public string UserId { get; set; }
-
-  /// <summary>
-  ///   Checks if the user has a specific role
-  /// </summary>
-  /// <param name="role">Name of the role</param>
-  /// <returns>True if the user as the role, false otherwise</returns>
-  public override bool IsInRole(string role)
-    => Roles.Contains(role);
-
-  /// <summary>
-  ///   Deeply clones a Useridentity
-  /// </summary>
-  /// <returns>Cloned user identity</returns>
-  public override UserIdentity Clone()
-    => new(new UserAuthenticationResult(UserId,
-                                        UserName,
-                                        Roles.ToList(),
-                                        Permissions.Select(perm => perm.ToString())),
-           Identity?.AuthenticationType);
 }

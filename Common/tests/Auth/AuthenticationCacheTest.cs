@@ -22,6 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Security.Claims;
+
 using ArmoniK.Core.Common.Auth.Authentication;
 
 using NUnit.Framework;
@@ -47,8 +49,8 @@ public class AuthenticationCacheTest
                                                                CN,
                                                                Fingerprint);
 
-  private static readonly UserIdentity BaseIdentity = new(new UserAuthenticationResult(),
-                                                          string.Empty);
+  private static readonly ClaimsPrincipal BaseIdentity = new(new UserIdentity(new UserAuthenticationResult(),
+                                                                              string.Empty));
 
   private AuthenticationCache? cache_;
 

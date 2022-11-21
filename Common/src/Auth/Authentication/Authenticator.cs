@@ -25,6 +25,7 @@
 
 using System.Linq;
 using System.Security.Authentication;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -134,8 +135,8 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   /// </summary>
   public const string SchemeName = "ArmoniKAuthenticationScheme";
 
-  private static readonly UserIdentity DefaultUser = new(new UserAuthenticationResult(),
-                                                         SchemeName);
+  private static readonly ClaimsPrincipal DefaultUser = new(new UserIdentity(new UserAuthenticationResult(),
+                                                                             SchemeName));
 
   private readonly IAuthenticationTable   authTable_;
   private readonly AuthenticationCache    cache_;
@@ -216,9 +217,14 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     var keyHash = cacheKey.GetHashCode();
 
     var identity = cache_.Get(cacheKey);
-    if (identity != null)
+    if (identity is
+        {
+          Identity:
+          {
+          },
+        })
     {
-      logger_.LogInformation($"Found authenticated user {identity.UserName} in cache. Authentication hashkey : {keyHash}.");
+      logger_.LogInformation($"Found authenticated user {identity.Identity.Name} in cache. Authentication hashkey : {keyHash}.");
       return AuthenticateResult.Success(new AuthenticationTicket(identity,
                                                                  SchemeName));
     }
@@ -253,7 +259,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                         impersonationId,
                                                         impersonationUsername)
                        .ConfigureAwait(false);
-          logger_.LogInformation($"User with id {prevIdentity.UserId} and name {prevIdentity.UserName} impersonated the user with id {identity.UserId} and name {identity.UserName}. Authentication key : {keyHash}");
+          logger_.LogInformation($"User with id {(prevIdentity.Identity as UserIdentity)!.UserId} and name {(prevIdentity.Identity as UserIdentity)!.UserName} impersonated the user with id {(identity.Identity as UserIdentity)!.UserId} and name {(identity.Identity as UserIdentity)!.UserName}. Authentication key : {keyHash}");
         }
         catch (AuthenticationException e)
         {
@@ -284,9 +290,9 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   ///   A UserIdentity object which can be used in authentication, corresponding to the certificate. Null if it
   ///   doesn't correspond to any user.
   /// </returns>
-  public async Task<UserIdentity?> GetIdentityFromCertificateAsync(string            cn,
-                                                                   string            fingerprint,
-                                                                   CancellationToken cancellationToken = default)
+  public async Task<ClaimsPrincipal?> GetIdentityFromCertificateAsync(string            cn,
+                                                                      string            fingerprint,
+                                                                      CancellationToken cancellationToken = default)
   {
     logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
                      cn,
@@ -301,8 +307,8 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       return null;
     }
 
-    return new UserIdentity(result,
-                            SchemeName);
+    return new ClaimsPrincipal(new UserIdentity(result,
+                                                SchemeName));
   }
 
   /// <summary>
@@ -318,12 +324,12 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   ///   the impersonated user doesn't exist,
   ///   or the impersonating user doesn't have the permissions to impersonate the specified user
   /// </exception>
-  public async Task<UserIdentity> GetImpersonatedIdentityAsync(UserIdentity      baseIdentity,
-                                                               string?           impersonationId,
-                                                               string?           impersonationUsername,
-                                                               CancellationToken cancellationToken = default)
+  public async Task<ClaimsPrincipal> GetImpersonatedIdentityAsync(ClaimsPrincipal   baseIdentity,
+                                                                  string?           impersonationId,
+                                                                  string?           impersonationUsername,
+                                                                  CancellationToken cancellationToken = default)
   {
-    UserAuthenticationResult? result = null;
+    UserAuthenticationResult? result;
     if (impersonationId != null || impersonationUsername != null)
     {
       result = await authTable_.GetIdentityFromUserAsync(impersonationId,
@@ -346,8 +352,8 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     if (result.Roles.All(role => baseIdentity.HasClaim(GeneralService.Impersonate.Claim.Type,
                                                        role)))
     {
-      return new UserIdentity(result,
-                              SchemeName);
+      return new ClaimsPrincipal(new UserIdentity(result,
+                                                  SchemeName));
     }
 
 
