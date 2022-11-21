@@ -456,6 +456,14 @@ public class Submitter : ISubmitter
       await taskTable_.SetTaskSuccessAsync(taskData.TaskId,
                                            cancellationToken)
                       .ConfigureAwait(false);
+
+      logger_.LogInformation("Remove input payload of {task}",
+                             taskData.TaskId);
+
+      await PayloadStorage(taskData.SessionId)
+            .TryDeleteAsync(taskData.TaskId,
+                            cancellationToken)
+            .ConfigureAwait(false);
     }
     else
     {

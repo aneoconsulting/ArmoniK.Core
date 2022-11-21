@@ -210,4 +210,49 @@ public class ObjectStorageTestBase
       Assert.IsTrue(str.SequenceEqual(""));
     }
   }
+
+  [Test]
+  public async Task DeleteKeysAndGetValuesAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      var listChunks = new List<byte[]>
+                       {
+                         Encoding.ASCII.GetBytes("Armonik Payload chunk"),
+                         Encoding.ASCII.GetBytes("Data 1"),
+                         Encoding.ASCII.GetBytes("Data 2"),
+                         Encoding.ASCII.GetBytes("Data 3"),
+                         Encoding.ASCII.GetBytes("Data 4"),
+                       };
+
+      await ObjectStorage!.AddOrUpdateAsync("dataKey",
+                                            listChunks.ToAsyncEnumerable())
+                          .ConfigureAwait(false);
+
+      var res = await ObjectStorage!.GetValuesAsync("dataKey")
+                                    .ToListAsync()
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(listChunks.Count,
+                      res.Count);
+
+      foreach (var comparison in listChunks.Zip(res.Select(chunk => Encoding.ASCII.GetString(chunk)),
+                                                (resChunk,
+                                                 expectedData) => new
+                                                                  {
+                                                                    Result       = resChunk,
+                                                                    ExpectedData = expectedData,
+                                                                  }))
+      {
+        Assert.AreEqual(comparison.ExpectedData,
+                        comparison.Result);
+      }
+
+      var resValue = ObjectStorage!.GetValuesAsync("dataKey");
+
+
+      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await resValue.FirstAsync()
+                                                                                .ConfigureAwait(false));
+    }
+  }
 }
