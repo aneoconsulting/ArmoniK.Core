@@ -11,7 +11,7 @@ services:
 
   object:
     image: redis:bullseye
-    command: redis-server
+    command: redis-server --save "" --appendonly no
     networks:
       - armonik-backend
     expose:

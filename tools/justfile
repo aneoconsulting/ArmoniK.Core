@@ -1,6 +1,9 @@
 # Enable positional args
 set positional-arguments
 
+# Enable bash output
+set shell := ["bash", "-exc"]
+
 # Default values for the deployment
 tag    := "test"
 queue  := "active"
@@ -135,7 +138,7 @@ remove:
   docker rmi -f "$ARMONIK_WORKER" "$ARMONIK_METRICS" "$ARMONIK_PARTITIONMETRICS" "$ARMONIK_SUBMITTER" "$ARMONIK_POLLINGAGENT"
 
 # Destroy deployment with docker-compose down
-destroy: (compose "down")
+destroy: (compose "down" "-v")
 
 # Custom command to restart the given service
 restart serviceName: (compose "restart" serviceName)
