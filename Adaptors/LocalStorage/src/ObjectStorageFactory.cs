@@ -40,6 +40,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
   private readonly int            chunkSize_;
   private readonly ILoggerFactory loggerFactory_;
   private readonly string         rootPath_;
+  private readonly ILogger        logger_;
 
 
   private bool isInitialized_;
@@ -55,12 +56,20 @@ public class ObjectStorageFactory : IObjectStorageFactory
                    ? Options.LocalStorage.Default.ChunkSize
                    : chunkSize;
     loggerFactory_ = loggerFactory;
+    logger_        = loggerFactory.CreateLogger<ObjectStorageFactory>();
+
+    logger_.LogDebug("Creating Local ObjectStorageFactory at path {path}, chunked by {chunkSize}",
+                     rootPath_,
+                     chunkSize_);
   }
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
   {
     _ = cancellationToken;
+    logger_.LogDebug("Initializing Local ObjectStorageFactory at path {path}, chunked by {chunkSize}",
+                     rootPath_,
+                     chunkSize_);
     Directory.CreateDirectory(rootPath_);
     isInitialized_ = true;
     return Task.CompletedTask;
@@ -88,7 +97,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
-    => new ObjectStorage(objectStorageName,
+    => new ObjectStorage(Path.Combine(rootPath_, objectStorageName),
                          chunkSize_,
                          loggerFactory_.CreateLogger<ObjectStorage>());
 }

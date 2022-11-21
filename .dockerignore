@@ -1,5 +1,6 @@
 **/.classpath
 **/.dockerignore
+**/Dockerfile
 **/.env
 **/.git
 **/.gitignore
@@ -8,6 +9,7 @@
 **/.toolstarget
 **/.vs
 **/.vscode
+**/.idea
 **/*.*proj.user
 **/*.dbmdl
 **/*.dump
@@ -17,6 +19,7 @@
 **/charts
 **/docker-compose*
 docker-compose/
+tools/
 **/node_modules
 **/npm-debug.log
 **/obj
