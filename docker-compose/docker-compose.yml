@@ -44,6 +44,7 @@ services:
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
       - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__DirectConnection=true
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:01
       - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
@@ -77,6 +78,7 @@ services:
       - MongoDB__Host=database
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
+      - MongoDB__DirectConnection=true
       - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
@@ -106,6 +108,7 @@ services:
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
       - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__DirectConnection=true
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
@@ -139,6 +142,7 @@ services:
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
       - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__DirectConnection=true
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
       - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
