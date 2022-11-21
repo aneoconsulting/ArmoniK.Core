@@ -11,7 +11,7 @@ services:
 
   object:
     image: redis:bullseye
-    command: redis-server
+    command: redis-server --save "" --appendonly no
     networks:
       - armonik-backend
     expose:
@@ -43,11 +43,14 @@ services:
       - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:01
-      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
+      - LocalStorage__Path=/local_storage
       - Redis__EndpointUrl=object:6379
       - Submitter__DefaultPartition=TestPartition0
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
+    volumes:
+      - local_storage:/local_storage
     logging:
       driver: fluentd
       options:
@@ -135,13 +138,16 @@ services:
       - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
-      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
+      - LocalStorage__Path=/local_storage
       - Redis__EndpointUrl=object:6379
       - Pollster__MaxErrorAllowed=-1
       - InitWorker__WorkerCheckRetries=10
       - InitWorker__WorkerCheckDelay=00:00:10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
+    volumes:
+      - local_storage:/local_storage
     logging:
       driver: fluentd
       options:
@@ -222,6 +228,7 @@ networks:
     name: armonik-monitoring
 
 volumes:
+  local_storage: {}
   socket_vol0: {}
   socket_vol1: {}
   socket_vol2: {}

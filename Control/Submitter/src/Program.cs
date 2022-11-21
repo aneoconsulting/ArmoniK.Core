@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.RabbitMQ;
@@ -86,6 +87,8 @@ public static class Program
                       logger.GetLogger())
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
+             .AddLocalStorage(builder.Configuration,
+                              logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,

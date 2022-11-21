@@ -6,6 +6,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj", "Compute/PollingAgent/src/"]
+COPY ["Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj", "Adaptors/LocalStorage/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj", "Adaptors/Amqp/src/"]
@@ -23,7 +24,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
-RUN mkdir /cache && chown armonikuser: /cache
+RUN mkdir /cache /local_storage && chown armonikuser: /cache /local_storage
 USER armonikuser
 
 ENV ASPNETCORE_URLS http://+:1080
