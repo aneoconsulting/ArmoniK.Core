@@ -38,9 +38,9 @@ namespace ArmoniK.Core.Adapters.LocalStorage;
 public class ObjectStorageFactory : IObjectStorageFactory
 {
   private readonly int            chunkSize_;
+  private readonly ILogger        logger_;
   private readonly ILoggerFactory loggerFactory_;
   private readonly string         rootPath_;
-  private readonly ILogger        logger_;
 
 
   private bool isInitialized_;
@@ -97,7 +97,8 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
-    => new ObjectStorage(Path.Combine(rootPath_, objectStorageName),
+    => new ObjectStorage(Path.Combine(rootPath_,
+                                      objectStorageName),
                          chunkSize_,
                          loggerFactory_.CreateLogger<ObjectStorage>());
 }

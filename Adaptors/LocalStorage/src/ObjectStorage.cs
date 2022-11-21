@@ -58,7 +58,8 @@ public class ObjectStorage : IObjectStorage
     logger_    = logger;
     chunkSize_ = chunkSize;
 
-    logger.LogDebug("Creating Local ObjectStorage at {path}", path);
+    logger.LogDebug("Creating Local ObjectStorage at {path}",
+                    path);
 
     Directory.CreateDirectory(path);
   }
