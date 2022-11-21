@@ -27,7 +27,7 @@ export QUEUE := if queue == "rabbit" {
 }
 
 # Sets the object storage
-export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "LocalStorage")
+export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "Redis")
 
 # Sets the override to feed docker-compose
 export OVERRIDE := if queue == "rabbit091" {
