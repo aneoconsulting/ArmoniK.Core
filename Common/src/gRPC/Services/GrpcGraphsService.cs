@@ -22,8 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 using ArmoniK.Api.gRPC.V1.Graphs;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Graphs;
+
+using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
@@ -33,11 +39,43 @@ public class GrpcGraphsService : Graphs.GraphsBase
 {
   private readonly ILogger<GrpcApplicationsService> logger_;
   private readonly ITaskTable                       taskTable_;
+  private readonly ITaskWatcher                     taskWatcher_;
+  private readonly IResultTable                     resultTable_;
+  private readonly IResultWatcher                   resultWatcher_;
 
   public GrpcGraphsService(ITaskTable                       taskTable,
+                           ITaskWatcher                     taskWatcher,
+                           IResultTable                     resultTable,
+                           IResultWatcher                   resultWatcher,
                            ILogger<GrpcApplicationsService> logger)
   {
-    logger_    = logger;
-    taskTable_ = taskTable;
+    logger_        = logger;
+    taskTable_     = taskTable;
+    taskWatcher_   = taskWatcher;
+    resultTable_   = resultTable;
+    resultWatcher_ = resultWatcher;
+  }
+
+  public override async Task GetGraphs(GraphSubscriptionRequest                  request,
+                                       IServerStreamWriter<GraphContentResponse> responseStream,
+                                       ServerCallContext                         context)
+  {
+    var wtg = new WatchToGrpc(taskTable_,
+                              taskWatcher_,
+                              resultTable_,
+                              resultWatcher_,
+                              logger_);
+
+    var enumerator = wtg.GetGraph(request.SessionId,
+                                  context.CancellationToken)
+                        .GetAsyncEnumerator();
+
+    while (await enumerator.MoveNextAsync(context.CancellationToken)
+                           .ConfigureAwait(false))
+    {
+      await responseStream.WriteAsync(enumerator.Current,
+                                      context.CancellationToken)
+                          .ConfigureAwait(false);
+    }
   }
 }
