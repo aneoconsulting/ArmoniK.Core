@@ -236,23 +236,17 @@ public class ObjectStorageTestBase
       Assert.AreEqual(listChunks.Count,
                       res.Count);
 
-      foreach (var comparison in listChunks.Zip(res.Select(chunk => Encoding.ASCII.GetString(chunk)),
-                                                (resChunk,
-                                                 expectedData) => new
-                                                                  {
-                                                                    Result       = resChunk,
-                                                                    ExpectedData = expectedData,
-                                                                  }))
-      {
-        Assert.AreEqual(comparison.ExpectedData,
-                        comparison.Result);
-      }
+      Assert.AreEqual(string.Join("",
+                                  listChunks),
+                      string.Join("",
+                                  res.Select(chunk => Encoding.ASCII.GetString(chunk)));
 
-      var resValue = ObjectStorage!.GetValuesAsync("dataKey");
+      await ObjectStorage!.TryDeleteAsync("dataKey")
+                          .ConfigureAwait(false);
 
-
-      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await resValue.FirstAsync()
-                                                                                .ConfigureAwait(false));
+      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await ObjectStorage!.GetValuesAsync("dataKey")
+                                                                                      .FirstAsync()
+                                                                                      .ConfigureAwait(false));
     }
   }
 }
