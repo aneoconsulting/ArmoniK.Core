@@ -72,9 +72,9 @@ jobs:
       run: |
         if [[ "${{ github.ref_name }}" == "releases/"* ]]
         then
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version:2.5.3 /bin/git-version --folder=/repo --release-branch=release --dev-branch=${{ github.ref_name }}) 
+          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=${{ github.ref_name }}) 
         else
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version:2.5.3 /bin/git-version --folder=/repo --release-branch=release --dev-branch=main)
+          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=main)
         fi
 
         echo "version=$VERSION" >> $GITHUB_OUTPUT
