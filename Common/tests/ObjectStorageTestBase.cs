@@ -237,7 +237,7 @@ public class ObjectStorageTestBase
                       res.Count);
 
       Assert.AreEqual(string.Join("",
-                                  listChunks),
+                                  listChunks.Select(chunk => Encoding.ASCII.GetString(chunk))),
                       string.Join("",
                                   res.Select(chunk => Encoding.ASCII.GetString(chunk))));
 
