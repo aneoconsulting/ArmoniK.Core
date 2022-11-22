@@ -42,16 +42,13 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
-  private readonly IAuthenticationTable     authTable_;
   private readonly ILogger<GrpcAuthService> logger_;
   private readonly bool                     requireAuthentication_;
   private readonly bool                     requireAuthorization_;
 
   public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions> options,
-                         IAuthenticationTable                  authTable,
                          ILogger<GrpcAuthService>              logger)
   {
-    authTable_             = authTable;
     logger_                = logger;
     requireAuthentication_ = options.CurrentValue.RequireAuthentication;
     requireAuthorization_  = requireAuthentication_ && options.CurrentValue.RequireAuthorization;
@@ -82,7 +79,7 @@ public class GrpcAuthService : Authentication.AuthenticationBase
                                      AuthenticationType: Authenticator.SchemeName,
                                    } and UserIdentity userIdentity))
     {
-      // Authenticated, but not with the required scheme or not authenticated or the principal is not of the right type... something's wrong
+      // Authenticated, but not with the required scheme or not authenticated or the identity is not of the right type... something's wrong
       throw new ArmoniKException("Failed to get the authenticated user's info, something's wrong");
     }
 

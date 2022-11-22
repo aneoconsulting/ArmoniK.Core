@@ -121,6 +121,7 @@ public sealed class Permission : IEquatable<Permission>
                       Target);
   }
 
+  /// <inheritdoc />
   public bool Equals(Permission? other)
   {
     if (other is null)
@@ -159,20 +160,34 @@ public sealed class Permission : IEquatable<Permission>
   public string ToBasePermission()
     => Service + Separator + Name;
 
+  /// <inheritdoc />
   public override bool Equals(object? obj)
     => ReferenceEquals(this,
                        obj) || (obj is Permission other && Equals(other));
 
+  /// <inheritdoc />
   public override int GetHashCode()
     => HashCode.Combine(Name,
                         Service,
                         Target);
 
+  /// <summary>
+  ///   Equality operator, see <see cref="Equals(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission?)" />
+  /// </summary>
+  /// <param name="left">left side Permission</param>
+  /// <param name="right">right side Permission</param>
+  /// <returns>true if left is equal to right, false otherwise</returns>
   public static bool operator ==(Permission? left,
                                  Permission? right)
     => Equals(left,
               right);
 
+  /// <summary>
+  ///   Inequality operator, see <see cref="Equals(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission?)" />
+  /// </summary>
+  /// <param name="left">left side Permission</param>
+  /// <param name="right">right side Permission</param>
+  /// <returns>false if left is equal to right, true otherwise</returns>
   public static bool operator !=(Permission? left,
                                  Permission? right)
     => !Equals(left,
