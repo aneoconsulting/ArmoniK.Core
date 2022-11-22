@@ -239,7 +239,7 @@ public class ObjectStorageTestBase
       Assert.AreEqual(string.Join("",
                                   listChunks),
                       string.Join("",
-                                  res.Select(chunk => Encoding.ASCII.GetString(chunk)));
+                                  res.Select(chunk => Encoding.ASCII.GetString(chunk))));
 
       await ObjectStorage!.TryDeleteAsync("dataKey")
                           .ConfigureAwait(false);
