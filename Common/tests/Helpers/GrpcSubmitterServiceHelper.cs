@@ -83,7 +83,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     serviceConfigurator?.Invoke(builder.Services);
 
-    builder.WebHost.UseTestServer();
+    builder.WebHost.UseTestServer(options => options.PreserveExecutionContext = true);
     logger_ = loggerFactory_.CreateLogger("Testing apps");
     app_    = builder.Build();
     app_.UseRouting();

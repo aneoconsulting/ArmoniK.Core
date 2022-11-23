@@ -217,12 +217,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     var keyHash = cacheKey.GetHashCode();
 
     var identity = cache_.Get(cacheKey);
-    if (identity is
-        {
-          Identity:
-          {
-          },
-        })
+    if (identity?.Identity is not null)
     {
       logger_.LogInformation($"Found authenticated user {identity.Identity.Name} in cache. Authentication hashkey : {keyHash}.");
       return AuthenticateResult.Success(new AuthenticationTicket(identity,
