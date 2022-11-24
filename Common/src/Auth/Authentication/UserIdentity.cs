@@ -92,6 +92,6 @@ public class UserIdentity : ClaimsIdentity
     // This claim will be used when ClaimPrincipal.Name is called.
     claims = claims.Append(new Claim(ClaimTypes.Name,
                                      userAuth.Username));
-    return claims.ToList();
+    return claims;
   }
 }
