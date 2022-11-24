@@ -143,8 +143,27 @@ public class ObjectStorage : IObjectStorage
                                          CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    return await redis_.KeyDeleteAsync(new RedisKey(objectStorageName_ + key))
-                       .ConfigureAwait(false);
+    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
+                            .ConfigureAwait(false);
+
+    if (!value.HasValue)
+    {
+      throw new ObjectDataNotFoundException("Key not found");
+    }
+
+    var valuesCount = int.Parse(value!);
+    var keyList = Enumerable.Range(0,
+                                   valuesCount)
+                            .Select(index => new RedisKey(objectStorageName_ + key + "_" + index))
+                            .Concat(new[]
+                                    {
+                                      new RedisKey(objectStorageName_ + key + "_count"),
+                                    })
+                            .ToArray();
+
+
+    return await redis_.KeyDeleteAsync(keyList)
+                       .ConfigureAwait(false) == valuesCount + 1;
   }
 
   /// <inheritdoc />

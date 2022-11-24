@@ -456,6 +456,16 @@ public class Submitter : ISubmitter
       await taskTable_.SetTaskSuccessAsync(taskData.TaskId,
                                            cancellationToken)
                       .ConfigureAwait(false);
+
+      logger_.LogInformation("Remove input payload of {task}",
+                             taskData.TaskId);
+
+      //Discard value is used to remove warnings CS4014 !!
+      _ = Task.Factory.StartNew(async () => await PayloadStorage(taskData.SessionId)
+                                                  .TryDeleteAsync(taskData.TaskId,
+                                                                  CancellationToken.None)
+                                                  .ConfigureAwait(false),
+                                cancellationToken);
     }
     else
     {
