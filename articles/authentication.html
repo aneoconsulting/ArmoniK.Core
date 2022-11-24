@@ -91,7 +91,7 @@ The current version handles the following types of permissions :
 ---|---|---|---|
 <code>General:Impersonate:&lt;Rolename&gt;</code>|<code>General:Impersonate:Monitoring</code>|<strong>Rolename</strong>: Name of a role|Grants the right to impersonate a user with the role named &lt;Rolename&gt;. See <a href="#impersonation">Impersonation</a> for details|
 |<code>&lt;Service&gt;:&lt;Name&gt;</code>|<code>Submitter:CreateSession</code>|<strong>Service</strong>: Name of an ArmoniK web service<br><strong>Name</strong>: Name of the endpoint|Grants the right to use the endpoint named &lt;Name&gt; of the service named &lt;Service&gt;|
-|<code>&lt;Service&gt;:&lt;Name&gt;:&lt;Target&gt;</code>|<code>Submitter:CancelSession:Self</code>|<strong>Service</strong>: Name of an ArmoniK web service<br><strong>Name</strong>: Name of the endpoint<br><strong>Target</strong>: Target or scope of the permission|Same as <code>&lt;Service&gt;:&lt;Name&gt;</code> as &lt;Target&gt; is currently unused|</p>
+|<code>&lt;Service&gt;:&lt;Name&gt;:&lt;Target&gt;</code>|<code>Submitter:CancelSession:Self</code>|<strong>Service</strong>: Name of an ArmoniK web service<br><strong>Name</strong>: Name of the endpoint<br><strong>Target</strong>: Target or scope of the permission|Same as <code>&lt;Service&gt;:&lt;Name&gt;</code> as <code>&lt;Target&gt;</code> is currently unused|</p>
 <h2 id="user-authorization">User authorization</h2>
 <p>When an user sends a request to an endpoint, they need to be authenticated, and they need the permission to use this endpoint. If they lack the permission, then they will be forbidden from using it.</p>
 <h2 id="request-authorization-flowchart">Request authorization flowchart</h2>
@@ -125,6 +125,11 @@ The current version handles the following types of permissions :
 <li>External MongoDB (Currently not supported)</li>
 <li>External SQL (Currently not supported)</li>
 </ul>
+<h3 id="populating-the-internal-mongodb-when-deploying-armonik">Populating the internal MongoDB when deploying ArmoniK</h3>
+<blockquote>
+<p><strong>NOTE :</strong> This is the current recommended method</p>
+</blockquote>
+<p>You can define the users' roles and certificates using a json configuration during deployment. Check the <a href="https://github.com/aneoconsulting/ArmoniK/blob/main/docs/authentication-configuration-guide.md">ArmoniK Authentication Configuration Guide</a> for more details.</p>
 <h3 id="using-mongodb-directly">Using MongoDB directly</h3>
 <blockquote>
 <p><strong>NOTE :</strong> Using a MongoDB instance different from the one used in the rest of ArmoniK is currently not supported</p>
