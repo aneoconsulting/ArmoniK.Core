@@ -371,6 +371,10 @@ jobs:
            path: ./Tests/HtcMock/Server/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_htcmock_test_client
            path: ./Tests/HtcMock/Client/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_worker
+           path: ./Tests/Bench/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_client
+           path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v3
