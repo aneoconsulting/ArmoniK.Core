@@ -336,7 +336,7 @@ jobs:
         submodules: true
 
     - name: login
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Build
       run: docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
@@ -380,7 +380,7 @@ jobs:
 
     - name: login
       run: |
-        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
