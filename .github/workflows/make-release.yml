@@ -55,6 +55,9 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
+    - name: login
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+
     - name: ReTag
       run: |
         set -xe
