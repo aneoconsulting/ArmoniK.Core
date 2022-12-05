@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 using ArmoniK.Core.Common.Injection.Options;
 
@@ -59,7 +60,8 @@ internal class MongoDatabaseProvider : IDisposable
     var logger = LoggerFactory.Create(builder => builder.AddSerilog(loggerSerilog))
                               .CreateLogger("root");
 
-    runner_ = MongoDbRunner.Start(logger: NullLogger.Instance);
+    runner_ = MongoDbRunner.Start(logger: NullLogger.Instance,
+                                  binariesSearchDirectory: Path.GetTempPath() + "/" + Path.GetRandomFileName());
     var settings = MongoClientSettings.FromUrl(new MongoUrl(runner_.ConnectionString));
 
     settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
