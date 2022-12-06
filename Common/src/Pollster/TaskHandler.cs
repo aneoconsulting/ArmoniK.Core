@@ -454,10 +454,9 @@ public class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorAsync(e,
-                             taskData_,
-                             true,
-                             cancellationTokenSource_.Token)
+      await HandleErrorRequeueAsync(e,
+                                    taskData_,
+                                    cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -518,10 +517,9 @@ public class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorAsync(e,
-                             taskData_,
-                             true,
-                             cancellationTokenSource_.Token)
+      await HandleErrorRequeueAsync(e,
+                                    taskData_,
+                                    cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -585,7 +583,6 @@ public class TaskHandler : IAsyncDisposable
     {
       await HandleErrorAsync(e,
                              taskData_,
-                             false,
                              cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
@@ -593,34 +590,19 @@ public class TaskHandler : IAsyncDisposable
     logger_.LogDebug("End Task Processing");
   }
 
-  private async Task HandleErrorAsync(Exception         e,
-                                      TaskData          taskData,
-                                      bool              requeueIfUnavailable,
-                                      CancellationToken cancellationToken)
+  private async Task HandleErrorRequeueAsync(Exception         e,
+                                             TaskData          taskData,
+                                             CancellationToken cancellationToken)
   {
-    var resubmit    = false;
-    var queueStatus = QueueMessageStatus.Processed;
-    if (e is RpcException or ObjectDataNotFoundException)
+    if (cancellationToken.IsCancellationRequested || e is RpcException
+                                                          {
+                                                            StatusCode: StatusCode.Unavailable,
+                                                          })
     {
-      resubmit    = true;
-      queueStatus = QueueMessageStatus.Cancelled;
-    }
-
-    if (cancellationToken.IsCancellationRequested || (e is RpcException
-                                                           {
-                                                             StatusCode: StatusCode.Unavailable,
-                                                           } && requeueIfUnavailable))
-    {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        logger_.LogWarning(e,
-                           "Cancellation triggered, task cancelled here and re executed elsewhere");
-      }
-      else
-      {
-        logger_.LogWarning(e,
-                           "Worker not available, task cancelled here and re executed elsewhere");
-      }
+      logger_.LogWarning(e,
+                         cancellationToken.IsCancellationRequested
+                           ? "Cancellation triggered, task cancelled here and re executed elsewhere"
+                           : "Worker not available, task cancelled here and re executed elsewhere");
 
       await taskTable_.ReleaseTask(taskData.TaskId,
                                    ownerPodId_,
@@ -630,19 +612,11 @@ public class TaskHandler : IAsyncDisposable
     }
     else
     {
-      if (resubmit)
-      {
-        logger_.LogWarning(e,
-                           "Error during task execution, retrying task");
-      }
-      else
-      {
-        logger_.LogError(e,
-                         "Error during task execution, cancelling task");
-      }
+      logger_.LogError(e,
+                       "Error during task execution, cancelling task");
 
       await submitter_.CompleteTaskAsync(taskData,
-                                         resubmit,
+                                         false,
                                          new Output
                                          {
                                            Error = new Output.Types.Error
@@ -652,7 +626,45 @@ public class TaskHandler : IAsyncDisposable
                                          },
                                          CancellationToken.None)
                       .ConfigureAwait(false);
-      messageHandler_.Status = queueStatus;
+      messageHandler_.Status = QueueMessageStatus.Processed;
+    }
+
+    // Rethrow enable the recording of the error by the Pollster Main loop
+    throw e;
+  }
+
+  private async Task HandleErrorAsync(Exception         e,
+                                      TaskData          taskData,
+                                      CancellationToken cancellationToken)
+  {
+    if (cancellationToken.IsCancellationRequested)
+    {
+      logger_.LogWarning(e,
+                         "Cancellation triggered, task cancelled here and re executed elsewhere");
+
+      await taskTable_.ReleaseTask(taskData.TaskId,
+                                   ownerPodId_,
+                                   CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Postponed;
+    }
+    else
+    {
+      logger_.LogWarning(e,
+                         "Error during task execution, retrying task");
+
+      await submitter_.CompleteTaskAsync(taskData,
+                                         true,
+                                         new Output
+                                         {
+                                           Error = new Output.Types.Error
+                                                   {
+                                                     Details = e.Message,
+                                                   },
+                                         },
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Cancelled;
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop
