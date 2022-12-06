@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -131,6 +132,25 @@ public interface IResultTable : IInitializable
   /// </returns>
   IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
                                             CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   List all results matching the given request
+  /// </summary>
+  /// <param name="filter">Filter to select results</param>
+  /// <param name="orderField">Select the field that will be used to order the results</param>
+  /// <param name="ascOrder">Is the order ascending</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of results metadata that matched the filter and total number of results without paging
+  /// </returns>
+  Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                       Expression<Func<Result, object?>> orderField,
+                                                                       bool                              ascOrder,
+                                                                       int                               page,
+                                                                       int                               pageSize,
+                                                                       CancellationToken                 cancellationToken = default);
 
   /// <summary>
   ///   Update result with small payload

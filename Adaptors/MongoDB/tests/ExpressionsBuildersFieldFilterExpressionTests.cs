@@ -64,6 +64,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("Session",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -99,6 +100,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -135,6 +137,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("Session",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -171,6 +174,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -207,6 +211,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -243,6 +248,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -272,13 +278,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceled,
+                                                                                 TaskStatus.Cancelled,
                                                                                })
                                   .Compile();
 
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -308,7 +315,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceled,
+                                                                                 TaskStatus.Cancelled,
                                                                                },
                                                                                false)
                                   .Compile();
@@ -316,6 +323,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -351,6 +359,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -365,7 +374,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -387,6 +396,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -401,7 +411,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -416,13 +426,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceling,
+                                                                                 TaskStatus.Cancelling,
                                                                                })
                                   .Compile();
 
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -437,7 +448,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -452,7 +463,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                                new[]
                                                                                {
                                                                                  TaskStatus.Completed,
-                                                                                 TaskStatus.Canceling,
+                                                                                 TaskStatus.Cancelling,
                                                                                },
                                                                                false)
                                   .Compile();
@@ -460,6 +471,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -474,7 +486,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -495,6 +507,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -509,7 +522,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -531,6 +544,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -545,7 +559,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -567,6 +581,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -581,7 +596,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -604,6 +619,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "Task",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -618,7 +634,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -639,6 +655,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "OtherTask",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -653,7 +670,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -675,6 +692,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "OtherTask",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -689,7 +707,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -711,6 +729,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "OtherTask",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -725,7 +744,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -748,6 +767,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var model = new TaskData("OtherSession",
                              "OtherTask",
                              "OwnerPodId",
+                             "OwnerPodName",
                              "PayloadId",
                              new[]
                              {
@@ -762,7 +782,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Canceled,
+                             TaskStatus.Cancelled,
                              _taskOptions,
                              new Output(true,
                                         ""));

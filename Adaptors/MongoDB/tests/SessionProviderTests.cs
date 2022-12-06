@@ -31,12 +31,13 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common;
 
+using EphemeralMongo;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
-using Mongo2Go;
 
 using MongoDB.Driver;
 
@@ -60,8 +61,14 @@ public class SessionProviderTests
   public void SetUp()
   {
     var logger = NullLogger.Instance;
-    runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
-                                  logger: logger);
+    var options = new MongoRunnerOptions
+                  {
+                    UseSingleNodeReplicaSet = false,
+                    StandardOuputLogger     = line => logger.LogInformation(line),
+                    StandardErrorLogger     = line => logger.LogError(line),
+                  };
+
+    runner_ = MongoRunner.Run(options);
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
@@ -95,7 +102,7 @@ public class SessionProviderTests
   }
 
   private                 MongoClient?     client_;
-  private                 MongoDbRunner?   runner_;
+  private                 IMongoRunner?    runner_;
   private const           string           DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource   ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
   private                 ServiceProvider? provider_;

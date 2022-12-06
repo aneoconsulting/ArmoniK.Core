@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,17 +8,17 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -78,11 +78,6 @@ public class ObjectStorage : IObjectStorage
       ++idx;
     }
 
-    if (idx == 0)
-    {
-      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
-    }
-
     await redis_.StringSetAsync(objectStorageName_ + key + "_count",
                                 idx)
                 .ConfigureAwait(false);
@@ -105,11 +100,6 @@ public class ObjectStorage : IObjectStorage
       taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
                                          chunk));
       ++idx;
-    }
-
-    if (idx == 0)
-    {
-      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
     }
 
     await redis_.StringSetAsync(objectStorageName_ + key + "_count",
@@ -153,8 +143,27 @@ public class ObjectStorage : IObjectStorage
                                          CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    return await redis_.KeyDeleteAsync(new RedisKey(objectStorageName_ + key))
-                       .ConfigureAwait(false);
+    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
+                            .ConfigureAwait(false);
+
+    if (!value.HasValue)
+    {
+      throw new ObjectDataNotFoundException("Key not found");
+    }
+
+    var valuesCount = int.Parse(value!);
+    var keyList = Enumerable.Range(0,
+                                   valuesCount)
+                            .Select(index => new RedisKey(objectStorageName_ + key + "_" + index))
+                            .Concat(new[]
+                                    {
+                                      new RedisKey(objectStorageName_ + key + "_count"),
+                                    })
+                            .ToArray();
+
+
+    return await redis_.KeyDeleteAsync(keyList)
+                       .ConfigureAwait(false) == valuesCount + 1;
   }
 
   /// <inheritdoc />

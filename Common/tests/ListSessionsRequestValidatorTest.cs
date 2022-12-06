@@ -134,4 +134,12 @@ public class ListSessionsRequestValidatorTest
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }
+
+  [Test]
+  public void ListSessionsRequestZeroPageSizeShouldFail()
+  {
+    validListSessionsRequest_!.PageSize = 0;
+    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
+                             .IsValid);
+  }
 }

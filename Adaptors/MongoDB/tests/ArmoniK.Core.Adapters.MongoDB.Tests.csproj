@@ -10,11 +10,11 @@
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
   </ItemGroup>
-	
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
-	
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\tests\ArmoniK.Core.Common.Tests.csproj" />
     <ProjectReference Include="..\src\ArmoniK.Core.Adapters.MongoDB.csproj" />

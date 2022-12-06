@@ -25,16 +25,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
 
-using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -113,12 +112,12 @@ public interface ITaskTable : IInitializable
                                      CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Query a task status to check for cancelation
+  ///   Query a task status to check for cancellation
   /// </summary>
   /// <param name="taskId">Id of the task to check</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Boolean representing the cancelation status of the task
+  ///   Boolean representing the cancellation status of the task
   /// </returns>
   Task<bool> IsTaskCancelledAsync(string            taskId,
                                   CancellationToken cancellationToken = default);
@@ -135,7 +134,7 @@ public interface ITaskTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Cancel all tasks in a given session
+  ///   Cancels all tasks in a given session
   /// </summary>
   /// <param name="sessionId">Id of the target session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -144,6 +143,17 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task CancelSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Cancels all the given tasks that are not in a final status
+  /// </summary>
+  /// <param name="taskIds">Collection of task ids</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of task metadata of the input tasks if tasks exists
+  /// </returns>
+  Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                        CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Count tasks matching a given filter
@@ -199,15 +209,42 @@ public interface ITaskTable : IInitializable
                                           CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   List all tasks matching the given request
+  ///   List all tasks matching the given filter and ordering
   /// </summary>
-  /// <param name="request">Filter request</param>
+  /// <param name="filter">Filter to select tasks</param>
+  /// <param name="orderField">Select the field that will be used to order the tasks</param>
+  /// <param name="ascOrder">Is the order ascending</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
   /// <returns>
-  ///   Collection of task metadata matching the request
+  ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                             CancellationToken cancellationToken = default);
+  Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                     Expression<Func<TaskData, object?>> orderField,
+                                                                     bool                                ascOrder,
+                                                                     int                                 page,
+                                                                     int                                 pageSize,
+                                                                     CancellationToken                   cancellationToken = default);
+
+  /// <summary>
+  ///   List all applications extracted from task metadata matching the given filter and ordering
+  /// </summary>
+  /// <param name="filter">Filter to select tasks</param>
+  /// <param name="orderField">Select the field that will be used to order the tasks</param>
+  /// <param name="ascOrder">Is the order ascending</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
+  /// <returns>
+  ///   Collection of applications metadata matching the request and total number of results without paging
+  /// </returns>
+  Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                      Expression<Func<Application, object?>> orderField,
+                                                                                      bool                                   ascOrder,
+                                                                                      int                                    page,
+                                                                                      int                                    pageSize,
+                                                                                      CancellationToken                      cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to succeeded
@@ -261,12 +298,16 @@ public interface ITaskTable : IInitializable
   /// </summary>
   /// <param name="taskId">Id of the task to acquire</param>
   /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
+  /// <param name="ownerPodName">Hostname of the pollster</param>
+  /// <param name="receptionDate">Date when the message from the queue storage is received</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to acquire
   /// </returns>
   Task<TaskData> AcquireTask(string            taskId,
                              string            ownerPodId,
+                             string            ownerPodName,
+                             DateTime          receptionDate,
                              CancellationToken cancellationToken = default);
 
   /// <summary>

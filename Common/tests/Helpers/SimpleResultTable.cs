@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,6 +105,25 @@ public class SimpleResultTable : IResultTable
        {
          OutputId,
        }.ToAsyncEnumerable();
+
+  public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                              Expression<Func<Result, object?>> orderField,
+                                                                              bool                              ascOrder,
+                                                                              int                               page,
+                                                                              int                               pageSize,
+                                                                              CancellationToken                 cancellationToken = default)
+    => Task.FromResult((new List<Result>
+                        {
+                          new(SessionId,
+                              "ResultName",
+                              TaskId,
+                              ResultStatus.Completed,
+                              DateTime.UtcNow,
+                              new byte[]
+                              {
+                                42,
+                              }),
+                        }.AsEnumerable(), 1));
 
   public Task SetResult(string            sessionId,
                         string            ownerTaskId,

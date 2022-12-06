@@ -57,11 +57,14 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="SubmittedDate">Date when the task is submitted</param>
 /// <param name="StartDate">Date when the task execution begins</param>
 /// <param name="EndDate">Date when the task ends</param>
+/// <param name="ReceptionDate">Date when the task is received by the polling agent</param>
+/// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
 public record TaskData(string        SessionId,
                        string        TaskId,
                        string        OwnerPodId,
+                       string        OwnerPodName,
                        string        PayloadId,
                        IList<string> ParentTaskIds,
                        IList<string> DataDependencies,
@@ -75,6 +78,8 @@ public record TaskData(string        SessionId,
                        DateTime?     SubmittedDate,
                        DateTime?     StartDate,
                        DateTime?     EndDate,
+                       DateTime?     ReceptionDate,
+                       DateTime?     AcquisitionDate,
                        DateTime?     PodTtl,
                        Output        Output)
 {
@@ -84,6 +89,7 @@ public record TaskData(string        SessionId,
   /// <param name="sessionId">Unique identifier of the session in which the task belongs</param>
   /// <param name="taskId">Unique identifier of the task</param>
   /// <param name="ownerPodId">Identifier of the polling agent running the task</param>
+  /// <param name="ownerPodName">Hostname of the polling agent running the task</param>
   /// <param name="payloadId">Unique identifier of the payload in input of the task</param>
   /// <param name="parentTaskIds">
   ///   Unique identifiers of the tasks that submitted the current task up to the session id which
@@ -101,6 +107,7 @@ public record TaskData(string        SessionId,
   public TaskData(string        sessionId,
                   string        taskId,
                   string        ownerPodId,
+                  string        ownerPodName,
                   string        payloadId,
                   IList<string> parentTaskIds,
                   IList<string> dataDependencies,
@@ -112,6 +119,7 @@ public record TaskData(string        SessionId,
     : this(sessionId,
            taskId,
            ownerPodId,
+           ownerPodName,
            payloadId,
            parentTaskIds,
            dataDependencies,
@@ -122,6 +130,8 @@ public record TaskData(string        SessionId,
            "",
            options,
            DateTime.UtcNow,
+           null,
+           null,
            null,
            null,
            null,
@@ -177,16 +187,23 @@ public record TaskData(string        SessionId,
          SubmittedAt = taskData.SubmittedDate is not null
                          ? FromDateTime(taskData.SubmittedDate.Value)
                          : null,
+         AcquiredAt = taskData.AcquisitionDate is not null
+                        ? FromDateTime(taskData.AcquisitionDate.Value)
+                        : null,
+         ReceivedAt = taskData.ReceptionDate is not null
+                        ? FromDateTime(taskData.ReceptionDate.Value)
+                        : null,
+         PodHostname = taskData.OwnerPodName,
        };
 
   /// <summary>
-  ///   Conversion operator from <see cref="TaskData" /> to <see cref="Task" />
+  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskSummary" />
   /// </summary>
   /// <param name="taskData">The input task data</param>
   /// <returns>
   ///   The converted task data
   /// </returns>
-  public static implicit operator Task(TaskData taskData)
+  public static implicit operator TaskSummary(TaskData taskData)
     => new()
        {
          SessionId = taskData.SessionId,
@@ -201,5 +218,21 @@ public record TaskData(string        SessionId,
          StartedAt = taskData.StartDate is not null
                        ? FromDateTime(taskData.StartDate.Value)
                        : null,
+         Error = taskData.Status == TaskStatus.Error
+                   ? taskData.Output.Error
+                   : "",
        };
+
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskData" /> to <see cref="Application" />
+  /// </summary>
+  /// <param name="taskData">The input task data</param>
+  /// <returns>
+  ///   The converted task data
+  /// </returns>
+  public static implicit operator Application(TaskData taskData)
+    => new(taskData.Options.ApplicationName,
+           taskData.Options.ApplicationNamespace,
+           taskData.Options.ApplicationVersion,
+           taskData.Options.ApplicationService);
 }

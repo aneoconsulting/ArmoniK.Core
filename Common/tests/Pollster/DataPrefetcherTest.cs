@@ -112,10 +112,12 @@ public class DataPrefetcherTest
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
     const string podId        = "PodId";
+    const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  podName,
                                                                   payloadId,
                                                                   new[]
                                                                   {
@@ -271,11 +273,13 @@ public class DataPrefetcherTest
     const string taskId       = "TaskId";
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
+    const string podName      = "PodName";
     const string podId        = "PodId";
     const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  podName,
                                                                   payloadId,
                                                                   new[]
                                                                   {
@@ -365,10 +369,12 @@ public class DataPrefetcherTest
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
     const string podId        = "PodId";
+    const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  podName,
                                                                   payloadId,
                                                                   new[]
                                                                   {
@@ -458,10 +464,12 @@ public class DataPrefetcherTest
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
     const string podId        = "PodId";
+    const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  podName,
                                                                   payloadId,
                                                                   new[]
                                                                   {
@@ -546,10 +554,12 @@ public class DataPrefetcherTest
     const string dependency1  = "Dependency1";
     const string dependency2  = "Dependency2";
     const string podId        = "PodId";
+    const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  podName,
                                                                   payloadId,
                                                                   new[]
                                                                   {
@@ -635,10 +645,12 @@ public class DataPrefetcherTest
     const string dependency1  = "Dependency1";
     const string dependency2  = "Dependency2";
     const string podId        = "PodId";
+    const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  podName,
                                                                   payloadId,
                                                                   new[]
                                                                   {

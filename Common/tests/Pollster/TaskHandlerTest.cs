@@ -26,14 +26,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
@@ -55,7 +54,6 @@ using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
-using Task = System.Threading.Tasks.Task;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -332,7 +330,7 @@ public class TaskHandlerTest
   [Test]
   [TestCase(TaskStatus.Creating)]
   [TestCase(TaskStatus.Completed)]
-  [TestCase(TaskStatus.Canceled)]
+  [TestCase(TaskStatus.Cancelled)]
   public async Task AcquireStatusShouldFail(TaskStatus status)
   {
     var sqmh = new SimpleQueueMessageHandler
@@ -357,6 +355,7 @@ public class TaskHandlerTest
                                 Guid.NewGuid()
                                     .ToString(),
                                 "ownerpodid",
+                                "ownerpodname",
                                 "payload",
                                 new List<string>(),
                                 new List<string>(),
@@ -376,6 +375,8 @@ public class TaskHandlerTest
                                                 "",
                                                 ""),
                                 DateTime.Now,
+                                null,
+                                null,
                                 null,
                                 null,
                                 null,
@@ -444,7 +445,8 @@ public class TaskHandlerTest
 
       return new TaskData("SessionId",
                           "taskId",
-                          "owner",
+                          "ownerpodid",
+                          "ownerpodname",
                           "payload",
                           new List<string>(),
                           new List<string>(),
@@ -463,6 +465,8 @@ public class TaskHandlerTest
                                           "",
                                           "",
                                           ""),
+                          DateTime.Now,
+                          DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
@@ -494,6 +498,10 @@ public class TaskHandlerTest
                                    CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                                 CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
+
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                               CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
@@ -513,8 +521,20 @@ public class TaskHandlerTest
                                                    CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                      CancellationToken cancellationToken)
+    public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                              Expression<Func<TaskData, object?>> orderField,
+                                                                              bool                                ascOrder,
+                                                                              int                                 page,
+                                                                              int                                 pageSize,
+                                                                              CancellationToken                   cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                               Expression<Func<Application, object?>> orderField,
+                                                                                               bool                                   ascOrder,
+                                                                                               int                                    page,
+                                                                                               int                                    pageSize,
+                                                                                               CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task SetTaskSuccessAsync(string            taskId,
@@ -536,6 +556,8 @@ public class TaskHandlerTest
 
     public async Task<TaskData> AcquireTask(string            taskId,
                                             string            ownerPodId,
+                                            string            ownerPodName,
+                                            DateTime          receptionDate,
                                             CancellationToken cancellationToken = default)
     {
       if (waitMethod_ == WaitMethod.Acquire)
@@ -547,6 +569,7 @@ public class TaskHandlerTest
       return new TaskData("SessionId",
                           taskId,
                           ownerPodId,
+                          ownerPodName,
                           "payload",
                           new List<string>(),
                           new List<string>(),
@@ -569,6 +592,8 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
+                          receptionDate,
+                          DateTime.Now,
                           DateTime.Now,
                           new Output(false,
                                      ""));
@@ -579,6 +604,7 @@ public class TaskHandlerTest
                                       CancellationToken cancellationToken = default)
       => Task.FromResult(new TaskData("SessionId",
                                       taskId,
+                                      ownerPodId,
                                       ownerPodId,
                                       "payload",
                                       new List<string>(),
@@ -598,6 +624,8 @@ public class TaskHandlerTest
                                                       "",
                                                       "",
                                                       ""),
+                                      DateTime.Now,
+                                      DateTime.Now,
                                       DateTime.Now,
                                       DateTime.Now,
                                       DateTime.Now,
@@ -693,8 +721,12 @@ public class TaskHandlerTest
                                                       CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                            CancellationToken   cancellationToken = default)
+    public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                       Expression<Func<SessionData, object?>> orderField,
+                                                                                       bool                                   ascOrder,
+                                                                                       int                                    page,
+                                                                                       int                                    pageSize,
+                                                                                       CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
   }
 

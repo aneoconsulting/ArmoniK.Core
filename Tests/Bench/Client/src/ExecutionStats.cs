@@ -37,7 +37,7 @@ namespace ArmoniK.Samples.Bench.Client;
 /// <param name="TotalTasks">Total number of tasks executed in the application</param>
 /// <param name="ErrorTasks">Number of tasks in error in the application</param>
 /// <param name="CompletedTasks">Number of tasks completed in the application</param>
-/// <param name="CanceledTasks">Number of tasks canceled in the application</param>
+/// <param name="CancelledTasks">Number of tasks canceled in the application</param>
 public record ExecutionStats(TimeSpan ElapsedTime          = default,
                              TimeSpan SubmissionTime       = default,
                              TimeSpan TasksExecutionTime   = default,
@@ -46,4 +46,4 @@ public record ExecutionStats(TimeSpan ElapsedTime          = default,
                              int      TotalTasks           = default,
                              int      ErrorTasks           = default,
                              int      CompletedTasks       = default,
-                             int      CanceledTasks        = default);
+                             int      CancelledTasks       = default);
