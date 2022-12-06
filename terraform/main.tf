@@ -1,3 +1,11 @@
+locals {
+  test-cmd = <<-EOF
+    CMD bash -c exec 3<>"/dev/tcp/localhost/1080"
+    echo -en "GET /liveness HTTP/1.1\r\nHost: localhost:1080\r\nConnection: close\r\n\r\n">&3 &
+    grep Healthy <&3 &>/dev/null || exit 1
+    EOF
+}
+
 resource "docker_container" "submitter" {
   name  = "armonik.control.submitter"
   image = "${var.armonik-submitter-image}:${var.core-tag}"
@@ -115,6 +123,14 @@ resource "docker_container" "pollingagent" {
     type   = "volume"
     target = "/cache"
     source = docker_volume.socket-vol.name
+  }
+
+  healthcheck {
+    test         = split(" ", local.test-cmd)
+    interval     = "5s"
+    timeout      = "3s"
+    start_period = "20s"
+    retries      = 5
   }
 
   depends_on = [
