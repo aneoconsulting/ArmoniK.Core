@@ -53,6 +53,12 @@ resource "docker_container" "submitter" {
     external = 5011
   }
 
+  mounts {
+    type = "volume"
+    target = "/cache"
+    source = docker_volume.socket-vol.name
+  }
+
   depends_on = [
     docker_container.database,
     docker_container.queue,
@@ -109,6 +115,12 @@ resource "docker_container" "pollingagent" {
     external = 9980
   }
 
+  mounts {
+    type = "volume"
+    target = "/cache"
+    source = docker_volume.socket-vol.name
+  }
+
   depends_on = [
     docker_container.database,
     docker_container.queue,
@@ -143,6 +155,12 @@ resource "docker_container" "worker" {
     fluentd-address = "127.0.0.1:24224"
   }
 
+  mounts {
+    type = "volume"
+    target = "/cache"
+    source = docker_volume.socket-vol.name
+  }
+  
   depends_on = [
     docker_container.database,
     docker_container.queue,
