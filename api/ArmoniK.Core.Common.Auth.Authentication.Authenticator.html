@@ -94,7 +94,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator__ctor_IOptionsMonitor_ArmoniK_Core_Common_Auth_Authentication_AuthenticatorOptions__ILoggerFactory_UrlEncoder_ISystemClock_ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_ArmoniK_Core_Common_Auth_Authentication_AuthenticationCache_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator.%23ctor(IOptionsMonitor%7BArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions%7D%2CILoggerFactory%2CUrlEncoder%2CISystemClock%2CArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable%2CArmoniK.Core.Common.Auth.Authentication.AuthenticationCache)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L160">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L161">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_Authenticator__ctor_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.#ctor*"></a>
   <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator__ctor_IOptionsMonitor_ArmoniK_Core_Common_Auth_Authentication_AuthenticatorOptions__ILoggerFactory_UrlEncoder_ISystemClock_ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_ArmoniK_Core_Common_Auth_Authentication_AuthenticationCache_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.#ctor(IOptionsMonitor{ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions},ILoggerFactory,UrlEncoder,ISystemClock,ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable,ArmoniK.Core.Common.Auth.Authentication.AuthenticationCache)">Authenticator(IOptionsMonitor&lt;AuthenticatorOptions&gt;, ILoggerFactory, UrlEncoder, ISystemClock, IAuthenticationTable, AuthenticationCache)</h4>
@@ -176,7 +176,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator_SchemeName.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator.SchemeName%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L135">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L136">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_SchemeName" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.SchemeName">SchemeName</h4>
   <div class="markdown level1 summary"><p>Name of the scheme for this handler</p>
@@ -208,7 +208,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetIdentityFromCertificateAsync_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetIdentityFromCertificateAsync(System.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L287">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L288">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetIdentityFromCertificateAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetIdentityFromCertificateAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetIdentityFromCertificateAsync_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetIdentityFromCertificateAsync(System.String,System.String,CancellationToken)">GetIdentityFromCertificateAsync(String, String, CancellationToken)</h4>
@@ -217,7 +217,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;UserIdentity&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public async Task&lt;ClaimsPrincipal?&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -259,7 +259,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserIdentity.html">UserIdentity</a>&gt;</td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">System.Nullable</span>&lt;<span class="xref">ClaimsPrincipal</span>&gt;&gt;</td>
         <td><p>A UserIdentity object which can be used in authentication, corresponding to the certificate. Null if it
 doesn't correspond to any user.</p>
 </td>
@@ -268,19 +268,19 @@ doesn't correspond to any user.</p>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_ArmoniK_Core_Common_Auth_Authentication_UserIdentity_System_Nullable_System_String__System_Nullable_System_String__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync(ArmoniK.Core.Common.Auth.Authentication.UserIdentity%2CSystem.Nullable%7BSystem.String%7D%2CSystem.Nullable%7BSystem.String%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_ClaimsPrincipal_System_Nullable_System_String__System_Nullable_System_String__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync(ClaimsPrincipal%2CSystem.Nullable%7BSystem.String%7D%2CSystem.Nullable%7BSystem.String%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L321">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L322">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_ArmoniK_Core_Common_Auth_Authentication_UserIdentity_System_Nullable_System_String__System_Nullable_System_String__CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync(ArmoniK.Core.Common.Auth.Authentication.UserIdentity,System.Nullable{System.String},System.Nullable{System.String},CancellationToken)">GetImpersonatedIdentityAsync(UserIdentity, Nullable&lt;String&gt;, Nullable&lt;String&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_ClaimsPrincipal_System_Nullable_System_String__System_Nullable_System_String__CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync(ClaimsPrincipal,System.Nullable{System.String},System.Nullable{System.String},CancellationToken)">GetImpersonatedIdentityAsync(ClaimsPrincipal, Nullable&lt;String&gt;, Nullable&lt;String&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the UserIdentity attempting to be impersonated by the user</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;UserIdentity&gt; GetImpersonatedIdentityAsync(UserIdentity baseIdentity, string? impersonationId, string? impersonationUsername, CancellationToken cancellationToken = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public async Task&lt;ClaimsPrincipal&gt; GetImpersonatedIdentityAsync(ClaimsPrincipal baseIdentity, string? impersonationId, string? impersonationUsername, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -293,7 +293,7 @@ doesn't correspond to any user.</p>
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserIdentity.html">UserIdentity</a></td>
+        <td><span class="xref">ClaimsPrincipal</span></td>
         <td><span class="parametername">baseIdentity</span></td>
         <td><p>UserIdentity trying to impersonate</p>
 </td>
@@ -328,7 +328,7 @@ doesn't correspond to any user.</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserIdentity.html">UserIdentity</a>&gt;</td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">ClaimsPrincipal</span>&gt;</td>
         <td><p>The impersonated user's UserIdentity</p>
 </td>
       </tr>
@@ -339,7 +339,7 @@ doesn't correspond to any user.</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator_HandleAuthenticateAsync.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator.HandleAuthenticateAsync%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L196">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L197">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_HandleAuthenticateAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.HandleAuthenticateAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_HandleAuthenticateAsync" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.HandleAuthenticateAsync">HandleAuthenticateAsync()</h4>
@@ -376,7 +376,7 @@ doesn't correspond to any user.</p>
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_Authenticator.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.Authenticator%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L130" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L131" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

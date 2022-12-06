@@ -463,10 +463,168 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck__1_IServiceCollection_System_String___0_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck%60%601(IServiceCollection%2CSystem.String%2C%60%600)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L284">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck*"></a>
+  <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck__1_IServiceCollection_System_String___0_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck``1(IServiceCollection,System.String,``0)">AddSingletonWithHealthCheck&lt;TService&gt;(IServiceCollection, String, TService)</h4>
+  <div class="markdown level1 summary"><p>Add a singleton service of the specified type with health check capabilities</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IServiceCollection AddSingletonWithHealthCheck&lt;TService&gt;(this IServiceCollection services, string checkName, TService implementationInstance)
+    where TService : class, IHealthCheckProvider</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IServiceCollection</span></td>
+        <td><span class="parametername">services</span></td>
+        <td><p>Collection of service descriptors</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">checkName</span></td>
+        <td><p>Name for the health check</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">TService</span></td>
+        <td><span class="parametername">implementationInstance</span></td>
+        <td><p>The instance of the service</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IServiceCollection</span></td>
+        <td><p>The updated collection of service descriptors</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="typeParameters">Type Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="parametername">TService</span></td>
+        <td><p>Type of the service (interface)</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck__1_IServiceCollection_System_String_Func_IServiceProvider___0__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck%60%601(IServiceCollection%2CSystem.String%2CFunc%7BIServiceProvider%2C%60%600%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L306">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck*"></a>
+  <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck__1_IServiceCollection_System_String_Func_IServiceProvider___0__" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck``1(IServiceCollection,System.String,Func{IServiceProvider,``0})">AddSingletonWithHealthCheck&lt;TService&gt;(IServiceCollection, String, Func&lt;IServiceProvider, TService&gt;)</h4>
+  <div class="markdown level1 summary"><p>Add a singleton service of the specified type with health check capabilities</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IServiceCollection AddSingletonWithHealthCheck&lt;TService&gt;(this IServiceCollection services, string checkName, Func&lt;IServiceProvider, TService&gt; implementationFactory)
+    where TService : class, IHealthCheckProvider</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IServiceCollection</span></td>
+        <td><span class="parametername">services</span></td>
+        <td><p>Collection of service descriptors</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">checkName</span></td>
+        <td><p>Name for the health check</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">Func</span>&lt;<span class="xref">IServiceProvider</span>, TService&gt;</td>
+        <td><span class="parametername">implementationFactory</span></td>
+        <td><p>The factory that creates the service</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IServiceCollection</span></td>
+        <td><p>The updated collection of service descriptors</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="typeParameters">Type Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="parametername">TService</span></td>
+        <td><p>Type of the service (interface)</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck__2_IServiceCollection_System_String_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck%60%602(IServiceCollection%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L227">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L262">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck*"></a>
   <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddSingletonWithHealthCheck__2_IServiceCollection_System_String_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddSingletonWithHealthCheck``2(IServiceCollection,System.String)">AddSingletonWithHealthCheck&lt;TService, TImplementation&gt;(IServiceCollection, String)</h4>
@@ -544,7 +702,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck__1_IServiceCollection_Func_IServiceProvider___0__System_String_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck%60%601(IServiceCollection%2CFunc%7BIServiceProvider%2C%60%600%7D%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L363">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L370">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck*"></a>
   <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck__1_IServiceCollection_Func_IServiceProvider___0__System_String_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck``1(IServiceCollection,Func{IServiceProvider,``0},System.String)">AddTransientWithHealthCheck&lt;TService&gt;(IServiceCollection, Func&lt;IServiceProvider, TService&gt;, String)</h4>
@@ -623,7 +781,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck__1_IServiceCollection_System_String_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck%60%601(IServiceCollection%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L272">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L327">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck*"></a>
   <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck__1_IServiceCollection_System_String_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck``1(IServiceCollection,System.String)">AddTransientWithHealthCheck&lt;T&gt;(IServiceCollection, String)</h4>
@@ -696,7 +854,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck__2_IServiceCollection_System_String_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck%60%602(IServiceCollection%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L317">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L348">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck*"></a>
   <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddTransientWithHealthCheck__2_IServiceCollection_System_String_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddTransientWithHealthCheck``2(IServiceCollection,System.String)">AddTransientWithHealthCheck&lt;TService, TImplementation&gt;(IServiceCollection, String)</h4>
@@ -774,7 +932,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Injection_ServiceCollectionExt_ValidateGrpcRequests_IServiceCollection_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.ServiceCollectionExt.ValidateGrpcRequests(IServiceCollection)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L405">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Injection/ServiceCollectionExt.cs/#L388">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_ValidateGrpcRequests_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.ValidateGrpcRequests*"></a>
   <h4 id="ArmoniK_Core_Common_Injection_ServiceCollectionExt_ValidateGrpcRequests_IServiceCollection_" data-uid="ArmoniK.Core.Common.Injection.ServiceCollectionExt.ValidateGrpcRequests(IServiceCollection)">ValidateGrpcRequests(IServiceCollection)</h4>
