@@ -435,6 +435,7 @@ public class TaskHandler : IAsyncDisposable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
+  /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   public async Task PreProcessing()
   {
     logger_.LogDebug("Start prefetch data");
@@ -455,6 +456,7 @@ public class TaskHandler : IAsyncDisposable
     {
       await HandleErrorAsync(e,
                              taskData_,
+                             true,
                              cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
@@ -518,6 +520,7 @@ public class TaskHandler : IAsyncDisposable
     {
       await HandleErrorAsync(e,
                              taskData_,
+                             true,
                              cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
@@ -582,6 +585,7 @@ public class TaskHandler : IAsyncDisposable
     {
       await HandleErrorAsync(e,
                              taskData_,
+                             false,
                              cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
@@ -591,6 +595,7 @@ public class TaskHandler : IAsyncDisposable
 
   private async Task HandleErrorAsync(Exception         e,
                                       TaskData          taskData,
+                                      bool              requeueIfUnavailable,
                                       CancellationToken cancellationToken)
   {
     var resubmit    = false;
@@ -601,10 +606,10 @@ public class TaskHandler : IAsyncDisposable
       queueStatus = QueueMessageStatus.Cancelled;
     }
 
-    if (cancellationToken.IsCancellationRequested || e is RpcException
-                                                          {
-                                                            StatusCode: StatusCode.Unavailable,
-                                                          })
+    if (cancellationToken.IsCancellationRequested || (e is RpcException
+                                                           {
+                                                             StatusCode: StatusCode.Unavailable,
+                                                           } && requeueIfUnavailable))
     {
       if (cancellationToken.IsCancellationRequested)
       {
