@@ -12,6 +12,18 @@ resource "docker_container" "database" {
   }
 }
 
+resource "null_resource" "partitions-in-db" {
+
+  provisioner "local-exec" {
+    command     = "docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: \"TestPartition0\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition1\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition2\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'"
+    interpreter = ["/bin/bash", "-c"]
+  }
+
+  depends_on = [
+    docker_container.database
+  ]
+}
+
 resource "docker_container" "object" {
   name  = "object"
   image = var.object-image
@@ -52,5 +64,17 @@ resource "docker_container" "queue" {
     timeout      = "5s"
     start_period = "20s"
     retries      = "5"
+  }
+
+  mounts {
+    type   = "bind"
+    target = "/opt/activemq/conf/jetty.xml"
+    source = abspath("./activemq/jetty.xml")
+  }
+
+  mounts {
+    type   = "bind"
+    target = "/opt/activemq/conf/activemq.xml"
+    source = abspath("./activemq/activemq.xml")
   }
 }

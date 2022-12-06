@@ -151,7 +151,7 @@ resource "docker_container" "partition-metrics" {
     internal = 1080
     external = 5003
   }
-  
+
   depends_on = [
     docker_container.database,
     docker_container.queue,

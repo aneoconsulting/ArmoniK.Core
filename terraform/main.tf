@@ -19,7 +19,7 @@ resource "docker_container" "submitter" {
     "MongoDB__DatabaseName=database",
     "MongoDB__MaxConnectionPoolSize=500",
     "MongoDB__TableStorage__PollingDelayMin=00:00:01",
-    "MongoDB__TableStorage__PollingDelayMax=00:00:01",
+    "MongoDB__TableStorage__PollingDelayMax=00:00:10",
     "Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage",
     "Redis__EndpointUrl=object:6379",
     "Submitter__DefaultPartition=TestPartition0",
@@ -53,12 +53,6 @@ resource "docker_container" "submitter" {
     external = 5011
   }
 
-  mounts {
-    type = "volume"
-    target = "/cache"
-    source = docker_volume.socket-vol.name
-  }
-
   depends_on = [
     docker_container.database,
     docker_container.queue,
@@ -72,7 +66,7 @@ resource "docker_container" "pollingagent" {
   image = "${var.armonik-pollingagent-image}:${var.core-tag}"
 
   networks_advanced {
-    name = docker_network.armonik-net.name
+    name = docker_network.armonik-backend.name
   }
   networks_advanced {
     name = docker_network.armonik-monitoring.name
@@ -85,7 +79,7 @@ resource "docker_container" "pollingagent" {
     "MongoDB__DatabaseName=database",
     "MongoDB__MaxConnectionPoolSize=500",
     "MongoDB__TableStorage__PollingDelayMin=00:00:01",
-    "MongoDB__TableStorage__PollingDelayMax=00:00:01",
+    "MongoDB__TableStorage__PollingDelayMax=00:00:10",
     "Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage",
     "Redis__EndpointUrl=object:6379",
     "Pollster__MaxErrorAllowed=-1",
@@ -93,6 +87,7 @@ resource "docker_container" "pollingagent" {
     "InitWorker__WorkerCheckDelay=00:00:10",
     "Serilog__MinimumLevel=Information",
     "Zipkin__Uri=http://zipkin:9411/api/v2/spans",
+    "ASPNETCORE_ENVIRONMENT=Development",
     "Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage",
     "Amqp__User=admin",
     "Amqp__Password=admin",
@@ -101,7 +96,8 @@ resource "docker_container" "pollingagent" {
     "Amqp__Scheme=AMQP",
     "Amqp__MaxPriority=10",
     "Amqp__MaxRetries=10",
-    "Amqp__LinkCredit=2"
+    "Amqp__LinkCredit=2",
+    "Amqp__PartitionId=TestPartition0"
   ]
 
   log_driver = "fluentd"
@@ -116,7 +112,7 @@ resource "docker_container" "pollingagent" {
   }
 
   mounts {
-    type = "volume"
+    type   = "volume"
     target = "/cache"
     source = docker_volume.socket-vol.name
   }
@@ -145,6 +141,7 @@ resource "docker_container" "worker" {
   }
 
   env = [
+    "ASPNETCORE_ENVIRONMENT=Development",
     "Serilog__Properties__Application=ArmoniK.Compute.Worker",
     "Serilog__MinimumLevel=Information"
   ]
@@ -156,11 +153,11 @@ resource "docker_container" "worker" {
   }
 
   mounts {
-    type = "volume"
+    type   = "volume"
     target = "/cache"
     source = docker_volume.socket-vol.name
   }
-  
+
   depends_on = [
     docker_container.database,
     docker_container.queue,
