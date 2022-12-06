@@ -26,6 +26,13 @@ resource "docker_container" "fluentbit" {
     ip       = "127.0.0.1"
   }
 
+  ports {
+    internal = 24224
+    external = 24224
+    protocol = "udp"
+    ip       = "127.0.0.1"
+  }
+
   depends_on = [
     docker_container.seq
   ]
