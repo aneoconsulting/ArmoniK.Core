@@ -4,11 +4,12 @@ using System.Diagnostics;
 
 using ArmoniK.Core.Common.Storage;
 
+using EphemeralMongo;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
-using Mongo2Go;
 
 using MongoDB.Driver;
 
@@ -23,8 +24,14 @@ internal class IndexTest
   public void StartUp()
   {
     var logger = NullLogger.Instance;
-    runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
-                                  logger: logger);
+    var options = new MongoRunnerOptions
+                  {
+                    UseSingleNodeReplicaSet = false,
+                    StandardOuputLogger     = line => logger.LogInformation(line),
+                    StandardErrorLogger     = line => logger.LogError(line),
+                  };
+
+    runner_ = MongoRunner.Run(options);
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
@@ -64,7 +71,7 @@ internal class IndexTest
     runner_?.Dispose();
   }
 
-  private                 MongoDbRunner?   runner_;
+  private                 IMongoRunner?    runner_;
   private                 IMongoClient?    client_;
   private const           string           DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource   ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");

@@ -28,12 +28,11 @@ using System.Diagnostics;
 
 using ArmoniK.Core.Common.Injection.Options;
 
+using EphemeralMongo;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
-using Mongo2Go;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -48,7 +47,7 @@ internal class MongoDatabaseProvider : IDisposable
   private const           string          DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
   private readonly        ServiceProvider provider_;
-  private readonly        MongoDbRunner?  runner_;
+  private readonly        IMongoRunner?   runner_;
 
   public MongoDatabaseProvider(Action<IServiceCollection>? serviceConfigurator = null)
   {
@@ -59,7 +58,14 @@ internal class MongoDatabaseProvider : IDisposable
     var logger = LoggerFactory.Create(builder => builder.AddSerilog(loggerSerilog))
                               .CreateLogger("root");
 
-    runner_ = MongoDbRunner.Start(logger: NullLogger.Instance);
+    var options = new MongoRunnerOptions
+                  {
+                    UseSingleNodeReplicaSet = false,
+                    StandardOuputLogger     = line => logger.LogInformation(line),
+                    StandardErrorLogger     = line => logger.LogError(line),
+                  };
+
+    runner_ = MongoRunner.Run(options);
     var settings = MongoClientSettings.FromUrl(new MongoUrl(runner_.ConnectionString));
 
     settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
