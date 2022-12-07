@@ -365,3 +365,5 @@ FodyWeavers.xsd
 # Visual Studio LaunchSettings
 **/launchSettings.json
 
+# JetBrains editor
+.idea

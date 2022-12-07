@@ -1,6 +1,9 @@
 # Enable positional args
 set positional-arguments
 
+# Enable bash output
+set shell := ["bash", "-exc"]
+
 # Default values for the deployment
 tag    := "test"
 queue  := "activemqp"
@@ -22,6 +25,9 @@ export QUEUE := if queue == "rabbitmq" {
 } else {
   "./docker-compose/docker-compose.queue-activemqp.yml"
 }
+
+# Sets the object storage
+export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "Redis")
 
 # Sets the override to feed docker-compose
 export OVERRIDE := if queue == "rabbitmq091" {
@@ -138,7 +144,7 @@ remove:
   docker rmi -f "$ARMONIK_WORKER" "$ARMONIK_METRICS" "$ARMONIK_PARTITIONMETRICS" "$ARMONIK_SUBMITTER" "$ARMONIK_POLLINGAGENT"
 
 # Destroy deployment with docker-compose down
-destroy: (compose "down")
+destroy: (compose "down" "-v")
 
 # Custom command to restart the given service
 restart serviceName: (compose "restart" serviceName)

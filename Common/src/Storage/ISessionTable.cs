@@ -22,11 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Microsoft.Extensions.Logging;
@@ -125,11 +126,19 @@ public interface ISessionTable : IInitializable
   /// <summary>
   ///   List all sessions matching the given request
   /// </summary>
-  /// <param name="request">Session request describing the sessions to be listed </param>
+  /// <param name="filter">Filter to select sessions</param>
+  /// <param name="orderField">Select the field that will be used to order the sessions</param>
+  /// <param name="ascOrder">Is the order ascending</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Collection of sessions metadata that matched the filter
+  ///   Collection of sessions metadata that matched the filter and total number of results without paging
   /// </returns>
-  Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                   CancellationToken   cancellationToken = default);
+  Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                              Expression<Func<SessionData, object?>> orderField,
+                                                                              bool                                   ascOrder,
+                                                                              int                                    page,
+                                                                              int                                    pageSize,
+                                                                              CancellationToken                      cancellationToken = default);
 }

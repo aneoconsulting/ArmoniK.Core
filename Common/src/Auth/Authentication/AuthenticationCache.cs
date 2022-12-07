@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Claims;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
@@ -129,20 +130,20 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
 /// </summary>
 public class AuthenticationCache
 {
-  private readonly ConcurrentDictionary<AuthenticationCacheKey, UserIdentity> identityStore_;
+  private readonly ConcurrentDictionary<AuthenticationCacheKey, ClaimsPrincipal> identityStore_;
 
   /// <summary>
   ///   Creates a new authentication cache
   /// </summary>
   public AuthenticationCache()
-    => identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, UserIdentity>();
+    => identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, ClaimsPrincipal>();
 
   /// <summary>
   ///   Get the UserIdentity associated with the given key, null if it doesn't exist
   /// </summary>
   /// <param name="key">Key obtained from the request header</param>
   /// <returns>Identity of the user</returns>
-  public virtual UserIdentity? Get(AuthenticationCacheKey key)
+  public virtual ClaimsPrincipal? Get(AuthenticationCacheKey key)
   {
     identityStore_.TryGetValue(key,
                                out var result);
@@ -155,7 +156,7 @@ public class AuthenticationCache
   /// <param name="key">Key obtained from the request header</param>
   /// <param name="identity">User identity obtained thorough</param>
   public void Set(AuthenticationCacheKey key,
-                  UserIdentity           identity)
+                  ClaimsPrincipal        identity)
     => identityStore_[key] = identity;
 
   /// <summary>

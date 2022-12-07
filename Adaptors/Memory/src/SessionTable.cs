@@ -26,15 +26,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -104,7 +103,7 @@ public class SessionTable : ISessionTable
                                             CancellationToken cancellationToken = default)
     => Task.FromResult(GetSessionAsync(sessionId,
                                        cancellationToken)
-                       .Result.Status == SessionStatus.Canceled);
+                       .Result.Status == SessionStatus.Cancelled);
 
   /// <inheritdoc />
   public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
@@ -127,14 +126,14 @@ public class SessionTable : ISessionTable
                                             (_,
                                              data) =>
                                             {
-                                              if (data.Status == SessionStatus.Canceled)
+                                              if (data.Status == SessionStatus.Cancelled)
                                               {
                                                 throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
                                               }
 
                                               return data with
                                                      {
-                                                       Status = SessionStatus.Canceled,
+                                                       Status = SessionStatus.Cancelled,
                                                        CancellationDate = DateTime.UtcNow,
                                                      };
                                             }));
@@ -178,19 +177,24 @@ public class SessionTable : ISessionTable
                                       });
   }
 
-  public Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                          CancellationToken   cancellationToken = default)
+  /// <inheritdoc />
+  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                     Expression<Func<SessionData, object?>> orderField,
+                                                                                     bool                                   ascOrder,
+                                                                                     int                                    page,
+                                                                                     int                                    pageSize,
+                                                                                     CancellationToken                      cancellationToken = default)
   {
     var queryable = storage_.AsQueryable()
                             .Select(pair => pair.Value)
-                            .Where(request.Filter.ToSessionDataFilter());
+                            .Where(filter);
 
-    var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
-                    ? queryable.OrderBy(request.Sort.ToSessionDataField())
-                    : queryable.OrderByDescending(request.Sort.ToSessionDataField());
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<IEnumerable<SessionData>>(ordered.Skip(request.Page * request.PageSize)
-                                                            .Take(request.PageSize));
+    return Task.FromResult<(IEnumerable<SessionData> sessions, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                        .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />

@@ -1,5 +1,5 @@
 ﻿// This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,31 +8,42 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//   D. Brasseur       <dbrasseur@aneo.fr>
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using JetBrains.Annotations;
 
-public static class ResultExtensions
+namespace ArmoniK.Core.Adapters.LocalStorage.Options;
+
+internal class LocalStorage
 {
-  public static Result ToResultDataModel(this Core.Common.Storage.Result result)
-  {
-    if (result is Result resultModel)
-    {
-      return resultModel;
-    }
+  public const string SettingSection = nameof(LocalStorage);
 
-    return new Result(result);
-  }
+  internal static readonly LocalStorage Default = new();
+
+  public string Path
+  {
+    get;
+    [UsedImplicitly]
+    set;
+  } = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
+                             "ArmoniK");
+
+  public int ChunkSize
+  {
+    get;
+    [UsedImplicitly]
+    init;
+  } = 64 * 1024;
 }

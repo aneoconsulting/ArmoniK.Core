@@ -83,7 +83,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     serviceConfigurator?.Invoke(builder.Services);
 
-    builder.WebHost.UseTestServer();
+    builder.WebHost.UseTestServer(options => options.PreserveExecutionContext = true);
     logger_ = loggerFactory_.CreateLogger("Testing apps");
     app_    = builder.Build();
     app_.UseRouting();
@@ -93,6 +93,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcResultsService>();
     app_.MapGrpcService<GrpcSessionsService>();
     app_.MapGrpcService<GrpcTasksService>();
+    app_.MapGrpcService<GrpcApplicationsService>();
+    app_.MapGrpcService<GrpcAuthService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,

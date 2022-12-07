@@ -26,10 +26,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -43,8 +45,6 @@ using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-
-using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -68,8 +68,8 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task Create(IEnumerable<Core.Common.Storage.Result> results,
-                           CancellationToken                       cancellationToken = default)
+  public async Task Create(IEnumerable<Result> results,
+                           CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(Create)}");
 
@@ -79,7 +79,7 @@ public class ResultTable : IResultTable
     {
       if (results.Any())
       {
-        await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
+        await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result)),
                                               new BulkWriteOptions
                                               {
                                                 IsOrdered = false,
@@ -95,9 +95,9 @@ public class ResultTable : IResultTable
     }
   }
 
-  async Task<Core.Common.Storage.Result> IResultTable.GetResult(string            sessionId,
-                                                                string            key,
-                                                                CancellationToken cancellationToken)
+  async Task<Result> IResultTable.GetResult(string            sessionId,
+                                            string            key,
+                                            CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
     activity?.SetTag($"{nameof(IResultTable.GetResult)}_sessionId",
@@ -119,9 +119,9 @@ public class ResultTable : IResultTable
   }
 
 
-  public IAsyncEnumerable<Core.Common.Storage.Result> GetResults(string              sessionId,
-                                                                 IEnumerable<string> keys,
-                                                                 CancellationToken   cancellationToken = default)
+  public IAsyncEnumerable<Result> GetResults(string              sessionId,
+                                             IEnumerable<string> keys,
+                                             CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetResults)}");
     activity?.SetTag($"{nameof(GetResults)}_sessionId",
@@ -152,6 +152,34 @@ public class ResultTable : IResultTable
                                                                          models.Count()))
                                  .ToListAsync(cancellationToken)
                                  .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                                    Expression<Func<Result, object?>> orderField,
+                                                                                    bool                              ascOrder,
+                                                                                    int                               page,
+                                                                                    int                               pageSize,
+                                                                                    CancellationToken                 cancellationToken = default)
+  {
+    using var _                = Logger.LogFunction();
+    using var activity         = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
+    var       sessionHandle    = sessionProvider_.Get();
+    var       resultCollection = resultCollectionProvider_.Get();
+
+
+    var queryable = resultCollection.AsQueryable(sessionHandle)
+                                    .Where(filter);
+
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
+
+    return (await ordered.Skip(page * pageSize)
+                         .Take(pageSize)
+                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
+                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                              .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

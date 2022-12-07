@@ -38,12 +38,12 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
-using Task = ArmoniK.Api.gRPC.V1.Tasks.Task;
+using Task = ArmoniK.Api.gRPC.V1.Tasks.Tasks;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
-public class GrpcTasksService : Tasks.TasksBase
+public class GrpcTasksService : Task.TasksBase
 {
   private readonly ILogger<GrpcTasksService> logger_;
   private readonly ITaskTable                taskTable_;
@@ -64,7 +64,7 @@ public class GrpcTasksService : Tasks.TasksBase
     {
       return new GetTaskResponse
              {
-               Task = await taskTable_.ReadTaskAsync(request.Id,
+               Task = await taskTable_.ReadTaskAsync(request.TaskId,
                                                      context.CancellationToken)
                                       .ConfigureAwait(false),
              };
@@ -99,7 +99,11 @@ public class GrpcTasksService : Tasks.TasksBase
   {
     try
     {
-      var taskData = await taskTable_.ListTasksAsync(request,
+      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
+                                                     request.Sort.ToTaskDataField(),
+                                                     request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc,
+                                                     request.Page,
+                                                     request.PageSize,
                                                      context.CancellationToken)
                                      .ConfigureAwait(false);
 
@@ -109,8 +113,9 @@ public class GrpcTasksService : Tasks.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.Select(data => new Task(data)),
+                 taskData.tasks.Select(data => new TaskSummary(data)),
                },
+               Total = taskData.totalCount,
              };
     }
     catch (ArmoniKException e)
@@ -166,6 +171,39 @@ public class GrpcTasksService : Tasks.TasksBase
     {
       logger_.LogWarning(e,
                          "Error while getting results ids from tasks");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(CancelTasks))]
+  public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
+                                                              ServerCallContext  context)
+  {
+    try
+    {
+      return new CancelTasksResponse
+             {
+               Tasks =
+               {
+                 (await taskTable_.CancelTaskAsync(request.TaskIds,
+                                                   context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(data => new TaskSummary(data)),
+               },
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while cancelling tasks");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while cancelling tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

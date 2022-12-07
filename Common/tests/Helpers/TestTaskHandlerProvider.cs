@@ -37,13 +37,13 @@ using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 
+using EphemeralMongo;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
-using Mongo2Go;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -59,7 +59,7 @@ public class TestTaskHandlerProvider : IDisposable
   private readonly        LoggerFactory   loggerFactory_;
   public readonly         IPartitionTable PartitionTable;
   private readonly        IResultTable    resultTable_;
-  private readonly        MongoDbRunner   runner_;
+  private readonly        IMongoRunner    runner_;
   public readonly         ISessionTable   SessionTable;
   public readonly         ISubmitter      Submitter;
   public readonly         TaskHandler     TaskHandler;
@@ -74,8 +74,15 @@ public class TestTaskHandlerProvider : IDisposable
                                  ISessionTable?          inputSessionTable = null)
   {
     var logger = NullLogger.Instance;
-    runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
-                                  logger: logger);
+
+    var options = new MongoRunnerOptions
+                  {
+                    UseSingleNodeReplicaSet = false,
+                    StandardOuputLogger     = line => logger.LogInformation(line),
+                    StandardErrorLogger     = line => logger.LogError(line),
+                  };
+
+    runner_ = MongoRunner.Run(options);
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB

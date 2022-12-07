@@ -134,4 +134,12 @@ public class ListTasksRequestValidatorTest
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }
+
+  [Test]
+  public void ListTasksRequestZeroPageSizeShouldFail()
+  {
+    validListTasksRequest_!.PageSize = 0;
+    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
+                             .IsValid);
+  }
 }
