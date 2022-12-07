@@ -946,30 +946,31 @@ public class TaskHandlerTest
     get
     {
       // trigger error before cancellation so it is a legitimate error and therefor should be considered as such
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns(TaskStatus.Error)
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns((TaskStatus.Error, QueueMessageStatus.Cancelled))
                                                                                    .SetArgDisplayNames("ExceptionError"); // error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns(TaskStatus.Error)
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns((TaskStatus.Error, QueueMessageStatus.Cancelled))
                                                                                           .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
 
       // trigger error after cancellation and therefore should be considered as cancelled task and resend into queue
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(3000)).Returns(TaskStatus.Submitted)
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(3000)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                       .SetArgDisplayNames("ExceptionTaskCancellation");
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(3000)).Returns(TaskStatus.Submitted)
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(3000)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                              .SetArgDisplayNames("RpcExceptionTaskCancellation");
 
       // Worker unavailable during execution should put the task in error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns(TaskStatus.Error)
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Error, QueueMessageStatus.Cancelled))
                                                                                                      .SetArgDisplayNames("UnavailableBeforeCancellation");
 
       // If the worker becomes unavailable during the task execution after cancellation, the task should be resubmitted
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(3000)).Returns(TaskStatus.Submitted)
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(3000)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                                         .SetArgDisplayNames("UnavailableAfterCancellation");
     }
   }
 
   [Test]
   [TestCaseSource(nameof(TestCaseOuptut))]
-  public async Task<TaskStatus> ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(ExceptionWorkerStreamHandler<TEx> workerStreamHandler)
+  public async Task<(TaskStatus taskStatus, QueueMessageStatus messageStatus)> ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(
+    ExceptionWorkerStreamHandler<TEx> workerStreamHandler)
     where TEx : Exception, new()
   {
     var sqmh = new SimpleQueueMessageHandler
@@ -1007,12 +1008,12 @@ public class TaskHandlerTest
 
     Assert.ThrowsAsync<TEx>(() => testServiceProvider.TaskHandler.PostProcessing());
 
-    return (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                              {
-                                                                taskId,
-                                                              })
-                                     .ConfigureAwait(false)).Single()
-                                                            .Status;
+    return ((await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                               {
+                                                                 taskId,
+                                                               })
+                                      .ConfigureAwait(false)).Single()
+                                                             .Status, sqmh.Status);
   }
 
   [Test]
@@ -1060,25 +1061,29 @@ public class TaskHandlerTest
                                                                        })
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
+
+    Assert.AreEqual(QueueMessageStatus.Processed,
+                    sqmh.Status);
   }
 
   public static IEnumerable TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
   {
     get
     {
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<Exception>()).Returns(TaskStatus.Error)
+      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<Exception>()).Returns((TaskStatus.Error, QueueMessageStatus.Processed))
                                                                                        .SetArgDisplayNames("Exception"); // error with resubmit
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestRpcException>()).Returns(TaskStatus.Error)
+      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestRpcException>()).Returns((TaskStatus.Error, QueueMessageStatus.Processed))
                                                                                               .SetArgDisplayNames("RpcException"); // error with resubmit
       // error meaning that the worker is unavailable, therefore a requeue is made
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestUnavailableRpcException>()).Returns(TaskStatus.Submitted)
+      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestUnavailableRpcException>()).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                                          .SetArgDisplayNames("RpcUnavailableException");
     }
   }
 
   [Test]
   [TestCaseSource(nameof(TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow))]
-  public async Task<TaskStatus> ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow<TEx>(ExceptionStartWorkerStreamHandler<TEx> sh)
+  public async Task<(TaskStatus taskStatus, QueueMessageStatus messageStatus)> ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow<TEx>(
+    ExceptionStartWorkerStreamHandler<TEx> sh)
     where TEx : Exception, new()
   {
     var sqmh = new SimpleQueueMessageHandler
@@ -1115,7 +1120,8 @@ public class TaskHandlerTest
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
-    return taskData.Status;
+
+    return (taskData.Status, sqmh.Status);
   }
 
 
@@ -1174,6 +1180,9 @@ public class TaskHandlerTest
 
     Assert.AreEqual(TaskStatus.Error,
                     taskData.Status);
+
+    Assert.AreEqual(QueueMessageStatus.Cancelled,
+                    sqmh.Status);
 
     var taskDataRetry = await testServiceProvider.TaskTable.ReadTaskAsync(taskId + "###1",
                                                                           CancellationToken.None)

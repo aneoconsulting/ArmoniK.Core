@@ -593,26 +593,22 @@ public class TaskHandler : IAsyncDisposable
   private async Task HandleErrorRequeueAsync(Exception         e,
                                              TaskData          taskData,
                                              CancellationToken cancellationToken)
-  {
-    await HandleErrorInternalAsync(e,
-                                   taskData,
-                                   false,
-                                   true,
-                                   cancellationToken)
-      .ConfigureAwait(false);
-  }
+    => await HandleErrorInternalAsync(e,
+                                      taskData,
+                                      false,
+                                      true,
+                                      cancellationToken)
+         .ConfigureAwait(false);
 
   private async Task HandleErrorResubmitAsync(Exception         e,
                                               TaskData          taskData,
                                               CancellationToken cancellationToken)
-  {
-    await HandleErrorInternalAsync(e,
-                                   taskData,
-                                   true,
-                                   false,
-                                   cancellationToken)
-      .ConfigureAwait(false);
-  }
+    => await HandleErrorInternalAsync(e,
+                                      taskData,
+                                      true,
+                                      false,
+                                      cancellationToken)
+         .ConfigureAwait(false);
 
   private async Task HandleErrorInternalAsync(Exception         e,
                                               TaskData          taskData,
@@ -654,7 +650,9 @@ public class TaskHandler : IAsyncDisposable
                                          },
                                          CancellationToken.None)
                       .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Processed;
+      messageHandler_.Status = resubmit
+                                 ? QueueMessageStatus.Cancelled
+                                 : QueueMessageStatus.Processed;
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop
