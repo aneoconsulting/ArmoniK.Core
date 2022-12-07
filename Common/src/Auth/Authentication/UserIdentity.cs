@@ -34,7 +34,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// <summary>
 ///   User identity. Used in the authentication middleware
 /// </summary>
-public class UserIdentity : ClaimsPrincipal
+public class UserIdentity : ClaimsIdentity
 {
   /// <summary>
   ///   Creates a user identity used in authentication
@@ -43,8 +43,8 @@ public class UserIdentity : ClaimsPrincipal
   /// <param name="authenticationType">Scheme by which the user is authenticated</param>
   public UserIdentity(UserAuthenticationResult userAuth,
                       string?                  authenticationType)
-    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permission(perm).Claim),
-                              authenticationType))
+    : base(ClaimsFromUserAuthenticationResult(userAuth),
+           authenticationType)
   {
     UserId   = userAuth.Id;
     UserName = userAuth.Username;
@@ -74,21 +74,24 @@ public class UserIdentity : ClaimsPrincipal
   public string UserId { get; set; }
 
   /// <summary>
-  ///   Checks if the user has a specific role
+  ///   Transforms a UserAuthenticationResult into a list of claims to be used in an ClaimsIdentity
   /// </summary>
-  /// <param name="role">Name of the role</param>
-  /// <returns>True if the user as the role, false otherwise</returns>
-  public override bool IsInRole(string role)
-    => Roles.Contains(role);
+  /// <param name="userAuth">UserAuthenticationResult corresponding to the user</param>
+  /// <returns>List of claims corresponding to the UserAuthenticationResult</returns>
+  public static IEnumerable<Claim> ClaimsFromUserAuthenticationResult(UserAuthenticationResult userAuth)
+  {
+    // Transform the list of permissions into a list of claims 
+    var claims = userAuth.Permissions.Select(perm => new Permission(perm).Claim);
 
-  /// <summary>
-  ///   Deeply clones a Useridentity
-  /// </summary>
-  /// <returns>Cloned user identity</returns>
-  public override UserIdentity Clone()
-    => new(new UserAuthenticationResult(UserId,
-                                        UserName,
-                                        Roles.ToList(),
-                                        Permissions.Select(perm => perm.ToString())),
-           Identity?.AuthenticationType);
+    // Add the roles of the user. This is done by adding claims with type ClaimTypes.Role and with a value corresponding to the role.
+    // This claim will be used when ClaimPrincipal.IsInRole is called.
+    claims = claims.Concat(userAuth.Roles.Select(r => new Claim(ClaimTypes.Role,
+                                                                r)));
+
+    // Add the name of the user. This is done by adding claims with type ClaimTypes.Name and with a value corresponding to the username.
+    // This claim will be used when ClaimPrincipal.Name is called.
+    claims = claims.Append(new Claim(ClaimTypes.Name,
+                                     userAuth.Username));
+    return claims;
+  }
 }

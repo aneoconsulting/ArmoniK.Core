@@ -206,6 +206,9 @@ public class PushQueueStorage : IPushQueueStorage
 
     /// <inheritdoc />
     public QueueMessageStatus Status { get; set; }
+
+    /// <inheritdoc />
+    public DateTime ReceptionDateTime { get; init; }
   }
 
   private class MessageComparer : IComparer<MessageHandler>

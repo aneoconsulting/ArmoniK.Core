@@ -25,11 +25,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Storage;
 
@@ -98,7 +98,7 @@ public class SimpleSessionTable : ISessionTable
   public Task<SessionData> CancelSessionAsync(string            sessionId,
                                               CancellationToken cancellationToken = default)
     => Task.FromResult(new SessionData(SessionId,
-                                       SessionStatus.Canceled,
+                                       SessionStatus.Cancelled,
                                        DateTime.Today.ToUniversalTime(),
                                        DateTime.Now.ToUniversalTime(),
                                        new List<string>
@@ -118,18 +118,22 @@ public class SimpleSessionTable : ISessionTable
          SessionId,
        }.ToAsyncEnumerable();
 
-  public Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                          CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<SessionData>>(new List<SessionData>
-                                                 {
-                                                   new(SessionId,
-                                                       SessionStatus.Running,
-                                                       DateTime.Today.ToUniversalTime(),
-                                                       null,
-                                                       new List<string>
-                                                       {
-                                                         PartitionId,
-                                                       },
-                                                       TaskOptions),
-                                                 });
+  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                     Expression<Func<SessionData, object?>> orderField,
+                                                                                     bool                                   ascOrder,
+                                                                                     int                                    page,
+                                                                                     int                                    pageSize,
+                                                                                     CancellationToken                      cancellationToken = default)
+    => Task.FromResult((new List<SessionData>
+                        {
+                          new(SessionId,
+                              SessionStatus.Running,
+                              DateTime.Today.ToUniversalTime(),
+                              null,
+                              new List<string>
+                              {
+                                PartitionId,
+                              },
+                              TaskOptions),
+                        }.AsEnumerable(), 1));
 }

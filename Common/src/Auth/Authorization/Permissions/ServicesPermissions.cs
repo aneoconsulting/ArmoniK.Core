@@ -57,7 +57,13 @@ public static class ServicesPermissions
                                                                                       typeof(GrpcResultsService), "Results"
                                                                                     },
                                                                                     {
+                                                                                      typeof(GrpcApplicationsService), "Applications"
+                                                                                    },
+                                                                                    {
                                                                                       typeof(GeneralService), "General"
+                                                                                    },
+                                                                                    {
+                                                                                      typeof(GrpcAuthService), "Authentication"
                                                                                     },
                                                                                   });
 

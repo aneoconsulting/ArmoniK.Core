@@ -25,11 +25,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
@@ -37,7 +37,6 @@ using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using Task = System.Threading.Tasks.Task;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -51,6 +50,7 @@ public class SimpleTaskTable : ITaskTable
   public const           string      OutputId    = "MyOutputId";
   public const           string      TaskId      = "MyTaskId";
   public const           string      PartitionId = "MyPartitionId";
+  public const           string      PodName     = "MyPodName";
   public static readonly TaskOptions TaskOptions;
 
   static SimpleTaskTable()
@@ -81,6 +81,7 @@ public class SimpleTaskTable : ITaskTable
     => Task.FromResult(new TaskData(SessionId,
                                     taskId,
                                     OwnerPodId,
+                                    PodName,
                                     PayloadId,
                                     new List<string>(),
                                     new List<string>(),
@@ -116,6 +117,23 @@ public class SimpleTaskTable : ITaskTable
                                  CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                               CancellationToken   cancellationToken = default)
+    => Task.FromResult<IList<TaskData>>(taskIds.Select(s => new TaskData(SessionId,
+                                                                         s,
+                                                                         OwnerPodId,
+                                                                         PodName,
+                                                                         PayloadId,
+                                                                         new List<string>(),
+                                                                         new List<string>(),
+                                                                         new List<string>(),
+                                                                         new List<string>(),
+                                                                         TaskStatus.Cancelled,
+                                                                         TaskOptions,
+                                                                         new Output(false,
+                                                                                    "Cancelled")))
+                                               .ToList());
+
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                             CancellationToken cancellationToken = default)
     => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
@@ -147,26 +165,45 @@ public class SimpleTaskTable : ITaskTable
          TaskId,
        }.ToAsyncEnumerable();
 
-  public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                    CancellationToken cancellationToken = default)
-    => Task.FromResult<IEnumerable<TaskData>>(new[]
-                                              {
-                                                new TaskData(SessionId,
-                                                             TaskId,
-                                                             OwnerPodId,
-                                                             PayloadId,
-                                                             new List<string>(),
-                                                             new List<string>(),
-                                                             new List<string>
-                                                             {
-                                                               OutputId,
-                                                             },
-                                                             new List<string>(),
-                                                             TaskStatus.Completed,
-                                                             TaskOptions,
-                                                             new Output(true,
-                                                                        "")),
-                                              });
+  public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                            Expression<Func<TaskData, object?>> orderField,
+                                                                            bool                                ascOrder,
+                                                                            int                                 page,
+                                                                            int                                 pageSize,
+                                                                            CancellationToken                   cancellationToken = default)
+    => Task.FromResult<(IEnumerable<TaskData> tasks, int totalCount)>((new[]
+                                                                       {
+                                                                         new TaskData(SessionId,
+                                                                                      TaskId,
+                                                                                      OwnerPodId,
+                                                                                      PodName,
+                                                                                      PayloadId,
+                                                                                      new List<string>(),
+                                                                                      new List<string>(),
+                                                                                      new List<string>
+                                                                                      {
+                                                                                        OutputId,
+                                                                                      },
+                                                                                      new List<string>(),
+                                                                                      TaskStatus.Completed,
+                                                                                      TaskOptions,
+                                                                                      new Output(true,
+                                                                                                 "")),
+                                                                       }, 1));
+
+  public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                             Expression<Func<Application, object?>> orderField,
+                                                                                             bool                                   ascOrder,
+                                                                                             int                                    page,
+                                                                                             int                                    pageSize,
+                                                                                             CancellationToken                      cancellationToken = default)
+    => Task.FromResult<(IEnumerable<Application> applications, int totalCount)>((new[]
+                                                                                 {
+                                                                                   new Application(TaskOptions.ApplicationName,
+                                                                                                   TaskOptions.ApplicationNamespace,
+                                                                                                   TaskOptions.ApplicationVersion,
+                                                                                                   TaskOptions.ApplicationService),
+                                                                                 }, 1));
 
   public Task SetTaskSuccessAsync(string            taskId,
                                   CancellationToken cancellationToken = default)
@@ -188,10 +225,13 @@ public class SimpleTaskTable : ITaskTable
 
   public Task<TaskData> AcquireTask(string            taskId,
                                     string            ownerPodId,
+                                    string            ownerPodName,
+                                    DateTime          receptionDate,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new TaskData(SessionId,
                                     taskId,
                                     ownerPodId,
+                                    ownerPodName,
                                     PayloadId,
                                     new List<string>(),
                                     new List<string>(),
@@ -211,6 +251,7 @@ public class SimpleTaskTable : ITaskTable
     => Task.FromResult(new TaskData(SessionId,
                                     taskId,
                                     ownerPodId,
+                                    PodName,
                                     PayloadId,
                                     new List<string>(),
                                     new List<string>(),

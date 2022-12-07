@@ -56,6 +56,7 @@ public class ToTaskDataFilterTest
   private readonly TaskData taskData_ = new("SessionId",
                                             "TaskCompletedId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -437,7 +438,7 @@ public class ToTaskDataFilterTest
 
     Assert.IsFalse(func.Invoke(taskData_ with
                                {
-                                 Status = TaskStatus.Canceling,
+                                 Status = TaskStatus.Cancelling,
                                }));
   }
 }

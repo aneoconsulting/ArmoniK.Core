@@ -44,7 +44,7 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
       .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Page)}");
     RuleFor(request => request.PageSize)
       .NotNull()
-      .GreaterThanOrEqualTo(0)
+      .GreaterThanOrEqualTo(1)
       .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.PageSize)}");
     RuleFor(request => request.Filter)
       .NotNull()

@@ -40,7 +40,6 @@ using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
@@ -123,6 +122,7 @@ internal class BsonSerializerTest
     var tdm = new TaskData("SessionId",
                            "TaskCompletedId",
                            "OwnerPodId",
+                           "OwnerPodName",
                            "PayloadId",
                            new[]
                            {

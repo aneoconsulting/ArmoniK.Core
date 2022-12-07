@@ -79,6 +79,15 @@ public class ResultTableTestBase
                                        {
                                          (byte)1,
                                        }),
+                            new Result("SessionId",
+                                       "ResultIsCreated2",
+                                       "OwnerId",
+                                       ResultStatus.Created,
+                                       DateTime.Today,
+                                       new[]
+                                       {
+                                         (byte)1,
+                                       }),
                           })
                   .Wait();
     }
@@ -548,6 +557,60 @@ public class ResultTableTestBase
                       resultStatus.Count(status => status.Status == ResultStatus.Aborted));
       Assert.AreEqual(2,
                       resultStatus.Count(status => status.Status != ResultStatus.Aborted));
+    }
+  }
+
+  [Test]
+  public async Task ListResultsAsyncFilterResultStatusAndSessionIdShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = (await ResultTable!.ListResultsAsync(result => result.Status == ResultStatus.Created && result.SessionId == "SessionId",
+                                                     result => result.Status,
+                                                     true,
+                                                     0,
+                                                     3,
+                                                     CancellationToken.None)
+                                   .ConfigureAwait(false)).results.ToList();
+
+      Assert.AreEqual(2,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListResultsAsyncFilterResultStatusAndSessionIdLimit1ShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = (await ResultTable!.ListResultsAsync(result => result.Status == ResultStatus.Created && result.SessionId == "SessionId",
+                                                     result => result.Status,
+                                                     true,
+                                                     0,
+                                                     1,
+                                                     CancellationToken.None)
+                                   .ConfigureAwait(false)).results.ToList();
+
+      Assert.AreEqual(1,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncNoFilterShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = (await ResultTable!.ListResultsAsync(result => true,
+                                                     result => result.Status,
+                                                     true,
+                                                     0,
+                                                     4,
+                                                     CancellationToken.None)
+                                   .ConfigureAwait(false)).results.ToList();
+
+      Assert.AreEqual(4,
+                      res.Count);
     }
   }
 }

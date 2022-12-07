@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.RabbitMQ;
@@ -86,6 +87,8 @@ public static class Program
                       logger.GetLogger())
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
+             .AddLocalStorage(builder.Configuration,
+                              logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
@@ -155,14 +158,23 @@ public static class Program
       app.UseAuthentication();
 
       app.UseRouting();
+      app.UseGrpcWeb();
 
       app.UseAuthorization();
       app.UseSerilogRequestLogging();
 
-      app.MapGrpcService<GrpcSubmitterService>();
-      app.MapGrpcService<GrpcTasksService>();
-      app.MapGrpcService<GrpcSessionsService>();
-      app.MapGrpcService<GrpcResultsService>();
+      app.MapGrpcService<GrpcSubmitterService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcTasksService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcSessionsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcResultsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcApplicationsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcAuthService>()
+         .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",
                           1081,

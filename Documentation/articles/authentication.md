@@ -24,7 +24,7 @@ The current version handles the following types of permissions :
 ---|---|---|---|
 ``General:Impersonate:<Rolename>``|``General:Impersonate:Monitoring``|**Rolename**: Name of a role|Grants the right to impersonate a user with the role named \<Rolename\>. See [Impersonation](#impersonation) for details|
 |``<Service>:<Name>``|``Submitter:CreateSession``|**Service**: Name of an ArmoniK web service<br>**Name**: Name of the endpoint|Grants the right to use the endpoint named \<Name\> of the service named \<Service\>|
-|``<Service>:<Name>:<Target>``|``Submitter:CancelSession:Self``|**Service**: Name of an ArmoniK web service<br>**Name**: Name of the endpoint<br>**Target**: Target or scope of the permission|Same as ``<Service>:<Name>`` as \<Target\> is currently unused|
+|``<Service>:<Name>:<Target>``|``Submitter:CancelSession:Self``|**Service**: Name of an ArmoniK web service<br>**Name**: Name of the endpoint<br>**Target**: Target or scope of the permission|Same as ``<Service>:<Name>`` as ``<Target>`` is currently unused|
 
 ## User authorization
 When an user sends a request to an endpoint, they need to be authenticated, and they need the permission to use this endpoint. If they lack the permission, then they will be forbidden from using it.
@@ -62,6 +62,11 @@ The following database deployments can be used to handle authentication data :
 - Internal MongoDB
 - External MongoDB (Currently not supported)
 - External SQL (Currently not supported)
+
+### Populating the internal MongoDB when deploying ArmoniK
+> **NOTE :** This is the current recommended method
+
+You can define the users' roles and certificates using a json configuration during deployment. Check the [ArmoniK Authentication Configuration Guide](https://github.com/aneoconsulting/ArmoniK/blob/main/docs/authentication-configuration-guide.md) for more details.
 
 ### Using MongoDB directly
 > **NOTE :** Using a MongoDB instance different from the one used in the rest of ArmoniK is currently not supported

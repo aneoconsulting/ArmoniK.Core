@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -25,6 +25,9 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Results;
+
+using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -41,4 +44,30 @@ public record Result(string       SessionId,
                      string       OwnerTaskId,
                      ResultStatus Status,
                      DateTime     CreationDate,
-                     byte[]       Data);
+                     byte[]       Data)
+{
+  public string Id
+    => GenerateId(SessionId,
+                  Name);
+
+  /// <summary>
+  ///   Conversion operator from <see cref="Result" /> to <see cref="ResultRaw" />
+  /// </summary>
+  /// <param name="result">The input result data</param>
+  /// <returns>
+  ///   The converted result data
+  /// </returns>
+  public static implicit operator ResultRaw(Result result)
+    => new()
+       {
+         SessionId   = result.SessionId,
+         Status      = result.Status,
+         CreatedAt   = FromDateTime(result.CreationDate),
+         Name        = result.Name,
+         OwnerTaskId = result.OwnerTaskId,
+       };
+
+  public static string GenerateId(string sessionId,
+                                  string key)
+    => $"{sessionId}.{key}";
+}

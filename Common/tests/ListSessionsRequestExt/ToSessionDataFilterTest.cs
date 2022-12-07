@@ -86,7 +86,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            Status = SessionStatus.Canceled,
+                            Status = SessionStatus.Cancelled,
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {

@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,22 +8,23 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,7 +80,8 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<byte[]> valueChunks,
                                      CancellationToken        cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       dbKey            = objectStorageName_ + key;
+    using var _                = logger_.LogFunction(dbKey);
     var       objectCollection = objectCollectionProvider_.Get();
 
     var taskList = new List<Task>();
@@ -92,15 +94,22 @@ public class ObjectStorage : IObjectStorage
                                                    {
                                                      Chunk    = chunk,
                                                      ChunkIdx = idx,
-                                                     Key      = objectStorageName_ + key,
+                                                     Key      = dbKey,
                                                    },
                                                    cancellationToken: cancellationToken));
       ++idx;
     }
 
+    // If there was no chunks, add an empty chunk, just so that it could be found in the future
     if (idx == 0)
     {
-      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
+                                                   {
+                                                     Chunk    = Array.Empty<byte>(),
+                                                     ChunkIdx = idx,
+                                                     Key      = dbKey,
+                                                   },
+                                                   cancellationToken: cancellationToken));
     }
 
     await taskList.WhenAll()
@@ -108,37 +117,12 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
-  {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
-    var       objectCollection = objectCollectionProvider_.Get();
-
-    var taskList = new List<Task>();
-
-    var idx = 0;
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
-                                                   {
-                                                     Chunk    = chunk.ToArray(),
-                                                     ChunkIdx = idx,
-                                                     Key      = objectStorageName_ + key,
-                                                   },
-                                                   cancellationToken: cancellationToken));
-      ++idx;
-    }
-
-    if (idx == 0)
-    {
-      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
-    }
-
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
-  }
+  public Task AddOrUpdateAsync(string                                 key,
+                               IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                               CancellationToken                      cancellationToken = default)
+    => AddOrUpdateAsync(key,
+                        valueChunks.Select(chunk => chunk.ToArray()),
+                        cancellationToken);
 
   /// <inheritdoc />
   async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string                                     key,

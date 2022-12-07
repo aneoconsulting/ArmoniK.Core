@@ -25,11 +25,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -38,9 +41,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-using static Google.Protobuf.WellKnownTypes.Timestamp;
-
-using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -60,6 +60,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskCompletedId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -82,6 +83,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskCreatingId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -103,6 +105,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskProcessingId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -124,6 +127,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskAnotherProcessingId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -144,6 +148,7 @@ public class TaskTableTestBase
                                                        "")),
                                new TaskData("SessionId",
                                             "TaskSubmittedId",
+                                            "",
                                             "",
                                             "PayloadId",
                                             new[]
@@ -169,6 +174,7 @@ public class TaskTableTestBase
                                new TaskData("SessionId",
                                             "TaskFailedId",
                                             "OwnerPodId",
+                                            "OwnerPodName",
                                             "PayloadId",
                                             new[]
                                             {
@@ -467,10 +473,10 @@ public class TaskTableTestBase
                                                         CancellationToken.None)
                                          .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Canceling,
+      Assert.AreEqual(TaskStatus.Cancelling,
                       resCreating.Single()
                                  .Status);
-      Assert.AreEqual(TaskStatus.Canceling,
+      Assert.AreEqual(TaskStatus.Cancelling,
                       resProcessing.Single()
                                    .Status);
 
@@ -481,14 +487,17 @@ public class TaskTableTestBase
                                                                CancellationToken.None)
                                                 .ConfigureAwait(false);
 
-      Assert.AreNotEqual(TaskStatus.Canceling,
+      Assert.AreNotEqual(TaskStatus.Cancelling,
                          resAnotherProcessing.Single()
                                              .Status);
     }
   }
 
   [Test(Description = "Forbidden update: A given Task its on a final status")]
-  public void UpdateAllTaskStatusAsyncShouldFail()
+  [TestCase(TaskStatus.Error)]
+  [TestCase(TaskStatus.Cancelled)]
+  [TestCase(TaskStatus.Completed)]
+  public void UpdateAllTaskStatusAsyncShouldFailOnSomeStatus(TaskStatus status)
   {
     if (RunTests)
     {
@@ -498,9 +507,7 @@ public class TaskTableTestBase
                                     {
                                       Statuses =
                                       {
-                                        TaskStatus.Completed, // Presence of this status should generate an exception
-                                        TaskStatus.Creating,
-                                        TaskStatus.Processing,
+                                        status, // Presence of this status should generate an exception
                                       },
                                     },
                          Session = new TaskFilter.Types.IdsRequest
@@ -727,7 +734,7 @@ public class TaskTableTestBase
                                      .ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Canceled);
+                                                               .Status == TaskStatus.Cancelled);
     }
   }
 
@@ -855,17 +862,75 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodname  = Dns.GetHostName();
+      var receptionDate = DateTime.UtcNow.Date;
 
       var result = await TaskTable!.AcquireTask("TaskSubmittedId",
-                                                hostname,
+                                                ownerpodid,
+                                                ownerpodname,
+                                                receptionDate,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
       Assert.AreEqual("TaskSubmittedId",
                       result.TaskId);
-      Assert.AreEqual(hostname,
+      Assert.AreEqual(ownerpodid,
                       result.OwnerPodId);
+      Assert.AreEqual(ownerpodname,
+                      result.OwnerPodName);
+      Assert.AreEqual(receptionDate,
+                      result.ReceptionDate);
+      Assert.Greater(DateTime.UtcNow,
+                     result.AcquisitionDate);
+      Assert.Greater(result.AcquisitionDate,
+                     result.ReceptionDate);
+    }
+  }
+
+  [Test]
+  public async Task ReleaseTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodname  = Dns.GetHostName();
+      var receptionDate = DateTime.UtcNow.Date;
+
+      var result = await TaskTable!.AcquireTask("TaskSubmittedId",
+                                                ownerpodid,
+                                                ownerpodname,
+                                                receptionDate,
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual("TaskSubmittedId",
+                      result.TaskId);
+      Assert.AreEqual(ownerpodid,
+                      result.OwnerPodId);
+      Assert.AreEqual(ownerpodname,
+                      result.OwnerPodName);
+      Assert.AreEqual(receptionDate,
+                      result.ReceptionDate);
+      Assert.Greater(DateTime.UtcNow,
+                     result.AcquisitionDate);
+      Assert.Greater(result.AcquisitionDate,
+                     result.ReceptionDate);
+
+      var resultRelease = await TaskTable!.ReleaseTask("TaskSubmittedId",
+                                                       ownerpodid,
+                                                       CancellationToken.None)
+                                          .ConfigureAwait(false);
+      Assert.AreEqual("TaskSubmittedId",
+                      resultRelease.TaskId);
+      Assert.AreEqual("",
+                      resultRelease.OwnerPodId);
+      Assert.AreEqual("",
+                      resultRelease.OwnerPodName);
+      Assert.AreEqual(null,
+                      resultRelease.ReceptionDate);
+      Assert.AreEqual(null,
+                      resultRelease.AcquisitionDate);
     }
   }
 
@@ -878,6 +943,8 @@ public class TaskTableTestBase
 
       var result1 = await TaskTable!.AcquireTask("TaskSubmittedId",
                                                  hostname,
+                                                 hostname,
+                                                 DateTime.UtcNow,
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -888,6 +955,8 @@ public class TaskTableTestBase
 
       var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
                                                 hostname,
+                                                hostname,
+                                                DateTime.UtcNow,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.AreEqual(result1.Status,
@@ -895,6 +964,15 @@ public class TaskTableTestBase
 
       Assert.AreEqual(result1.OwnerPodId,
                       result2.OwnerPodId);
+
+      Assert.AreEqual(result1.OwnerPodName,
+                      result2.OwnerPodName);
+
+      Assert.AreEqual(result1.ReceptionDate,
+                      result2.ReceptionDate);
+
+      Assert.AreEqual(result1.AcquisitionDate,
+                      result2.AcquisitionDate);
     }
   }
 
@@ -905,11 +983,45 @@ public class TaskTableTestBase
     {
       var result = await TaskTable!.AcquireTask("TaskFailedId",
                                                 LocalIPv4.GetLocalIPv4Ethernet(),
+                                                Dns.GetHostName(),
+                                                DateTime.UtcNow,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
       Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
                          result.OwnerPodId);
+
+      Assert.AreEqual(TaskStatus.Error,
+                      result.Status);
+    }
+  }
+
+  [Test]
+  public async Task AcquireCreatingTaskShouldFail()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable!.AcquireTask("TaskCreatingId",
+                                                LocalIPv4.GetLocalIPv4Ethernet(),
+                                                Dns.GetHostName(),
+                                                DateTime.UtcNow,
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
+                         result.OwnerPodId);
+
+      Assert.AreEqual(TaskStatus.Creating,
+                      result.Status);
+
+      Assert.AreEqual(null,
+                      result.AcquisitionDate);
+
+      Assert.AreEqual(null,
+                      result.ReceptionDate);
+
+      Assert.AreEqual(null,
+                      result.SubmittedDate);
     }
   }
 
@@ -1088,329 +1200,137 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task ListApplicationFromTasksShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListApplicationsRequest
+                {
+                  Page     = 0,
+                  PageSize = 4,
+                  Filter = new ListApplicationsRequest.Types.Filter
+                           {
+                             Name = options_.ApplicationName,
+                           },
+                  Sort = new ListApplicationsRequest.Types.Sort
+                         {
+                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                         },
+                };
+
+      var validator = new ListApplicationsRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
+                                                             req.Sort.ToApplicationField(),
+                                                             false,
+                                                             req.Page,
+                                                             req.PageSize,
+                                                             CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      var listTasksResponseTaskData = listTasks.applications.ToList();
+      foreach (var task in listTasksResponseTaskData)
+      {
+        Console.WriteLine(task);
+      }
+
+      Assert.AreEqual(new Application(options_.ApplicationName,
+                                      options_.ApplicationNamespace,
+                                      options_.ApplicationVersion,
+                                      options_.ApplicationService),
+                      listTasksResponseTaskData.Single());
+    }
+  }
 
   [Test]
   public async Task ListTaskWithRequestShouldSucceed()
   {
     if (RunTests)
     {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 20,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
+      var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                      data => data.SessionId,
+                                                      false,
+                                                      0,
+                                                      20,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
       Assert.AreEqual(6,
-                      listTasks.Count());
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestLimit2ShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      Assert.AreEqual(2,
-                      listTasks.Count());
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestTaskStatusShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId = "SessionId",
-                             Status    = TaskStatus.Completed,
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(1,
-                      listTasksResponseTaskData.Count());
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedAfterShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId    = "SessionId",
-                             CreatedAfter = FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count());
+                      listTasks.totalCount);
     }
   }
 
 
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeShouldSucceed()
+  [TestCase(TaskStatus.Error)]
+  [TestCase(TaskStatus.Completed)]
+  [TestCase(TaskStatus.Cancelled)]
+  [TestCase(TaskStatus.Cancelling)]
+  public async Task CancelTasksAsyncShouldNotChangeTheGivenStatus(TaskStatus status)
   {
     if (RunTests)
     {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                         },
-                };
+      var taskId = "TaskToBeCancelled";
 
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                    "output2",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  status,
+                                                  options_,
+                                                  new Output(true,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
 
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var cancelledTasks = await TaskTable.CancelTaskAsync(new List<string>
+                                                           {
+                                                             taskId,
+                                                           },
+                                                           CancellationToken.None)
+                                          .ConfigureAwait(false);
 
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count());
+      Console.WriteLine(cancelledTasks.Single());
+      Assert.AreEqual(status,
+                      cancelledTasks.Single()
+                                    .Status);
+      Assert.AreEqual(taskId,
+                      cancelledTasks.Single()
+                                    .TaskId);
     }
   }
 
   [Test]
-  public async Task ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed()
+  public async Task CancelTasksAsyncEmptyListShouldSucceed()
   {
     if (RunTests)
     {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                           Field     = ListTasksRequest.Types.OrderByField.TaskId,
-                         },
-                };
+      var cancelledTasks = await TaskTable!.CancelTaskAsync(new List<string>(),
+                                                            CancellationToken.None)
+                                           .ConfigureAwait(false);
 
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count);
-      Assert.AreEqual("TaskAnotherProcessingId",
-                      listTasksResponseTaskData[0]
-                        .TaskId);
-      Assert.AreEqual("TaskCompletedId",
-                      listTasksResponseTaskData[1]
-                        .TaskId);
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                           Field     = ListTasksRequest.Types.OrderByField.Status,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count);
-      Assert.AreEqual(TaskStatus.Creating,
-                      listTasksResponseTaskData[0]
-                        .Status);
-      Assert.AreEqual(TaskStatus.Submitted,
-                      listTasksResponseTaskData[1]
-                        .Status);
-    }
-  }
-
-  [Test]
-  public async Task ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var req = new ListTasksRequest
-                {
-                  Page     = 0,
-                  PageSize = 2,
-                  Filter = new ListTasksRequest.Types.Filter
-                           {
-                             SessionId     = "SessionId",
-                             CreatedBefore = FromDateTime(DateTime.UtcNow),
-                           },
-                  Sort = new ListTasksRequest.Types.Sort
-                         {
-                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                           Field     = ListTasksRequest.Types.OrderByField.Status,
-                         },
-                };
-
-      var validator = new ListTasksRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
-
-      var listTasks = await TaskTable!.ListTasksAsync(req,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      var listTasksResponseTaskData = listTasks.ToList();
-      foreach (var task in listTasksResponseTaskData)
-      {
-        Console.WriteLine(task);
-      }
-
-      Assert.AreEqual(2,
-                      listTasksResponseTaskData.Count);
-      Assert.AreEqual(TaskStatus.Processing,
-                      listTasksResponseTaskData[0]
-                        .Status);
-      Assert.AreEqual(TaskStatus.Processing,
-                      listTasksResponseTaskData[1]
-                        .Status);
+      Assert.AreEqual(0,
+                      cancelledTasks.Count);
     }
   }
 }
