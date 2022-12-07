@@ -581,9 +581,9 @@ public class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorAsync(e,
-                             taskData_,
-                             cancellationTokenSource_.Token)
+      await HandleErrorResubmitAsync(e,
+                                     taskData_,
+                                     cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
 
@@ -594,10 +594,36 @@ public class TaskHandler : IAsyncDisposable
                                              TaskData          taskData,
                                              CancellationToken cancellationToken)
   {
-    if (cancellationToken.IsCancellationRequested || e is RpcException
-                                                          {
-                                                            StatusCode: StatusCode.Unavailable,
-                                                          })
+    await HandleErrorInternalAsync(e,
+                                   taskData,
+                                   false,
+                                   true,
+                                   cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private async Task HandleErrorResubmitAsync(Exception         e,
+                                              TaskData          taskData,
+                                              CancellationToken cancellationToken)
+  {
+    await HandleErrorInternalAsync(e,
+                                   taskData,
+                                   true,
+                                   false,
+                                   cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private async Task HandleErrorInternalAsync(Exception         e,
+                                              TaskData          taskData,
+                                              bool              resubmit,
+                                              bool              requeueIfUnavailable,
+                                              CancellationToken cancellationToken)
+  {
+    if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && e is RpcException
+                                                                                   {
+                                                                                     StatusCode: StatusCode.Unavailable,
+                                                                                   }))
     {
       logger_.LogWarning(e,
                          cancellationToken.IsCancellationRequested
@@ -613,10 +639,12 @@ public class TaskHandler : IAsyncDisposable
     else
     {
       logger_.LogError(e,
-                       "Error during task execution, cancelling task");
+                       resubmit
+                         ? "Error during task execution, retrying task"
+                         : "Error during task execution, cancelling task");
 
       await submitter_.CompleteTaskAsync(taskData,
-                                         false,
+                                         resubmit,
                                          new Output
                                          {
                                            Error = new Output.Types.Error
@@ -627,44 +655,6 @@ public class TaskHandler : IAsyncDisposable
                                          CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
-    }
-
-    // Rethrow enable the recording of the error by the Pollster Main loop
-    throw e;
-  }
-
-  private async Task HandleErrorAsync(Exception         e,
-                                      TaskData          taskData,
-                                      CancellationToken cancellationToken)
-  {
-    if (cancellationToken.IsCancellationRequested)
-    {
-      logger_.LogWarning(e,
-                         "Cancellation triggered, task cancelled here and re executed elsewhere");
-
-      await taskTable_.ReleaseTask(taskData.TaskId,
-                                   ownerPodId_,
-                                   CancellationToken.None)
-                      .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Postponed;
-    }
-    else
-    {
-      logger_.LogWarning(e,
-                         "Error during task execution, retrying task");
-
-      await submitter_.CompleteTaskAsync(taskData,
-                                         true,
-                                         new Output
-                                         {
-                                           Error = new Output.Types.Error
-                                                   {
-                                                     Details = e.Message,
-                                                   },
-                                         },
-                                         CancellationToken.None)
-                      .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Cancelled;
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop
