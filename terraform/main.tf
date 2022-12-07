@@ -4,6 +4,7 @@ locals {
     echo -en "GET /liveness HTTP/1.1\r\nHost: localhost:1080\r\nConnection: close\r\n\r\n">&3 &
     grep Healthy <&3 &>/dev/null || exit 1
     EOF
+  replicas = toset([for s in range(var.num-replicas) : tostring(s)])
 }
 
 resource "docker_container" "submitter" {
@@ -70,8 +71,9 @@ resource "docker_container" "submitter" {
 }
 
 resource "docker_container" "pollingagent" {
-  name  = "armonik.compute.pollingagent"
-  image = "${var.armonik-pollingagent-image}:${var.core-tag}"
+  for_each = local.replicas
+  name     = "armonik.compute.pollingagent${each.value}"
+  image    = "${var.armonik-pollingagent-image}:${var.core-tag}"
 
   networks_advanced {
     name = docker_network.armonik-backend.name
@@ -105,7 +107,7 @@ resource "docker_container" "pollingagent" {
     "Amqp__MaxPriority=10",
     "Amqp__MaxRetries=10",
     "Amqp__LinkCredit=2",
-    "Amqp__PartitionId=TestPartition0"
+    "Amqp__PartitionId=TestPartition${each.value}"
   ]
 
   log_driver = "fluentd"
@@ -116,13 +118,13 @@ resource "docker_container" "pollingagent" {
 
   ports {
     internal = 1080
-    external = 9980
+    external = tonumber("998${each.value}")
   }
 
   mounts {
     type   = "volume"
     target = "/cache"
-    source = docker_volume.socket-vol.name
+    source = docker_volume.socket-vol[each.key].name
   }
 
   healthcheck {
@@ -143,8 +145,9 @@ resource "docker_container" "pollingagent" {
 }
 
 resource "docker_container" "worker" {
-  name  = "armonik.compute.worker"
-  image = "${var.armonik-worker-image}:${var.core-tag}"
+  for_each = local.replicas
+  name     = "armonik.compute.worker${each.value}"
+  image    = "${var.armonik-worker-image}:${var.core-tag}"
 
   networks_advanced {
     name = docker_network.armonik-net.name
@@ -168,10 +171,15 @@ resource "docker_container" "worker" {
     fluentd-address = "127.0.0.1:24224"
   }
 
+  ports {
+    internal = 1080
+    external = tonumber("108${each.value}")
+  }
+
   mounts {
     type   = "volume"
     target = "/cache"
-    source = docker_volume.socket-vol.name
+    source = docker_volume.socket-vol[each.key].name
   }
 
   depends_on = [

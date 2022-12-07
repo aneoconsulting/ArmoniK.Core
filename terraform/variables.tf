@@ -28,6 +28,11 @@ variable "armonik-worker-image" {
   default = "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 
+variable "num-replicas" {
+  type    = number
+  default = 3
+}
+
 variable "log-driver" {
   type    = string
   default = "fluent/fluent-bit:latest"
