@@ -33,7 +33,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html",
-          "hash": "zRSl2uXGMSN6//ReUB2HXro2vhVkrNmE0tx+TZrtOgo="
+          "hash": "SAgY4F7oyrTj9cdN7iUCu3iCtcA0VLNpNJT8ZrbfcRU="
         }
       },
       "is_incremental": false,
@@ -3437,6 +3437,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Utils.AsyncLazy.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Utils.AsyncLazy.html",
+          "hash": "ZEEU/JEumpgADLekXZ2lTTN6fWNBFv5F2XCQP+2onp4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Utils.Disposable.yml",
       "output": {
         ".html": {
@@ -3549,7 +3561,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Utils.html",
-          "hash": "y8YGI/uyzm4zWFjlfuGlLD2lkoxKukO0sTBt3aiReu0="
+          "hash": "OEgvjhJyYSUBru5mEGf8bLHj1GK081+XZ54wej1pXFQ="
         }
       },
       "is_incremental": false,
@@ -4497,7 +4509,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "E31JUtC0tdnhrYZxp1Y1xEN3WCPnFLOA/2qS4L0OguU="
+          "hash": "ebWZaxbLu1hmIkjUD/Uu1qnM3f5T8y0oRR4tpQUOt44="
         }
       },
       "is_incremental": false,
@@ -4596,7 +4608,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 373,
+          "total_file_count": 374,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

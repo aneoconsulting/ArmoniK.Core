@@ -24624,6 +24624,47 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Utils.AsyncDisposable.Create
   nameWithType: AsyncDisposable.Create
+- uid: ArmoniK.Core.Common.Utils.AsyncLazy
+  name: AsyncLazy
+  href: api/ArmoniK.Core.Common.Utils.AsyncLazy.html
+  commentId: T:ArmoniK.Core.Common.Utils.AsyncLazy
+  fullName: ArmoniK.Core.Common.Utils.AsyncLazy
+  nameWithType: AsyncLazy
+- uid: ArmoniK.Core.Common.Utils.AsyncLazy.#ctor(Action)
+  name: AsyncLazy(Action)
+  href: api/ArmoniK.Core.Common.Utils.AsyncLazy.html#ArmoniK_Core_Common_Utils_AsyncLazy__ctor_Action_
+  commentId: M:ArmoniK.Core.Common.Utils.AsyncLazy.#ctor(Action)
+  fullName: ArmoniK.Core.Common.Utils.AsyncLazy.AsyncLazy(Action)
+  nameWithType: AsyncLazy.AsyncLazy(Action)
+- uid: ArmoniK.Core.Common.Utils.AsyncLazy.#ctor(Func{Task})
+  name: AsyncLazy(Func<Task>)
+  href: api/ArmoniK.Core.Common.Utils.AsyncLazy.html#ArmoniK_Core_Common_Utils_AsyncLazy__ctor_Func_Task__
+  commentId: M:ArmoniK.Core.Common.Utils.AsyncLazy.#ctor(Func{Task})
+  name.vb: AsyncLazy(Func(Of Task))
+  fullName: ArmoniK.Core.Common.Utils.AsyncLazy.AsyncLazy(Func<Task>)
+  fullName.vb: ArmoniK.Core.Common.Utils.AsyncLazy.AsyncLazy(Func(Of Task))
+  nameWithType: AsyncLazy.AsyncLazy(Func<Task>)
+  nameWithType.vb: AsyncLazy.AsyncLazy(Func(Of Task))
+- uid: ArmoniK.Core.Common.Utils.AsyncLazy.#ctor*
+  name: AsyncLazy
+  href: api/ArmoniK.Core.Common.Utils.AsyncLazy.html#ArmoniK_Core_Common_Utils_AsyncLazy__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Utils.AsyncLazy.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.AsyncLazy.AsyncLazy
+  nameWithType: AsyncLazy.AsyncLazy
+- uid: ArmoniK.Core.Common.Utils.AsyncLazy.GetAwaiter
+  name: GetAwaiter()
+  href: api/ArmoniK.Core.Common.Utils.AsyncLazy.html#ArmoniK_Core_Common_Utils_AsyncLazy_GetAwaiter
+  commentId: M:ArmoniK.Core.Common.Utils.AsyncLazy.GetAwaiter
+  fullName: ArmoniK.Core.Common.Utils.AsyncLazy.GetAwaiter()
+  nameWithType: AsyncLazy.GetAwaiter()
+- uid: ArmoniK.Core.Common.Utils.AsyncLazy.GetAwaiter*
+  name: GetAwaiter
+  href: api/ArmoniK.Core.Common.Utils.AsyncLazy.html#ArmoniK_Core_Common_Utils_AsyncLazy_GetAwaiter_
+  commentId: Overload:ArmoniK.Core.Common.Utils.AsyncLazy.GetAwaiter
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.AsyncLazy.GetAwaiter
+  nameWithType: AsyncLazy.GetAwaiter
 - uid: ArmoniK.Core.Common.Utils.AsyncLazy`1
   name: AsyncLazy<T>
   href: api/ArmoniK.Core.Common.Utils.AsyncLazy-1.html
