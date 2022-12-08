@@ -435,6 +435,7 @@ public class TaskHandler : IAsyncDisposable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
+  /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   public async Task PreProcessing()
   {
     logger_.LogDebug("Start prefetch data");
@@ -453,9 +454,9 @@ public class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorAsync(e,
-                             taskData_,
-                             cancellationTokenSource_.Token)
+      await HandleErrorRequeueAsync(e,
+                                    taskData_,
+                                    cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -516,9 +517,9 @@ public class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorAsync(e,
-                             taskData_,
-                             cancellationTokenSource_.Token)
+      await HandleErrorRequeueAsync(e,
+                                    taskData_,
+                                    cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -580,42 +581,50 @@ public class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorAsync(e,
-                             taskData_,
-                             cancellationTokenSource_.Token)
+      await HandleErrorResubmitAsync(e,
+                                     taskData_,
+                                     cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
 
     logger_.LogDebug("End Task Processing");
   }
 
-  private async Task HandleErrorAsync(Exception         e,
-                                      TaskData          taskData,
-                                      CancellationToken cancellationToken)
-  {
-    var resubmit    = false;
-    var queueStatus = QueueMessageStatus.Processed;
-    if (e is RpcException or ObjectDataNotFoundException)
-    {
-      resubmit    = true;
-      queueStatus = QueueMessageStatus.Cancelled;
-    }
+  private async Task HandleErrorRequeueAsync(Exception         e,
+                                             TaskData          taskData,
+                                             CancellationToken cancellationToken)
+    => await HandleErrorInternalAsync(e,
+                                      taskData,
+                                      false,
+                                      true,
+                                      cancellationToken)
+         .ConfigureAwait(false);
 
-    if (cancellationToken.IsCancellationRequested || e is RpcException
-                                                          {
-                                                            StatusCode: StatusCode.Unavailable,
-                                                          })
+  private async Task HandleErrorResubmitAsync(Exception         e,
+                                              TaskData          taskData,
+                                              CancellationToken cancellationToken)
+    => await HandleErrorInternalAsync(e,
+                                      taskData,
+                                      true,
+                                      false,
+                                      cancellationToken)
+         .ConfigureAwait(false);
+
+  private async Task HandleErrorInternalAsync(Exception         e,
+                                              TaskData          taskData,
+                                              bool              resubmit,
+                                              bool              requeueIfUnavailable,
+                                              CancellationToken cancellationToken)
+  {
+    if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && e is RpcException
+                                                                                   {
+                                                                                     StatusCode: StatusCode.Unavailable,
+                                                                                   }))
     {
-      if (cancellationToken.IsCancellationRequested)
-      {
-        logger_.LogWarning(e,
-                           "Cancellation triggered, task cancelled here and re executed elsewhere");
-      }
-      else
-      {
-        logger_.LogWarning(e,
-                           "Worker not available, task cancelled here and re executed elsewhere");
-      }
+      logger_.LogWarning(e,
+                         cancellationToken.IsCancellationRequested
+                           ? "Cancellation triggered, task cancelled here and re executed elsewhere"
+                           : "Worker not available, task cancelled here and re executed elsewhere");
 
       await taskTable_.ReleaseTask(taskData.TaskId,
                                    ownerPodId_,
@@ -625,16 +634,10 @@ public class TaskHandler : IAsyncDisposable
     }
     else
     {
-      if (resubmit)
-      {
-        logger_.LogWarning(e,
-                           "Error during task execution, retrying task");
-      }
-      else
-      {
-        logger_.LogError(e,
-                         "Error during task execution, cancelling task");
-      }
+      logger_.LogError(e,
+                       resubmit
+                         ? "Error during task execution, retrying task"
+                         : "Error during task execution, cancelling task");
 
       await submitter_.CompleteTaskAsync(taskData,
                                          resubmit,
@@ -647,7 +650,9 @@ public class TaskHandler : IAsyncDisposable
                                          },
                                          CancellationToken.None)
                       .ConfigureAwait(false);
-      messageHandler_.Status = queueStatus;
+      messageHandler_.Status = resubmit
+                                 ? QueueMessageStatus.Cancelled
+                                 : QueueMessageStatus.Processed;
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop

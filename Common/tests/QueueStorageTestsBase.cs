@@ -204,7 +204,8 @@ public class QueueStorageTestsBase
       await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
                                         .ConfigureAwait(false))
       {
-        Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
+        Assert.AreEqual(QueueMessageStatus.Waiting,
+                        qmh.Status);
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);
       }
@@ -218,7 +219,8 @@ public class QueueStorageTestsBase
       await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
                                          .ConfigureAwait(false))
       {
-        Assert.IsTrue(qmh!.Status == QueueMessageStatus.Waiting);
+        Assert.AreEqual(QueueMessageStatus.Waiting,
+                        qmh.Status);
         qmh.Status = QueueMessageStatus.Processed;
         await qmh.DisposeAsync()
                  .ConfigureAwait(false);

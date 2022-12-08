@@ -87,6 +87,12 @@ public class QueueMessageHandler : IQueueMessageHandler
         break;
       case QueueMessageStatus.Failed:
 
+      case QueueMessageStatus.Running:
+
+      case QueueMessageStatus.Cancelled:
+
+      case QueueMessageStatus.Waiting:
+
       case QueueMessageStatus.Processed:
 
       case QueueMessageStatus.Poisonous:
