@@ -44,18 +44,18 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 [UsedImplicitly]
 public class ConnectionRabbit : IConnectionRabbit
 {
-  private readonly AsyncLazy connectionTask_;
+  private readonly AsyncLazy                 connectionTask_;
   private readonly ILogger<ConnectionRabbit> logger_;
 
   private readonly Amqp options_;
 
   private bool isInitialized_;
 
-  public ConnectionRabbit(Amqp options,
+  public ConnectionRabbit(Amqp                      options,
                           ILogger<ConnectionRabbit> logger)
   {
-    logger_ = logger;
-    options_ = options;
+    logger_         = logger;
+    options_        = options;
     connectionTask_ = new AsyncLazy(() => InitTask(this));
   }
 
@@ -64,28 +64,29 @@ public class ConnectionRabbit : IConnectionRabbit
   public IConnection? Connection { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken = default)
-  => await connectionTask_;
+    => await connectionTask_;
 
-  public async Task InitTask(ConnectionRabbit conn, CancellationToken cancellationToken = default)
+  public async Task InitTask(ConnectionRabbit  conn,
+                             CancellationToken cancellationToken = default)
   {
     var factory = new ConnectionFactory
-    {
-      UserName = conn.options_.User,
-      Password = conn.options_.Password,
-      HostName = conn.options_.Host,
-      Port = conn.options_.Port,
-      DispatchConsumersAsync = true,
-    };
+                  {
+                    UserName               = conn.options_.User,
+                    Password               = conn.options_.Password,
+                    HostName               = conn.options_.Host,
+                    Port                   = conn.options_.Port,
+                    DispatchConsumersAsync = true,
+                  };
 
 
     if (options_.Scheme.Equals("AMQPS"))
     {
-      factory.Ssl.Enabled = true;
+      factory.Ssl.Enabled    = true;
       factory.Ssl.ServerName = conn.options_.Host;
-      factory.Ssl.CertificateValidationCallback = delegate (object _,
+      factory.Ssl.CertificateValidationCallback = delegate(object           _,
                                                            X509Certificate? _,
-                                                           X509Chain? _,
-                                                           SslPolicyErrors errors)
+                                                           X509Chain?       _,
+                                                           SslPolicyErrors  errors)
                                                   {
                                                     switch (errors)
                                                     {
@@ -107,10 +108,10 @@ public class ConnectionRabbit : IConnectionRabbit
       {
         conn.Connection = factory.CreateConnection();
         conn.Connection.ConnectionShutdown += (obj,
-                                           ea) => OnShutDown(obj,
-                                                             ea,
-                                                             "Connection",
-                                                             logger_);
+                                               ea) => OnShutDown(obj,
+                                                                 ea,
+                                                                 "Connection",
+                                                                 logger_);
 
         Channel = conn.Connection.CreateModel();
         Channel.ModelShutdown += (obj,
@@ -169,10 +170,10 @@ public class ConnectionRabbit : IConnectionRabbit
     GC.SuppressFinalize(this);
   }
 
-  private static void OnShutDown(object? obj,
+  private static void OnShutDown(object?           obj,
                                  ShutdownEventArgs ea,
-                                 string model,
-                                 ILogger logger)
+                                 string            model,
+                                 ILogger           logger)
   {
     if (ea.Cause is null)
     {
