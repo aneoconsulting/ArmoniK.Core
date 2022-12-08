@@ -25812,6 +25812,25 @@ references:
   commentId: N:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
   fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
   nameWithType: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt
+  name: GrpcChannelExt
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.html
+  commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt
+  nameWithType: GrpcChannelExt
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.GetPayloadAsyncAndCheck(GrpcChannel,System.String,System.String)
+  name: GetPayloadAsyncAndCheck(GrpcChannel, String, String)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_GrpcChannelExt_GetPayloadAsyncAndCheck_GrpcChannel_System_String_System_String_
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.GetPayloadAsyncAndCheck(GrpcChannel,System.String,System.String)
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.GetPayloadAsyncAndCheck(GrpcChannel, System.String, System.String)
+  nameWithType: GrpcChannelExt.GetPayloadAsyncAndCheck(GrpcChannel, String, String)
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.GetPayloadAsyncAndCheck*
+  name: GetPayloadAsyncAndCheck
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_GrpcChannelExt_GetPayloadAsyncAndCheck_
+  commentId: Overload:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.GetPayloadAsyncAndCheck
+  isSpec: "True"
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.GetPayloadAsyncAndCheck
+  nameWithType: GrpcChannelExt.GetPayloadAsyncAndCheck
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
   name: SubmitterExt
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html
@@ -26332,12 +26351,12 @@ references:
   commentId: T:ArmoniK.Samples.HtcMock.Client.GridClient
   fullName: ArmoniK.Samples.HtcMock.Client.GridClient
   nameWithType: GridClient
-- uid: ArmoniK.Samples.HtcMock.Client.GridClient.#ctor(Submitter.SubmitterClient,ILoggerFactory,ArmoniK.Samples.HtcMock.Client.Options.HtcMock)
-  name: GridClient(Submitter.SubmitterClient, ILoggerFactory, HtcMock)
-  href: api/ArmoniK.Samples.HtcMock.Client.GridClient.html#ArmoniK_Samples_HtcMock_Client_GridClient__ctor_Submitter_SubmitterClient_ILoggerFactory_ArmoniK_Samples_HtcMock_Client_Options_HtcMock_
-  commentId: M:ArmoniK.Samples.HtcMock.Client.GridClient.#ctor(Submitter.SubmitterClient,ILoggerFactory,ArmoniK.Samples.HtcMock.Client.Options.HtcMock)
-  fullName: ArmoniK.Samples.HtcMock.Client.GridClient.GridClient(Submitter.SubmitterClient, ILoggerFactory, ArmoniK.Samples.HtcMock.Client.Options.HtcMock)
-  nameWithType: GridClient.GridClient(Submitter.SubmitterClient, ILoggerFactory, HtcMock)
+- uid: ArmoniK.Samples.HtcMock.Client.GridClient.#ctor(GrpcChannel,ILoggerFactory,ArmoniK.Samples.HtcMock.Client.Options.HtcMock)
+  name: GridClient(GrpcChannel, ILoggerFactory, HtcMock)
+  href: api/ArmoniK.Samples.HtcMock.Client.GridClient.html#ArmoniK_Samples_HtcMock_Client_GridClient__ctor_GrpcChannel_ILoggerFactory_ArmoniK_Samples_HtcMock_Client_Options_HtcMock_
+  commentId: M:ArmoniK.Samples.HtcMock.Client.GridClient.#ctor(GrpcChannel,ILoggerFactory,ArmoniK.Samples.HtcMock.Client.Options.HtcMock)
+  fullName: ArmoniK.Samples.HtcMock.Client.GridClient.GridClient(GrpcChannel, ILoggerFactory, ArmoniK.Samples.HtcMock.Client.Options.HtcMock)
+  nameWithType: GridClient.GridClient(GrpcChannel, ILoggerFactory, HtcMock)
 - uid: ArmoniK.Samples.HtcMock.Client.GridClient.#ctor*
   name: GridClient
   href: api/ArmoniK.Samples.HtcMock.Client.GridClient.html#ArmoniK_Samples_HtcMock_Client_GridClient__ctor_
@@ -26586,15 +26605,15 @@ references:
   commentId: T:ArmoniK.Samples.HtcMock.Client.SessionClient
   fullName: ArmoniK.Samples.HtcMock.Client.SessionClient
   nameWithType: SessionClient
-- uid: ArmoniK.Samples.HtcMock.Client.SessionClient.#ctor(Submitter.SubmitterClient,System.String,ILogger{ArmoniK.Samples.HtcMock.Client.GridClient})
-  name: SessionClient(Submitter.SubmitterClient, String, ILogger<GridClient>)
-  href: api/ArmoniK.Samples.HtcMock.Client.SessionClient.html#ArmoniK_Samples_HtcMock_Client_SessionClient__ctor_Submitter_SubmitterClient_System_String_ILogger_ArmoniK_Samples_HtcMock_Client_GridClient__
-  commentId: M:ArmoniK.Samples.HtcMock.Client.SessionClient.#ctor(Submitter.SubmitterClient,System.String,ILogger{ArmoniK.Samples.HtcMock.Client.GridClient})
-  name.vb: SessionClient(Submitter.SubmitterClient, String, ILogger(Of GridClient))
-  fullName: ArmoniK.Samples.HtcMock.Client.SessionClient.SessionClient(Submitter.SubmitterClient, System.String, ILogger<ArmoniK.Samples.HtcMock.Client.GridClient>)
-  fullName.vb: ArmoniK.Samples.HtcMock.Client.SessionClient.SessionClient(Submitter.SubmitterClient, System.String, ILogger(Of ArmoniK.Samples.HtcMock.Client.GridClient))
-  nameWithType: SessionClient.SessionClient(Submitter.SubmitterClient, String, ILogger<GridClient>)
-  nameWithType.vb: SessionClient.SessionClient(Submitter.SubmitterClient, String, ILogger(Of GridClient))
+- uid: ArmoniK.Samples.HtcMock.Client.SessionClient.#ctor(GrpcChannel,System.String,ILogger{ArmoniK.Samples.HtcMock.Client.GridClient})
+  name: SessionClient(GrpcChannel, String, ILogger<GridClient>)
+  href: api/ArmoniK.Samples.HtcMock.Client.SessionClient.html#ArmoniK_Samples_HtcMock_Client_SessionClient__ctor_GrpcChannel_System_String_ILogger_ArmoniK_Samples_HtcMock_Client_GridClient__
+  commentId: M:ArmoniK.Samples.HtcMock.Client.SessionClient.#ctor(GrpcChannel,System.String,ILogger{ArmoniK.Samples.HtcMock.Client.GridClient})
+  name.vb: SessionClient(GrpcChannel, String, ILogger(Of GridClient))
+  fullName: ArmoniK.Samples.HtcMock.Client.SessionClient.SessionClient(GrpcChannel, System.String, ILogger<ArmoniK.Samples.HtcMock.Client.GridClient>)
+  fullName.vb: ArmoniK.Samples.HtcMock.Client.SessionClient.SessionClient(GrpcChannel, System.String, ILogger(Of ArmoniK.Samples.HtcMock.Client.GridClient))
+  nameWithType: SessionClient.SessionClient(GrpcChannel, String, ILogger<GridClient>)
+  nameWithType.vb: SessionClient.SessionClient(GrpcChannel, String, ILogger(Of GridClient))
 - uid: ArmoniK.Samples.HtcMock.Client.SessionClient.#ctor*
   name: SessionClient
   href: api/ArmoniK.Samples.HtcMock.Client.SessionClient.html#ArmoniK_Samples_HtcMock_Client_SessionClient__ctor_

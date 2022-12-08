@@ -4241,6 +4241,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.GrpcChannelExt.html",
+          "hash": "pRQ8HTjKnzgkwC5SUTr/vf+cQnkPWpIdIxSUpMIOYRg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.yml",
       "output": {
         ".html": {
@@ -4257,7 +4269,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.html",
-          "hash": "LDrZs5Z+NAELuv+5QCGiw+1hqwy4+FYVnvUDAl+nz1M="
+          "hash": "NZpa5jpgEFrSlputf/pcOKlwLQbP/YnXTplt9STS6Bs="
         }
       },
       "is_incremental": false,
@@ -4401,7 +4413,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.Client.GridClient.html",
-          "hash": "RqUld0NI2AWE4ujlQf4DzCgj7vUqQnUN6r5IEF/TX88="
+          "hash": "oOLufjR29P5VUAx94fFc8ZnRKIFSdxE7pECIJIyNi70="
         }
       },
       "is_incremental": false,
@@ -4449,7 +4461,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.Client.SessionClient.html",
-          "hash": "ks5Oxae/xePYtr+qe+vB0xnCv7QH+mKKUsmEOQ/fyEY="
+          "hash": "oD4YpQ6bzi34A0io+FELoiroKmFJ3mmQXwepsn+WExg="
         }
       },
       "is_incremental": false,
@@ -4509,7 +4521,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "ebWZaxbLu1hmIkjUD/Uu1qnM3f5T8y0oRR4tpQUOt44="
+          "hash": "y30H6wjbrAReKjYlfakEC5K/6WmfAKYO35PArdzsMaQ="
         }
       },
       "is_incremental": false,
@@ -4608,7 +4620,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 374,
+          "total_file_count": 375,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
