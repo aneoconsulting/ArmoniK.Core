@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
@@ -43,30 +44,68 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 [UsedImplicitly]
 public class ConnectionRabbit : IConnectionRabbit
 {
+  private readonly AsyncLazy                 connectionTask_;
   private readonly ILogger<ConnectionRabbit> logger_;
 
   private readonly Amqp options_;
 
-  private IConnection? connection_;
-  private bool         isInitialized_;
+  private bool isInitialized_;
 
   public ConnectionRabbit(Amqp                      options,
                           ILogger<ConnectionRabbit> logger)
   {
-    logger_  = logger;
-    options_ = options;
+    logger_         = logger;
+    options_        = options;
+    connectionTask_ = new AsyncLazy(() => InitTask(this));
   }
+
+  private IConnection? Connection { get; set; }
 
   public IModel? Channel { get; private set; }
 
-  public async Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken = default)
+    => await connectionTask_;
+
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (!isInitialized_)
+    {
+      return Task.FromResult(tag != HealthCheckTag.Liveness
+                               ? HealthCheckResult.Degraded($"{nameof(ConnectionRabbit)} is not yet initialized.")
+                               : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
+    }
+
+    if (Connection is null || !Connection.IsOpen || Channel is null || Channel.IsClosed)
+    {
+      return Task.FromResult(HealthCheckResult.Unhealthy("Rabbit connection dropped."));
+    }
+
+    return Task.FromResult(HealthCheckResult.Healthy());
+  }
+
+  public void Dispose()
+  {
+    if (isInitialized_)
+    {
+      Channel!.Close();
+      Connection!.Close();
+
+      Channel.Dispose();
+      Connection.Dispose();
+    }
+
+    GC.SuppressFinalize(this);
+  }
+
+  private async Task InitTask(ConnectionRabbit  conn,
+                              CancellationToken cancellationToken = default)
   {
     var factory = new ConnectionFactory
                   {
-                    UserName               = options_.User,
-                    Password               = options_.Password,
-                    HostName               = options_.Host,
-                    Port                   = options_.Port,
+                    UserName               = conn.options_.User,
+                    Password               = conn.options_.Password,
+                    HostName               = conn.options_.Host,
+                    Port                   = conn.options_.Port,
                     DispatchConsumersAsync = true,
                   };
 
@@ -74,7 +113,7 @@ public class ConnectionRabbit : IConnectionRabbit
     if (options_.Scheme.Equals("AMQPS"))
     {
       factory.Ssl.Enabled    = true;
-      factory.Ssl.ServerName = options_.Host;
+      factory.Ssl.ServerName = conn.options_.Host;
       factory.Ssl.CertificateValidationCallback = delegate(object           _,
                                                            X509Certificate? _,
                                                            X509Chain?       _,
@@ -82,7 +121,7 @@ public class ConnectionRabbit : IConnectionRabbit
                                                   {
                                                     switch (errors)
                                                     {
-                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options_.AllowHostMismatch:
+                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when conn.options_.AllowHostMismatch:
                                                       case SslPolicyErrors.None:
                                                         return true;
                                                       default:
@@ -94,18 +133,18 @@ public class ConnectionRabbit : IConnectionRabbit
     }
 
     var retry = 0;
-    for (; retry < options_.MaxRetries; retry++)
+    for (; retry < conn.options_.MaxRetries; retry++)
     {
       try
       {
-        connection_ = factory.CreateConnection();
-        connection_.ConnectionShutdown += (obj,
-                                           ea) => OnShutDown(obj,
-                                                             ea,
-                                                             "Connection",
-                                                             logger_);
+        conn.Connection = factory.CreateConnection();
+        conn.Connection.ConnectionShutdown += (obj,
+                                               ea) => OnShutDown(obj,
+                                                                 ea,
+                                                                 "Connection",
+                                                                 logger_);
 
-        Channel = connection_.CreateModel();
+        Channel = conn.Connection.CreateModel();
         Channel.ModelShutdown += (obj,
                                   ea) => OnShutDown(obj,
                                                     ea,
@@ -123,43 +162,12 @@ public class ConnectionRabbit : IConnectionRabbit
       }
     }
 
-    if (retry == options_.MaxRetries)
+    if (retry == conn.options_.MaxRetries)
     {
-      throw new TimeoutException($"{nameof(options_.MaxRetries)} reached");
+      throw new TimeoutException($"{nameof(conn.options_.MaxRetries)} reached");
     }
 
-    isInitialized_ = true;
-  }
-
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    if (!isInitialized_)
-    {
-      return Task.FromResult(tag != HealthCheckTag.Liveness
-                               ? HealthCheckResult.Degraded($"{nameof(ConnectionRabbit)} is not yet initialized.")
-                               : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
-    }
-
-    if (connection_ is null || !connection_.IsOpen || Channel is null || Channel.IsClosed)
-    {
-      return Task.FromResult(HealthCheckResult.Unhealthy("Rabbit connection dropped."));
-    }
-
-    return Task.FromResult(HealthCheckResult.Healthy());
-  }
-
-  public void Dispose()
-  {
-    if (isInitialized_)
-    {
-      Channel!.Close();
-      connection_!.Close();
-
-      Channel.Dispose();
-      connection_.Dispose();
-    }
-
-    GC.SuppressFinalize(this);
+    conn.isInitialized_ = true;
   }
 
   private static void OnShutDown(object?           obj,
