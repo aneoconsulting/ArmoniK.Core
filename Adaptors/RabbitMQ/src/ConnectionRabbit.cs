@@ -13,20 +13,14 @@
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-using System;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection.Options;
@@ -39,7 +33,11 @@ using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
 
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
@@ -51,12 +49,12 @@ public class ConnectionRabbit : IConnectionRabbit
 
   private readonly Amqp options_;
 
-  private bool         isInitialized_;
+  private bool isInitialized_;
 
-  public ConnectionRabbit(Amqp                      options,
+  public ConnectionRabbit(Amqp options,
                           ILogger<ConnectionRabbit> logger)
   {
-    logger_  = logger;
+    logger_ = logger;
     options_ = options;
     connectionTask_ = new AsyncLazy(() => InitTask(this));
   }
@@ -71,23 +69,23 @@ public class ConnectionRabbit : IConnectionRabbit
   public async Task InitTask(ConnectionRabbit conn, CancellationToken cancellationToken = default)
   {
     var factory = new ConnectionFactory
-                  {
-                    UserName               = conn.options_.User,
-                    Password               = conn.options_.Password,
-                    HostName               = conn.options_.Host,
-                    Port                   = conn.options_.Port,
-                    DispatchConsumersAsync = true,
-                  };
+    {
+      UserName = conn.options_.User,
+      Password = conn.options_.Password,
+      HostName = conn.options_.Host,
+      Port = conn.options_.Port,
+      DispatchConsumersAsync = true,
+    };
 
 
     if (options_.Scheme.Equals("AMQPS"))
     {
-      factory.Ssl.Enabled    = true;
+      factory.Ssl.Enabled = true;
       factory.Ssl.ServerName = conn.options_.Host;
-      factory.Ssl.CertificateValidationCallback = delegate(object           _,
+      factory.Ssl.CertificateValidationCallback = delegate (object _,
                                                            X509Certificate? _,
-                                                           X509Chain?       _,
-                                                           SslPolicyErrors  errors)
+                                                           X509Chain? _,
+                                                           SslPolicyErrors errors)
                                                   {
                                                     switch (errors)
                                                     {
@@ -171,10 +169,10 @@ public class ConnectionRabbit : IConnectionRabbit
     GC.SuppressFinalize(this);
   }
 
-  private static void OnShutDown(object?           obj,
+  private static void OnShutDown(object? obj,
                                  ShutdownEventArgs ea,
-                                 string            model,
-                                 ILogger           logger)
+                                 string model,
+                                 ILogger logger)
   {
     if (ea.Cause is null)
     {
