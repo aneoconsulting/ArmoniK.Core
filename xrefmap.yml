@@ -20321,12 +20321,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
   nameWithType: TaskHandlerTest.ExecuteTaskShouldSucceed
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
-  name: ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow()
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow()
-  nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow*
+  name: ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+  name: ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow__1_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler___0__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+  name.vb: ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
+  nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
+  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow*
   name: ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow_
@@ -20334,6 +20344,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
   nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler{``0})
+  name: ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow<TEx>(TaskHandlerTest.ExceptionStartWorkerStreamHandler<TEx>)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow__1_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionStartWorkerStreamHandler___0__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler{``0})
+  name.vb: ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow(Of TEx)(TaskHandlerTest.ExceptionStartWorkerStreamHandler(Of TEx))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow<TEx>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler<TEx>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow(Of TEx)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler(Of TEx))
+  nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow<TEx>(TaskHandlerTest.ExceptionStartWorkerStreamHandler<TEx>)
+  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow(Of TEx)(TaskHandlerTest.ExceptionStartWorkerStreamHandler(Of TEx))
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed*
   name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed_
@@ -20342,14 +20361,14 @@ references:
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
   nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
-  name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(TaskHandlerTest.ExceptionWorkerStreamHandler<Ex>)
+  name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed__1_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler___0__
   commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
-  name.vb: ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of Ex)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of Ex))
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<Ex>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of Ex)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of Ex))
-  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<Ex>(TaskHandlerTest.ExceptionWorkerStreamHandler<Ex>)
-  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of Ex)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of Ex))
+  name.vb: ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
+  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
+  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
   name: ExecuteTaskWithResultsShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithResultsShouldSucceed
@@ -20415,6 +20434,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOuptut
   nameWithType: TaskHandlerTest.TestCaseOuptut
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  name: TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  nameWithType: TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow*
+  name: TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+  nameWithType: TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  name: TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  nameWithType: TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow*
+  name: TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
+  nameWithType: TaskHandlerTest.TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException
   name: TaskHandlerTest.TestRpcException
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TestRpcException.html
