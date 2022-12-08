@@ -13,12 +13,12 @@
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -61,13 +61,13 @@ public class ConnectionRabbit : IConnectionRabbit
 
   public IModel? Channel { get; private set; }
 
-  public IConnection? Connection { get; private set; }
+  private IConnection? Connection { get; set; }
 
   public async Task Init(CancellationToken cancellationToken = default)
     => await connectionTask_;
 
-  public async Task InitTask(ConnectionRabbit  conn,
-                             CancellationToken cancellationToken = default)
+  private async Task InitTask(ConnectionRabbit  conn,
+                              CancellationToken cancellationToken = default)
   {
     var factory = new ConnectionFactory
                   {
