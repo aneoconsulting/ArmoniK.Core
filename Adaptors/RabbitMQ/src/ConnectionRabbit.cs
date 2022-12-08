@@ -22,6 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Utils;
@@ -32,12 +38,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
-
-using System;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
@@ -59,12 +59,43 @@ public class ConnectionRabbit : IConnectionRabbit
     connectionTask_ = new AsyncLazy(() => InitTask(this));
   }
 
-  public IModel? Channel { get; private set; }
-
   private IConnection? Connection { get; set; }
+
+  public IModel? Channel { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken = default)
     => await connectionTask_;
+
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (!isInitialized_)
+    {
+      return Task.FromResult(tag != HealthCheckTag.Liveness
+                               ? HealthCheckResult.Degraded($"{nameof(ConnectionRabbit)} is not yet initialized.")
+                               : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
+    }
+
+    if (Connection is null || !Connection.IsOpen || Channel is null || Channel.IsClosed)
+    {
+      return Task.FromResult(HealthCheckResult.Unhealthy("Rabbit connection dropped."));
+    }
+
+    return Task.FromResult(HealthCheckResult.Healthy());
+  }
+
+  public void Dispose()
+  {
+    if (isInitialized_)
+    {
+      Channel!.Close();
+      Connection!.Close();
+
+      Channel.Dispose();
+      Connection.Dispose();
+    }
+
+    GC.SuppressFinalize(this);
+  }
 
   private async Task InitTask(ConnectionRabbit  conn,
                               CancellationToken cancellationToken = default)
@@ -137,37 +168,6 @@ public class ConnectionRabbit : IConnectionRabbit
     }
 
     conn.isInitialized_ = true;
-  }
-
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    if (!isInitialized_)
-    {
-      return Task.FromResult(tag != HealthCheckTag.Liveness
-                               ? HealthCheckResult.Degraded($"{nameof(ConnectionRabbit)} is not yet initialized.")
-                               : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
-    }
-
-    if (Connection is null || !Connection.IsOpen || Channel is null || Channel.IsClosed)
-    {
-      return Task.FromResult(HealthCheckResult.Unhealthy("Rabbit connection dropped."));
-    }
-
-    return Task.FromResult(HealthCheckResult.Healthy());
-  }
-
-  public void Dispose()
-  {
-    if (isInitialized_)
-    {
-      Channel!.Close();
-      Connection!.Close();
-
-      Channel.Dispose();
-      Connection.Dispose();
-    }
-
-    GC.SuppressFinalize(this);
   }
 
   private static void OnShutDown(object?           obj,
