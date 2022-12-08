@@ -418,6 +418,7 @@ jobs:
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
+    name: Stream ${{ matrix.queue }} ${{ matrix.log-level }}
     strategy:
       fail-fast: false
       matrix:

@@ -29,6 +29,8 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Google.Protobuf.WellKnownTypes;
 
+using Grpc.Net.Client;
+
 using Htc.Mock;
 
 using Microsoft.Extensions.Logging;
@@ -37,15 +39,15 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public class GridClient : IGridClient
 {
-  private readonly Submitter.SubmitterClient client_;
-  private readonly ILogger<GridClient>       logger_;
-  private readonly Options.HtcMock           optionsHtcMock_;
+  private readonly GrpcChannel         channel_;
+  private readonly ILogger<GridClient> logger_;
+  private readonly Options.HtcMock     optionsHtcMock_;
 
-  public GridClient(Submitter.SubmitterClient client,
-                    ILoggerFactory            loggerFactory,
-                    Options.HtcMock           optionsHtcMock)
+  public GridClient(GrpcChannel     channel,
+                    ILoggerFactory  loggerFactory,
+                    Options.HtcMock optionsHtcMock)
   {
-    client_         = client;
+    channel_        = channel;
     optionsHtcMock_ = optionsHtcMock;
     logger_         = loggerFactory.CreateLogger<GridClient>();
   }
@@ -87,8 +89,9 @@ public class GridClient : IGridClient
                                    optionsHtcMock_.Partition,
                                  },
                                };
-    var createSessionReply = client_.CreateSession(createSessionRequest);
-    return new SessionClient(client_,
+    var client             = new Submitter.SubmitterClient(channel_);
+    var createSessionReply = client.CreateSession(createSessionRequest);
+    return new SessionClient(channel_,
                              createSessionReply.SessionId,
                              logger_);
   }

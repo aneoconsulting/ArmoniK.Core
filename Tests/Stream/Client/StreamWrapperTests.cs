@@ -38,6 +38,8 @@ using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
+using Grpc.Net.Client;
+
 using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
@@ -69,13 +71,22 @@ internal class StreamWrapperTests
     partition_ = configuration.GetValue<string>("Partition");
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
-    var channel = GrpcChannelFactory.CreateChannel(options);
-    client_ = new Submitter.SubmitterClient(channel);
+    channel_ = GrpcChannelFactory.CreateChannel(options);
+    client_  = new Submitter.SubmitterClient(channel_);
     Console.WriteLine("Client created");
+  }
+
+  [TearDown]
+  public void TearDown()
+  {
+    partition_ = null;
+    client_    = null;
+    channel_?.Dispose();
   }
 
   private Submitter.SubmitterClient? client_;
   private string?                    partition_;
+  private GrpcChannel?               channel_;
 
   [TestCase(2,
             ExpectedResult = 4)]
@@ -126,12 +137,9 @@ internal class StreamWrapperTests
 
     client_.TryGetResultStream(resultRequest);
 
-    var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest)
-                                                             .ConfigureAwait(false));
-    if (resultPayload == null)
-    {
-      return 0;
-    }
+    var resultPayload = await channel_!.GetPayloadAsyncAndCheck(sessionId,
+                                                                expectedOutput)
+                                       .ConfigureAwait(false);
 
     Console.WriteLine($"Payload Type : {resultPayload.Type} - {expectedOutput}");
     if (resultPayload.Type == TestPayload.TaskType.Result)
@@ -295,18 +303,9 @@ internal class StreamWrapperTests
 
     var resultList = taskRequestList.Select(async request =>
                                             {
-                                              var resultRequest = new ResultRequest
-                                                                  {
-                                                                    ResultId = request.ExpectedOutputKeys.Single(),
-                                                                    Session  = sessionId,
-                                                                  };
-
-                                              var resultPayload = TestPayload.Deserialize(await client_!.GetResultAsync(resultRequest)
-                                                                                                        .ConfigureAwait(false));
-                                              if (resultPayload == null)
-                                              {
-                                                return 0;
-                                              }
+                                              var resultPayload = await channel_!.GetPayloadAsyncAndCheck(sessionId,
+                                                                                                          request.ExpectedOutputKeys.Single())
+                                                                                 .ConfigureAwait(false);
 
                                               Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.ExpectedOutputKeys.Single()}");
                                               if (resultPayload.Type == TestPayload.TaskType.Result)
@@ -393,44 +392,18 @@ internal class StreamWrapperTests
 
     var results = taskRequestList.Select(async request =>
                                          {
-                                           var resultRequest1 = new ResultRequest
-                                                                {
-                                                                  ResultId = request.ExpectedOutputKeys.First(),
-                                                                  Session  = sessionId,
-                                                                };
-                                           var resultBytes1 = await client_!.GetResultAsync(resultRequest1)
-                                                                            .ConfigureAwait(false);
-                                           if (resultBytes1.Length == 0)
-                                           {
-                                             throw new Exception();
-                                           }
+                                           var resultPayload1 = await channel_!.GetPayloadAsyncAndCheck(sessionId,
+                                                                                                        request.ExpectedOutputKeys.First())
+                                                                               .ConfigureAwait(false);
 
-                                           var resultPayload1 = TestPayload.Deserialize(resultBytes1);
-
-                                           var resultRequest2 = new ResultRequest
-                                                                {
-                                                                  ResultId = request.ExpectedOutputKeys.Last(),
-                                                                  Session  = sessionId,
-                                                                };
-                                           var resultBytes2 = await client_!.GetResultAsync(resultRequest2)
-                                                                            .ConfigureAwait(false);
-                                           if (resultBytes2.Length == 0)
-                                           {
-                                             throw new Exception();
-                                           }
-
-                                           var resultPayload2 = TestPayload.Deserialize(resultBytes2);
-
-                                           if (resultPayload1 is null || resultPayload2 is null)
-                                           {
-                                             return false;
-                                           }
+                                           var resultPayload2 = await channel_!.GetPayloadAsyncAndCheck(sessionId,
+                                                                                                        request.ExpectedOutputKeys.Last())
+                                                                               .ConfigureAwait(false);
 
                                            var resultInt1 = BitConverter.ToInt32(resultPayload1.DataBytes);
                                            var resultInt2 = BitConverter.ToInt32(resultPayload2.DataBytes);
 
-                                           Console.WriteLine($"Result1 {resultInt1}");
-                                           Console.WriteLine($"Result2 {resultInt2}");
+                                           Console.WriteLine($"Result1 {resultInt1}, Result2 {resultInt2}");
 
                                            return 2 * resultInt2 == resultInt1;
                                          });
@@ -504,18 +477,9 @@ internal class StreamWrapperTests
 
     var resultList = taskRequestList.Select(async request =>
                                             {
-                                              var resultRequest = new ResultRequest
-                                                                  {
-                                                                    ResultId = request.ExpectedOutputKeys.Single(),
-                                                                    Session  = sessionId,
-                                                                  };
-
-                                              var resultPayload = TestPayload.Deserialize(await client_!.GetResultAsync(resultRequest)
-                                                                                                        .ConfigureAwait(false));
-                                              if (resultPayload == null)
-                                              {
-                                                return false;
-                                              }
+                                              var resultPayload = await channel_!.GetPayloadAsyncAndCheck(sessionId,
+                                                                                                          request.ExpectedOutputKeys.Single())
+                                                                                 .ConfigureAwait(false);
 
                                               Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.ExpectedOutputKeys.Single()}");
                                               if (resultPayload.Type == TestPayload.TaskType.Result)
@@ -653,14 +617,9 @@ internal class StreamWrapperTests
 
     var resultList = taskRequestList.Select(async request =>
                                             {
-                                              var resultRequest = new ResultRequest
-                                                                  {
-                                                                    ResultId = request.ExpectedOutputKeys.Single(),
-                                                                    Session  = sessionId,
-                                                                  };
-
-                                              var resultPayload = TestPayload.Deserialize(await client_!.GetResultAsync(resultRequest)
-                                                                                                        .ConfigureAwait(false));
+                                              var resultPayload = await channel_!.GetPayloadAsyncAndCheck(sessionId,
+                                                                                                          request.ExpectedOutputKeys.Single())
+                                                                                 .ConfigureAwait(false);
                                               return resultPayload is
                                                      {
                                                        Type: TestPayload.TaskType.Result,

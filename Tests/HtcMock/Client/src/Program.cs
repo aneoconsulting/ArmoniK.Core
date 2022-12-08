@@ -27,7 +27,6 @@ using System.Threading;
 
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
-using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Htc.Mock.Core;
 
@@ -67,9 +66,7 @@ internal class Program
                  .Bind(optionsHtcMock);
     var channel = GrpcChannelFactory.CreateChannel(options);
 
-    var submitterClient = new Submitter.SubmitterClient(channel);
-
-    var gridClient = new GridClient(submitterClient,
+    var gridClient = new GridClient(channel,
                                     factory,
                                     optionsHtcMock);
 
