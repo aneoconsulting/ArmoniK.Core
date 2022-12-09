@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -55,6 +55,8 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
       var result = await client.GetStringAsync("http://" + ownerPodId + ":1080/taskprocessing",
                                                cancellationToken)
                                .ConfigureAwait(false);
+      logger_.LogDebug("Result from other polling agent: {result}",
+                       result);
       return result.Equals(taskId);
     }
     catch (InvalidOperationException ex)
