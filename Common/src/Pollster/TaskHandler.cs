@@ -357,6 +357,8 @@ public class TaskHandler : IAsyncDisposable
           taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
+          logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
+                                 taskData_.Status);
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
             logger_.LogDebug("Resubmitting task {task} on another pod",
