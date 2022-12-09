@@ -1,6 +1,10 @@
+resource "docker_image" "database" {
+  name = var.database_image
+}
+
 resource "docker_container" "database" {
   name  = "database"
-  image = var.database_image
+  image = docker_image.database.image_id
 
   networks_advanced {
     name = docker_network.armonik_backend.name
@@ -24,9 +28,13 @@ resource "null_resource" "partitions_in_db" {
   ]
 }
 
+resource "docker_image" "object" {
+  name = var.object_image
+}
+
 resource "docker_container" "object" {
   name  = "object"
-  image = var.object_image
+  image = docker_image.object.image_id
 
   command = ["redis-server"]
 
@@ -40,9 +48,13 @@ resource "docker_container" "object" {
   }
 }
 
+resource "docker_image" "queue" {
+  name = var.queue_image
+}
+
 resource "docker_container" "queue" {
   name  = "queue"
-  image = var.queue_image
+  image = docker_image.queue.image_id
 
   networks_advanced {
     name = docker_network.armonik_backend.name

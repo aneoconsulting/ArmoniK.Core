@@ -1,7 +1,10 @@
+resource "docker_image" "fluentbit" {
+  name = var.log_driver
+}
 
 resource "docker_container" "fluentbit" {
   name    = "fluentbit"
-  image   = var.log_driver
+  image   = docker_image.fluentbit.image_id
   restart = "always"
 
   networks_advanced {
@@ -38,9 +41,13 @@ resource "docker_container" "fluentbit" {
   ]
 }
 
+resource "docker_image" "seq" {
+  name = var.seq_image
+}
+
 resource "docker_container" "seq" {
   name  = "seq"
-  image = var.seq_image
+  image = docker_image.seq.image_id
 
   networks_advanced {
     name = docker_network.armonik_monitoring.name
@@ -61,9 +68,13 @@ resource "docker_container" "seq" {
   }
 }
 
+resource "docker_image" "zipkin" {
+  name = var.zipkin_image
+}
+
 resource "docker_container" "zipkin" {
   name  = "zipkin"
-  image = var.zipkin_image
+  image = docker_image.zipkin.image_id
 
   networks_advanced {
     name = docker_network.armonik_monitoring.name
