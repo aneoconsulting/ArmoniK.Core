@@ -853,6 +853,7 @@ jobs:
           just tag=${VERSION} stop database
           just healthChecks
           just tag=${VERSION} restoreDeployment database
+          sleep 10
           just healthChecks
 
       - name: Run HtcMock test
@@ -874,6 +875,7 @@ jobs:
           just tag=${VERSION} stop queue
           just healthChecks
           just tag=${VERSION} restoreDeployment queue
+          sleep 10
           just healthChecks
 
       - name: Run HtcMock test
@@ -895,6 +897,7 @@ jobs:
           just tag=${VERSION} stop object
           just healthChecks
           just tag=${VERSION} restoreDeployment object
+          sleep 10
           just healthChecks
 
       - name: Run HtcMock test
