@@ -8,7 +8,7 @@ resource "docker_container" "fluentbit" {
   restart = "always"
 
   networks_advanced {
-    name = docker_network.armonik_monitoring.name
+    name = docker_network.armonik_net.name
   }
 
   mounts {
@@ -50,7 +50,7 @@ resource "docker_container" "seq" {
   image = docker_image.seq.image_id
 
   networks_advanced {
-    name = docker_network.armonik_monitoring.name
+    name = docker_network.armonik_net.name
   }
 
   env = [
@@ -77,7 +77,7 @@ resource "docker_container" "zipkin" {
   image = docker_image.zipkin.image_id
 
   networks_advanced {
-    name = docker_network.armonik_monitoring.name
+    name = docker_network.armonik_net.name
   }
 
   ports {
@@ -92,12 +92,6 @@ resource "docker_container" "metrics" {
 
   networks_advanced {
     name = docker_network.armonik_net.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_backend.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_monitoring.name
   }
 
   env = [
@@ -137,12 +131,6 @@ resource "docker_container" "partition_metrics" {
 
   networks_advanced {
     name = docker_network.armonik_net.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_backend.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_monitoring.name
   }
 
   env = [

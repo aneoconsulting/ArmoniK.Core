@@ -14,12 +14,6 @@ resource "docker_container" "submitter" {
   networks_advanced {
     name = docker_network.armonik_net.name
   }
-  networks_advanced {
-    name = docker_network.armonik_backend.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_monitoring.name
-  }
 
   env = [
     "Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage",
@@ -76,10 +70,7 @@ resource "docker_container" "pollingagent" {
   image    = "${var.armonik_pollingagent_image}:${var.core_tag}"
 
   networks_advanced {
-    name = docker_network.armonik_backend.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_monitoring.name
+    name = docker_network.armonik_net.name
   }
 
   env = [
@@ -151,12 +142,6 @@ resource "docker_container" "worker" {
 
   networks_advanced {
     name = docker_network.armonik_net.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_backend.name
-  }
-  networks_advanced {
-    name = docker_network.armonik_monitoring.name
   }
 
   env = [
