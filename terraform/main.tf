@@ -173,7 +173,7 @@ resource "docker_container" "worker" {
 
   ports {
     internal = 1080
-    external = tonumber("108${each.value}")
+    external = 1080 + each.value
   }
 
   mounts {
