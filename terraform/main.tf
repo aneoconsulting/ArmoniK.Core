@@ -109,7 +109,7 @@ resource "docker_container" "pollingagent" {
 
   ports {
     internal = 1080
-    external = tonumber("998${each.value}")
+    external = 9980 + each.value
   }
 
   mounts {
