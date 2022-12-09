@@ -33,6 +33,8 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Google.Protobuf;
 
+using Grpc.Net.Client;
+
 using Htc.Mock;
 
 using Microsoft.Extensions.Logging;
@@ -41,25 +43,25 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public class SessionClient : ISessionClient
 {
-  private readonly Submitter.SubmitterClient client_;
   private readonly ILogger<GridClient>       logger_;
   private readonly string                    sessionId_;
+  private readonly Submitter.SubmitterClient submitterClient_;
 
-  public SessionClient(Submitter.SubmitterClient client,
-                       string                    sessionId,
-                       ILogger<GridClient>       logger)
+  public SessionClient(GrpcChannel         channel,
+                       string              sessionId,
+                       ILogger<GridClient> logger)
   {
-    client_    = client;
-    logger_    = logger;
-    sessionId_ = sessionId;
+    submitterClient_ = new Submitter.SubmitterClient(channel);
+    logger_          = logger;
+    sessionId_       = sessionId;
   }
 
 
   public void Dispose()
-    => client_.CancelSession(new Session
-                             {
-                               Id = sessionId_,
-                             });
+    => submitterClient_.CancelSession(new Session
+                                      {
+                                        Id = sessionId_,
+                                      });
 
   public byte[] GetResult(string id)
   {
@@ -69,7 +71,7 @@ public class SessionClient : ISessionClient
                           Session  = sessionId_,
                         };
 
-    var availabilityReply = client_.WaitForAvailability(resultRequest);
+    var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
 
     switch (availabilityReply.TypeCase)
     {
@@ -85,7 +87,7 @@ public class SessionClient : ISessionClient
         throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
     }
 
-    var response = client_.GetResultAsync(resultRequest);
+    var response = submitterClient_.GetResultAsync(resultRequest);
     return response.Result;
   }
 
@@ -97,7 +99,7 @@ public class SessionClient : ISessionClient
                           Session  = sessionId_,
                         };
 
-    var availabilityReply = client_.WaitForAvailability(resultRequest);
+    var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
 
     switch (availabilityReply.TypeCase)
     {
@@ -141,10 +143,10 @@ public class SessionClient : ISessionClient
       taskRequests.Add(taskRequest);
     }
 
-    var createTaskReply = client_.CreateTasksAsync(sessionId_,
-                                                   null,
-                                                   taskRequests)
-                                 .Result;
+    var createTaskReply = submitterClient_.CreateTasksAsync(sessionId_,
+                                                            null,
+                                                            taskRequests)
+                                          .Result;
     switch (createTaskReply.ResponseCase)
     {
       case CreateTaskReply.ResponseOneofCase.None:

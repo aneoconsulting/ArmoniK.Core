@@ -189,6 +189,8 @@ public class QueueStorage : IQueueStorage
 
           break;
         case QueueMessageStatus.Failed:
+        case QueueMessageStatus.Running:
+        case QueueMessageStatus.Waiting:
           if (!Handlers.TryRemove(TaskId,
                                   out var failedHandler))
           {
@@ -198,6 +200,7 @@ public class QueueStorage : IQueueStorage
           failedHandler.IsVisible = true;
           break;
         case QueueMessageStatus.Processed:
+        case QueueMessageStatus.Cancelled:
           if (!Handlers.TryRemove(TaskId,
                                   out var processedHandler))
           {

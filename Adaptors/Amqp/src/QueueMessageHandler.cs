@@ -95,9 +95,12 @@ public class QueueMessageHandler : IQueueMessageHandler
         receiver_.Accept(message_);
         break;
       case QueueMessageStatus.Failed:
+      case QueueMessageStatus.Running:
+      case QueueMessageStatus.Waiting:
         receiver_.Release(message_);
         break;
       case QueueMessageStatus.Processed:
+      case QueueMessageStatus.Cancelled:
         receiver_.Accept(message_);
         break;
       case QueueMessageStatus.Poisonous:

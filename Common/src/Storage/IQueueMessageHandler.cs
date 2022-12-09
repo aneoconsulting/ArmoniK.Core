@@ -29,12 +29,12 @@ namespace ArmoniK.Core.Common.Storage;
 
 public enum QueueMessageStatus
 {
+  Waiting,
   Failed,
-  Waiting = Failed,
-  Running = Failed,
+  Running,
   Postponed,
   Processed,
-  Cancelled = Processed,
+  Cancelled,
   Poisonous,
 }
 

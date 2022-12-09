@@ -267,6 +267,7 @@ public class Pollster : IInitializable
                                                              ("messageHandler", message.MessageId),
                                                              ("taskId", message.TaskId),
                                                              ("ownerPodId", ownerPodId_));
+            TaskProcessing = message.TaskId;
             // ReSharper disable once ExplicitCallerInfoArgument
             using var activity = activitySource_.StartActivity("ProcessQueueMessage");
             activity?.SetBaggage("TaskId",
@@ -299,8 +300,6 @@ public class Pollster : IInitializable
 
               if (precondition)
               {
-                TaskProcessing = taskHandler.GetAcquiredTask();
-
                 await taskHandler.PreProcessing()
                                  .ConfigureAwait(false);
 
