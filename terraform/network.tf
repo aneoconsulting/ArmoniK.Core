@@ -1,11 +1,11 @@
-resource "docker_network" "armonik-net" {
-  name = "armonik-net"
+resource "docker_network" "armonik_net" {
+  name = "armonik_net"
 }
 
-resource "docker_network" "armonik-backend" {
-  name = "armonik-backend"
+resource "docker_network" "armonik_backend" {
+  name = "armonik_backend"
 }
 
-resource "docker_network" "armonik-monitoring" {
-  name = "armonik-monitoring"
+resource "docker_network" "armonik_monitoring" {
+  name = "armonik_monitoring"
 }

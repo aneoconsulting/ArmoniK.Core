@@ -1,9 +1,9 @@
 resource "docker_container" "database" {
   name  = "database"
-  image = var.database-image
+  image = var.database_image
 
   networks_advanced {
-    name = docker_network.armonik-backend.name
+    name = docker_network.armonik_backend.name
   }
 
   ports {
@@ -12,10 +12,10 @@ resource "docker_container" "database" {
   }
 }
 
-resource "null_resource" "partitions-in-db" {
+resource "null_resource" "partitions_in_db" {
 
   provisioner "local-exec" {
-    command     = "docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: \"TestPartition0\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition1\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition2\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'"
+    command     = "docker run --net armonik_backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: \"TestPartition0\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition1\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition2\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'"
     interpreter = ["/bin/bash", "-c"]
   }
 
@@ -26,12 +26,12 @@ resource "null_resource" "partitions-in-db" {
 
 resource "docker_container" "object" {
   name  = "object"
-  image = var.object-image
+  image = var.object_image
 
   command = ["redis-server"]
 
   networks_advanced {
-    name = docker_network.armonik-backend.name
+    name = docker_network.armonik_backend.name
   }
 
   ports {
@@ -42,10 +42,10 @@ resource "docker_container" "object" {
 
 resource "docker_container" "queue" {
   name  = "queue"
-  image = var.queue-image
+  image = var.queue_image
 
   networks_advanced {
-    name = docker_network.armonik-backend.name
+    name = docker_network.armonik_backend.name
   }
 
   ports {

@@ -1,9 +1,9 @@
-core-tag = "0.7.1"
+core_tag = "0.8.0"
 
-armonik-submitter-image = "dockerhubaneo/armonik_control"
+armonik_submitter_image = "dockerhubaneo/armonik_control"
 
-armonik-metrics-image = "dockerhubaneo/armonik_control_metrics"
+armonik_metrics_image = "dockerhubaneo/armonik_control_metrics"
 
-armonik-partition-metrics-image = "dockerhubaneo/armonik_control_partition_metrics"
+armonik_partition_metrics_image = "dockerhubaneo/armonik_control_partition_metrics"
 
-armonik-pollingagent-image = "dockerhubaneo/armonik_pollingagent"
+armonik_pollingagent_image = "dockerhubaneo/armonik_pollingagent"

@@ -1,64 +1,64 @@
-variable "core-tag" {
+variable "core_tag" {
   type    = string
   default = "test"
 }
 
-variable "armonik-submitter-image" {
+variable "armonik_submitter_image" {
   type    = string
   default = "dockerhubaneo/armonik_control"
 }
 
-variable "armonik-metrics-image" {
+variable "armonik_metrics_image" {
   type    = string
   default = "dockerhubaneo/armonik_control_metrics"
 }
 
-variable "armonik-partition-metrics-image" {
+variable "armonik_partition_metrics_image" {
   type    = string
   default = "dockerhubaneo/armonik_control_partition_metrics"
 }
 
-variable "armonik-pollingagent-image" {
+variable "armonik_pollingagent_image" {
   type    = string
   default = "dockerhubaneo/armonik_pollingagent"
 }
 
-variable "armonik-worker-image" {
+variable "armonik_worker_image" {
   type    = string
   default = "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 
-variable "num-replicas" {
+variable "num_replicas" {
   type    = number
   default = 3
 }
 
-variable "log-driver" {
+variable "log_driver" {
   type    = string
   default = "fluent/fluent-bit:latest"
 }
 
-variable "seq-image" {
+variable "seq_image" {
   type    = string
   default = "datalust/seq:latest"
 }
 
-variable "zipkin-image" {
+variable "zipkin_image" {
   type    = string
   default = "openzipkin/zipkin:latest"
 }
 
-variable "database-image" {
+variable "database_image" {
   type    = string
   default = "mongo"
 }
 
-variable "object-image" {
+variable "object_image" {
   type    = string
   default = "redis:bullseye"
 }
 
-variable "queue-image" {
+variable "queue_image" {
   type    = string
   default = "symptoma/activemq:5.16.3"
 }

@@ -1,8 +1,8 @@
 locals {
-  vol-replicas = toset([for s in range(var.num-replicas) : tostring(s)])
+  vol_replicas = toset([for s in range(var.num_replicas) : tostring(s)])
 }
 
-resource "docker_volume" "socket-vol" {
-  for_each = local.vol-replicas
-  name     = "socket-vol${each.value}"
+resource "docker_volume" "socket_vol" {
+  for_each = local.vol_replicas
+  name     = "socket_vol${each.value}"
 }

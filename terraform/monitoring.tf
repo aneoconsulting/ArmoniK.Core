@@ -1,11 +1,11 @@
 
 resource "docker_container" "fluentbit" {
   name    = "fluentbit"
-  image   = var.log-driver
+  image   = var.log_driver
   restart = "always"
 
   networks_advanced {
-    name = docker_network.armonik-monitoring.name
+    name = docker_network.armonik_monitoring.name
   }
 
   mounts {
@@ -40,10 +40,10 @@ resource "docker_container" "fluentbit" {
 
 resource "docker_container" "seq" {
   name  = "seq"
-  image = var.seq-image
+  image = var.seq_image
 
   networks_advanced {
-    name = docker_network.armonik-monitoring.name
+    name = docker_network.armonik_monitoring.name
   }
 
   env = [
@@ -63,10 +63,10 @@ resource "docker_container" "seq" {
 
 resource "docker_container" "zipkin" {
   name  = "zipkin"
-  image = var.zipkin-image
+  image = var.zipkin_image
 
   networks_advanced {
-    name = docker_network.armonik-monitoring.name
+    name = docker_network.armonik_monitoring.name
   }
 
   ports {
@@ -77,16 +77,16 @@ resource "docker_container" "zipkin" {
 
 resource "docker_container" "metrics" {
   name  = "armonik.control.metrics"
-  image = "${var.armonik-metrics-image}:${var.core-tag}"
+  image = "${var.armonik_metrics_image}:${var.core_tag}"
 
   networks_advanced {
-    name = docker_network.armonik-net.name
+    name = docker_network.armonik_net.name
   }
   networks_advanced {
-    name = docker_network.armonik-backend.name
+    name = docker_network.armonik_backend.name
   }
   networks_advanced {
-    name = docker_network.armonik-monitoring.name
+    name = docker_network.armonik_monitoring.name
   }
 
   env = [
@@ -120,18 +120,18 @@ resource "docker_container" "metrics" {
   ]
 }
 
-resource "docker_container" "partition-metrics" {
-  name  = "armonik.control.partition-metrics"
-  image = "${var.armonik-partition-metrics-image}:${var.core-tag}"
+resource "docker_container" "partition_metrics" {
+  name  = "armonik.control.partition_metrics"
+  image = "${var.armonik_partition_metrics_image}:${var.core_tag}"
 
   networks_advanced {
-    name = docker_network.armonik-net.name
+    name = docker_network.armonik_net.name
   }
   networks_advanced {
-    name = docker_network.armonik-backend.name
+    name = docker_network.armonik_backend.name
   }
   networks_advanced {
-    name = docker_network.armonik-monitoring.name
+    name = docker_network.armonik_monitoring.name
   }
 
   env = [
