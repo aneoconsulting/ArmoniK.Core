@@ -1,5 +1,6 @@
 resource "docker_image" "fluentbit" {
-  name = var.log_driver
+  name         = var.log_driver
+  keep_locally = true
 }
 
 resource "docker_container" "fluentbit" {
@@ -42,7 +43,8 @@ resource "docker_container" "fluentbit" {
 }
 
 resource "docker_image" "seq" {
-  name = var.seq_image
+  name         = var.seq_image
+  keep_locally = true
 }
 
 resource "docker_container" "seq" {
@@ -69,7 +71,8 @@ resource "docker_container" "seq" {
 }
 
 resource "docker_image" "zipkin" {
-  name = var.zipkin_image
+  name         = var.zipkin_image
+  keep_locally = true
 }
 
 resource "docker_container" "zipkin" {
@@ -86,9 +89,23 @@ resource "docker_container" "zipkin" {
   }
 }
 
+resource "docker_image" "metrics" {
+  count        = var.use_local_image ? 0 : 1
+  name         = "${var.armonik_metrics_image}:${var.core_tag}"
+  keep_locally = true
+}
+
+module "metrics_local" {
+  source          = "./modules/localImage"
+  use_local_image = var.use_local_image
+  image_name      = "metrics_local"
+  context_path    = "../"
+  dockerfile_path = "../Control/Metrics/src/"
+}
+
 resource "docker_container" "metrics" {
   name  = "armonik.control.metrics"
-  image = "${var.armonik_metrics_image}:${var.core_tag}"
+  image = var.use_local_image ? module.metrics_local.image_id : docker_image.metrics[0].image_id
 
   networks_advanced {
     name = docker_network.armonik_net.name
@@ -125,9 +142,23 @@ resource "docker_container" "metrics" {
   ]
 }
 
+resource "docker_image" "partition_metrics" {
+  count        = var.use_local_image ? 0 : 1
+  name         = "${var.armonik_partition_metrics_image}:${var.core_tag}"
+  keep_locally = true
+}
+
+module "partition_metrics_local" {
+  source          = "./modules/localImage"
+  use_local_image = var.use_local_image
+  image_name      = "partition_metrics_local"
+  context_path    = "../"
+  dockerfile_path = "../Control/PartitionMetrics/src/"
+}
+
 resource "docker_container" "partition_metrics" {
   name  = "armonik.control.partition_metrics"
-  image = "${var.armonik_partition_metrics_image}:${var.core_tag}"
+  image = var.use_local_image ? module.partition_metrics_local.image_id : docker_image.partition_metrics[0].image_id
 
   networks_advanced {
     name = docker_network.armonik_net.name

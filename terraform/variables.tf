@@ -28,6 +28,11 @@ variable "armonik_worker_image" {
   default = "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 
+variable "use_local_image" {
+  type    = bool
+  default = false
+}
+
 variable "num_replicas" {
   type    = number
   default = 3

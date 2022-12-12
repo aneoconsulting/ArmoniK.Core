@@ -1,5 +1,9 @@
 core_tag = "0.8.0"
 
+use_local_image = false
+
+num_replicas = 1
+
 armonik_submitter_image = "dockerhubaneo/armonik_control"
 
 armonik_metrics_image = "dockerhubaneo/armonik_control_metrics"

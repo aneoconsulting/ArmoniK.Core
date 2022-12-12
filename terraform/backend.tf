@@ -1,5 +1,6 @@
 resource "docker_image" "database" {
-  name = var.database_image
+  name         = var.database_image
+  keep_locally = true
 }
 
 resource "docker_container" "database" {
@@ -29,7 +30,8 @@ resource "null_resource" "partitions_in_db" {
 }
 
 resource "docker_image" "object" {
-  name = var.object_image
+  name         = var.object_image
+  keep_locally = true
 }
 
 resource "docker_container" "object" {
@@ -49,7 +51,8 @@ resource "docker_container" "object" {
 }
 
 resource "docker_image" "queue" {
-  name = var.queue_image
+  name         = var.queue_image
+  keep_locally = true
 }
 
 resource "docker_container" "queue" {
