@@ -1,3 +1,3 @@
-resource "docker_network" "armonik_net" {
+resource "docker_network" "armonik" {
   name = "armonik_network"
 }

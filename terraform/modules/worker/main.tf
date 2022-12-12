@@ -17,10 +17,10 @@ resource "docker_container" "worker" {
     "Serilog__MinimumLevel=Information"
   ]
 
-  log_driver = "fluentd"
+  log_driver = var.log_driver_name
 
   log_opts = {
-    fluentd-address = "127.0.0.1:24224"
+    fluentd-address = var.log_driver_address
   }
 
   ports {

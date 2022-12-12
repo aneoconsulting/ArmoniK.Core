@@ -33,7 +33,7 @@ resource "docker_container" "pollingagent" {
     "InitWorker__WorkerCheckRetries=10",
     "InitWorker__WorkerCheckDelay=00:00:10",
     "Serilog__MinimumLevel=Information",
-    "Zipkin__Uri=http://zipkin:9411/api/v2/spans",
+    "Zipkin__Uri=${var.zipkin_uri}",
     "ASPNETCORE_ENVIRONMENT=Development",
     "Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage",
     "Amqp__User=admin",
@@ -47,10 +47,10 @@ resource "docker_container" "pollingagent" {
     "Amqp__PartitionId=TestPartition${var.replica_counter}"
   ]
 
-  log_driver = "fluentd"
+  log_driver = var.log_driver_name
 
   log_opts = {
-    fluentd-address = "127.0.0.1:24224"
+    fluentd-address = var.log_driver_address
   }
 
   ports {

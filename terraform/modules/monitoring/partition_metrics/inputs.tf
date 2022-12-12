@@ -1,21 +1,23 @@
-variable "core_tag" {
+variable "tag" {
   type = string
 }
 
-variable "container_name" {
+variable "image" {
   type = string
 }
 
-variable "docker_image" {
-  type = string
+variable "use_local_image" {
+  type    = bool
+  default = false
 }
 
 variable "network" {
   type = string
 }
 
-variable "zipkin_uri" {
-  type = string
+variable "exposed_port" {
+  type    = number
+  default = 5003
 }
 
 variable "log_driver_name" {

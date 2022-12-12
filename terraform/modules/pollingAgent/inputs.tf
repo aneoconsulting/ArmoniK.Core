@@ -22,6 +22,14 @@ variable "socket_vol" {
   type = string
 }
 
-variable "implicit_dependencies" {
-  type = list(any)
+variable "zipkin_uri" {
+  type = string
+}
+
+variable "log_driver_name" {
+  type = string
+}
+
+variable "log_driver_address" {
+  type = string
 }
