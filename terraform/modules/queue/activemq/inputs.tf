@@ -7,6 +7,12 @@ variable "network" {
 }
 
 variable "exposed_ports" {
-  type    = list(number)
-  default = [6572, 8161]
+  type = object({
+    admin_interface = number,
+    amqp_connector  = number,
+  })
+  default = {
+    admin_interface = 8161
+    amqp_connector  = 5672
+  }
 }

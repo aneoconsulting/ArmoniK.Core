@@ -7,7 +7,7 @@ resource "docker_container" "queue" {
   name  = "queue"
   image = docker_image.queue.image_id
 
-  command = ["sh -c echo ${var.plugins}. > /etc/rabbitmq/enabled_plugins && exec docker-entrypoint.sh rabbitmq-server"]
+  command = ["sh -c echo [${var.plugins.management}, ${var.plugins.management_agent}, ${var.plugins.protocol1_0}]. > /etc/rabbitmq/enabled_plugins && exec docker-entrypoint.sh rabbitmq-server"]
 
   networks_advanced {
     name = var.network
@@ -15,13 +15,13 @@ resource "docker_container" "queue" {
 
   ports {
     internal = 5672
-    external = var.exposed_ports[0]
+    external = var.exposed_ports.amqp_connector
     ip       = "127.0.0.1"
   }
 
   ports {
     internal = 15672
-    external = var.exposed_ports[1]
+    external = var.exposed_ports.admin_interface
   }
 
   healthcheck {

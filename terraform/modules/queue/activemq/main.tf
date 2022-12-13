@@ -13,12 +13,12 @@ resource "docker_container" "queue" {
 
   ports {
     internal = 5672
-    external = var.exposed_ports[0]
+    external = var.exposed_ports.amqp_connector
   }
 
   ports {
     internal = 8161
-    external = var.exposed_ports[1]
+    external = var.exposed_ports.admin_interface
   }
 
   healthcheck {
