@@ -36,10 +36,10 @@ resource "docker_container" "submitter" {
     "Amqp__LinkCredit=2"
   ]
 
-  log_driver = var.log_driver_name
+  log_driver = var.log_driver.name
 
   log_opts = {
-    fluentd-address = var.log_driver_address
+    fluentd-address = var.log_driver.address
   }
 
   ports {

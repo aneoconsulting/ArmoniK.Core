@@ -20,10 +20,9 @@ variable "exposed_port" {
   default = 5002
 }
 
-variable "log_driver_name" {
-  type = string
-}
-
-variable "log_driver_address" {
-  type = string
+variable "log_driver" {
+  type = object({
+    name = string,
+    address = string,
+  })
 }

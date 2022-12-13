@@ -6,14 +6,55 @@ locals {
     EOF
 }
 
-resource "docker_image" "pollingagent" {
-  name         = "${var.docker_image}:${var.core_tag}"
+resource "docker_volume" "socket_vol" {
+  name = "socket_vol${var.replica_counter}"
+}
+
+resource "docker_image" "worker" {
+  name         = "${var.worker_image}:${var.core_tag}"
   keep_locally = true
 }
 
-resource "docker_container" "pollingagent" {
-  name  = var.container_name
-  image = docker_image.pollingagent.image_id
+resource "docker_container" "worker" {
+  name  = var.worker_container_name
+  image = docker_image.worker.image_id
+
+  networks_advanced {
+    name = var.network
+  }
+
+  env = [
+    "ASPNETCORE_ENVIRONMENT=Development",
+    "Serilog__Properties__Application=ArmoniK.Compute.Worker",
+    "Serilog__MinimumLevel=Information"
+  ]
+
+  log_driver = var.log_driver.name
+
+  log_opts = {
+    fluentd-address = var.log_driver.address
+  }
+
+  ports {
+    internal = 1080
+    external = 1080 + var.replica_counter
+  }
+
+  mounts {
+    type   = "volume"
+    target = "/cache"
+    source = docker_volume.socket_vol.name
+  }
+}
+
+resource "docker_image" "polling_agent" {
+  name         = "${var.polling_agent_image}:${var.core_tag}"
+  keep_locally = true
+}
+
+resource "docker_container" "polling_agent" {
+  name  = var.polling_agent_container_name
+  image = docker_image.polling_agent.image_id
 
   networks_advanced {
     name = var.network
@@ -47,10 +88,10 @@ resource "docker_container" "pollingagent" {
     "Amqp__PartitionId=TestPartition${var.replica_counter}"
   ]
 
-  log_driver = var.log_driver_name
+  log_driver = var.log_driver.name
 
   log_opts = {
-    fluentd-address = var.log_driver_address
+    fluentd-address = var.log_driver.address
   }
 
   ports {
@@ -61,7 +102,7 @@ resource "docker_container" "pollingagent" {
   mounts {
     type   = "volume"
     target = "/cache"
-    source = var.socket_vol
+    source = docker_volume.socket_vol.name
   }
 
   healthcheck {

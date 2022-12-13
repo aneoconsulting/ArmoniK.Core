@@ -39,59 +39,43 @@ module "queue" {
 }
 
 module "submitter" {
-  source             = "./modules/submitter"
-  container_name     = "armonik.control.submitter"
-  core_tag           = var.core_tag
-  docker_image       = var.armonik_submitter_image
-  network            = docker_network.armonik.name
-  zipkin_uri         = module.zipkin.zipkin_uri
-  log_driver_name    = module.fluenbit.log_driver_name
-  log_driver_address = module.fluenbit.fluentd_address
+  source         = "./modules/submitter"
+  container_name = "armonik.control.submitter"
+  core_tag       = var.core_tag
+  docker_image   = var.armonik_submitter_image
+  network        = docker_network.armonik.name
+  zipkin_uri     = module.zipkin.zipkin_uri
+  log_driver     = module.fluenbit.log_driver
 }
 
-module "pollingagent" {
-  source             = "./modules/pollingAgent"
-  for_each           = local.replicas
-  container_name     = "armonik.compute.pollingagent${each.value}"
-  replica_counter    = each.key
-  core_tag           = var.core_tag
-  docker_image       = var.armonik_pollingagent_image
-  network            = docker_network.armonik.name
-  socket_vol         = docker_volume.socket_vol[each.key].name
-  zipkin_uri         = module.zipkin.zipkin_uri
-  log_driver_name    = module.fluenbit.log_driver_name
-  log_driver_address = module.fluenbit.fluentd_address
-}
-
-module "worker" {
-  source             = "./modules/worker"
-  for_each           = local.replicas
-  container_name     = "armonik.compute.worker${each.value}"
-  replica_counter    = each.key
-  core_tag           = var.core_tag
-  docker_image       = var.armonik_worker_image
-  network            = docker_network.armonik.name
-  socket_vol         = docker_volume.socket_vol[each.key].name
-  log_driver_name    = module.fluenbit.log_driver_name
-  log_driver_address = module.fluenbit.fluentd_address
+module "compute_plane" {
+  source                       = "./modules/compute_plane"
+  for_each                     = local.replicas
+  polling_agent_container_name = "armonik.compute.pollingagent${each.value}"
+  worker_container_name        = "armonik.compute.worker${each.value}"
+  replica_counter              = each.key
+  core_tag                     = var.core_tag
+  polling_agent_image          = var.armonik_pollingagent_image
+  worker_image                 = var.armonik_worker_image
+  network                      = docker_network.armonik.name
+  zipkin_uri                   = module.zipkin.zipkin_uri
+  log_driver                   = module.fluenbit.log_driver
 }
 
 module "metrics_exporter" {
-  source             = "./modules/monitoring/metrics"
-  tag                = var.core_tag
-  image              = var.armonik_metrics_image
-  use_local_image    = var.use_local_image
-  network            = docker_network.armonik.name
-  log_driver_name    = module.fluenbit.log_driver_name
-  log_driver_address = module.fluenbit.fluentd_address
+  source          = "./modules/monitoring/metrics"
+  tag             = var.core_tag
+  image           = var.armonik_metrics_image
+  use_local_image = var.use_local_image
+  network         = docker_network.armonik.name
+  log_driver      = module.fluenbit.log_driver
 }
 
 module "partition_metrics_exporter" {
-  source             = "./modules/monitoring/partition_metrics"
-  tag                = var.core_tag
-  image              = var.armonik_partition_metrics_image
-  use_local_image    = var.use_local_image
-  network            = docker_network.armonik.name
-  log_driver_name    = module.fluenbit.log_driver_name
-  log_driver_address = module.fluenbit.fluentd_address
+  source          = "./modules/monitoring/partition_metrics"
+  tag             = var.core_tag
+  image           = var.armonik_partition_metrics_image
+  use_local_image = var.use_local_image
+  network         = docker_network.armonik.name
+  log_driver      = module.fluenbit.log_driver
 }

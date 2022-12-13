@@ -32,12 +32,12 @@ resource "docker_container" "metrics" {
     "ASPNETCORE_ENVIRONMENT=Development"
   ]
 
-  log_driver = var.log_driver_name
+  log_driver = var.log_driver.name
 
   log_opts = {
-    fluentd-address = var.log_driver_address
+    fluentd-address = var.log_driver.address
   }
-
+  
   ports {
     internal = 1080
     external = var.exposed_port

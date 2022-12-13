@@ -2,11 +2,23 @@ variable "core_tag" {
   type = string
 }
 
-variable "container_name" {
+variable "polling_agent_container_name" {
   type = string
 }
 
-variable "docker_image" {
+variable "worker_container_name" {
+  type = string
+}
+
+variable "replica_counter" {
+  type = number
+}
+
+variable "polling_agent_image" {
+  type = string
+}
+
+variable "worker_image" {
   type = string
 }
 
