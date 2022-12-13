@@ -1,6 +1,6 @@
 locals {
   test-cmd = <<-EOF
-    CMD bash -c exec 3<>"/dev/tcp/localhost/1080"
+    exec 3<>"/dev/tcp/localhost/1080"
     echo -en "GET /liveness HTTP/1.1\r\nHost: localhost:1080\r\nConnection: close\r\n\r\n">&3 &
     grep Healthy <&3 &>/dev/null || exit 1
     EOF
@@ -106,7 +106,7 @@ resource "docker_container" "polling_agent" {
   }
 
   healthcheck {
-    test         = split(" ", local.test-cmd)
+    test         = concat(["CMD", "bash", "-c"], split(" ", local.test-cmd))
     interval     = "5s"
     timeout      = "3s"
     start_period = "20s"
