@@ -5,7 +5,8 @@ resource "docker_image" "partition_metrics" {
 }
 
 module "partition_metrics_local" {
-  source          = "../../localImage"
+  count           = var.use_local_image ? 1 : 0
+  source          = "../../build_image"
   use_local_image = var.use_local_image
   image_name      = "partition_metrics_local"
   context_path    = "${path.root}../"
@@ -14,7 +15,7 @@ module "partition_metrics_local" {
 
 resource "docker_container" "partition_metrics" {
   name  = "armonik.control.partition_metrics"
-  image = var.use_local_image ? module.partition_metrics_local.image_id : docker_image.partition_metrics[0].image_id
+  image = var.use_local_image ? module.partition_metrics_local[0].image_id : docker_image.partition_metrics[0].image_id
 
   networks_advanced {
     name = var.network

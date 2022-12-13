@@ -5,7 +5,8 @@ resource "docker_image" "metrics" {
 }
 
 module "metrics_local" {
-  source          = "../../localImage"
+  count           = var.use_local_image ? 1 : 0
+  source          = "../../build_image"
   use_local_image = var.use_local_image
   image_name      = "metrics_local"
   context_path    = "${path.root}../"
@@ -14,7 +15,7 @@ module "metrics_local" {
 
 resource "docker_container" "metrics" {
   name  = "armonik.control.metrics"
-  image = var.use_local_image ? module.metrics_local.image_id : docker_image.metrics[0].image_id
+  image = var.use_local_image ? module.metrics_local[0].image_id : docker_image.metrics[0].image_id
 
   networks_advanced {
     name = var.network
@@ -37,7 +38,7 @@ resource "docker_container" "metrics" {
   log_opts = {
     fluentd-address = var.log_driver.address
   }
-  
+
   ports {
     internal = 1080
     external = var.exposed_port

@@ -10,6 +10,11 @@ variable "docker_image" {
   type = string
 }
 
+variable "use_local_image" {
+  type    = bool
+  default = false
+}
+
 variable "network" {
   type = string
 }

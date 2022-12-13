@@ -1,11 +1,21 @@
 resource "docker_image" "submitter" {
+  count        = var.use_local_image ? 0 : 1
   name         = "${var.docker_image}:${var.core_tag}"
   keep_locally = true
 }
 
+module "submitter_local" {
+  count           = var.use_local_image ? 1 : 0
+  source          = "../build_image"
+  use_local_image = var.use_local_image
+  image_name      = "submitter_local"
+  context_path    = "${path.root}../"
+  dockerfile_path = "${path.root}../Control/Submitter/src/"
+}
+
 resource "docker_container" "submitter" {
   name  = var.container_name
-  image = docker_image.submitter.image_id
+  image = var.use_local_image ? module.submitter_local[0].image_id : docker_image.submitter[0].image_id
 
   networks_advanced {
     name = var.network

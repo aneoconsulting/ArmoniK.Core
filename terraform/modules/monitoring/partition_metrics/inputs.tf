@@ -22,7 +22,7 @@ variable "exposed_port" {
 
 variable "log_driver" {
   type = object({
-    name = string,
+    name    = string,
     address = string,
   })
 }
