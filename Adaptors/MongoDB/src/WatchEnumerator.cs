@@ -34,9 +34,9 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public sealed class WatchEnumerator<TOutput, TInput> : IWatchEnumerator<TOutput>
 {
-  private readonly IChangeStreamCursor<TInput> cursor_;
-  private readonly Func<TInput, TOutput>       converter_;
   private readonly CancellationToken           cancellationToken_;
+  private readonly Func<TInput, TOutput>       converter_;
+  private readonly IChangeStreamCursor<TInput> cursor_;
   private          IEnumerator<TInput>?        currentEnumerable_;
 
   public WatchEnumerator(IChangeStreamCursor<TInput> cursor,

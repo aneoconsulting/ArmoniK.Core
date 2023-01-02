@@ -77,6 +77,7 @@ public class BenchOptions
 
   /// <summary>
   ///   Print the graph updates
+  ///   default : false
   /// </summary>
-  public bool ShowGraph { get; set; } = false;
+  public bool ShowGraph { get; set; }
 }

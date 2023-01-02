@@ -39,10 +39,10 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcGraphsService : Graphs.GraphsBase
 {
   private readonly ILogger<GrpcApplicationsService> logger_;
-  private readonly ITaskTable                       taskTable_;
-  private readonly ITaskWatcher                     taskWatcher_;
   private readonly IResultTable                     resultTable_;
   private readonly IResultWatcher                   resultWatcher_;
+  private readonly ITaskTable                       taskTable_;
+  private readonly ITaskWatcher                     taskWatcher_;
 
   public GrpcGraphsService(ITaskTable                       taskTable,
                            ITaskWatcher                     taskWatcher,

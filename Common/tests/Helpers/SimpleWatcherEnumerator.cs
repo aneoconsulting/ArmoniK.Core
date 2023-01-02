@@ -34,9 +34,7 @@ internal class SimpleWatcherEnumerator<TOutput> : IWatchEnumerator<TOutput>
   private readonly IEnumerator<TOutput> enumerator_;
 
   public SimpleWatcherEnumerator(IEnumerable<TOutput> enumerator)
-  {
-    enumerator_ = enumerator.GetEnumerator();
-  }
+    => enumerator_ = enumerator.GetEnumerator();
 
   public void Dispose()
     => enumerator_.Dispose();

@@ -29,6 +29,6 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IWatchEnumerator<out T> : IDisposable
 {
-  bool MoveNext(CancellationToken cancellationToken);
   T    Current { get; }
+  bool MoveNext(CancellationToken cancellationToken);
 }

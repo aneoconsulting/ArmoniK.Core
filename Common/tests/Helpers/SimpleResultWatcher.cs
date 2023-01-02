@@ -22,10 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,15 +35,15 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 internal class SimpleResultWatcher : IResultWatcher
 {
+  public const string ResultId           = "MyResultId";
+  public const string OwnerPodId         = "MyOwnerPodId";
+  public const string PreviousOwnerPodId = "MyPreviousOwnerPodId";
+
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
-
-  public const string ResultId           = "MyResultId";
-  public const string OwnerPodId         = "MyOwnerPodId";
-  public const string PreviousOwnerPodId = "MyPreviousOwnerPodId";
 
   public Task<IWatchEnumerator<NewResult>> GetNewResults(string            sessionId,
                                                          CancellationToken cancellationToken = default)

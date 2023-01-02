@@ -22,14 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using MongoDB.Bson;
-using MongoDB.Driver;
-
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -83,7 +83,7 @@ public static class ChangeStreamUpdate
                                                                          .AppendStage(stage3);
 
     return await collection.WatchAsync(sessionHandle,
-                                       pipeline: pipeline,
+                                       pipeline,
                                        cancellationToken: cancellationToken,
                                        options: new ChangeStreamOptions
                                                 {

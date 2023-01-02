@@ -43,9 +43,9 @@ public class ResultWatcher : IResultWatcher
 {
   private readonly ActivitySource                                          activitySource_;
   private readonly ILogger<ResultWatcher>                                  logger_;
+  private readonly MongoCollectionProvider<Result, ResultDataModelMapping> resultCollectionProvider_;
   private readonly SessionProvider                                         sessionProvider_;
   private          bool                                                    isInitialized_;
-  private readonly MongoCollectionProvider<Result, ResultDataModelMapping> resultCollectionProvider_;
 
   public ResultWatcher(SessionProvider                                         sessionProvider,
                        MongoCollectionProvider<Result, ResultDataModelMapping> resultCollectionProvider,
@@ -91,7 +91,7 @@ public class ResultWatcher : IResultWatcher
 
     var changeStreamCursor = await resultCollectionProvider_.Get()
                                                             .WatchAsync(sessionHandle,
-                                                                        pipeline: pipeline,
+                                                                        pipeline,
                                                                         cancellationToken: cancellationToken,
                                                                         options: new ChangeStreamOptions
                                                                                  {

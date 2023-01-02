@@ -37,16 +37,16 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 internal class SimpleTaskWatcher : ITaskWatcher
 {
+  public const string PayloadId    = "MyPayloadId";
+  public const string OutputId     = "MyOutputId";
+  public const string TaskId       = "MyTaskId";
+  public const string OriginTaskId = "MyOriginTaskId";
+
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
-
-  public const string PayloadId    = "MyPayloadId";
-  public const string OutputId     = "MyOutputId";
-  public const string TaskId       = "MyTaskId";
-  public const string OriginTaskId = "MyOriginTaskId";
 
   public Task<IWatchEnumerator<NewTask>> GetNewTasks(string            sessionId,
                                                      CancellationToken cancellationToken = default)

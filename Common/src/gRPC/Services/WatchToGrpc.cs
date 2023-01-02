@@ -37,12 +37,12 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class WatchToGrpc
 {
-  private readonly ITaskTable     taskTable_;
-  private readonly ITaskWatcher   taskWatcher_;
+  private const    int            PageSize = 100;
+  private readonly ILogger        logger_;
   private readonly IResultTable   resultTable_;
   private readonly IResultWatcher resultWatcher_;
-  private readonly ILogger        logger_;
-  private const    int            PageSize = 100;
+  private readonly ITaskTable     taskTable_;
+  private readonly ITaskWatcher   taskWatcher_;
 
   public WatchToGrpc(ITaskTable     taskTable,
                      ITaskWatcher   taskWatcher,

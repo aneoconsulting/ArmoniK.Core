@@ -44,8 +44,8 @@ public class TaskWatcher : ITaskWatcher
   private readonly ActivitySource                                          activitySource_;
   private readonly ILogger<TaskWatcher>                                    logger_;
   private readonly SessionProvider                                         sessionProvider_;
-  private          bool                                                    isInitialized_;
   private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
+  private          bool                                                    isInitialized_;
 
   public TaskWatcher(SessionProvider                                         sessionProvider,
                      MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider,
@@ -90,7 +90,7 @@ public class TaskWatcher : ITaskWatcher
 
     var changeStreamCursor = await taskCollectionProvider_.Get()
                                                           .WatchAsync(sessionHandle,
-                                                                      pipeline: pipeline,
+                                                                      pipeline,
                                                                       cancellationToken: cancellationToken,
                                                                       options: new ChangeStreamOptions
                                                                                {
