@@ -36,6 +36,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Auth;
+using ArmoniK.Api.gRPC.V1.Graphs;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -45,6 +46,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Graphs;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
@@ -79,12 +81,14 @@ public class AuthenticationIntegrationTest
     helper_ = new GrpcSubmitterServiceHelper(submitter,
                                              Identities.ToList(),
                                              options_!,
-                                             LogLevel.Information,
+                                             LogLevel.Debug,
                                              s =>
                                              {
                                                s.AddSingleton<ITaskTable>(new SimpleTaskTable())
                                                 .AddSingleton<ISessionTable>(new SimpleSessionTable())
-                                                .AddSingleton<IResultTable>(new SimpleResultTable());
+                                                .AddSingleton<IResultTable>(new SimpleResultTable())
+                                                .AddSingleton<ITaskWatcher>(new SimpleTaskWatcher())
+                                                .AddSingleton<IResultWatcher>(new SimpleResultWatcher());
                                              });
   }
 
@@ -102,37 +106,38 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
-  private const           string                  SessionId   = "MySession";
-  private const           string                  TaskId      = "MyTask";
-  private const           string                  ResultKey   = "ResultKey";
-  private const           string                  PartitionId = "PartitionId";
-  private static readonly TaskFilter              TaskFilter;
-  private static readonly CreateSmallTaskRequest  CreateSmallTasksRequest;
-  private static readonly CreateSessionRequest    CreateSessionRequest;
-  private static readonly Session                 SessionRequest;
-  private static readonly GetResultStatusRequest  GetResultStatusRequest;
-  private static readonly GetTaskStatusRequest    GetTaskStatusRequest;
-  private static readonly Empty                   Empty;
-  private static readonly SessionFilter           SessionFilter;
-  private static readonly ResultRequest           ResultRequest;
-  private static readonly TaskOutputRequest       TaskOutputRequest;
-  private static readonly WaitRequest             WaitRequest;
-  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestInit;
-  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestInitTask;
-  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestPayload;
-  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestPayloadComplete;
-  private static readonly CreateLargeTaskRequest  CreateLargeTaskRequestLastTask;
-  private static readonly CancelSessionRequest    CancelSessionRequest;
-  private static readonly GetSessionRequest       GetSessionRequest;
-  private static readonly ListSessionsRequest     ListSessionsRequest;
-  private static readonly GetResultIdsRequest     GetResultIdsRequest;
-  private static readonly GetTaskRequest          GetTaskRequest;
-  private static readonly ListTasksRequest        ListTasksRequest;
-  private static readonly GetOwnerTaskIdRequest   GetOwnerTaskIdRequest;
-  private static readonly ListApplicationsRequest ListApplicationsRequest;
-  private static readonly CancelTasksRequest      CancelTasksRequest;
-  private static readonly ListResultsRequest      ListResultsRequest;
-  private static readonly GetCurrentUserRequest   GetCurrentUserRequest;
+  private const           string                   SessionId   = "MySession";
+  private const           string                   TaskId      = "MyTask";
+  private const           string                   ResultKey   = "ResultKey";
+  private const           string                   PartitionId = "PartitionId";
+  private static readonly TaskFilter               TaskFilter;
+  private static readonly CreateSmallTaskRequest   CreateSmallTasksRequest;
+  private static readonly CreateSessionRequest     CreateSessionRequest;
+  private static readonly Session                  SessionRequest;
+  private static readonly GetResultStatusRequest   GetResultStatusRequest;
+  private static readonly GetTaskStatusRequest     GetTaskStatusRequest;
+  private static readonly Empty                    Empty;
+  private static readonly SessionFilter            SessionFilter;
+  private static readonly ResultRequest            ResultRequest;
+  private static readonly TaskOutputRequest        TaskOutputRequest;
+  private static readonly WaitRequest              WaitRequest;
+  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestInit;
+  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestInitTask;
+  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestPayload;
+  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestPayloadComplete;
+  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestLastTask;
+  private static readonly CancelSessionRequest     CancelSessionRequest;
+  private static readonly GetSessionRequest        GetSessionRequest;
+  private static readonly ListSessionsRequest      ListSessionsRequest;
+  private static readonly GetResultIdsRequest      GetResultIdsRequest;
+  private static readonly GetTaskRequest           GetTaskRequest;
+  private static readonly ListTasksRequest         ListTasksRequest;
+  private static readonly GetOwnerTaskIdRequest    GetOwnerTaskIdRequest;
+  private static readonly ListApplicationsRequest  ListApplicationsRequest;
+  private static readonly CancelTasksRequest       CancelTasksRequest;
+  private static readonly ListResultsRequest       ListResultsRequest;
+  private static readonly GetCurrentUserRequest    GetCurrentUserRequest;
+  private static readonly GraphSubscriptionRequest GraphSubscriptionRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -324,6 +329,11 @@ public class AuthenticationIntegrationTest
                                   },
                          };
     GetCurrentUserRequest = new GetCurrentUserRequest();
+
+    GraphSubscriptionRequest = new GraphSubscriptionRequest
+                               {
+                                 SessionId = SessionId,
+                               };
   }
 
   public enum AuthenticationType
@@ -723,6 +733,10 @@ public class AuthenticationIntegrationTest
                                                                                                                           typeof(Applications.ApplicationsClient),
                                                                                                                           typeof(GrpcApplicationsService)
                                                                                                                         },
+                                                                                                                        {
+                                                                                                                          typeof(Graphs.GraphsClient),
+                                                                                                                          typeof(GrpcGraphsService)
+                                                                                                                        },
                                                                                                                       });
 
   public static IEnumerable GetTestCases(string suffix)
@@ -788,6 +802,16 @@ public class AuthenticationIntegrationTest
                             {
                               (typeof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient), nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetResultStream),
                                null),
+                            };
+
+    return GetCases(methodsAndObjects);
+  }
+
+  public static IEnumerable GetGetGraphsStreamTestCases()
+  {
+    var methodsAndObjects = new List<(Type, string, object?)>
+                            {
+                              (typeof(Graphs.GraphsClient), nameof(Graphs.GraphsClient.GetGraphs), null),
                             };
 
     return GetCases(methodsAndObjects);
@@ -1157,6 +1181,7 @@ public class AuthenticationIntegrationTest
                  .ConfigureAwait(false);
   }
 
+
   public static IEnumerable GetAuthServiceTestCaseSource()
   {
     List<(Type, string, object?)> methodObjectList = new()
@@ -1252,6 +1277,50 @@ public class AuthenticationIntegrationTest
       Assert.IsInstanceOf<RpcException>(exception.InnerException);
       Assert.AreEqual(expectedError,
                       ((RpcException)exception.InnerException!).StatusCode);
+    }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
+  }
+
+  [TestCaseSource(nameof(GetGetGraphsStreamTestCases))]
+  public async Task GetGraphsStreamAuthShouldMatch(Type              clientType,
+                                                   string            method,
+                                                   IdentityIndex     initialUserIndex,
+                                                   ImpersonationType impersonationType,
+                                                   IdentityIndex     impersonating,
+                                                   object[]          args,
+                                                   ResultType        success,
+                                                   StatusCode        initialErrorCode)
+  {
+    TransformResult(initialUserIndex,
+                    impersonationType,
+                    success,
+                    impersonating,
+                    initialErrorCode,
+                    out var finalUserIndex,
+                    out var shouldSucceed,
+                    out var expectedError);
+    var channel = await helper_!.CreateChannel()
+                                .ConfigureAwait(false);
+    var client      = new Graphs.GraphsClient(channel);
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[clientType]);
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name == method)))
+    {
+      Assert.DoesNotThrowAsync(() => client.GetGraphs(GraphSubscriptionRequest,
+                                                      (Metadata)args[1])
+                                           .ResponseStream.MoveNext());
+    }
+    else
+    {
+      var exception = Assert.CatchAsync(() => client.GetGraphs(GraphSubscriptionRequest,
+                                                               (Metadata)args[1])
+                                                    .ResponseStream.MoveNext());
+      Assert.IsNotNull(exception);
+      Assert.IsInstanceOf<RpcException>(exception);
+      Assert.AreEqual(expectedError,
+                      ((RpcException)exception!).StatusCode);
     }
 
     await helper_.DeleteChannel()

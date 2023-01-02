@@ -1,0 +1,82 @@
+// This file is part of the ArmoniK project
+//
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
+//   D. Brasseur       <dbrasseur@aneo.fr>
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Graphs;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+
+namespace ArmoniK.Core.Common.Tests.Helpers;
+
+internal class SimpleTaskWatcher : ITaskWatcher
+{
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
+
+  public Task Init(CancellationToken cancellationToken)
+    => Task.CompletedTask;
+
+  public const string PayloadId    = "MyPayloadId";
+  public const string OutputId     = "MyOutputId";
+  public const string TaskId       = "MyTaskId";
+  public const string OriginTaskId = "MyOriginTaskId";
+
+  public Task<IWatchEnumerator<NewTask>> GetNewTasks(string            sessionId,
+                                                     CancellationToken cancellationToken = default)
+    => Task.FromResult<IWatchEnumerator<NewTask>>(new SimpleWatcherEnumerator<NewTask>(new[]
+                                                                                       {
+                                                                                         new NewTask(sessionId,
+                                                                                                     TaskId,
+                                                                                                     OriginTaskId,
+                                                                                                     PayloadId,
+                                                                                                     new List<string>
+                                                                                                     {
+                                                                                                       OutputId,
+                                                                                                     },
+                                                                                                     new List<string>(),
+                                                                                                     new List<string>(),
+                                                                                                     TaskStatus.Creating),
+                                                                                       }));
+
+  public Task<IWatchEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+                                                                       CancellationToken cancellationToken = default)
+    => Task.FromResult<IWatchEnumerator<TaskStatusUpdate>>(new SimpleWatcherEnumerator<TaskStatusUpdate>(new[]
+                                                                                                         {
+                                                                                                           new TaskStatusUpdate(sessionId,
+                                                                                                                                TaskId,
+                                                                                                                                TaskStatus.Submitted),
+                                                                                                           new TaskStatusUpdate(sessionId,
+                                                                                                                                TaskId,
+                                                                                                                                TaskStatus.Processing),
+                                                                                                           new TaskStatusUpdate(sessionId,
+                                                                                                                                TaskId,
+                                                                                                                                TaskStatus.Completed),
+                                                                                                         }));
+}

@@ -60,6 +60,9 @@ public static class ServicesPermissions
                                                                                       typeof(GrpcApplicationsService), "Applications"
                                                                                     },
                                                                                     {
+                                                                                      typeof(GrpcGraphsService), "Graphs"
+                                                                                    },
+                                                                                    {
                                                                                       typeof(GeneralService), "General"
                                                                                     },
                                                                                     {

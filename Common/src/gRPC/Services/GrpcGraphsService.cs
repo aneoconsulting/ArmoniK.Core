@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Graphs;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Graphs;
 
@@ -56,6 +57,8 @@ public class GrpcGraphsService : Graphs.GraphsBase
     resultWatcher_ = resultWatcher;
   }
 
+  [RequiresPermission(typeof(GrpcGraphsService),
+                      nameof(GetGraphs))]
   public override async Task GetGraphs(GraphSubscriptionRequest                  request,
                                        IServerStreamWriter<GraphContentResponse> responseStream,
                                        ServerCallContext                         context)
