@@ -82,14 +82,14 @@ resource "docker_container" "polling_agent" {
 
   env = [
     "Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage",
-    "MongoDB__Host=database",
-    "MongoDB__Port=27017",
-    "MongoDB__DatabaseName=database",
+    "MongoDB__Host=${var.db_driver.name}",
+    "MongoDB__Port=${var.db_driver.port}",
+    "MongoDB__DatabaseName=${var.db_driver.name}",
     "MongoDB__MaxConnectionPoolSize=500",
     "MongoDB__TableStorage__PollingDelayMin=00:00:01",
     "MongoDB__TableStorage__PollingDelayMax=00:00:10",
     "Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage",
-    "Redis__EndpointUrl=object:6379",
+    "Redis__EndpointUrl=${var.object_driver.address}",
     "Pollster__MaxErrorAllowed=-1",
     "InitWorker__WorkerCheckRetries=10",
     "InitWorker__WorkerCheckDelay=00:00:10",

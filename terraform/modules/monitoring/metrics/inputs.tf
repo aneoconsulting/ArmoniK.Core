@@ -20,6 +20,13 @@ variable "exposed_port" {
   default = 5002
 }
 
+variable "db_driver" {
+  type = object({
+    name    = string,
+    port    = number,
+  })
+}
+
 variable "log_driver" {
   type = object({
     name    = string,

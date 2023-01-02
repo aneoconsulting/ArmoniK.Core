@@ -45,6 +45,8 @@ module "submitter" {
   docker_image   = var.armonik_submitter_image
   network        = docker_network.armonik.name
   zipkin_uri     = module.zipkin.zipkin_uri
+  db_driver      = module.database.database_driver
+  object_driver  = module.object.object_driver
   log_driver     = module.fluenbit.log_driver
 }
 
@@ -59,6 +61,8 @@ module "compute_plane" {
   worker_image                 = var.armonik_worker_image
   network                      = docker_network.armonik.name
   zipkin_uri                   = module.zipkin.zipkin_uri
+  db_driver                    = module.database.database_driver
+  object_driver                = module.object.object_driver
   log_driver                   = module.fluenbit.log_driver
 }
 
@@ -68,6 +72,7 @@ module "metrics_exporter" {
   image           = var.armonik_metrics_image
   use_local_image = var.use_local_image
   network         = docker_network.armonik.name
+  db_driver       = module.database.database_driver
   log_driver      = module.fluenbit.log_driver
 }
 
@@ -77,5 +82,6 @@ module "partition_metrics_exporter" {
   image           = var.armonik_partition_metrics_image
   use_local_image = var.use_local_image
   network         = docker_network.armonik.name
+  db_driver       = module.database.database_driver
   log_driver      = module.fluenbit.log_driver
 }

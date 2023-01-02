@@ -23,6 +23,20 @@ variable "zipkin_uri" {
   type = string
 }
 
+variable "db_driver" {
+  type = object({
+    name    = string,
+    port    = number,
+  })
+}
+
+variable "object_driver" {
+  type = object({
+    name    = string,
+    address = string,
+  })
+}
+
 variable "log_driver" {
   type = object({
     name    = string,

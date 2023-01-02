@@ -1,7 +1,7 @@
-output "db_port" {
-  value = var.exposed_port
-}
 
-output "network_data" {
-  value = docker_container.database.network_data
+output "database_driver" {
+  value = ({
+    name = docker_container.database.name,
+    port = var.exposed_port
+  })
 }
