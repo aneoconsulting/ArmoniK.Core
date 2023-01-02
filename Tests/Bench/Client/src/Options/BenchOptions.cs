@@ -74,4 +74,9 @@ public class BenchOptions
   ///   Partition in which to submit the tasks
   /// </summary>
   public string Partition { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Print the graph updates
+  /// </summary>
+  public bool ShowGraph { get; set; } = false;
 }
