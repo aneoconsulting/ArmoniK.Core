@@ -24,11 +24,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -41,46 +41,13 @@ public static class ChangeStreamUpdate
                                                                                        IEnumerable<string>                             fields,
                                                                                        CancellationToken                               cancellationToken = default)
   {
-    var match2 = new BsonDocument
-                 {
-                   {
-                     "$addFields", new BsonDocument
-                                   {
-                                     {
-                                       "tmpfields", new BsonDocument
-                                                    {
-                                                      {
-                                                        "$objectToArray", "$updateDescription.updatedFields"
-                                                      },
-                                                    }
-                                     },
-                                   }
-                   },
-                 };
-    var match3 = new BsonDocument
-                 {
-                   {
-                     "$match", new BsonDocument
-                               {
-                                 {
-                                   "tmpfields.k", new BsonDocument
-                                                  {
-                                                    {
-                                                      "$in", new BsonArray(fields)
-                                                    },
-                                                  }
-                                 },
-                               }
-                   },
-                 };
-
-    var stage2 = new BsonDocumentPipelineStageDefinition<ChangeStreamDocument<T>, ChangeStreamDocument<T>>(match2);
-    var stage3 = new BsonDocumentPipelineStageDefinition<ChangeStreamDocument<T>, ChangeStreamDocument<T>>(match3);
+    var matchUpdatedFields =
+      new FilterDefinitionBuilder<ChangeStreamDocument<T>>().Or(fields.Select(f => new FilterDefinitionBuilder<ChangeStreamDocument<T>>()
+                                                                                .Exists("updateDescription.updatedFields." + f)));
 
     var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<T>>().Match(document => document.OperationType == ChangeStreamOperationType.Update)
                                                                          .Match(filter)
-                                                                         .AppendStage(stage2)
-                                                                         .AppendStage(stage3);
+                                                                         .Match(matchUpdatedFields);
 
     return await collection.WatchAsync(sessionHandle,
                                        pipeline,
