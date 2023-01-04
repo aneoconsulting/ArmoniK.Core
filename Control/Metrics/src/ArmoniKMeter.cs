@@ -131,13 +131,13 @@ public class ArmoniKMeter : Meter, IHostedService
     {
       var statusName = psc.Status.ToString();
       measurements[Tuple.Create(psc.PartitionId,
-                                statusName)] = psc.Count;
+                                statusName)] += psc.Count;
       measurements[Tuple.Create("",
                                 statusName)] += psc.Count;
       if (psc.Status is TaskStatus.Dispatched or TaskStatus.Submitted or TaskStatus.Processing)
       {
         measurements[Tuple.Create(psc.PartitionId,
-                                  QueuedName)] = psc.Count;
+                                  QueuedName)] += psc.Count;
         measurements[Tuple.Create("",
                                   QueuedName)] += psc.Count;
       }
