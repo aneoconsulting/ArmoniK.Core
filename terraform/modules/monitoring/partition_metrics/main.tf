@@ -21,19 +21,7 @@ resource "docker_container" "partition_metrics" {
     name = var.network
   }
 
-  env = [
-    "Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage",
-    "MongoDB__Host=${var.db_driver.name}",
-    "MongoDB__Port=${var.db_driver.port}",
-    "MongoDB__DatabaseName=${var.db_driver.name}",
-    "MongoDB__MaxConnectionPoolSize=${var.mongodb_params.max_connection_pool_size}",
-    "MongoDB__TableStorage__PollingDelayMin=${var.mongodb_params.min_polling_delay}",
-    "MongoDB__TableStorage__PollingDelayMax=${var.mongodb_params.max_polling_delay}",
-    "Serilog__MinimumLevel=Information",
-    "MetricsExporter__Host=http://armonik.control.metrics",
-    "MetricsExporter__Port=1080",
-    "MetricsExporter__Path=/metrics"
-  ]
+  env = concat(local.env, local.gen_env)
 
   log_driver = var.log_driver.name
 

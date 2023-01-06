@@ -1,7 +1,3 @@
-output "queue_entry_points" { #TODO: to be removed
-  value = var.exposed_ports
-}
-
 output "queue_env_vars" {
   value = ({
     "Components__QueueStorage" = "ArmoniK.Adapters.Amqp.QueueStorage"

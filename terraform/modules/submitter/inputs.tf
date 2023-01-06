@@ -47,13 +47,6 @@ variable "object_storage" {
   type = string
 }
 
-variable "object_driver" {
-  type = object({
-    name    = string,
-    address = string,
-  })
-}
-
 variable "log_driver" {
   type = object({
     name    = string,

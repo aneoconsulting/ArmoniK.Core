@@ -53,7 +53,6 @@ module "submitter" {
   queue_env_vars    = module.queue.queue_env_vars
   object_env_vars   = module.object.object_env_vars
   zipkin_uri        = module.zipkin.zipkin_uri
-  object_driver     = module.object.object_driver
   log_driver        = module.fluenbit.log_driver
 }
 
@@ -71,28 +70,30 @@ module "compute_plane" {
   database_env_vars = module.database.database_env_vars
   network           = docker_network.armonik.name
   zipkin_uri        = module.zipkin.zipkin_uri
-  object_driver     = module.object.object_driver
   log_driver        = module.fluenbit.log_driver
 }
 
 module "metrics_exporter" {
-  source          = "./modules/monitoring/metrics"
-  tag             = var.core_tag
-  image           = var.armonik_metrics_image
-  use_local_image = var.use_local_image
-  network         = docker_network.armonik.name
-  mongodb_params  = var.mongodb_params
-  db_driver       = module.database.database_driver # TODO: Replace by database_env_vars
-  log_driver      = module.fluenbit.log_driver
+  source            = "./modules/monitoring/metrics"
+  tag               = var.core_tag
+  image             = var.armonik_metrics_image
+  use_local_image   = var.use_local_image
+  network           = docker_network.armonik.name
+  dev_env           = local.compute_plane.aspnet_core_env
+  log_level         = local.compute_plane.log_level
+  database_env_vars = module.database.database_env_vars
+  log_driver        = module.fluenbit.log_driver
 }
 
 module "partition_metrics_exporter" {
-  source          = "./modules/monitoring/partition_metrics"
-  tag             = var.core_tag
-  image           = var.armonik_partition_metrics_image
-  use_local_image = var.use_local_image
-  network         = docker_network.armonik.name
-  mongodb_params  = var.mongodb_params
-  db_driver       = module.database.database_driver # TODO: Replace by database_env_vars
-  log_driver      = module.fluenbit.log_driver
+  source            = "./modules/monitoring/partition_metrics"
+  tag               = var.core_tag
+  image             = var.armonik_partition_metrics_image
+  use_local_image   = var.use_local_image
+  network           = docker_network.armonik.name
+  dev_env           = local.compute_plane.aspnet_core_env
+  log_level         = local.compute_plane.log_level
+  database_env_vars = module.database.database_env_vars
+  metrics_env_vars  = module.metrics_exporter.metrics_env_vars
+  log_driver        = module.fluenbit.log_driver
 }

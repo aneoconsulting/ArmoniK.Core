@@ -15,24 +15,21 @@ variable "network" {
   type = string
 }
 
+variable "dev_env" {
+  type = string
+}
+
+variable "log_level" {
+  type = string
+}
+
+variable "database_env_vars" {
+  type = map(any)
+}
+
 variable "exposed_port" {
   type    = number
   default = 5002
-}
-
-variable "mongodb_params" {
-  type = object({
-    max_connection_pool_size = string
-    min_polling_delay        = string
-    max_polling_delay        = string
-  })
-}
-
-variable "db_driver" {
-  type = object({
-    name = string,
-    port = number,
-  })
 }
 
 variable "log_driver" {

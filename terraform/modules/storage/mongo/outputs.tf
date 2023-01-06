@@ -1,11 +1,3 @@
-
-output "database_driver" { #TODO: to be removed
-  value = ({
-    name = docker_container.database.name,
-    port = var.exposed_port
-  })
-}
-
 output "database_env_vars" {
   value = ({
     "Components__TableStorage"               = "ArmoniK.Adapters.MongoDB.TableStorage"
