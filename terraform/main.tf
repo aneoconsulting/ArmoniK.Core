@@ -1,7 +1,3 @@
-locals {
-  replicas = toset([for s in range(var.num_replicas) : tostring(s)])
-}
-
 module "fluenbit" {
   source  = "./modules/monitoring/fluentbit"
   image   = var.log_driver
