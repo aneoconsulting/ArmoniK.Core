@@ -73,19 +73,7 @@ resource "docker_container" "polling_agent" {
   }
 
   env = concat(local.env, local.gen_env)
-  /*
-  env = [
-    "Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage",
-    "Redis__EndpointUrl=${var.object_driver.address}",
-    "Pollster__MaxErrorAllowed=${var.polling_agent.max_error_allowed}",
-    "InitWorker__WorkerCheckRetries=${var.polling_agent.worker_check_retries}",
-    "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_retries}",
-    "Serilog__MinimumLevel=${var.log_level}",
-    "Zipkin__Uri=${var.zipkin_uri}",
-    "ASPNETCORE_ENVIRONMENT=${var.dev_env}",
-    "Amqp__PartitionId=${var.queue_storage.partition}${var.replica_counter}"
-  ]
-*/
+
   log_driver = var.log_driver.name
 
   log_opts = {
