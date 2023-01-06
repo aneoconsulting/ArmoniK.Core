@@ -21,30 +21,7 @@ resource "docker_container" "submitter" {
     name = var.network
   }
 
-  env = [
-    "Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage",
-    "MongoDB__Host=${var.db_driver.name}",
-    "MongoDB__Port=${var.db_driver.port}",
-    "MongoDB__DatabaseName=${var.db_driver.name}",
-    "MongoDB__MaxConnectionPoolSize=500",
-    "MongoDB__TableStorage__PollingDelayMin=00:00:01",
-    "MongoDB__TableStorage__PollingDelayMax=00:00:10",
-    "Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage",
-    "Redis__EndpointUrl=${var.object_driver.address}",
-    "Submitter__DefaultPartition=TestPartition0",
-    "Serilog__MinimumLevel=Information",
-    "Zipkin__Uri=${var.zipkin_uri}",
-    "ASPNETCORE_ENVIRONMENT=Development",
-    "Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage",
-    "Amqp__User=admin",
-    "Amqp__Password=admin",
-    "Amqp__Host=queue",
-    "Amqp__Port=5672",
-    "Amqp__Scheme=AMQP",
-    "Amqp__MaxPriority=10",
-    "Amqp__MaxRetries=10",
-    "Amqp__LinkCredit=2"
-  ]
+  env = concat(local.env, local.gen_env)
 
   log_driver = var.log_driver.name
 

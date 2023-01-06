@@ -3,9 +3,60 @@ variable "core_tag" {
   default = "test"
 }
 
-variable "armonik_submitter_image" {
-  type    = string
-  default = "dockerhubaneo/armonik_control"
+variable "mongodb_params" {
+  type = object({
+    max_connection_pool_size = string
+    min_polling_delay        = string
+    max_polling_delay        = string
+  })
+}
+
+variable "submitter" {
+  type = object({
+    name            = string,
+    image           = string,
+    port            = number,
+    log_level       = string,
+    aspnet_core_env = string,
+    object_storage  = string,
+  })
+}
+
+variable "queue_storage" {
+  type = object({
+    user         = string,
+    password     = string,
+    host         = string,
+    port         = number,
+    max_priority = number,
+    max_retries  = number,
+    link_credit  = number,
+    partition    = string
+  })
+}
+
+variable "compute_plane" {
+  type = object({
+    log_level       = string,
+    aspnet_core_env = string,
+    object_storage  = string,
+
+    worker = object({
+      name                     = string,
+      image                    = string,
+      port                     = number,
+      serilog_application_name = string
+    })
+
+    polling_agent = object({
+      name                 = string,
+      image                = string,
+      port                 = number,
+      max_error_allowed    = number,
+      worker_check_retries = number,
+      worker_check_delay   = string,
+    })
+  })
 }
 
 variable "armonik_metrics_image" {
@@ -16,16 +67,6 @@ variable "armonik_metrics_image" {
 variable "armonik_partition_metrics_image" {
   type    = string
   default = "dockerhubaneo/armonik_control_partition_metrics"
-}
-
-variable "armonik_pollingagent_image" {
-  type    = string
-  default = "dockerhubaneo/armonik_pollingagent"
-}
-
-variable "armonik_worker_image" {
-  type    = string
-  default = "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 
 variable "use_local_image" {

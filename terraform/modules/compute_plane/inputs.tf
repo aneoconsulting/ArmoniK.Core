@@ -2,24 +2,48 @@ variable "core_tag" {
   type = string
 }
 
-variable "polling_agent_container_name" {
+variable "dev_env" {
   type = string
 }
 
-variable "worker_container_name" {
+variable "log_level" {
   type = string
+}
+
+variable "polling_agent" {
+  type = object({
+    name                 = string,
+    image                = string,
+    port                 = number,
+    max_error_allowed    = number,
+    worker_check_retries = number,
+    worker_check_delay   = string,
+  })
+}
+
+variable "worker" {
+  type = object({
+    name                     = string,
+    image                    = string,
+    port                     = number,
+    serilog_application_name = string
+  })
+}
+
+variable "queue_env_vars" {
+  type = map(any)
+}
+
+variable "database_env_vars" {
+  type = map(any)
+}
+
+variable "object_env_vars" {
+  type = map(any)
 }
 
 variable "replica_counter" {
   type = number
-}
-
-variable "polling_agent_image" {
-  type = string
-}
-
-variable "worker_image" {
-  type = string
 }
 
 variable "use_local_image" {
@@ -33,13 +57,6 @@ variable "network" {
 
 variable "zipkin_uri" {
   type = string
-}
-
-variable "db_driver" {
-  type = object({
-    name    = string,
-    port    = number,
-  })
 }
 
 variable "object_driver" {

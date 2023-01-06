@@ -21,9 +21,10 @@ module "zipkin" {
 }
 
 module "database" {
-  source  = "./modules/storage/mongo"
-  image   = var.database_image
-  network = docker_network.armonik.name
+  source         = "./modules/storage/mongo"
+  image          = var.database_image
+  network        = docker_network.armonik.name
+  mongodb_params = var.mongodb_params
 }
 
 module "object" {
@@ -33,37 +34,45 @@ module "object" {
 }
 
 module "queue" {
-  source  = "./modules/queue/activemq"
-  image   = var.queue_image
-  network = docker_network.armonik.name
+  source        = "./modules/queue/activemq"
+  queue_storage = var.queue_storage
+  image         = var.queue_image
+  network       = docker_network.armonik.name
 }
 
 module "submitter" {
-  source         = "./modules/submitter"
-  container_name = "armonik.control.submitter"
-  core_tag       = var.core_tag
-  docker_image   = var.armonik_submitter_image
-  network        = docker_network.armonik.name
-  zipkin_uri     = module.zipkin.zipkin_uri
-  db_driver      = module.database.database_driver
-  object_driver  = module.object.object_driver
-  log_driver     = module.fluenbit.log_driver
+  source            = "./modules/submitter"
+  container_name    = local.submitter.name
+  core_tag          = local.submitter.tag
+  docker_image      = local.submitter.image
+  log_level         = local.submitter.log_level
+  dev_env           = local.submitter.aspnet_core_env
+  object_storage    = local.submitter.object_storage
+  network           = docker_network.armonik.name
+  database_env_vars = module.database.database_env_vars
+  queue_env_vars    = module.queue.queue_env_vars
+  object_env_vars   = module.object.object_env_vars
+  zipkin_uri        = module.zipkin.zipkin_uri
+  object_driver     = module.object.object_driver
+  log_driver        = module.fluenbit.log_driver
 }
 
 module "compute_plane" {
-  source                       = "./modules/compute_plane"
-  for_each                     = local.replicas
-  polling_agent_container_name = "armonik.compute.pollingagent${each.value}"
-  worker_container_name        = "armonik.compute.worker${each.value}"
-  replica_counter              = each.key
-  core_tag                     = var.core_tag
-  polling_agent_image          = var.armonik_pollingagent_image
-  worker_image                 = var.armonik_worker_image
-  network                      = docker_network.armonik.name
-  zipkin_uri                   = module.zipkin.zipkin_uri
-  db_driver                    = module.database.database_driver
-  object_driver                = module.object.object_driver
-  log_driver                   = module.fluenbit.log_driver
+  source            = "./modules/compute_plane"
+  for_each          = local.replicas
+  replica_counter   = each.key
+  core_tag          = local.compute_plane.tag
+  dev_env           = local.compute_plane.aspnet_core_env
+  log_level         = local.compute_plane.log_level
+  polling_agent     = local.compute_plane.polling_agent
+  worker            = local.compute_plane.worker
+  queue_env_vars    = module.queue.queue_env_vars
+  object_env_vars   = module.object.object_env_vars
+  database_env_vars = module.database.database_env_vars
+  network           = docker_network.armonik.name
+  zipkin_uri        = module.zipkin.zipkin_uri
+  object_driver     = module.object.object_driver
+  log_driver        = module.fluenbit.log_driver
 }
 
 module "metrics_exporter" {
@@ -72,7 +81,8 @@ module "metrics_exporter" {
   image           = var.armonik_metrics_image
   use_local_image = var.use_local_image
   network         = docker_network.armonik.name
-  db_driver       = module.database.database_driver
+  mongodb_params  = var.mongodb_params
+  db_driver       = module.database.database_driver # TODO: Replace by database_env_vars
   log_driver      = module.fluenbit.log_driver
 }
 
@@ -82,6 +92,7 @@ module "partition_metrics_exporter" {
   image           = var.armonik_partition_metrics_image
   use_local_image = var.use_local_image
   network         = docker_network.armonik.name
-  db_driver       = module.database.database_driver
+  mongodb_params  = var.mongodb_params
+  db_driver       = module.database.database_driver # TODO: Replace by database_env_vars
   log_driver      = module.fluenbit.log_driver
 }

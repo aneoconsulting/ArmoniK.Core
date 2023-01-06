@@ -6,8 +6,16 @@ variable "network" {
   type = string
 }
 
+variable "mongodb_params" {
+  type = object({
+    max_connection_pool_size = string
+    min_polling_delay        = string
+    max_polling_delay        = string
+  })
+}
+
 variable "db_name" {
-  type = string
+  type    = string
   default = "database"
 }
 

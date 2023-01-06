@@ -20,10 +20,18 @@ variable "exposed_port" {
   default = 5002
 }
 
+variable "mongodb_params" {
+  type = object({
+    max_connection_pool_size = string
+    min_polling_delay        = string
+    max_polling_delay        = string
+  })
+}
+
 variable "db_driver" {
   type = object({
-    name    = string,
-    port    = number,
+    name = string,
+    port = number,
   })
 }
 

@@ -23,11 +23,28 @@ variable "zipkin_uri" {
   type = string
 }
 
-variable "db_driver" {
-  type = object({
-    name    = string,
-    port    = number,
-  })
+variable "log_level" {
+  type = string
+}
+
+variable "dev_env" {
+  type = string
+}
+
+variable "queue_env_vars" {
+  type = map(any)
+}
+
+variable "database_env_vars" {
+  type = map(any)
+}
+
+variable "object_env_vars" {
+  type = map(any)
+}
+
+variable "object_storage" {
+  type = string
 }
 
 variable "object_driver" {
