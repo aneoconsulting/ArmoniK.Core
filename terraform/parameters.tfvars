@@ -11,6 +11,11 @@ mongodb_params = {
 }
 
 queue_storage = {
+  protocol = "amqp1_0"
+  broker = {
+    name  = "activemq"
+    image = "symptoma/activemq:5.16.3"
+  }
   host         = "queue"
   link_credit  = 2
   max_priority = 10
@@ -26,14 +31,12 @@ submitter = {
   image           = "dockerhubaneo/armonik_control"
   log_level       = "Information"
   name            = "armonik.control.submitter"
-  object_storage  = "ArmoniK.Adapters.Redis.ObjectStorage"
   port            = 5001
 }
 
 compute_plane = {
   aspnet_core_env = "Development"
   log_level       = "Information"
-  object_storage  = "ArmoniK.Adapters.Redis.ObjectStorage"
   polling_agent = {
     image                = "dockerhubaneo/armonik_pollingagent"
     max_error_allowed    = -1
@@ -53,3 +56,13 @@ compute_plane = {
 armonik_metrics_image = "dockerhubaneo/armonik_control_metrics"
 
 armonik_partition_metrics_image = "dockerhubaneo/armonik_control_partition_metrics"
+
+log_driver_image = "fluent/fluent-bit:latest"
+
+seq_image = "datalust/seq:latest"
+
+zipkin_image = "openzipkin/zipkin:latest"
+
+database_image = "mongo"
+
+object_image = "redis:bullseye"

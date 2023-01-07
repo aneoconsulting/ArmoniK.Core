@@ -43,10 +43,6 @@ variable "object_env_vars" {
   type = map(any)
 }
 
-variable "object_storage" {
-  type = string
-}
-
 variable "log_driver" {
   type = object({
     name    = string,

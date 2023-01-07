@@ -3,6 +3,16 @@ variable "core_tag" {
   default = "test"
 }
 
+variable "use_local_image" {
+  type    = bool
+  default = false
+}
+
+variable "num_replicas" {
+  type    = number
+  default = 3
+}
+
 variable "mongodb_params" {
   type = object({
     max_connection_pool_size = string
@@ -18,12 +28,16 @@ variable "submitter" {
     port            = number,
     log_level       = string,
     aspnet_core_env = string,
-    object_storage  = string,
   })
 }
 
 variable "queue_storage" {
   type = object({
+    protocol = string,
+    broker = object({
+      name  = string
+      image = string
+    })
     user         = string,
     password     = string,
     host         = string,
@@ -33,13 +47,21 @@ variable "queue_storage" {
     link_credit  = number,
     partition    = string
   })
+  description = "Parameters to define the broker, protocol and queue settings"
+  validation {
+    condition     = can(regex("^(amqp1_0|amqp0_9_1)$", var.queue_storage.protocol))
+    error_message = "Protocol must be amqp1_0|amqp0_9_1"
+  }
+  validation {
+    condition     = can(regex("^(activemq|rabbitmq)$", var.queue_storage.broker.name))
+    error_message = "Must be activemq or rabbitmq"
+  }
 }
 
 variable "compute_plane" {
   type = object({
     log_level       = string,
     aspnet_core_env = string,
-    object_storage  = string,
 
     worker = object({
       name                     = string,
@@ -60,52 +82,29 @@ variable "compute_plane" {
 }
 
 variable "armonik_metrics_image" {
-  type    = string
-  default = "dockerhubaneo/armonik_control_metrics"
+  type = string
 }
 
 variable "armonik_partition_metrics_image" {
-  type    = string
-  default = "dockerhubaneo/armonik_control_partition_metrics"
+  type = string
 }
 
-variable "use_local_image" {
-  type    = bool
-  default = false
-}
-
-variable "num_replicas" {
-  type    = number
-  default = 3
-}
-
-variable "log_driver" {
-  type    = string
-  default = "fluent/fluent-bit:latest"
+variable "log_driver_image" {
+  type = string
 }
 
 variable "seq_image" {
-  type    = string
-  default = "datalust/seq:latest"
+  type = string
 }
 
 variable "zipkin_image" {
-  type    = string
-  default = "openzipkin/zipkin:latest"
+  type = string
 }
 
 variable "database_image" {
-  type    = string
-  default = "mongo"
+  type = string
 }
 
 variable "object_image" {
-  type    = string
-  default = "redis:bullseye"
+  type = string
 }
-
-variable "queue_image" {
-  type    = string
-  default = "symptoma/activemq:5.16.3"
-}
-

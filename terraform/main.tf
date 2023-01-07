@@ -1,6 +1,6 @@
 module "fluenbit" {
   source  = "./modules/monitoring/fluentbit"
-  image   = var.log_driver
+  image   = var.log_driver_image
   network = docker_network.armonik.name
 }
 
@@ -29,12 +29,22 @@ module "object" {
   network = docker_network.armonik.name
 }
 
-module "queue" {
-  source        = "./modules/queue/activemq"
+module "queue_rabbitmq" {
+  source        = "./modules/queue/rabbitmq"
+  count         = var.queue_storage.broker.name == "rabbitmq" ? 1 : 0
   queue_storage = var.queue_storage
-  image         = var.queue_image
+  image         = var.queue_storage.broker.image
   network       = docker_network.armonik.name
 }
+
+module "queue_activemq" {
+  source        = "./modules/queue/activemq"
+  count         = var.queue_storage.broker.name == "activemq" ? 1 : 0
+  queue_storage = var.queue_storage
+  image         = var.queue_storage.broker.image
+  network       = docker_network.armonik.name
+}
+
 
 module "submitter" {
   source            = "./modules/submitter"
@@ -43,10 +53,9 @@ module "submitter" {
   docker_image      = local.submitter.image
   log_level         = local.submitter.log_level
   dev_env           = local.submitter.aspnet_core_env
-  object_storage    = local.submitter.object_storage
   network           = docker_network.armonik.name
   database_env_vars = module.database.database_env_vars
-  queue_env_vars    = module.queue.queue_env_vars
+  queue_env_vars    = local.queue_env_vars
   object_env_vars   = module.object.object_env_vars
   zipkin_uri        = module.zipkin.zipkin_uri
   log_driver        = module.fluenbit.log_driver
@@ -61,7 +70,7 @@ module "compute_plane" {
   log_level         = local.compute_plane.log_level
   polling_agent     = local.compute_plane.polling_agent
   worker            = local.compute_plane.worker
-  queue_env_vars    = module.queue.queue_env_vars
+  queue_env_vars    = local.queue_env_vars
   object_env_vars   = module.object.object_env_vars
   database_env_vars = module.database.database_env_vars
   network           = docker_network.armonik.name
