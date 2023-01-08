@@ -26,6 +26,11 @@ queue_storage = {
   user         = "admin"
 }
 
+object_storage = {
+  name  = "local"
+  image = ""
+}
+
 submitter = {
   aspnet_core_env = "Development"
   image           = "dockerhubaneo/armonik_control"
@@ -64,5 +69,3 @@ seq_image = "datalust/seq:latest"
 zipkin_image = "openzipkin/zipkin:latest"
 
 database_image = "mongo"
-
-object_image = "redis:bullseye"

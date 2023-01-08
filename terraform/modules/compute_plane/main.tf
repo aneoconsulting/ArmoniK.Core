@@ -2,6 +2,10 @@ resource "docker_volume" "socket_vol" {
   name = "socket_vol${var.replica_counter}"
 }
 
+module "local_storage" {
+  source = "../storage/object/local"
+}
+
 resource "docker_image" "worker" {
   count        = var.use_local_image ? 0 : 1
   name         = "${var.worker.image}:${var.core_tag}"
@@ -89,6 +93,12 @@ resource "docker_container" "polling_agent" {
     type   = "volume"
     target = "/cache"
     source = docker_volume.socket_vol.name
+  }
+
+  mounts {
+    type   = "volume"
+    target = "/local_storage"
+    source = module.local_storage.object_volume
   }
 
   healthcheck {

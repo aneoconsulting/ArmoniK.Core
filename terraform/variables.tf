@@ -31,6 +31,17 @@ variable "submitter" {
   })
 }
 
+variable "object_storage" {
+  type = object({
+    name  = string
+    image = string
+  })
+  validation {
+    condition     = can(regex("^(redis|local)$", var.object_storage.name))
+    error_message = "Must be redis or local"
+  }
+}
+
 variable "queue_storage" {
   type = object({
     protocol = string,
@@ -102,9 +113,5 @@ variable "zipkin_image" {
 }
 
 variable "database_image" {
-  type = string
-}
-
-variable "object_image" {
   type = string
 }

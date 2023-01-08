@@ -23,10 +23,16 @@ module "database" {
   mongodb_params = var.mongodb_params
 }
 
-module "object" {
+module "object_redis" {
   source  = "./modules/storage/object/redis"
-  image   = var.object_image
+  count   = var.object_storage.name == "redis" ? 1 : 0
+  image   = var.object_storage.image
   network = docker_network.armonik.name
+}
+
+module "object_local" {
+  source = "./modules/storage/object/local"
+  count  = var.object_storage.name == "local" ? 1 : 0
 }
 
 module "queue_rabbitmq" {
@@ -56,7 +62,7 @@ module "submitter" {
   network           = docker_network.armonik.name
   database_env_vars = module.database.database_env_vars
   queue_env_vars    = local.queue_env_vars
-  object_env_vars   = module.object.object_env_vars
+  object_env_vars   = local.object_env_vars
   zipkin_uri        = module.zipkin.zipkin_uri
   log_driver        = module.fluenbit.log_driver
 }
@@ -71,7 +77,7 @@ module "compute_plane" {
   polling_agent     = local.compute_plane.polling_agent
   worker            = local.compute_plane.worker
   queue_env_vars    = local.queue_env_vars
-  object_env_vars   = module.object.object_env_vars
+  object_env_vars   = local.object_env_vars
   database_env_vars = module.database.database_env_vars
   network           = docker_network.armonik.name
   zipkin_uri        = module.zipkin.zipkin_uri
