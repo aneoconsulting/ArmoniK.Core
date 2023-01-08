@@ -7,8 +7,6 @@ resource "docker_container" "queue" {
   name  = "queue"
   image = docker_image.queue.image_id
 
-  command = ["sh -c echo [${var.plugins.management}, ${var.plugins.management_agent}, ${var.plugins.protocol1_0}]. > /etc/rabbitmq/enabled_plugins && exec docker-entrypoint.sh rabbitmq-server"]
-
   networks_advanced {
     name = var.network
   }

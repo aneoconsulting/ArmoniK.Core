@@ -17,20 +17,20 @@ module "zipkin" {
 }
 
 module "database" {
-  source         = "./modules/storage/mongo"
+  source         = "./modules/storage/database/mongo"
   image          = var.database_image
   network        = docker_network.armonik.name
   mongodb_params = var.mongodb_params
 }
 
 module "object" {
-  source  = "./modules/storage/redis"
+  source  = "./modules/storage/object/redis"
   image   = var.object_image
   network = docker_network.armonik.name
 }
 
 module "queue_rabbitmq" {
-  source        = "./modules/queue/rabbitmq"
+  source        = "./modules/storage/queue/rabbitmq"
   count         = var.queue_storage.broker.name == "rabbitmq" ? 1 : 0
   queue_storage = var.queue_storage
   image         = var.queue_storage.broker.image
@@ -38,7 +38,7 @@ module "queue_rabbitmq" {
 }
 
 module "queue_activemq" {
-  source        = "./modules/queue/activemq"
+  source        = "./modules/storage/queue/activemq"
   count         = var.queue_storage.broker.name == "activemq" ? 1 : 0
   queue_storage = var.queue_storage
   image         = var.queue_storage.broker.image
