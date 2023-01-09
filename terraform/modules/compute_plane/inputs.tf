@@ -31,15 +31,15 @@ variable "worker" {
 }
 
 variable "queue_env_vars" {
-  type = map(any)
+  type = map(string)
 }
 
 variable "database_env_vars" {
-  type = map(any)
+  type = map(string)
 }
 
 variable "object_env_vars" {
-  type = map(any)
+  type = map(string)
 }
 
 variable "replica_counter" {

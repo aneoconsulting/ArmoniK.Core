@@ -24,7 +24,7 @@ variable "log_level" {
 }
 
 variable "database_env_vars" {
-  type = map(any)
+  type = map(string)
 }
 
 variable "exposed_port" {
