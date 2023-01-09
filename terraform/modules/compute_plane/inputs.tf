@@ -18,7 +18,8 @@ variable "worker" {
     name                     = string,
     image                    = string,
     port                     = number,
-    serilog_application_name = string
+    serilog_application_name = string,
+    docker_file_path         = string
   })
 }
 

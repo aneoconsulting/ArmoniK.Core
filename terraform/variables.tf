@@ -80,6 +80,7 @@ variable "compute_plane" {
       name                     = string,
       image                    = string,
       port                     = number,
+      docker_file_path         = string,
       serilog_application_name = string
     })
 

@@ -56,6 +56,7 @@ compute_plane = {
     name                     = "armonik.compute.worker"
     port                     = 1080
     serilog_application_name = "ArmoniK.Compute.Worker"
+    docker_file_path         = "../Tests/HtcMock/Server/src"
   }
 }
 
