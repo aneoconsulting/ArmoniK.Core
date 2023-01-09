@@ -192,11 +192,12 @@ public static class ServiceCollectionExt
     }
 
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-    settings.AllowInsecureTls      = mongoOptions.AllowInsecureTls;
-    settings.UseTls                = mongoOptions.Tls;
-    settings.DirectConnection      = mongoOptions.DirectConnection;
-    settings.Scheme                = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
+    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+    settings.UseTls                 = mongoOptions.Tls;
+    settings.DirectConnection       = mongoOptions.DirectConnection;
+    settings.Scheme                 = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+    settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
 
     services.AddTransient<IMongoClient>(_ =>
                                         {
