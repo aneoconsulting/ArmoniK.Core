@@ -26,7 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-using ArmoniK.Api.gRPC.V1.Graphs;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 
@@ -51,11 +51,11 @@ public class WatchToGrpcTests
                                               NullLogger.Instance);
 
     // Simple* that are used to create this instance do not check the session in their implementation
-    var res = watchToGrpcInstance.GetGraph("",
-                                           cts.Token)
+    var res = watchToGrpcInstance.GetEvents("",
+                                            cts.Token)
                                  .GetAsyncEnumerator(cts.Token);
 
-    var list = new List<GraphContentResponse>();
+    var list = new List<EventContentResponse>();
 
     Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                    {

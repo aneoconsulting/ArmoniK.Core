@@ -36,7 +36,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Auth;
-using ArmoniK.Api.gRPC.V1.Graphs;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -46,7 +46,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Storage.Graphs;
+using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
@@ -137,7 +137,7 @@ public class AuthenticationIntegrationTest
   private static readonly CancelTasksRequest       CancelTasksRequest;
   private static readonly ListResultsRequest       ListResultsRequest;
   private static readonly GetCurrentUserRequest    GetCurrentUserRequest;
-  private static readonly GraphSubscriptionRequest GraphSubscriptionRequest;
+  private static readonly EventSubscriptionRequest EventSubscriptionRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -330,7 +330,7 @@ public class AuthenticationIntegrationTest
                          };
     GetCurrentUserRequest = new GetCurrentUserRequest();
 
-    GraphSubscriptionRequest = new GraphSubscriptionRequest
+    EventSubscriptionRequest = new EventSubscriptionRequest
                                {
                                  SessionId = SessionId,
                                };
@@ -734,8 +734,8 @@ public class AuthenticationIntegrationTest
                                                                                                                           typeof(GrpcApplicationsService)
                                                                                                                         },
                                                                                                                         {
-                                                                                                                          typeof(Graphs.GraphsClient),
-                                                                                                                          typeof(GrpcGraphsService)
+                                                                                                                          typeof(Events.EventsClient),
+                                                                                                                          typeof(GrpcEventsService)
                                                                                                                         },
                                                                                                                       });
 
@@ -807,11 +807,11 @@ public class AuthenticationIntegrationTest
     return GetCases(methodsAndObjects);
   }
 
-  public static IEnumerable GetGetGraphsStreamTestCases()
+  public static IEnumerable GetGetEventsStreamTestCases()
   {
     var methodsAndObjects = new List<(Type, string, object?)>
                             {
-                              (typeof(Graphs.GraphsClient), nameof(Graphs.GraphsClient.GetGraphs), null),
+                              (typeof(Events.EventsClient), nameof(Events.EventsClient.GetEvents), null),
                             };
 
     return GetCases(methodsAndObjects);
@@ -1283,8 +1283,8 @@ public class AuthenticationIntegrationTest
                  .ConfigureAwait(false);
   }
 
-  [TestCaseSource(nameof(GetGetGraphsStreamTestCases))]
-  public async Task GetGraphsStreamAuthShouldMatch(Type              clientType,
+  [TestCaseSource(nameof(GetGetEventsStreamTestCases))]
+  public async Task GetEventsStreamAuthShouldMatch(Type              clientType,
                                                    string            method,
                                                    IdentityIndex     initialUserIndex,
                                                    ImpersonationType impersonationType,
@@ -1303,18 +1303,18 @@ public class AuthenticationIntegrationTest
                     out var expectedError);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
-    var client      = new Graphs.GraphsClient(channel);
+    var client      = new Events.EventsClient(channel);
     var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[clientType]);
     if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
                                                                                                     .Permissions.Any(p => p.Service == serviceName && p.Name == method)))
     {
-      Assert.DoesNotThrowAsync(() => client.GetGraphs(GraphSubscriptionRequest,
+      Assert.DoesNotThrowAsync(() => client.GetEvents(EventSubscriptionRequest,
                                                       (Metadata)args[1])
                                            .ResponseStream.MoveNext());
     }
     else
     {
-      var exception = Assert.CatchAsync(() => client.GetGraphs(GraphSubscriptionRequest,
+      var exception = Assert.CatchAsync(() => client.GetEvents(EventSubscriptionRequest,
                                                                (Metadata)args[1])
                                                     .ResponseStream.MoveNext());
       Assert.IsNotNull(exception);

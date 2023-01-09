@@ -76,8 +76,8 @@ public class BenchOptions
   public string Partition { get; set; } = string.Empty;
 
   /// <summary>
-  ///   Print the graph updates
+  ///   Print the event updates
   ///   default : false
   /// </summary>
-  public bool ShowGraph { get; set; }
+  public bool ShowEvents { get; set; }
 }

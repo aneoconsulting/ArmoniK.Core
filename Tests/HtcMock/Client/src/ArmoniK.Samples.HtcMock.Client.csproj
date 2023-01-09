@@ -25,7 +25,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="ArmoniK.Api.Client" Version="3.2.2-jggraphapi.5.b57df5c" />
+	  <PackageReference Include="ArmoniK.Api.Client" Version="3.2.2-jggraphapi.7.053e151" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />

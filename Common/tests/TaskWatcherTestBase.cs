@@ -29,7 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Storage.Graphs;
+using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

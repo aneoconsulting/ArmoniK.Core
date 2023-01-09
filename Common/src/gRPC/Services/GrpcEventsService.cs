@@ -25,10 +25,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Graphs;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Storage.Graphs;
+using ArmoniK.Core.Common.Storage.Events;
 
 using Grpc.Core;
 
@@ -36,19 +36,19 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-public class GrpcGraphsService : Graphs.GraphsBase
+public class GrpcEventsService : Events.EventsBase
 {
-  private readonly ILogger<GrpcApplicationsService> logger_;
-  private readonly IResultTable                     resultTable_;
-  private readonly IResultWatcher                   resultWatcher_;
-  private readonly ITaskTable                       taskTable_;
-  private readonly ITaskWatcher                     taskWatcher_;
+  private readonly ILogger<GrpcEventsService> logger_;
+  private readonly IResultTable               resultTable_;
+  private readonly IResultWatcher             resultWatcher_;
+  private readonly ITaskTable                 taskTable_;
+  private readonly ITaskWatcher               taskWatcher_;
 
-  public GrpcGraphsService(ITaskTable                       taskTable,
-                           ITaskWatcher                     taskWatcher,
-                           IResultTable                     resultTable,
-                           IResultWatcher                   resultWatcher,
-                           ILogger<GrpcApplicationsService> logger)
+  public GrpcEventsService(ITaskTable                 taskTable,
+                           ITaskWatcher               taskWatcher,
+                           IResultTable               resultTable,
+                           IResultWatcher             resultWatcher,
+                           ILogger<GrpcEventsService> logger)
   {
     logger_        = logger;
     taskTable_     = taskTable;
@@ -57,10 +57,10 @@ public class GrpcGraphsService : Graphs.GraphsBase
     resultWatcher_ = resultWatcher;
   }
 
-  [RequiresPermission(typeof(GrpcGraphsService),
-                      nameof(GetGraphs))]
-  public override async Task GetGraphs(GraphSubscriptionRequest                  request,
-                                       IServerStreamWriter<GraphContentResponse> responseStream,
+  [RequiresPermission(typeof(GrpcEventsService),
+                      nameof(GetEvents))]
+  public override async Task GetEvents(EventSubscriptionRequest                  request,
+                                       IServerStreamWriter<EventContentResponse> responseStream,
                                        ServerCallContext                         context)
   {
     var wtg = new WatchToGrpc(taskTable_,
@@ -69,8 +69,8 @@ public class GrpcGraphsService : Graphs.GraphsBase
                               resultWatcher_,
                               logger_);
 
-    var enumerator = wtg.GetGraph(request.SessionId,
-                                  context.CancellationToken)
+    var enumerator = wtg.GetEvents(request.SessionId,
+                                   context.CancellationToken)
                         .GetAsyncEnumerator();
 
     while (await enumerator.MoveNextAsync(context.CancellationToken)

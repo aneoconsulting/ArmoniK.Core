@@ -27,9 +27,9 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Graphs;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Storage.Graphs;
+using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Logging;
 
@@ -57,10 +57,10 @@ public class WatchToGrpc
     logger_        = logger;
   }
 
-  public IAsyncEnumerable<GraphContentResponse> GetGraph(string            sessionId,
-                                                         CancellationToken cancellationToken)
+  public IAsyncEnumerable<EventContentResponse> GetEvents(string            sessionId,
+                                                          CancellationToken cancellationToken)
   {
-    var channel = Channel.CreateUnbounded<GraphContentResponse>();
+    var channel = Channel.CreateUnbounded<EventContentResponse>();
 
     Task.Factory.StartNew(async () =>
                           {
@@ -80,9 +80,9 @@ public class WatchToGrpc
                               while (enumerator.MoveNext())
                               {
                                 var cur = enumerator.Current;
-                                await channel.Writer.WriteAsync(new GraphContentResponse
+                                await channel.Writer.WriteAsync(new EventContentResponse
                                                                 {
-                                                                  NewTask = new GraphContentResponse.Types.NewTask
+                                                                  NewTask = new EventContentResponse.Types.NewTask
                                                                             {
                                                                               DataDependencies =
                                                                               {
@@ -132,9 +132,9 @@ public class WatchToGrpc
                               while (enumerator.MoveNext())
                               {
                                 var cur = enumerator.Current;
-                                await channel.Writer.WriteAsync(new GraphContentResponse
+                                await channel.Writer.WriteAsync(new EventContentResponse
                                                                 {
-                                                                  NewResult = new GraphContentResponse.Types.NewResult
+                                                                  NewResult = new EventContentResponse.Types.NewResult
                                                                               {
                                                                                 Status   = cur.Status,
                                                                                 OwnerId  = cur.OwnerTaskId,
@@ -162,9 +162,9 @@ public class WatchToGrpc
                             while (newTasks.MoveNext(cancellationToken))
                             {
                               var cur = newTasks.Current;
-                              await channel.Writer.WriteAsync(new GraphContentResponse
+                              await channel.Writer.WriteAsync(new EventContentResponse
                                                               {
-                                                                NewTask = new GraphContentResponse.Types.NewTask
+                                                                NewTask = new EventContentResponse.Types.NewTask
                                                                           {
                                                                             DataDependencies =
                                                                             {
@@ -200,9 +200,9 @@ public class WatchToGrpc
                             while (newTasks.MoveNext(cancellationToken))
                             {
                               var cur = newTasks.Current;
-                              await channel.Writer.WriteAsync(new GraphContentResponse
+                              await channel.Writer.WriteAsync(new EventContentResponse
                                                               {
-                                                                TaskStatusUpdate = new GraphContentResponse.Types.TaskStatusUpdate
+                                                                TaskStatusUpdate = new EventContentResponse.Types.TaskStatusUpdate
                                                                                    {
                                                                                      Status = cur.Status,
                                                                                      TaskId = cur.TaskId,
@@ -224,9 +224,9 @@ public class WatchToGrpc
                             while (newResults.MoveNext(cancellationToken))
                             {
                               var cur = newResults.Current;
-                              await channel.Writer.WriteAsync(new GraphContentResponse
+                              await channel.Writer.WriteAsync(new EventContentResponse
                                                               {
-                                                                NewResult = new GraphContentResponse.Types.NewResult
+                                                                NewResult = new EventContentResponse.Types.NewResult
                                                                             {
                                                                               Status   = cur.Status,
                                                                               OwnerId  = cur.OwnerId,
@@ -249,9 +249,9 @@ public class WatchToGrpc
                             while (newResults.MoveNext(cancellationToken))
                             {
                               var cur = newResults.Current;
-                              await channel.Writer.WriteAsync(new GraphContentResponse
+                              await channel.Writer.WriteAsync(new EventContentResponse
                                                               {
-                                                                ResultStatusUpdate = new GraphContentResponse.Types.ResultStatusUpdate
+                                                                ResultStatusUpdate = new EventContentResponse.Types.ResultStatusUpdate
                                                                                      {
                                                                                        ResultId = cur.ResultId,
                                                                                        Status   = cur.Status,
@@ -273,9 +273,9 @@ public class WatchToGrpc
                             while (newResults.MoveNext(cancellationToken))
                             {
                               var cur = newResults.Current;
-                              await channel.Writer.WriteAsync(new GraphContentResponse
+                              await channel.Writer.WriteAsync(new EventContentResponse
                                                               {
-                                                                ResultOwnerUpdate = new GraphContentResponse.Types.ResultOwnerUpdate
+                                                                ResultOwnerUpdate = new EventContentResponse.Types.ResultOwnerUpdate
                                                                                     {
                                                                                       ResultId = cur.ResultId,
                                                                                       Current  = cur.NewOwner,

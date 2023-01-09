@@ -22,9 +22,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Storage.Graphs;
+using System.Threading;
+using System.Threading.Tasks;
 
-public record ResultOwnerUpdate(string SessionId,
-                                string ResultId,
-                                string PreviousOwnerId,
-                                string NewOwner);
+namespace ArmoniK.Core.Common.Storage.Events;
+
+public interface IResultWatcher : IInitializable
+{
+  Task<IWatchEnumerator<NewResult>> GetNewResults(string            sessionId,
+                                                  CancellationToken cancellationToken = default);
+
+  Task<IWatchEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
+                                                                  CancellationToken cancellationToken = default);
+
+  Task<IWatchEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
+                                                                    CancellationToken cancellationToken = default);
+}

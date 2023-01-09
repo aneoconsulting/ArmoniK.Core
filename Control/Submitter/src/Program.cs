@@ -175,7 +175,7 @@ public static class Program
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcAuthService>()
          .EnableGrpcWeb();
-      app.MapGrpcService<GrpcGraphsService>()
+      app.MapGrpcService<GrpcEventsService>()
          .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",

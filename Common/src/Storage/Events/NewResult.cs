@@ -24,7 +24,7 @@
 
 using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Common.Storage.Graphs;
+namespace ArmoniK.Core.Common.Storage.Events;
 
 public record NewResult(string       SessionId,
                         string       ResultId,

@@ -25,7 +25,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage.Graphs;
+namespace ArmoniK.Core.Common.Storage.Events;
 
 public interface ITaskWatcher : IInitializable
 {

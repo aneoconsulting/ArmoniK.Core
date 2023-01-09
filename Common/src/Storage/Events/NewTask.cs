@@ -8,33 +8,32 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-//   D. Brasseur       <dbrasseur@aneo.fr>
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage.Graphs;
+using System.Collections.Generic;
 
-public interface IResultWatcher : IInitializable
-{
-  Task<IWatchEnumerator<NewResult>> GetNewResults(string            sessionId,
-                                                  CancellationToken cancellationToken = default);
+using ArmoniK.Api.gRPC.V1;
 
-  Task<IWatchEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
-                                                                  CancellationToken cancellationToken = default);
+namespace ArmoniK.Core.Common.Storage.Events;
 
-  Task<IWatchEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
-                                                                    CancellationToken cancellationToken = default);
-}
+public record NewTask(string              SessionId,
+                      string              TaskId,
+                      string              OriginTaskId,
+                      string              PayloadId,
+                      IEnumerable<string> ExpectedOutputKeys,
+                      IEnumerable<string> DataDependencies,
+                      IEnumerable<string> RetryOfIds,
+                      TaskStatus          Status);

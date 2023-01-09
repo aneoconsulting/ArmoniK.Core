@@ -32,7 +32,7 @@ using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Graphs;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Samples.Bench.Client.Options;
 
@@ -119,23 +119,23 @@ internal static class Program
                           createSessionReply.SessionId);
 
     var cts       = new CancellationTokenSource();
-    var graphTask = Task.CompletedTask;
-    if (benchOptions.ShowGraph)
+    var eventTask = Task.CompletedTask;
+    if (benchOptions.ShowEvents)
     {
-      graphTask = Task.Factory.StartNew(async () =>
+      eventTask = Task.Factory.StartNew(async () =>
                                         {
-                                          var graphsClient = new Graphs.GraphsClient(channel);
+                                          var eventsClient = new Events.EventsClient(channel);
 
-                                          using var graphCall = graphsClient.GetGraphs(new GraphSubscriptionRequest
-                                                                                       {
-                                                                                         SessionId = createSessionReply.SessionId,
-                                                                                       });
+                                          using var eventsCall = eventsClient.GetEvents(new EventSubscriptionRequest
+                                                                                        {
+                                                                                          SessionId = createSessionReply.SessionId,
+                                                                                        });
 
-                                          while (await graphCall.ResponseStream.MoveNext(cts.Token)
-                                                                .ConfigureAwait(false))
+                                          while (await eventsCall.ResponseStream.MoveNext(cts.Token)
+                                                                 .ConfigureAwait(false))
                                           {
-                                            logger.LogInformation("{@graphUpdate}",
-                                                                  graphCall.ResponseStream.Current);
+                                            logger.LogInformation("{@eventUpdate}",
+                                                                  eventsCall.ResponseStream.Current);
                                           }
                                         },
                                         cts.Token)
@@ -267,18 +267,18 @@ internal static class Program
     logger.LogInformation("executions stats {@stats}",
                           stats);
 
-    if (benchOptions.ShowGraph)
+    if (benchOptions.ShowEvents)
     {
       cts.CancelAfter(TimeSpan.FromSeconds(1));
       try
       {
-        await graphTask.WaitAsync(CancellationToken.None)
+        await eventTask.WaitAsync(CancellationToken.None)
                        .ConfigureAwait(false);
       }
       catch (RpcException e) when (e.StatusCode == StatusCode.Cancelled)
       {
         logger.LogWarning(e,
-                          "Get Graph interrupted.");
+                          $"{nameof(Events.EventsClient.GetEvents)} interrupted.");
       }
     }
   }

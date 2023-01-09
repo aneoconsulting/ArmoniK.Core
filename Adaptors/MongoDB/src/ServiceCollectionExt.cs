@@ -33,7 +33,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Storage.Graphs;
+using ArmoniK.Core.Common.Storage.Events;
 
 using JetBrains.Annotations;
 

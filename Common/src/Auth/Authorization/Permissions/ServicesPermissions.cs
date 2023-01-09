@@ -60,7 +60,7 @@ public static class ServicesPermissions
                                                                                       typeof(GrpcApplicationsService), "Applications"
                                                                                     },
                                                                                     {
-                                                                                      typeof(GrpcGraphsService), "Graphs"
+                                                                                      typeof(GrpcEventsService), "Events"
                                                                                     },
                                                                                     {
                                                                                       typeof(GeneralService), "General"

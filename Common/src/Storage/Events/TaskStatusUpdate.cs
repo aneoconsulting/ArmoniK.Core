@@ -24,8 +24,8 @@
 
 using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Common.Storage.Graphs;
+namespace ArmoniK.Core.Common.Storage.Events;
 
-public record ResultStatusUpdate(string       SessionId,
-                                 string       ResultId,
-                                 ResultStatus Status);
+public record TaskStatusUpdate(string     SessionId,
+                               string     TaskId,
+                               TaskStatus Status);

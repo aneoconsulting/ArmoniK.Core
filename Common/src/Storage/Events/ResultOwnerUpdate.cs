@@ -22,10 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+namespace ArmoniK.Core.Common.Storage.Events;
 
-namespace ArmoniK.Core.Common.Storage.Graphs;
-
-public record TaskStatusUpdate(string     SessionId,
-                               string     TaskId,
-                               TaskStatus Status);
+public record ResultOwnerUpdate(string SessionId,
+                                string ResultId,
+                                string PreviousOwnerId,
+                                string NewOwner);
