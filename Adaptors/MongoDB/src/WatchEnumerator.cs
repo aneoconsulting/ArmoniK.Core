@@ -118,7 +118,7 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
   /// <inheritdoc />
   public ValueTask DisposeAsync()
   {
-    currentEnumerable_?.DisposeAsync();
+    currentEnumerable_?.Dispose();
     return ValueTask.CompletedTask;
   }
 }
