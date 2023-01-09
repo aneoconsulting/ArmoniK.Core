@@ -15,15 +15,7 @@ variable "network" {
   type = string
 }
 
-variable "dev_env" {
-  type = string
-}
-
-variable "log_level" {
-  type = string
-}
-
-variable "database_env_vars" {
+variable "generated_env_vars" {
   type = map(string)
 }
 

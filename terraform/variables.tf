@@ -21,13 +21,18 @@ variable "mongodb_params" {
   })
 }
 
-variable "submitter" {
+variable "logging_env_vars" {
   type = object({
-    name            = string,
-    image           = string,
-    port            = number,
     log_level       = string,
     aspnet_core_env = string,
+  })
+}
+
+variable "submitter" {
+  type = object({
+    name  = string,
+    image = string,
+    port  = number,
   })
 }
 
@@ -71,9 +76,6 @@ variable "queue_storage" {
 
 variable "compute_plane" {
   type = object({
-    log_level       = string,
-    aspnet_core_env = string,
-
     worker = object({
       name                     = string,
       image                    = string,

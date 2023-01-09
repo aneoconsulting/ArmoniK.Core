@@ -23,24 +23,8 @@ variable "zipkin_uri" {
   type = string
 }
 
-variable "log_level" {
-  type = string
-}
-
-variable "dev_env" {
-  type = string
-}
-
-variable "queue_env_vars" {
-  type = map(any)
-}
-
-variable "database_env_vars" {
-  type = map(any)
-}
-
-variable "object_env_vars" {
-  type = map(any)
+variable "generated_env_vars" {
+  type = map(string)
 }
 
 variable "log_driver" {

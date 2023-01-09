@@ -20,20 +20,12 @@ variable "exposed_port" {
   default = 5003
 }
 
-variable "dev_env" {
-  type = string
-}
-
-variable "log_level" {
-  type = string
-}
-
-variable "database_env_vars" {
-  type = map(any)
+variable "generated_env_vars" {
+  type = map(string)
 }
 
 variable "metrics_env_vars" {
-  type = map(any)
+  type = map(string)
 }
 
 variable "log_driver" {

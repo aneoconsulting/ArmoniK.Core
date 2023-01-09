@@ -29,11 +29,7 @@ resource "docker_container" "worker" {
     name = var.network
   }
 
-  env = [
-    "ASPNETCORE_ENVIRONMENT=${var.dev_env}",
-    "Serilog__Properties__Application=${var.worker.serilog_application_name}",
-    "Serilog__MinimumLevel=${var.log_level}"
-  ]
+  env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env)
 
   log_driver = var.log_driver.name
 

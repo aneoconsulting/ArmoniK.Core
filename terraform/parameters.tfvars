@@ -31,17 +31,18 @@ object_storage = {
   image = ""
 }
 
-submitter = {
+logging_env_vars = {
   aspnet_core_env = "Development"
-  image           = "dockerhubaneo/armonik_control"
   log_level       = "Information"
-  name            = "armonik.control.submitter"
-  port            = 5001
+}
+
+submitter = {
+  image = "dockerhubaneo/armonik_control"
+  name  = "armonik.control.submitter"
+  port  = 5001
 }
 
 compute_plane = {
-  aspnet_core_env = "Development"
-  log_level       = "Information"
   polling_agent = {
     image                = "dockerhubaneo/armonik_pollingagent"
     max_error_allowed    = -1

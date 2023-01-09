@@ -53,58 +53,46 @@ module "queue_activemq" {
 
 
 module "submitter" {
-  source            = "./modules/submitter"
-  container_name    = local.submitter.name
-  core_tag          = local.submitter.tag
-  docker_image      = local.submitter.image
-  log_level         = local.submitter.log_level
-  dev_env           = local.submitter.aspnet_core_env
-  network           = docker_network.armonik.name
-  database_env_vars = module.database.database_env_vars
-  queue_env_vars    = local.queue_env_vars
-  object_env_vars   = local.object_env_vars
-  zipkin_uri        = module.zipkin.zipkin_uri
-  log_driver        = module.fluenbit.log_driver
+  source             = "./modules/submitter"
+  container_name     = local.submitter.name
+  core_tag           = local.submitter.tag
+  docker_image       = local.submitter.image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  zipkin_uri         = module.zipkin.zipkin_uri
+  log_driver         = module.fluenbit.log_driver
 }
 
 module "compute_plane" {
-  source            = "./modules/compute_plane"
-  for_each          = local.replicas
-  replica_counter   = each.key
-  core_tag          = local.compute_plane.tag
-  dev_env           = local.compute_plane.aspnet_core_env
-  log_level         = local.compute_plane.log_level
-  polling_agent     = local.compute_plane.polling_agent
-  worker            = local.compute_plane.worker
-  queue_env_vars    = local.queue_env_vars
-  object_env_vars   = local.object_env_vars
-  database_env_vars = module.database.database_env_vars
-  network           = docker_network.armonik.name
-  zipkin_uri        = module.zipkin.zipkin_uri
-  log_driver        = module.fluenbit.log_driver
+  source             = "./modules/compute_plane"
+  for_each           = local.replicas
+  replica_counter    = each.key
+  core_tag           = local.compute_plane.tag
+  polling_agent      = local.compute_plane.polling_agent
+  worker             = local.compute_plane.worker
+  generated_env_vars = local.environment
+  network            = docker_network.armonik.name
+  zipkin_uri         = module.zipkin.zipkin_uri
+  log_driver         = module.fluenbit.log_driver
 }
 
 module "metrics_exporter" {
-  source            = "./modules/monitoring/metrics"
-  tag               = var.core_tag
-  image             = var.armonik_metrics_image
-  use_local_image   = var.use_local_image
-  network           = docker_network.armonik.name
-  dev_env           = local.compute_plane.aspnet_core_env
-  log_level         = local.compute_plane.log_level
-  database_env_vars = module.database.database_env_vars
-  log_driver        = module.fluenbit.log_driver
+  source             = "./modules/monitoring/metrics"
+  tag                = var.core_tag
+  image              = var.armonik_metrics_image
+  use_local_image    = var.use_local_image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  log_driver         = module.fluenbit.log_driver
 }
 
 module "partition_metrics_exporter" {
-  source            = "./modules/monitoring/partition_metrics"
-  tag               = var.core_tag
-  image             = var.armonik_partition_metrics_image
-  use_local_image   = var.use_local_image
-  network           = docker_network.armonik.name
-  dev_env           = local.compute_plane.aspnet_core_env
-  log_level         = local.compute_plane.log_level
-  database_env_vars = module.database.database_env_vars
-  metrics_env_vars  = module.metrics_exporter.metrics_env_vars
-  log_driver        = module.fluenbit.log_driver
+  source             = "./modules/monitoring/partition_metrics"
+  tag                = var.core_tag
+  image              = var.armonik_partition_metrics_image
+  use_local_image    = var.use_local_image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  metrics_env_vars   = module.metrics_exporter.metrics_env_vars
+  log_driver         = module.fluenbit.log_driver
 }
