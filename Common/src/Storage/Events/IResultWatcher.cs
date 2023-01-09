@@ -28,14 +28,41 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage.Events;
 
+/// <summary>
+///   Interface used to receive events when Results are modified
+/// </summary>
 public interface IResultWatcher : IInitializable
 {
+  /// <summary>
+  ///   Receive a <see cref="NewResult" /> event when a new result is added in the given session
+  /// </summary>
+  /// <param name="sessionId">The session id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A <see cref="IAsyncEnumerator{NewResult}" /> that holds the updates when they are available
+  /// </returns>
   Task<IAsyncEnumerator<NewResult>> GetNewResults(string            sessionId,
                                                   CancellationToken cancellationToken = default);
 
+  /// <summary>
+  ///   Receive a <see cref="ResultOwnerUpdate" /> event when the OwnerId of a result changes in the given session
+  /// </summary>
+  /// <param name="sessionId">The session id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A <see cref="IAsyncEnumerator{ResultOwnerUpdate}" /> that holds the updates when they are available
+  /// </returns>
   Task<IAsyncEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
                                                                   CancellationToken cancellationToken = default);
 
+  /// <summary>
+  ///   Receive a <see cref="ResultStatusUpdate" /> event when the Status of a result changes in the given session
+  /// </summary>
+  /// <param name="sessionId">The session id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A <see cref="IAsyncEnumerator{ResultStatusUpdate}" /> that holds the updates when they are available
+  /// </returns>
   Task<IAsyncEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
                                                                     CancellationToken cancellationToken = default);
 }

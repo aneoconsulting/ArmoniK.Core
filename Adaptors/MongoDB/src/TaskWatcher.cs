@@ -40,6 +40,9 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <summary>
+///   Implementation of <see cref="ITaskWatcher" /> for MongoDB
+/// </summary>
 public class TaskWatcher : ITaskWatcher
 {
   private readonly ActivitySource                                          activitySource_;
@@ -48,6 +51,13 @@ public class TaskWatcher : ITaskWatcher
   private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
   private          bool                                                    isInitialized_;
 
+  /// <summary>
+  ///   Initializes <see cref="TaskWatcher" /> from the given parameters
+  /// </summary>
+  /// <param name="sessionProvider">MongoDB session provider</param>
+  /// <param name="taskCollectionProvider">Task collection provider</param>
+  /// <param name="activitySource">Activity source</param>
+  /// <param name="logger">Logger used to produce logs</param>
   public TaskWatcher(SessionProvider                                         sessionProvider,
                      MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider,
                      ActivitySource                                          activitySource,

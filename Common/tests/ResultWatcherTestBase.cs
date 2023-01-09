@@ -161,7 +161,15 @@ public class ResultWatcherTestBase
     }
   }
 
-
+  /// <summary>
+  ///   This method produces the events (new results, owner id updates and status update)
+  ///   that will be used to test the IResultWatcher interface.
+  /// </summary>
+  /// <param name="resultTable">Result table interface</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   private static async Task ProduceEvents(IResultTable      resultTable,
                                           CancellationToken cancellationToken)
   {

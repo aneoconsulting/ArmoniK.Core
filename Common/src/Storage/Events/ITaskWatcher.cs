@@ -28,11 +28,30 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage.Events;
 
+/// <summary>
+///   Interface used to receive events when Tasks are modified
+/// </summary>
 public interface ITaskWatcher : IInitializable
 {
+  /// <summary>
+  ///   Receive a <see cref="NewTask" /> event when a new task is added in the given session
+  /// </summary>
+  /// <param name="sessionId">The session id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A <see cref="IAsyncEnumerator{NewTask}" /> that holds the updates when they are available
+  /// </returns>
   Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
                                               CancellationToken cancellationToken = default);
 
+  /// <summary>
+  ///   Receive a <see cref="TaskStatusUpdate" /> event when the Status of a task changes in the given session
+  /// </summary>
+  /// <param name="sessionId">The session id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A <see cref="IAsyncEnumerator{TaskStatusUpdate}" /> that holds the updates when they are available
+  /// </returns>
   Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                 CancellationToken cancellationToken = default);
 }

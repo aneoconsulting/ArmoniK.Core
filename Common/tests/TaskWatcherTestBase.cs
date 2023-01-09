@@ -263,7 +263,15 @@ public class TaskWatcherTestBase
     }
   }
 
-
+  /// <summary>
+  ///   This method produces the events (new task and status update)
+  ///   that will be used to test the ITaskWatcher interface.
+  /// </summary>
+  /// <param name="taskTable">Task table interface</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   private static async Task ProduceEvents(ITaskTable        taskTable,
                                           CancellationToken cancellationToken)
   {
