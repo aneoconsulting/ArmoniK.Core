@@ -59,9 +59,9 @@ public class GrpcEventsService : Events.EventsBase
 
   [RequiresPermission(typeof(GrpcEventsService),
                       nameof(GetEvents))]
-  public override async Task GetEvents(EventSubscriptionRequest                  request,
-                                       IServerStreamWriter<EventContentResponse> responseStream,
-                                       ServerCallContext                         context)
+  public override async Task GetEvents(EventSubscriptionRequest                       request,
+                                       IServerStreamWriter<EventSubscriptionResponse> responseStream,
+                                       ServerCallContext                              context)
   {
     var wtg = new WatchToGrpc(taskTable_,
                               taskWatcher_,

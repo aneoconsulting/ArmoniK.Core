@@ -57,10 +57,10 @@ public class WatchToGrpc
     logger_        = logger;
   }
 
-  public IAsyncEnumerable<EventContentResponse> GetEvents(string            sessionId,
-                                                          CancellationToken cancellationToken)
+  public IAsyncEnumerable<EventSubscriptionResponse> GetEvents(string            sessionId,
+                                                               CancellationToken cancellationToken)
   {
-    var channel = Channel.CreateUnbounded<EventContentResponse>();
+    var channel = Channel.CreateUnbounded<EventSubscriptionResponse>();
 
     Task.Factory.StartNew(async () =>
                           {
@@ -80,9 +80,9 @@ public class WatchToGrpc
                               while (enumerator.MoveNext())
                               {
                                 var cur = enumerator.Current;
-                                await channel.Writer.WriteAsync(new EventContentResponse
+                                await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                                 {
-                                                                  NewTask = new EventContentResponse.Types.NewTask
+                                                                  NewTask = new EventSubscriptionResponse.Types.NewTask
                                                                             {
                                                                               DataDependencies =
                                                                               {
@@ -132,9 +132,9 @@ public class WatchToGrpc
                               while (enumerator.MoveNext())
                               {
                                 var cur = enumerator.Current;
-                                await channel.Writer.WriteAsync(new EventContentResponse
+                                await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                                 {
-                                                                  NewResult = new EventContentResponse.Types.NewResult
+                                                                  NewResult = new EventSubscriptionResponse.Types.NewResult
                                                                               {
                                                                                 Status   = cur.Status,
                                                                                 OwnerId  = cur.OwnerTaskId,
@@ -162,9 +162,9 @@ public class WatchToGrpc
                             while (newTasks.MoveNext(cancellationToken))
                             {
                               var cur = newTasks.Current;
-                              await channel.Writer.WriteAsync(new EventContentResponse
+                              await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
-                                                                NewTask = new EventContentResponse.Types.NewTask
+                                                                NewTask = new EventSubscriptionResponse.Types.NewTask
                                                                           {
                                                                             DataDependencies =
                                                                             {
@@ -200,9 +200,9 @@ public class WatchToGrpc
                             while (newTasks.MoveNext(cancellationToken))
                             {
                               var cur = newTasks.Current;
-                              await channel.Writer.WriteAsync(new EventContentResponse
+                              await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
-                                                                TaskStatusUpdate = new EventContentResponse.Types.TaskStatusUpdate
+                                                                TaskStatusUpdate = new EventSubscriptionResponse.Types.TaskStatusUpdate
                                                                                    {
                                                                                      Status = cur.Status,
                                                                                      TaskId = cur.TaskId,
@@ -224,9 +224,9 @@ public class WatchToGrpc
                             while (newResults.MoveNext(cancellationToken))
                             {
                               var cur = newResults.Current;
-                              await channel.Writer.WriteAsync(new EventContentResponse
+                              await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
-                                                                NewResult = new EventContentResponse.Types.NewResult
+                                                                NewResult = new EventSubscriptionResponse.Types.NewResult
                                                                             {
                                                                               Status   = cur.Status,
                                                                               OwnerId  = cur.OwnerId,
@@ -249,9 +249,9 @@ public class WatchToGrpc
                             while (newResults.MoveNext(cancellationToken))
                             {
                               var cur = newResults.Current;
-                              await channel.Writer.WriteAsync(new EventContentResponse
+                              await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
-                                                                ResultStatusUpdate = new EventContentResponse.Types.ResultStatusUpdate
+                                                                ResultStatusUpdate = new EventSubscriptionResponse.Types.ResultStatusUpdate
                                                                                      {
                                                                                        ResultId = cur.ResultId,
                                                                                        Status   = cur.Status,
@@ -273,13 +273,13 @@ public class WatchToGrpc
                             while (newResults.MoveNext(cancellationToken))
                             {
                               var cur = newResults.Current;
-                              await channel.Writer.WriteAsync(new EventContentResponse
+                              await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
-                                                                ResultOwnerUpdate = new EventContentResponse.Types.ResultOwnerUpdate
+                                                                ResultOwnerUpdate = new EventSubscriptionResponse.Types.ResultOwnerUpdate
                                                                                     {
-                                                                                      ResultId = cur.ResultId,
-                                                                                      Current  = cur.NewOwner,
-                                                                                      Previous = cur.PreviousOwnerId,
+                                                                                      ResultId        = cur.ResultId,
+                                                                                      CurrentOwnerId  = cur.NewOwner,
+                                                                                      PreviousOwnerId = cur.PreviousOwnerId,
                                                                                     },
                                                                 SessionId = cur.SessionId,
                                                               },

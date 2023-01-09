@@ -55,7 +55,7 @@ public class WatchToGrpcTests
                                             cts.Token)
                                  .GetAsyncEnumerator(cts.Token);
 
-    var list = new List<EventContentResponse>();
+    var list = new List<EventSubscriptionResponse>();
 
     Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                    {
