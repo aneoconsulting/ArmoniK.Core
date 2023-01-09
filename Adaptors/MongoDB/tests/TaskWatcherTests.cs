@@ -45,7 +45,7 @@ public class TaskWatcherTests : TaskWatcherTestBase
 
   public override void GetInstance()
   {
-    tableProvider_ = new MongoDatabaseProvider();
+    tableProvider_ = new MongoDatabaseProvider(true);
     var provider = tableProvider_.GetServiceProvider();
 
     TaskTable   = provider.GetRequiredService<ITaskTable>();
