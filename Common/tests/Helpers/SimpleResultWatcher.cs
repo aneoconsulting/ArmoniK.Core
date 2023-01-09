@@ -39,15 +39,15 @@ internal class SimpleResultWatcher : IResultWatcher
   public const string OwnerPodId         = "MyOwnerPodId";
   public const string PreviousOwnerPodId = "MyPreviousOwnerPodId";
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public Task<IAsyncEnumerator<NewResult>> GetNewResults(string            sessionId,
                                                          CancellationToken cancellationToken = default)
     => Task.FromResult<IAsyncEnumerator<NewResult>>(new SimpleWatcherEnumerator<NewResult>(new[]
@@ -58,7 +58,7 @@ internal class SimpleResultWatcher : IResultWatcher
                                                                                                            ResultStatus.Created),
                                                                                            }));
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public Task<IAsyncEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
                                                                          CancellationToken cancellationToken = default)
     => Task.FromResult<IAsyncEnumerator<ResultOwnerUpdate>>(new SimpleWatcherEnumerator<ResultOwnerUpdate>(new[]
@@ -69,7 +69,7 @@ internal class SimpleResultWatcher : IResultWatcher
                                                                                                                                    OwnerPodId),
                                                                                                            }));
 
-  /// <inheritdoc/>
+  /// <inheritdoc />
   public Task<IAsyncEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
                                                                            CancellationToken cancellationToken = default)
     => Task.FromResult<IAsyncEnumerator<ResultStatusUpdate>>(new SimpleWatcherEnumerator<ResultStatusUpdate>(new[]
