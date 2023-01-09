@@ -13,8 +13,8 @@ locals {
     "ASPNETCORE_ENVIRONMENT=${var.dev_env}",
     "Amqp__PartitionId=TestPartition${var.replica_counter}" #TODO: To be generated in module
   ]
-  db_env     = [for t in keys(var.database_env_vars) : format("%s=%s", t, lookup(var.database_env_vars, t))]
-  queue_env  = [for t in keys(var.queue_env_vars) : format("%s=%s", t, lookup(var.queue_env_vars, t))]
-  object_env = [for t in keys(var.object_env_vars) : format("%s=%s", t, lookup(var.object_env_vars, t))]
+  db_env     = [for k, v in var.database_env_vars : "${k}=${v}"]
+  queue_env  = [for k, v in var.queue_env_vars : "${k}=${v}"]
+  object_env = [for k, v in var.object_env_vars : "${k}=${v}"]
   gen_env    = concat(local.object_env, concat(local.db_env, local.queue_env))
 }
