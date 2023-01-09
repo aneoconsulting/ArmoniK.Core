@@ -354,11 +354,15 @@ public class TaskWatcherTestBase
       cts.CancelAfter(TimeSpan.FromSeconds(1));
 
       var newResults = new List<NewTask>();
-      while (watchEnumerator.MoveNext(CancellationToken.None))
-      {
-        Console.WriteLine(watchEnumerator.Current);
-        newResults.Add(watchEnumerator.Current);
-      }
+      Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                                                     {
+                                                       while (await watchEnumerator.MoveNextAsync()
+                                                                                   .ConfigureAwait(false))
+                                                       {
+                                                         Console.WriteLine(watchEnumerator.Current);
+                                                         newResults.Add(watchEnumerator.Current);
+                                                       }
+                                                     });
 
       Assert.AreEqual(2,
                       newResults.Count);
@@ -383,11 +387,15 @@ public class TaskWatcherTestBase
       cts.CancelAfter(TimeSpan.FromSeconds(2));
 
       var newResults = new List<TaskStatusUpdate>();
-      while (watchEnumerator.MoveNext(CancellationToken.None))
-      {
-        Console.WriteLine(watchEnumerator.Current);
-        newResults.Add(watchEnumerator.Current);
-      }
+      Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                                                     {
+                                                       while (await watchEnumerator.MoveNextAsync()
+                                                                                   .ConfigureAwait(false))
+                                                       {
+                                                         Console.WriteLine(watchEnumerator.Current);
+                                                         newResults.Add(watchEnumerator.Current);
+                                                       }
+                                                     });
 
       Assert.AreEqual(3,
                       newResults.Count);

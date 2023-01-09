@@ -23,25 +23,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Threading;
-
-using ArmoniK.Core.Common.Storage;
+using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-internal class SimpleWatcherEnumerator<TOutput> : IWatchEnumerator<TOutput>
+internal class SimpleWatcherEnumerator<TOutput> : IAsyncEnumerator<TOutput>
 {
   private readonly IEnumerator<TOutput> enumerator_;
 
   public SimpleWatcherEnumerator(IEnumerable<TOutput> enumerator)
     => enumerator_ = enumerator.GetEnumerator();
 
-  public void Dispose()
-    => enumerator_.Dispose();
 
-  public bool MoveNext(CancellationToken cancellationToken)
-    => enumerator_.MoveNext();
+  public ValueTask<bool> MoveNextAsync()
+    => new(enumerator_.MoveNext());
 
   public TOutput Current
     => enumerator_.Current;
+
+  public ValueTask DisposeAsync()
+  {
+    enumerator_.Dispose();
+    return ValueTask.CompletedTask;
+  }
 }

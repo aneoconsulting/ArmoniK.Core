@@ -247,11 +247,15 @@ public class ResultWatcherTestBase
       cts.CancelAfter(TimeSpan.FromSeconds(1));
 
       var newResults = new List<NewResult>();
-      while (watchEnumerator.MoveNext(CancellationToken.None))
-      {
-        Console.WriteLine(watchEnumerator.Current);
-        newResults.Add(watchEnumerator.Current);
-      }
+      Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                                                     {
+                                                       while (await watchEnumerator.MoveNextAsync()
+                                                                                   .ConfigureAwait(false))
+                                                       {
+                                                         Console.WriteLine(watchEnumerator.Current);
+                                                         newResults.Add(watchEnumerator.Current);
+                                                       }
+                                                     });
 
       Assert.AreEqual(2,
                       newResults.Count);
@@ -276,11 +280,15 @@ public class ResultWatcherTestBase
       cts.CancelAfter(TimeSpan.FromSeconds(2));
 
       var newResults = new List<ResultStatusUpdate>();
-      while (watchEnumerator.MoveNext(CancellationToken.None))
-      {
-        Console.WriteLine(watchEnumerator.Current);
-        newResults.Add(watchEnumerator.Current);
-      }
+      Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                                                     {
+                                                       while (await watchEnumerator.MoveNextAsync()
+                                                                                   .ConfigureAwait(false))
+                                                       {
+                                                         Console.WriteLine(watchEnumerator.Current);
+                                                         newResults.Add(watchEnumerator.Current);
+                                                       }
+                                                     });
 
       Assert.AreEqual(3,
                       newResults.Count);
@@ -306,11 +314,16 @@ public class ResultWatcherTestBase
       cts.CancelAfter(TimeSpan.FromSeconds(2));
 
       var newResults = new List<ResultOwnerUpdate>();
-      while (watchEnumerator.MoveNext(CancellationToken.None))
-      {
-        Console.WriteLine(watchEnumerator.Current);
-        newResults.Add(watchEnumerator.Current);
-      }
+
+      Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                                                     {
+                                                       while (await watchEnumerator.MoveNextAsync()
+                                                                                   .ConfigureAwait(false))
+                                                       {
+                                                         Console.WriteLine(watchEnumerator.Current);
+                                                         newResults.Add(watchEnumerator.Current);
+                                                       }
+                                                     });
 
       Assert.AreEqual(1,
                       newResults.Count);

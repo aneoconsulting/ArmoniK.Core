@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +78,7 @@ public class TaskWatcher : ITaskWatcher
     }
   }
 
-  public async Task<IWatchEnumerator<NewTask>> GetNewTasks(string            sessionId,
+  public async Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
                                                            CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetNewTasks)}");
@@ -111,7 +112,7 @@ public class TaskWatcher : ITaskWatcher
   }
 
 
-  public async Task<IWatchEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+  public async Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                              CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusUpdates)}");

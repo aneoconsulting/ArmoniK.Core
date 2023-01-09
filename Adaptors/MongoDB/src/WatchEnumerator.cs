@@ -25,20 +25,31 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
-using ArmoniK.Core.Common.Storage;
+using System.Threading.Tasks;
 
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-public sealed class WatchEnumerator<TOutput, TInput> : IWatchEnumerator<TOutput>
+/// <summary>
+///   Class to convert a <see cref="IChangeStreamCursor{TInput}" /> into a <see cref="IAsyncEnumerator{TOutput}" />
+/// </summary>
+/// <typeparam name="TOutput">Output type</typeparam>
+/// <typeparam name="TInput">Input type</typeparam>
+public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
 {
   private readonly CancellationToken           cancellationToken_;
   private readonly Func<TInput, TOutput>       converter_;
   private readonly IChangeStreamCursor<TInput> cursor_;
   private          IEnumerator<TInput>?        currentEnumerable_;
 
+  /// <summary>
+  ///   Initializes a <see cref="IAsyncEnumerator{TOutput}" /> from a <see cref="IChangeStreamCursor{TInput}" />
+  ///   with a conversion function to transform <typeparamref name="TInput" /> into <typeparamref name="TOutput" />
+  /// </summary>
+  /// <param name="cursor">Input change stream cursor</param>
+  /// <param name="converter">Func to convert the input into the output</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   public WatchEnumerator(IChangeStreamCursor<TInput> cursor,
                          Func<TInput, TOutput>       converter,
                          CancellationToken           cancellationToken)
@@ -48,25 +59,19 @@ public sealed class WatchEnumerator<TOutput, TInput> : IWatchEnumerator<TOutput>
     cancellationToken_ = cancellationToken;
   }
 
-  public void Dispose()
-  {
-    cursor_.Dispose();
-    currentEnumerable_?.Dispose();
-  }
-
-
-  public bool MoveNext(CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public ValueTask<bool> MoveNextAsync()
   {
     if (cancellationToken_.IsCancellationRequested)
     {
-      return false;
+      return new ValueTask<bool>(false);
     }
 
     if (currentEnumerable_ is not null)
     {
       if (currentEnumerable_.MoveNext())
       {
-        return true;
+        return new ValueTask<bool>(true);
       }
 
       currentEnumerable_ = null;
@@ -76,27 +81,26 @@ public sealed class WatchEnumerator<TOutput, TInput> : IWatchEnumerator<TOutput>
     {
       if (cancellationToken_.IsCancellationRequested)
       {
-        return false;
+        return new ValueTask<bool>(false);
       }
 
-      cancellationToken.ThrowIfCancellationRequested();
-
-      if (!cursor_.MoveNext(cancellationToken))
+      if (!cursor_.MoveNext(cancellationToken_))
       {
-        return false;
+        return new ValueTask<bool>(false);
       }
 
       var enumerator = cursor_.Current.GetEnumerator();
       if (enumerator.MoveNext())
       {
         currentEnumerable_ = enumerator;
-        return true;
+        return new ValueTask<bool>(true);
       }
     }
 
-    return false;
+    return new ValueTask<bool>(false);
   }
 
+  /// <inheritdoc />
   public TOutput Current
   {
     get
@@ -108,5 +112,12 @@ public sealed class WatchEnumerator<TOutput, TInput> : IWatchEnumerator<TOutput>
 
       return converter_(currentEnumerable_!.Current);
     }
+  }
+
+  /// <inheritdoc />
+  public ValueTask DisposeAsync()
+  {
+    currentEnumerable_?.Dispose();
+    return ValueTask.CompletedTask;
   }
 }

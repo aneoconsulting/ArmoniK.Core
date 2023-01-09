@@ -22,11 +22,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -45,9 +45,9 @@ internal class SimpleResultWatcher : IResultWatcher
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<IWatchEnumerator<NewResult>> GetNewResults(string            sessionId,
+  public Task<IAsyncEnumerator<NewResult>> GetNewResults(string            sessionId,
                                                          CancellationToken cancellationToken = default)
-    => Task.FromResult<IWatchEnumerator<NewResult>>(new SimpleWatcherEnumerator<NewResult>(new[]
+    => Task.FromResult<IAsyncEnumerator<NewResult>>(new SimpleWatcherEnumerator<NewResult>(new[]
                                                                                            {
                                                                                              new NewResult(sessionId,
                                                                                                            ResultId,
@@ -55,9 +55,9 @@ internal class SimpleResultWatcher : IResultWatcher
                                                                                                            ResultStatus.Created),
                                                                                            }));
 
-  public Task<IWatchEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
+  public Task<IAsyncEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
                                                                          CancellationToken cancellationToken = default)
-    => Task.FromResult<IWatchEnumerator<ResultOwnerUpdate>>(new SimpleWatcherEnumerator<ResultOwnerUpdate>(new[]
+    => Task.FromResult<IAsyncEnumerator<ResultOwnerUpdate>>(new SimpleWatcherEnumerator<ResultOwnerUpdate>(new[]
                                                                                                            {
                                                                                                              new ResultOwnerUpdate(sessionId,
                                                                                                                                    ResultId,
@@ -65,9 +65,9 @@ internal class SimpleResultWatcher : IResultWatcher
                                                                                                                                    OwnerPodId),
                                                                                                            }));
 
-  public Task<IWatchEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
+  public Task<IAsyncEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
                                                                            CancellationToken cancellationToken = default)
-    => Task.FromResult<IWatchEnumerator<ResultStatusUpdate>>(new SimpleWatcherEnumerator<ResultStatusUpdate>(new[]
+    => Task.FromResult<IAsyncEnumerator<ResultStatusUpdate>>(new SimpleWatcherEnumerator<ResultStatusUpdate>(new[]
                                                                                                              {
                                                                                                                new ResultStatusUpdate(sessionId,
                                                                                                                                       ResultId,

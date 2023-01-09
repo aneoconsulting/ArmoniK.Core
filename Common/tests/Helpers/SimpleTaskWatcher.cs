@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -48,9 +47,9 @@ internal class SimpleTaskWatcher : ITaskWatcher
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<IWatchEnumerator<NewTask>> GetNewTasks(string            sessionId,
+  public Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
                                                      CancellationToken cancellationToken = default)
-    => Task.FromResult<IWatchEnumerator<NewTask>>(new SimpleWatcherEnumerator<NewTask>(new[]
+    => Task.FromResult<IAsyncEnumerator<NewTask>>(new SimpleWatcherEnumerator<NewTask>(new[]
                                                                                        {
                                                                                          new NewTask(sessionId,
                                                                                                      TaskId,
@@ -65,9 +64,9 @@ internal class SimpleTaskWatcher : ITaskWatcher
                                                                                                      TaskStatus.Creating),
                                                                                        }));
 
-  public Task<IWatchEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+  public Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                        CancellationToken cancellationToken = default)
-    => Task.FromResult<IWatchEnumerator<TaskStatusUpdate>>(new SimpleWatcherEnumerator<TaskStatusUpdate>(new[]
+    => Task.FromResult<IAsyncEnumerator<TaskStatusUpdate>>(new SimpleWatcherEnumerator<TaskStatusUpdate>(new[]
                                                                                                          {
                                                                                                            new TaskStatusUpdate(sessionId,
                                                                                                                                 TaskId,

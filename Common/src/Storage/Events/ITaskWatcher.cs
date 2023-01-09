@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,9 +30,9 @@ namespace ArmoniK.Core.Common.Storage.Events;
 
 public interface ITaskWatcher : IInitializable
 {
-  Task<IWatchEnumerator<NewTask>> GetNewTasks(string            sessionId,
+  Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
                                               CancellationToken cancellationToken = default);
 
-  Task<IWatchEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+  Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                 CancellationToken cancellationToken = default);
 }

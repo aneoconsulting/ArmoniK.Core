@@ -159,7 +159,8 @@ public class WatchToGrpc
                                                                           cancellationToken)
                                                              .ConfigureAwait(false);
 
-                            while (newTasks.MoveNext(cancellationToken))
+                            while (await newTasks.MoveNextAsync()
+                                                 .ConfigureAwait(false))
                             {
                               var cur = newTasks.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
@@ -197,7 +198,8 @@ public class WatchToGrpc
                                                                                    cancellationToken)
                                                              .ConfigureAwait(false);
 
-                            while (newTasks.MoveNext(cancellationToken))
+                            while (await newTasks.MoveNextAsync()
+                                                 .ConfigureAwait(false))
                             {
                               var cur = newTasks.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
@@ -221,7 +223,8 @@ public class WatchToGrpc
                                                                                 cancellationToken)
                                                                  .ConfigureAwait(false);
 
-                            while (newResults.MoveNext(cancellationToken))
+                            while (await newResults.MoveNextAsync()
+                                                   .ConfigureAwait(false))
                             {
                               var cur = newResults.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
@@ -246,7 +249,8 @@ public class WatchToGrpc
                                                                                          cancellationToken)
                                                                  .ConfigureAwait(false);
 
-                            while (newResults.MoveNext(cancellationToken))
+                            while (await newResults.MoveNextAsync()
+                                                   .ConfigureAwait(false))
                             {
                               var cur = newResults.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
@@ -270,7 +274,8 @@ public class WatchToGrpc
                                                                                         cancellationToken)
                                                                  .ConfigureAwait(false);
 
-                            while (newResults.MoveNext(cancellationToken))
+                            while (await newResults.MoveNextAsync()
+                                                   .ConfigureAwait(false))
                             {
                               var cur = newResults.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
