@@ -63,6 +63,7 @@ internal class MongoDatabaseProvider : IDisposable
                     UseSingleNodeReplicaSet = true,
                     StandardOuputLogger     = line => logger.LogInformation(line),
                     StandardErrorLogger     = line => logger.LogError(line),
+                    ReplicaSetSetupTimeout  = TimeSpan.FromSeconds(30),
                   };
 
     runner_ = MongoRunner.Run(options);
