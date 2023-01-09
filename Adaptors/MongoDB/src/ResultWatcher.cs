@@ -89,7 +89,7 @@ public class ResultWatcher : IResultWatcher
   }
 
 
-  public async Task<IAsyncEnumerator<NewResult>> GetNewResults(string            sessionId,
+  public async Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
                                                                CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetNewResults)}");
@@ -110,15 +110,14 @@ public class ResultWatcher : IResultWatcher
                                                                                  })
                                                             .ConfigureAwait(false);
 
-    return new WatchEnumerator<NewResult, ChangeStreamDocument<Result>>(changeStreamCursor,
+    return new WatchEnumerable<NewResult, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                         resultUpdate => new NewResult(resultUpdate.FullDocument.SessionId,
                                                                                                       resultUpdate.FullDocument.Name,
                                                                                                       resultUpdate.FullDocument.OwnerTaskId,
-                                                                                                      resultUpdate.FullDocument.Status),
-                                                                        cancellationToken);
+                                                                                                      resultUpdate.FullDocument.Status));
   }
 
-  public async Task<IAsyncEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
+  public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
                                                                                CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetResultOwnerUpdates)}");
@@ -136,15 +135,14 @@ public class ResultWatcher : IResultWatcher
                                                                  cancellationToken)
                                                      .ConfigureAwait(false);
 
-    return new WatchEnumerator<ResultOwnerUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
+    return new WatchEnumerable<ResultOwnerUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                 doc => new ResultOwnerUpdate(doc.FullDocument.SessionId,
                                                                                                              doc.FullDocument.Name,
                                                                                                              "",
-                                                                                                             doc.FullDocument.OwnerTaskId),
-                                                                                cancellationToken);
+                                                                                                             doc.FullDocument.OwnerTaskId));
   }
 
-  public async Task<IAsyncEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
+  public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
                                                                                  CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusUpdates)}");
@@ -162,10 +160,9 @@ public class ResultWatcher : IResultWatcher
                                                                  cancellationToken)
                                                      .ConfigureAwait(false);
 
-    return new WatchEnumerator<ResultStatusUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
+    return new WatchEnumerable<ResultStatusUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                  doc => new ResultStatusUpdate(doc.FullDocument.SessionId,
                                                                                                                doc.FullDocument.Name,
-                                                                                                               doc.FullDocument.Status),
-                                                                                 cancellationToken);
+                                                                                                               doc.FullDocument.Status));
   }
 }

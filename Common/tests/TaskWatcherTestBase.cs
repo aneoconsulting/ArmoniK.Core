@@ -364,11 +364,11 @@ public class TaskWatcherTestBase
       var newResults = new List<NewTask>();
       Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                      {
-                                                       while (await watchEnumerator.MoveNextAsync()
-                                                                                   .ConfigureAwait(false))
+                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                                                .ConfigureAwait(false))
                                                        {
-                                                         Console.WriteLine(watchEnumerator.Current);
-                                                         newResults.Add(watchEnumerator.Current);
+                                                         Console.WriteLine(cur);
+                                                         newResults.Add(cur);
                                                        }
                                                      });
 
@@ -397,11 +397,11 @@ public class TaskWatcherTestBase
       var newResults = new List<TaskStatusUpdate>();
       Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                      {
-                                                       while (await watchEnumerator.MoveNextAsync()
-                                                                                   .ConfigureAwait(false))
+                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                                                .ConfigureAwait(false))
                                                        {
-                                                         Console.WriteLine(watchEnumerator.Current);
-                                                         newResults.Add(watchEnumerator.Current);
+                                                         Console.WriteLine(cur);
+                                                         newResults.Add(cur);
                                                        }
                                                      });
 

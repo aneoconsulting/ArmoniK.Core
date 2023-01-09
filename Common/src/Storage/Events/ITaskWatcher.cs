@@ -39,9 +39,9 @@ public interface ITaskWatcher : IInitializable
   /// <param name="sessionId">The session id</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   A <see cref="IAsyncEnumerator{NewTask}" /> that holds the updates when they are available
+  ///   A <see cref="IAsyncEnumerable{NewTask}" /> that holds the updates when they are available
   /// </returns>
-  Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
+  Task<IAsyncEnumerable<NewTask>> GetNewTasks(string            sessionId,
                                               CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -50,8 +50,8 @@ public interface ITaskWatcher : IInitializable
   /// <param name="sessionId">The session id</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   A <see cref="IAsyncEnumerator{TaskStatusUpdate}" /> that holds the updates when they are available
+  ///   A <see cref="IAsyncEnumerable{TaskStatusUpdate}" /> that holds the updates when they are available
   /// </returns>
-  Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+  Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                 CancellationToken cancellationToken = default);
 }

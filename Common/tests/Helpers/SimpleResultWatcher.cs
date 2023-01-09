@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,34 +49,34 @@ internal class SimpleResultWatcher : IResultWatcher
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public Task<IAsyncEnumerator<NewResult>> GetNewResults(string            sessionId,
+  public Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
                                                          CancellationToken cancellationToken = default)
-    => Task.FromResult<IAsyncEnumerator<NewResult>>(new SimpleWatcherEnumerator<NewResult>(new[]
-                                                                                           {
-                                                                                             new NewResult(sessionId,
-                                                                                                           ResultId,
-                                                                                                           OwnerPodId,
-                                                                                                           ResultStatus.Created),
-                                                                                           }));
+    => Task.FromResult(new[]
+                       {
+                         new NewResult(sessionId,
+                                       ResultId,
+                                       OwnerPodId,
+                                       ResultStatus.Created),
+                       }.ToAsyncEnumerable());
 
   /// <inheritdoc />
-  public Task<IAsyncEnumerator<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
+  public Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
                                                                          CancellationToken cancellationToken = default)
-    => Task.FromResult<IAsyncEnumerator<ResultOwnerUpdate>>(new SimpleWatcherEnumerator<ResultOwnerUpdate>(new[]
-                                                                                                           {
-                                                                                                             new ResultOwnerUpdate(sessionId,
-                                                                                                                                   ResultId,
-                                                                                                                                   PreviousOwnerPodId,
-                                                                                                                                   OwnerPodId),
-                                                                                                           }));
+    => Task.FromResult(new[]
+                       {
+                         new ResultOwnerUpdate(sessionId,
+                                               ResultId,
+                                               PreviousOwnerPodId,
+                                               OwnerPodId),
+                       }.ToAsyncEnumerable());
 
   /// <inheritdoc />
-  public Task<IAsyncEnumerator<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
+  public Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
                                                                            CancellationToken cancellationToken = default)
-    => Task.FromResult<IAsyncEnumerator<ResultStatusUpdate>>(new SimpleWatcherEnumerator<ResultStatusUpdate>(new[]
-                                                                                                             {
-                                                                                                               new ResultStatusUpdate(sessionId,
-                                                                                                                                      ResultId,
-                                                                                                                                      ResultStatus.Completed),
-                                                                                                             }));
+    => Task.FromResult(new[]
+                       {
+                         new ResultStatusUpdate(sessionId,
+                                                ResultId,
+                                                ResultStatus.Completed),
+                       }.ToAsyncEnumerable());
 }

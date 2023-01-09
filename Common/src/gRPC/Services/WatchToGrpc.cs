@@ -75,11 +75,8 @@ public class WatchToGrpc
                                                                           cancellationToken)
                                                           .ConfigureAwait(false)).totalCount > read)
                             {
-                              using var enumerator = res.tasks.GetEnumerator();
-
-                              while (enumerator.MoveNext())
+                              foreach (var cur in res.tasks)
                               {
-                                var cur = enumerator.Current;
                                 await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                                 {
                                                                   NewTask = new EventSubscriptionResponse.Types.NewTask
@@ -127,11 +124,8 @@ public class WatchToGrpc
                                                                               cancellationToken)
                                                             .ConfigureAwait(false)).totalCount > read)
                             {
-                              using var enumerator = res.results.GetEnumerator();
-
-                              while (enumerator.MoveNext())
+                              foreach (var cur in res.results)
                               {
-                                var cur = enumerator.Current;
                                 await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                                 {
                                                                   NewResult = new EventSubscriptionResponse.Types.NewResult
@@ -159,10 +153,10 @@ public class WatchToGrpc
                                                                           cancellationToken)
                                                              .ConfigureAwait(false);
 
-                            while (await newTasks.MoveNextAsync()
-                                                 .ConfigureAwait(false))
+
+                            await foreach (var cur in newTasks.WithCancellation(cancellationToken)
+                                                              .ConfigureAwait(false))
                             {
-                              var cur = newTasks.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
                                                                 NewTask = new EventSubscriptionResponse.Types.NewTask
@@ -198,10 +192,9 @@ public class WatchToGrpc
                                                                                    cancellationToken)
                                                              .ConfigureAwait(false);
 
-                            while (await newTasks.MoveNextAsync()
-                                                 .ConfigureAwait(false))
+                            await foreach (var cur in newTasks.WithCancellation(cancellationToken)
+                                                              .ConfigureAwait(false))
                             {
-                              var cur = newTasks.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
                                                                 TaskStatusUpdate = new EventSubscriptionResponse.Types.TaskStatusUpdate
@@ -223,10 +216,9 @@ public class WatchToGrpc
                                                                                 cancellationToken)
                                                                  .ConfigureAwait(false);
 
-                            while (await newResults.MoveNextAsync()
-                                                   .ConfigureAwait(false))
+                            await foreach (var cur in newResults.WithCancellation(cancellationToken)
+                                                                .ConfigureAwait(false))
                             {
-                              var cur = newResults.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
                                                                 NewResult = new EventSubscriptionResponse.Types.NewResult
@@ -249,10 +241,9 @@ public class WatchToGrpc
                                                                                          cancellationToken)
                                                                  .ConfigureAwait(false);
 
-                            while (await newResults.MoveNextAsync()
-                                                   .ConfigureAwait(false))
+                            await foreach (var cur in newResults.WithCancellation(cancellationToken)
+                                                                .ConfigureAwait(false))
                             {
-                              var cur = newResults.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
                                                                 ResultStatusUpdate = new EventSubscriptionResponse.Types.ResultStatusUpdate
@@ -274,10 +265,9 @@ public class WatchToGrpc
                                                                                         cancellationToken)
                                                                  .ConfigureAwait(false);
 
-                            while (await newResults.MoveNextAsync()
-                                                   .ConfigureAwait(false))
+                            await foreach (var cur in newResults.WithCancellation(cancellationToken)
+                                                                .ConfigureAwait(false))
                             {
-                              var cur = newResults.Current;
                               await channel.Writer.WriteAsync(new EventSubscriptionResponse
                                                               {
                                                                 ResultOwnerUpdate = new EventSubscriptionResponse.Types.ResultOwnerUpdate

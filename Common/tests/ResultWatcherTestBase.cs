@@ -257,11 +257,11 @@ public class ResultWatcherTestBase
       var newResults = new List<NewResult>();
       Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                      {
-                                                       while (await watchEnumerator.MoveNextAsync()
-                                                                                   .ConfigureAwait(false))
+                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                                                .ConfigureAwait(false))
                                                        {
-                                                         Console.WriteLine(watchEnumerator.Current);
-                                                         newResults.Add(watchEnumerator.Current);
+                                                         Console.WriteLine(cur);
+                                                         newResults.Add(cur);
                                                        }
                                                      });
 
@@ -290,11 +290,11 @@ public class ResultWatcherTestBase
       var newResults = new List<ResultStatusUpdate>();
       Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                      {
-                                                       while (await watchEnumerator.MoveNextAsync()
-                                                                                   .ConfigureAwait(false))
+                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                                                .ConfigureAwait(false))
                                                        {
-                                                         Console.WriteLine(watchEnumerator.Current);
-                                                         newResults.Add(watchEnumerator.Current);
+                                                         Console.WriteLine(cur);
+                                                         newResults.Add(cur);
                                                        }
                                                      });
 
@@ -322,14 +322,13 @@ public class ResultWatcherTestBase
       cts.CancelAfter(TimeSpan.FromSeconds(2));
 
       var newResults = new List<ResultOwnerUpdate>();
-
       Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                      {
-                                                       while (await watchEnumerator.MoveNextAsync()
-                                                                                   .ConfigureAwait(false))
+                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                                                .ConfigureAwait(false))
                                                        {
-                                                         Console.WriteLine(watchEnumerator.Current);
-                                                         newResults.Add(watchEnumerator.Current);
+                                                         Console.WriteLine(cur);
+                                                         newResults.Add(cur);
                                                        }
                                                      });
 

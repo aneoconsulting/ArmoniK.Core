@@ -88,7 +88,7 @@ public class TaskWatcher : ITaskWatcher
     }
   }
 
-  public async Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
+  public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(string            sessionId,
                                                            CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetNewTasks)}");
@@ -109,7 +109,7 @@ public class TaskWatcher : ITaskWatcher
                                                                                })
                                                           .ConfigureAwait(false);
 
-    return new WatchEnumerator<NewTask, ChangeStreamDocument<TaskData>>(changeStreamCursor,
+    return new WatchEnumerable<NewTask, ChangeStreamDocument<TaskData>>(changeStreamCursor,
                                                                         doc => new NewTask(doc.FullDocument.SessionId,
                                                                                            doc.FullDocument.TaskId,
                                                                                            doc.FullDocument.InitialTaskId,
@@ -117,12 +117,11 @@ public class TaskWatcher : ITaskWatcher
                                                                                            doc.FullDocument.ExpectedOutputIds,
                                                                                            doc.FullDocument.DataDependencies,
                                                                                            doc.FullDocument.RetryOfIds,
-                                                                                           doc.FullDocument.Status),
-                                                                        cancellationToken);
+                                                                                           doc.FullDocument.Status));
   }
 
 
-  public async Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+  public async Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                              CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusUpdates)}");
@@ -140,10 +139,9 @@ public class TaskWatcher : ITaskWatcher
                                                                  cancellationToken)
                                                      .ConfigureAwait(false);
 
-    return new WatchEnumerator<TaskStatusUpdate, ChangeStreamDocument<TaskData>>(changeStreamCursor,
+    return new WatchEnumerable<TaskStatusUpdate, ChangeStreamDocument<TaskData>>(changeStreamCursor,
                                                                                  doc => new TaskStatusUpdate(doc.FullDocument.SessionId,
                                                                                                              doc.FullDocument.TaskId,
-                                                                                                             doc.FullDocument.Status),
-                                                                                 cancellationToken);
+                                                                                                             doc.FullDocument.Status));
   }
 }

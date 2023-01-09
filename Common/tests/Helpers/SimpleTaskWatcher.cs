@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,35 +48,35 @@ internal class SimpleTaskWatcher : ITaskWatcher
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<IAsyncEnumerator<NewTask>> GetNewTasks(string            sessionId,
+  public Task<IAsyncEnumerable<NewTask>> GetNewTasks(string            sessionId,
                                                      CancellationToken cancellationToken = default)
-    => Task.FromResult<IAsyncEnumerator<NewTask>>(new SimpleWatcherEnumerator<NewTask>(new[]
-                                                                                       {
-                                                                                         new NewTask(sessionId,
-                                                                                                     TaskId,
-                                                                                                     OriginTaskId,
-                                                                                                     PayloadId,
-                                                                                                     new List<string>
-                                                                                                     {
-                                                                                                       OutputId,
-                                                                                                     },
-                                                                                                     new List<string>(),
-                                                                                                     new List<string>(),
-                                                                                                     TaskStatus.Creating),
-                                                                                       }));
+    => Task.FromResult(new[]
+                       {
+                         new NewTask(sessionId,
+                                     TaskId,
+                                     OriginTaskId,
+                                     PayloadId,
+                                     new List<string>
+                                     {
+                                       OutputId,
+                                     },
+                                     new List<string>(),
+                                     new List<string>(),
+                                     TaskStatus.Creating),
+                       }.ToAsyncEnumerable());
 
-  public Task<IAsyncEnumerator<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
+  public Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                        CancellationToken cancellationToken = default)
-    => Task.FromResult<IAsyncEnumerator<TaskStatusUpdate>>(new SimpleWatcherEnumerator<TaskStatusUpdate>(new[]
-                                                                                                         {
-                                                                                                           new TaskStatusUpdate(sessionId,
-                                                                                                                                TaskId,
-                                                                                                                                TaskStatus.Submitted),
-                                                                                                           new TaskStatusUpdate(sessionId,
-                                                                                                                                TaskId,
-                                                                                                                                TaskStatus.Processing),
-                                                                                                           new TaskStatusUpdate(sessionId,
-                                                                                                                                TaskId,
-                                                                                                                                TaskStatus.Completed),
-                                                                                                         }));
+    => Task.FromResult(new[]
+                       {
+                         new TaskStatusUpdate(sessionId,
+                                              TaskId,
+                                              TaskStatus.Submitted),
+                         new TaskStatusUpdate(sessionId,
+                                              TaskId,
+                                              TaskStatus.Processing),
+                         new TaskStatusUpdate(sessionId,
+                                              TaskId,
+                                              TaskStatus.Completed),
+                       }.ToAsyncEnumerable());
 }

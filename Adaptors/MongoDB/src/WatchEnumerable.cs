@@ -25,7 +25,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 using MongoDB.Driver;
 
@@ -36,12 +35,10 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 /// </summary>
 /// <typeparam name="TOutput">Output type</typeparam>
 /// <typeparam name="TInput">Input type</typeparam>
-public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
+public sealed class WatchEnumerable<TOutput, TInput> : IAsyncEnumerable<TOutput>
 {
-  private readonly CancellationToken           cancellationToken_;
   private readonly Func<TInput, TOutput>       converter_;
   private readonly IChangeStreamCursor<TInput> cursor_;
-  private          IEnumerator<TInput>?        currentEnumerator_;
 
   /// <summary>
   ///   Initializes a <see cref="IAsyncEnumerator{TOutput}" /> from a <see cref="IChangeStreamCursor{TInput}" />
@@ -49,69 +46,16 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
   /// </summary>
   /// <param name="cursor">Input change stream cursor</param>
   /// <param name="converter">Func to convert the input into the output</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  public WatchEnumerator(IChangeStreamCursor<TInput> cursor,
-                         Func<TInput, TOutput>       converter,
-                         CancellationToken           cancellationToken)
+  public WatchEnumerable(IChangeStreamCursor<TInput> cursor,
+                         Func<TInput, TOutput>       converter)
   {
-    cursor_            = cursor;
-    converter_         = converter;
-    cancellationToken_ = cancellationToken;
+    cursor_    = cursor;
+    converter_ = converter;
   }
 
   /// <inheritdoc />
-  public async ValueTask<bool> MoveNextAsync()
-  {
-    if (cancellationToken_.IsCancellationRequested)
-    {
-      return false;
-    }
-
-    if (currentEnumerator_ is not null)
-    {
-      if (currentEnumerator_.MoveNext())
-      {
-        return true;
-      }
-
-      currentEnumerator_.Dispose();
-      currentEnumerator_ = null;
-    }
-
-    while (currentEnumerator_ is null)
-    {
-      if (cancellationToken_.IsCancellationRequested)
-      {
-        return false;
-      }
-
-      if (!await cursor_.MoveNextAsync(cancellationToken_)
-                        .ConfigureAwait(false))
-      {
-        return false;
-      }
-
-      var enumerator = cursor_.Current.GetEnumerator();
-      if (enumerator.MoveNext())
-      {
-        currentEnumerator_ = enumerator;
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /// <inheritdoc />
-  public TOutput Current
-    => currentEnumerator_ is null
-         ? throw new InvalidOperationException()
-         : converter_(currentEnumerator_.Current);
-
-  /// <inheritdoc />
-  public ValueTask DisposeAsync()
-  {
-    currentEnumerator_?.Dispose();
-    return ValueTask.CompletedTask;
-  }
+  public IAsyncEnumerator<TOutput> GetAsyncEnumerator(CancellationToken cancellationToken = new())
+    => new WatchEnumerator<TOutput, TInput>(cursor_,
+                                            converter_,
+                                            cancellationToken);
 }
