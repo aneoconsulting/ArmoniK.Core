@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -60,18 +61,18 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> MoveNextAsync()
+  public async ValueTask<bool> MoveNextAsync()
   {
     if (cancellationToken_.IsCancellationRequested)
     {
-      return new ValueTask<bool>(false);
+      return false;
     }
 
     if (currentEnumerable_ is not null)
     {
       if (currentEnumerable_.MoveNext())
       {
-        return new ValueTask<bool>(true);
+        return true;
       }
 
       currentEnumerable_ = null;
@@ -81,23 +82,24 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
     {
       if (cancellationToken_.IsCancellationRequested)
       {
-        return new ValueTask<bool>(false);
+        return false;
       }
 
-      if (!cursor_.MoveNext(cancellationToken_))
+      if (!await cursor_.MoveNextAsync(cancellationToken_)
+                        .ConfigureAwait(false))
       {
-        return new ValueTask<bool>(false);
+        return false;
       }
 
       var enumerator = cursor_.Current.GetEnumerator();
       if (enumerator.MoveNext())
       {
         currentEnumerable_ = enumerator;
-        return new ValueTask<bool>(true);
+        return true;
       }
     }
 
-    return new ValueTask<bool>(false);
+    return false;
   }
 
   /// <inheritdoc />
@@ -117,7 +119,7 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
   /// <inheritdoc />
   public ValueTask DisposeAsync()
   {
-    currentEnumerable_?.Dispose();
+    currentEnumerable_?.DisposeAsync();
     return ValueTask.CompletedTask;
   }
 }
