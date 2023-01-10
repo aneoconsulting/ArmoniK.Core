@@ -35,6 +35,10 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Convert the events from the different watchers and the data from the database to
+///   gRPC objects
+/// </summary>
 public class WatchToGrpc
 {
   private const    int            PageSize = 100;
@@ -44,6 +48,14 @@ public class WatchToGrpc
   private readonly ITaskTable     taskTable_;
   private readonly ITaskWatcher   taskWatcher_;
 
+  /// <summary>
+  ///   Initializes the class from the given parameters
+  /// </summary>
+  /// <param name="taskTable">Interface to access task data</param>
+  /// <param name="taskWatcher">Watcher to receive events when tasks are modified</param>
+  /// <param name="resultTable">Interface to access result data</param>
+  /// <param name="resultWatcher">Watcher to receive events when results are modified</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public WatchToGrpc(ITaskTable     taskTable,
                      ITaskWatcher   taskWatcher,
                      IResultTable   resultTable,
@@ -57,6 +69,14 @@ public class WatchToGrpc
     logger_        = logger;
   }
 
+  /// <summary>
+  ///   Get the task and result update events from the given session
+  /// </summary>
+  /// <param name="sessionId">The id of the session</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   An <see cref="IAsyncEnumerable{EventSubscriptionResponse}" /> that contains the update events
+  /// </returns>
   public IAsyncEnumerable<EventSubscriptionResponse> GetEvents(string            sessionId,
                                                                CancellationToken cancellationToken)
   {

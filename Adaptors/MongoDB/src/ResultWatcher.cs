@@ -89,6 +89,7 @@ public class ResultWatcher : IResultWatcher
   }
 
 
+  /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
                                                                CancellationToken cancellationToken = default)
   {
@@ -117,6 +118,7 @@ public class ResultWatcher : IResultWatcher
                                                                                                       resultUpdate.FullDocument.Status));
   }
 
+  /// <inheritdoc />
   public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
                                                                                CancellationToken cancellationToken = default)
   {
@@ -142,6 +144,7 @@ public class ResultWatcher : IResultWatcher
                                                                                                              doc.FullDocument.OwnerTaskId));
   }
 
+  /// <inheritdoc />
   public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
                                                                                  CancellationToken cancellationToken = default)
   {

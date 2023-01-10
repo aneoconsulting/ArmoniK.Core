@@ -24,6 +24,13 @@
 
 namespace ArmoniK.Core.Common.Storage.Events;
 
+/// <summary>
+///   Represents an owner id update for a result
+/// </summary>
+/// <param name="SessionId">The id of the session</param>
+/// <param name="ResultId">The id of the result</param>
+/// <param name="PreviousOwnerId">The previous owner id of the result</param>
+/// <param name="NewOwner">The new owner id of the result</param>
 public record ResultOwnerUpdate(string SessionId,
                                 string ResultId,
                                 string PreviousOwnerId,

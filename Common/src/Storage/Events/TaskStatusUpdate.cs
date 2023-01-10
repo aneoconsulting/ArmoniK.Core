@@ -26,6 +26,12 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage.Events;
 
+/// <summary>
+///   Represents an status update for a task
+/// </summary>
+/// <param name="SessionId">The id of the session</param>
+/// <param name="TaskId">The id of the task</param>
+/// <param name="Status">The new status of the task</param>
 public record TaskStatusUpdate(string     SessionId,
                                string     TaskId,
                                TaskStatus Status);

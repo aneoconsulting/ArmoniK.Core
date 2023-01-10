@@ -26,6 +26,12 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage.Events;
 
+/// <summary>
+///   Represents an status update for a result
+/// </summary>
+/// <param name="SessionId">The id of the session</param>
+/// <param name="ResultId">The id of the result</param>
+/// <param name="Status">The new status of the result</param>
 public record ResultStatusUpdate(string       SessionId,
                                  string       ResultId,
                                  ResultStatus Status);

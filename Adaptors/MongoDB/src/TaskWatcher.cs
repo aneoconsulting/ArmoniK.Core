@@ -88,6 +88,7 @@ public class TaskWatcher : ITaskWatcher
     }
   }
 
+  /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(string            sessionId,
                                                            CancellationToken cancellationToken = default)
   {
@@ -121,6 +122,7 @@ public class TaskWatcher : ITaskWatcher
   }
 
 
+  /// <inheritdoc />
   public async Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
                                                                              CancellationToken cancellationToken = default)
   {

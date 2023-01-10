@@ -29,6 +29,17 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage.Events;
 
+/// <summary>
+///   Represents a new task update
+/// </summary>
+/// <param name="SessionId">The id of the session</param>
+/// <param name="TaskId">The id of the task</param>
+/// <param name="OriginTaskId">The id of the task before retry (the task id if no retry)</param>
+/// <param name="PayloadId">The id of the payload</param>
+/// <param name="ExpectedOutputKeys">The list of the id of the data produced by the task</param>
+/// <param name="DataDependencies">The list of id representing the data dependencies</param>
+/// <param name="RetryOfIds">The list of task id of the previous run of the task (empty of no retry)</param>
+/// <param name="Status">The status of the task</param>
 public record NewTask(string              SessionId,
                       string              TaskId,
                       string              OriginTaskId,

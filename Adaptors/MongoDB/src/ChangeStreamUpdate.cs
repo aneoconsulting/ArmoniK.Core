@@ -33,8 +33,24 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <summary>
+///   Helper class to get stream updates (events produced when there is an action on the db used by replication)
+///   from MongoDB collection
+/// </summary>
 public static class ChangeStreamUpdate
 {
+  /// <summary>
+  ///   Listen to the change stream with filtering and returns the matching events
+  /// </summary>
+  /// <typeparam name="T">Type of Document retrieved from the database</typeparam>
+  /// <param name="collection">Collection containing the data</param>
+  /// <param name="sessionHandle">MongoDB session</param>
+  /// <param name="filter">Filter to select the updates that the function will return</param>
+  /// <param name="fields">List of fields to watch for modifications</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A <see cref="IChangeStreamCursor{ChangeStreamDocument}" /> containing the filtered modification events
+  /// </returns>
   public static async Task<IChangeStreamCursor<ChangeStreamDocument<T>>> GetUpdates<T>(IMongoCollection<T>                             collection,
                                                                                        IClientSessionHandle                            sessionHandle,
                                                                                        Expression<Func<ChangeStreamDocument<T>, bool>> filter,
