@@ -22,7 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
@@ -69,16 +69,21 @@ public class GrpcEventsService : Events.EventsBase
                               resultWatcher_,
                               logger_);
 
-    var enumerator = wtg.GetEvents(request.SessionId,
-                                   context.CancellationToken)
-                        .GetAsyncEnumerator();
-
-    while (await enumerator.MoveNextAsync(context.CancellationToken)
-                           .ConfigureAwait(false))
+    try
     {
-      await responseStream.WriteAsync(enumerator.Current,
-                                      context.CancellationToken)
-                          .ConfigureAwait(false);
+      await foreach (var eventSubscriptionResponse in wtg.GetEvents(request.SessionId,
+                                                                    context.CancellationToken)
+                                                         .ConfigureAwait(false))
+      {
+        await responseStream.WriteAsync(eventSubscriptionResponse,
+                                        context.CancellationToken)
+                            .ConfigureAwait(false);
+      }
+    }
+    catch (OperationCanceledException e)
+    {
+      logger_.LogWarning(e,
+                         "Subscription cancelled, no more messages will be sent.");
     }
   }
 }
