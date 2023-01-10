@@ -97,6 +97,8 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
         currentEnumerator_ = enumerator;
         return true;
       }
+
+      enumerator.Dispose();
     }
 
     return false;
