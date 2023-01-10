@@ -4,6 +4,8 @@ use_local_image = false
 
 num_replicas = 3
 
+num_partitions = 2
+
 mongodb_params = {
   max_connection_pool_size = "500"
   min_polling_delay        = "00:00:01"
@@ -58,6 +60,16 @@ compute_plane = {
     serilog_application_name = "ArmoniK.Compute.Worker"
     docker_file_path         = "../Tests/HtcMock/Server/src"
   }
+}
+
+partition_data = {
+  _id                   = "TestPartition"
+  priority              = 1
+  reserved_pods         = 50
+  max_pods              = 100
+  preemption_percentage = 20
+  parent_partition_ids  = "[]"
+  pod_configuration     = "null"
 }
 
 armonik_metrics_image = "dockerhubaneo/armonik_control_metrics"

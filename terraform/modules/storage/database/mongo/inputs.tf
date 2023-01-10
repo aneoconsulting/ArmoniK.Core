@@ -14,6 +14,10 @@ variable "mongodb_params" {
   })
 }
 
+variable "partition_list" {
+  type = map(any)
+}
+
 variable "db_name" {
   type    = string
   default = "database"

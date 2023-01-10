@@ -13,6 +13,11 @@ variable "num_replicas" {
   default = 3
 }
 
+variable "num_partitions" {
+  type    = number
+  default = 3
+}
+
 variable "mongodb_params" {
   type = object({
     max_connection_pool_size = string
@@ -92,6 +97,19 @@ variable "compute_plane" {
       worker_check_retries = number,
       worker_check_delay   = string,
     })
+  })
+}
+
+variable "partition_data" {
+  description = "Template to create multiple partitions"
+  type = object({
+    _id                   = string
+    priority              = number
+    reserved_pods         = number
+    max_pods              = number
+    preemption_percentage = number
+    parent_partition_ids  = string
+    pod_configuration     = string
   })
 }
 

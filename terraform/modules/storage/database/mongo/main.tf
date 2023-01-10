@@ -19,8 +19,9 @@ resource "docker_container" "database" {
 
 resource "null_resource" "partitions_in_db" {
 
+  for_each = var.partition_list
   provisioner "local-exec" {
-    command     = "docker run --net ${var.network} --rm rtsp/mongosh mongosh mongodb://database:27017/${docker_container.database.name} --eval 'db.PartitionData.insertMany([{ _id: \"TestPartition0\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition1\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: \"TestPartition2\", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'"
+    command     = "docker run --net ${var.network} --rm rtsp/mongosh mongosh mongodb://database:27017/${docker_container.database.name} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
     interpreter = ["/bin/bash", "-c"]
   }
 }

@@ -31,6 +31,10 @@ variable "replica_counter" {
   type = number
 }
 
+variable "num_partitions" {
+  type = number
+}
+
 variable "use_local_image" {
   type    = bool
   default = false

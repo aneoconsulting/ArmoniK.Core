@@ -21,6 +21,7 @@ module "database" {
   image          = var.database_image
   network        = docker_network.armonik.name
   mongodb_params = var.mongodb_params
+  partition_list = local.partition_list
 }
 
 module "object_redis" {
@@ -51,7 +52,6 @@ module "queue_activemq" {
   network       = docker_network.armonik.name
 }
 
-
 module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
@@ -67,6 +67,7 @@ module "compute_plane" {
   source             = "./modules/compute_plane"
   for_each           = local.replicas
   replica_counter    = each.key
+  num_partitions     = var.num_partitions
   core_tag           = local.compute_plane.tag
   polling_agent      = local.compute_plane.polling_agent
   worker             = local.compute_plane.worker
