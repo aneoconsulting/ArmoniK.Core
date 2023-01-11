@@ -25,10 +25,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -50,23 +52,65 @@ public class WatchToGrpcTests
                                               new SimpleResultWatcher(),
                                               NullLogger.Instance);
 
-    // Simple* that are used to create this instance do not check the session in their implementation
-    var res = watchToGrpcInstance.GetEvents("",
-                                            cts.Token)
-                                 .GetAsyncEnumerator(cts.Token);
 
     var list = new List<EventSubscriptionResponse>();
 
     Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                    {
-                                                     while (await res.MoveNextAsync()
-                                                                     .ConfigureAwait(false))
+                                                     // Simple* that are used to create this instance do not check the session in their implementation
+                                                     await foreach (var eventSubscriptionResponse in watchToGrpcInstance.GetEvents("",
+                                                                                                                                   cts.Token)
+                                                                                                                        .WithCancellation(cts.Token)
+                                                                                                                        .ConfigureAwait(false))
                                                      {
-                                                       Console.WriteLine(res.Current);
-                                                       list.Add(res.Current);
+                                                       Console.WriteLine(eventSubscriptionResponse);
+                                                       list.Add(eventSubscriptionResponse);
                                                      }
                                                    });
     Assert.AreEqual(9,
+                    list.Count);
+  }
+
+  [Test]
+  [TestCase(3)]
+  [TestCase(6)]
+  public async Task MultipleWatchShouldSucceed(int nTries)
+  {
+    var cts      = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+    var list     = new List<EventSubscriptionResponse>();
+    var taskList = new List<Task>();
+
+    for (var i = 0; i < nTries; i++)
+    {
+      taskList.Add(Task.Factory.StartNew(() =>
+                                         {
+                                           var watchToGrpcInstance = new WatchToGrpc(new SimpleTaskTable(),
+                                                                                     new SimpleTaskWatcher(),
+                                                                                     new SimpleResultTable(),
+                                                                                     new SimpleResultWatcher(),
+                                                                                     NullLogger.Instance);
+
+                                           Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                                                                                          {
+                                                                                            // Simple* that are used to create this instance do not check the session in their implementation
+                                                                                            await foreach (var eventSubscriptionResponse in watchToGrpcInstance
+                                                                                                                                            .GetEvents("",
+                                                                                                                                                       cts.Token)
+                                                                                                                                            .WithCancellation(cts.Token)
+                                                                                                                                            .ConfigureAwait(false))
+                                                                                            {
+                                                                                              Console.WriteLine(eventSubscriptionResponse);
+                                                                                              list.Add(eventSubscriptionResponse);
+                                                                                            }
+                                                                                          });
+                                         },
+                                         CancellationToken.None));
+    }
+
+    await taskList.WhenAll()
+                  .ConfigureAwait(false);
+
+    Assert.AreEqual(9 * nTries,
                     list.Count);
   }
 }
