@@ -1829,6 +1829,28 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Logger
   nameWithType: AuthenticationTable.Logger
+- uid: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate
+  name: ChangeStreamUpdate
+  href: api/ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate
+  fullName: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate
+  nameWithType: ChangeStreamUpdate
+- uid: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates*
+  name: GetUpdates
+  href: api/ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.html#ArmoniK_Core_Adapters_MongoDB_ChangeStreamUpdate_GetUpdates_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates
+  nameWithType: ChangeStreamUpdate.GetUpdates
+- uid: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates``1(IMongoCollection{``0},IClientSessionHandle,Expression{Func{ChangeStreamDocument{``0},System.Boolean}},IEnumerable{System.String},CancellationToken)
+  name: GetUpdates<T>(IMongoCollection<T>, IClientSessionHandle, Expression<Func<ChangeStreamDocument<T>, Boolean>>, IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.html#ArmoniK_Core_Adapters_MongoDB_ChangeStreamUpdate_GetUpdates__1_IMongoCollection___0__IClientSessionHandle_Expression_Func_ChangeStreamDocument___0__System_Boolean___IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates``1(IMongoCollection{``0},IClientSessionHandle,Expression{Func{ChangeStreamDocument{``0},System.Boolean}},IEnumerable{System.String},CancellationToken)
+  name.vb: GetUpdates(Of T)(IMongoCollection(Of T), IClientSessionHandle, Expression(Of Func(Of ChangeStreamDocument(Of T), Boolean)), IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates<T>(IMongoCollection<T>, IClientSessionHandle, Expression<Func<ChangeStreamDocument<T>, System.Boolean>>, IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ChangeStreamUpdate.GetUpdates(Of T)(IMongoCollection(Of T), IClientSessionHandle, Expression(Of Func(Of ChangeStreamDocument(Of T), System.Boolean)), IEnumerable(Of System.String), CancellationToken)
+  nameWithType: ChangeStreamUpdate.GetUpdates<T>(IMongoCollection<T>, IClientSessionHandle, Expression<Func<ChangeStreamDocument<T>, Boolean>>, IEnumerable<String>, CancellationToken)
+  nameWithType.vb: ChangeStreamUpdate.GetUpdates(Of T)(IMongoCollection(Of T), IClientSessionHandle, Expression(Of Func(Of ChangeStreamDocument(Of T), Boolean)), IEnumerable(Of String), CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.Common
   name: ArmoniK.Core.Adapters.MongoDB.Common
   href: api/ArmoniK.Core.Adapters.MongoDB.Common.html
@@ -2390,6 +2412,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ReplicaSet
   nameWithType: MongoDB.ReplicaSet
+- uid: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ServerSelectionTimeout
+  name: ServerSelectionTimeout
+  href: api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html#ArmoniK_Core_Adapters_MongoDB_Options_MongoDB_ServerSelectionTimeout
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ServerSelectionTimeout
+  fullName: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ServerSelectionTimeout
+  nameWithType: MongoDB.ServerSelectionTimeout
+- uid: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ServerSelectionTimeout*
+  name: ServerSelectionTimeout
+  href: api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html#ArmoniK_Core_Adapters_MongoDB_Options_MongoDB_ServerSelectionTimeout_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ServerSelectionTimeout
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ServerSelectionTimeout
+  nameWithType: MongoDB.ServerSelectionTimeout
 - uid: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.SettingSection
   name: SettingSection
   href: api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html#ArmoniK_Core_Adapters_MongoDB_Options_MongoDB_SettingSection
@@ -2892,6 +2927,93 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.SetResult
   nameWithType: ResultTable.SetResult
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher
+  name: ResultWatcher
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.ResultWatcher
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher
+  nameWithType: ResultWatcher
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.Result,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.ResultWatcher})
+  name: ResultWatcher(SessionProvider, MongoCollectionProvider<Result, ResultDataModelMapping>, ActivitySource, ILogger<ResultWatcher>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Storage_Result_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping__ActivitySource_ILogger_ArmoniK_Core_Adapters_MongoDB_ResultWatcher__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.Result,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.ResultWatcher})
+  name.vb: ResultWatcher(SessionProvider, MongoCollectionProvider(Of Result, ResultDataModelMapping), ActivitySource, ILogger(Of ResultWatcher))
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.ResultWatcher(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Common.Storage.Result, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping>, ActivitySource, ILogger<ArmoniK.Core.Adapters.MongoDB.ResultWatcher>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.ResultWatcher(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Common.Storage.Result, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping), ActivitySource, ILogger(Of ArmoniK.Core.Adapters.MongoDB.ResultWatcher))
+  nameWithType: ResultWatcher.ResultWatcher(SessionProvider, MongoCollectionProvider<Result, ResultDataModelMapping>, ActivitySource, ILogger<ResultWatcher>)
+  nameWithType.vb: ResultWatcher.ResultWatcher(SessionProvider, MongoCollectionProvider(Of Result, ResultDataModelMapping), ActivitySource, ILogger(Of ResultWatcher))
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.#ctor*
+  name: ResultWatcher
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.ResultWatcher
+  nameWithType: ResultWatcher.ResultWatcher
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: ResultWatcher.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Check
+  nameWithType: ResultWatcher.Check
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetNewResults(System.String,CancellationToken)
+  name: GetNewResults(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_GetNewResults_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetNewResults(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetNewResults(System.String, CancellationToken)
+  nameWithType: ResultWatcher.GetNewResults(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetNewResults*
+  name: GetNewResults
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_GetNewResults_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetNewResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetNewResults
+  nameWithType: ResultWatcher.GetNewResults
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultOwnerUpdates(System.String,CancellationToken)
+  name: GetResultOwnerUpdates(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_GetResultOwnerUpdates_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultOwnerUpdates(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultOwnerUpdates(System.String, CancellationToken)
+  nameWithType: ResultWatcher.GetResultOwnerUpdates(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultOwnerUpdates*
+  name: GetResultOwnerUpdates
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_GetResultOwnerUpdates_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultOwnerUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultOwnerUpdates
+  nameWithType: ResultWatcher.GetResultOwnerUpdates
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultStatusUpdates(System.String,CancellationToken)
+  name: GetResultStatusUpdates(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_GetResultStatusUpdates_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultStatusUpdates(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultStatusUpdates(System.String, CancellationToken)
+  nameWithType: ResultWatcher.GetResultStatusUpdates(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultStatusUpdates*
+  name: GetResultStatusUpdates
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_GetResultStatusUpdates_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultStatusUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.GetResultStatusUpdates
+  nameWithType: ResultWatcher.GetResultStatusUpdates
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Init(CancellationToken)
+  nameWithType: ResultWatcher.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultWatcher.html#ArmoniK_Core_Adapters_MongoDB_ResultWatcher_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultWatcher.Init
+  nameWithType: ResultWatcher.Init
 - uid: ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt
   name: ServiceCollectionExt
   href: api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html
@@ -4355,6 +4477,80 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.UpdateTaskStatusAsync
   nameWithType: TaskTable.UpdateTaskStatusAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher
+  name: TaskWatcher
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.TaskWatcher
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher
+  nameWithType: TaskWatcher
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.TaskData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.TaskWatcher})
+  name: TaskWatcher(SessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping>, ActivitySource, ILogger<TaskWatcher>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Storage_TaskData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_TaskDataModelMapping__ActivitySource_ILogger_ArmoniK_Core_Adapters_MongoDB_TaskWatcher__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.TaskData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.TaskWatcher})
+  name.vb: TaskWatcher(SessionProvider, MongoCollectionProvider(Of TaskData, TaskDataModelMapping), ActivitySource, ILogger(Of TaskWatcher))
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.TaskWatcher(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Common.Storage.TaskData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping>, ActivitySource, ILogger<ArmoniK.Core.Adapters.MongoDB.TaskWatcher>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.TaskWatcher(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Common.Storage.TaskData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping), ActivitySource, ILogger(Of ArmoniK.Core.Adapters.MongoDB.TaskWatcher))
+  nameWithType: TaskWatcher.TaskWatcher(SessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping>, ActivitySource, ILogger<TaskWatcher>)
+  nameWithType.vb: TaskWatcher.TaskWatcher(SessionProvider, MongoCollectionProvider(Of TaskData, TaskDataModelMapping), ActivitySource, ILogger(Of TaskWatcher))
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.#ctor*
+  name: TaskWatcher
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.TaskWatcher
+  nameWithType: TaskWatcher.TaskWatcher
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: TaskWatcher.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check
+  nameWithType: TaskWatcher.Check
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks(System.String,CancellationToken)
+  name: GetNewTasks(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetNewTasks_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks(System.String, CancellationToken)
+  nameWithType: TaskWatcher.GetNewTasks(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks*
+  name: GetNewTasks
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetNewTasks_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks
+  nameWithType: TaskWatcher.GetNewTasks
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates(System.String,CancellationToken)
+  name: GetTaskStatusUpdates(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetTaskStatusUpdates_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates(System.String, CancellationToken)
+  nameWithType: TaskWatcher.GetTaskStatusUpdates(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates*
+  name: GetTaskStatusUpdates
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetTaskStatusUpdates_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates
+  nameWithType: TaskWatcher.GetTaskStatusUpdates
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Init(CancellationToken)
+  nameWithType: TaskWatcher.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html#ArmoniK_Core_Adapters_MongoDB_TaskWatcher_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Init
+  nameWithType: TaskWatcher.Init
 - uid: ArmoniK.Core.Adapters.MongoDB.Tests
   name: ArmoniK.Core.Adapters.MongoDB.Tests
   href: api/ArmoniK.Core.Adapters.MongoDB.Tests.html
@@ -4489,6 +4685,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultTableTests.TearDown
   nameWithType: ResultTableTests.TearDown
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests
+  name: ResultWatcherTests
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests
+  nameWithType: ResultWatcherTests
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.GetInstance
+  name: GetInstance()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_ResultWatcherTests_GetInstance
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.GetInstance
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.GetInstance()
+  nameWithType: ResultWatcherTests.GetInstance()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.GetInstance*
+  name: GetInstance
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_ResultWatcherTests_GetInstance_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.GetInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.GetInstance
+  nameWithType: ResultWatcherTests.GetInstance
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_ResultWatcherTests_TearDown
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.TearDown
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.TearDown()
+  nameWithType: ResultWatcherTests.TearDown()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_ResultWatcherTests_TearDown_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ResultWatcherTests.TearDown
+  nameWithType: ResultWatcherTests.TearDown
 - uid: ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests
   name: SessionProviderTests
   href: api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionProviderTests.html
@@ -4611,6 +4839,160 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Tests.TaskTableTests.TearDown
   nameWithType: TaskTableTests.TearDown
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests
+  name: TaskWatcherTests
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests
+  nameWithType: TaskWatcherTests
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.GetInstance
+  name: GetInstance()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_TaskWatcherTests_GetInstance
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.GetInstance
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.GetInstance()
+  nameWithType: TaskWatcherTests.GetInstance()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.GetInstance*
+  name: GetInstance
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_TaskWatcherTests_GetInstance_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.GetInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.GetInstance
+  nameWithType: TaskWatcherTests.GetInstance
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_TaskWatcherTests_TearDown
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.TearDown
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.TearDown()
+  nameWithType: TaskWatcherTests.TearDown()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_TaskWatcherTests_TearDown_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.TaskWatcherTests.TearDown
+  nameWithType: TaskWatcherTests.TearDown
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2
+  name: WatchEnumerable<TOutput, TInput>
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerable-2.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2
+  name.vb: WatchEnumerable(Of TOutput, TInput)
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable<TOutput, TInput>
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable(Of TOutput, TInput)
+  nameWithType: WatchEnumerable<TOutput, TInput>
+  nameWithType.vb: WatchEnumerable(Of TOutput, TInput)
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.#ctor(IChangeStreamCursor{`1},Func{`1,`0})
+  name: WatchEnumerable(IChangeStreamCursor<TInput>, Func<TInput, TOutput>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerable-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerable_2__ctor_IChangeStreamCursor__1__Func__1__0__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.#ctor(IChangeStreamCursor{`1},Func{`1,`0})
+  name.vb: WatchEnumerable(IChangeStreamCursor(Of TInput), Func(Of TInput, TOutput))
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable<TOutput, TInput>.WatchEnumerable(IChangeStreamCursor<TInput>, Func<TInput, TOutput>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable(Of TOutput, TInput).WatchEnumerable(IChangeStreamCursor(Of TInput), Func(Of TInput, TOutput))
+  nameWithType: WatchEnumerable<TOutput, TInput>.WatchEnumerable(IChangeStreamCursor<TInput>, Func<TInput, TOutput>)
+  nameWithType.vb: WatchEnumerable(Of TOutput, TInput).WatchEnumerable(IChangeStreamCursor(Of TInput), Func(Of TInput, TOutput))
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.#ctor*
+  name: WatchEnumerable
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerable-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerable_2__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable<TOutput, TInput>.WatchEnumerable
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable(Of TOutput, TInput).WatchEnumerable
+  nameWithType: WatchEnumerable<TOutput, TInput>.WatchEnumerable
+  nameWithType.vb: WatchEnumerable(Of TOutput, TInput).WatchEnumerable
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.GetAsyncEnumerator(CancellationToken)
+  name: GetAsyncEnumerator(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerable-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerable_2_GetAsyncEnumerator_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.GetAsyncEnumerator(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable<TOutput, TInput>.GetAsyncEnumerator(CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable(Of TOutput, TInput).GetAsyncEnumerator(CancellationToken)
+  nameWithType: WatchEnumerable<TOutput, TInput>.GetAsyncEnumerator(CancellationToken)
+  nameWithType.vb: WatchEnumerable(Of TOutput, TInput).GetAsyncEnumerator(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.GetAsyncEnumerator*
+  name: GetAsyncEnumerator
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerable-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerable_2_GetAsyncEnumerator_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.WatchEnumerable`2.GetAsyncEnumerator
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable<TOutput, TInput>.GetAsyncEnumerator
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerable(Of TOutput, TInput).GetAsyncEnumerator
+  nameWithType: WatchEnumerable<TOutput, TInput>.GetAsyncEnumerator
+  nameWithType.vb: WatchEnumerable(Of TOutput, TInput).GetAsyncEnumerator
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2
+  name: WatchEnumerator<TOutput, TInput>
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2
+  name.vb: WatchEnumerator(Of TOutput, TInput)
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput)
+  nameWithType: WatchEnumerator<TOutput, TInput>
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput)
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.#ctor(IChangeStreamCursor{`1},Func{`1,`0},CancellationToken)
+  name: WatchEnumerator(IChangeStreamCursor<TInput>, Func<TInput, TOutput>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2__ctor_IChangeStreamCursor__1__Func__1__0__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.#ctor(IChangeStreamCursor{`1},Func{`1,`0},CancellationToken)
+  name.vb: WatchEnumerator(IChangeStreamCursor(Of TInput), Func(Of TInput, TOutput), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.WatchEnumerator(IChangeStreamCursor<TInput>, Func<TInput, TOutput>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).WatchEnumerator(IChangeStreamCursor(Of TInput), Func(Of TInput, TOutput), CancellationToken)
+  nameWithType: WatchEnumerator<TOutput, TInput>.WatchEnumerator(IChangeStreamCursor<TInput>, Func<TInput, TOutput>, CancellationToken)
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).WatchEnumerator(IChangeStreamCursor(Of TInput), Func(Of TInput, TOutput), CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.#ctor*
+  name: WatchEnumerator
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.WatchEnumerator
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).WatchEnumerator
+  nameWithType: WatchEnumerator<TOutput, TInput>.WatchEnumerator
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).WatchEnumerator
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.Current
+  name: Current
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2_Current
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.Current
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.Current
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).Current
+  nameWithType: WatchEnumerator<TOutput, TInput>.Current
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).Current
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.Current*
+  name: Current
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2_Current_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.Current
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.Current
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).Current
+  nameWithType: WatchEnumerator<TOutput, TInput>.Current
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).Current
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2_DisposeAsync
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.DisposeAsync
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.DisposeAsync()
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).DisposeAsync()
+  nameWithType: WatchEnumerator<TOutput, TInput>.DisposeAsync()
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).DisposeAsync()
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.DisposeAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.DisposeAsync
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).DisposeAsync
+  nameWithType: WatchEnumerator<TOutput, TInput>.DisposeAsync
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).DisposeAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.MoveNextAsync
+  name: MoveNextAsync()
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2_MoveNextAsync
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.MoveNextAsync
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.MoveNextAsync()
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).MoveNextAsync()
+  nameWithType: WatchEnumerator<TOutput, TInput>.MoveNextAsync()
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).MoveNextAsync()
+- uid: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.MoveNextAsync*
+  name: MoveNextAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.WatchEnumerator-2.html#ArmoniK_Core_Adapters_MongoDB_WatchEnumerator_2_MoveNextAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.WatchEnumerator`2.MoveNextAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator<TOutput, TInput>.MoveNextAsync
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.WatchEnumerator(Of TOutput, TInput).MoveNextAsync
+  nameWithType: WatchEnumerator<TOutput, TInput>.MoveNextAsync
+  nameWithType.vb: WatchEnumerator(Of TOutput, TInput).MoveNextAsync
 - uid: ArmoniK.Core.Adapters.RabbitMQ
   name: ArmoniK.Core.Adapters.RabbitMQ
   href: api/ArmoniK.Core.Adapters.RabbitMQ.html
@@ -7469,6 +7851,44 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAuthService.GetCurrentUser
   nameWithType: GrpcAuthService.GetCurrentUser
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService
+  name: GrpcEventsService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcEventsService
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService
+  nameWithType: GrpcEventsService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.Events.ITaskWatcher,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.Events.IResultWatcher,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcEventsService})
+  name: GrpcEventsService(ITaskTable, ITaskWatcher, IResultTable, IResultWatcher, ILogger<GrpcEventsService>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcEventsService__ctor_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_Events_ITaskWatcher_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_Events_IResultWatcher_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcEventsService__
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.Events.ITaskWatcher,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.Events.IResultWatcher,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcEventsService})
+  name.vb: GrpcEventsService(ITaskTable, ITaskWatcher, IResultTable, IResultWatcher, ILogger(Of GrpcEventsService))
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GrpcEventsService(ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.Events.ITaskWatcher, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.Events.IResultWatcher, ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcEventsService>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GrpcEventsService(ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.Events.ITaskWatcher, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.Events.IResultWatcher, ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcEventsService))
+  nameWithType: GrpcEventsService.GrpcEventsService(ITaskTable, ITaskWatcher, IResultTable, IResultWatcher, ILogger<GrpcEventsService>)
+  nameWithType.vb: GrpcEventsService.GrpcEventsService(ITaskTable, ITaskWatcher, IResultTable, IResultWatcher, ILogger(Of GrpcEventsService))
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.#ctor*
+  name: GrpcEventsService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcEventsService__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GrpcEventsService
+  nameWithType: GrpcEventsService.GrpcEventsService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents(EventSubscriptionRequest,IServerStreamWriter{EventSubscriptionResponse},ServerCallContext)
+  name: GetEvents(EventSubscriptionRequest, IServerStreamWriter<EventSubscriptionResponse>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcEventsService_GetEvents_EventSubscriptionRequest_IServerStreamWriter_EventSubscriptionResponse__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents(EventSubscriptionRequest,IServerStreamWriter{EventSubscriptionResponse},ServerCallContext)
+  name.vb: GetEvents(EventSubscriptionRequest, IServerStreamWriter(Of EventSubscriptionResponse), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents(EventSubscriptionRequest, IServerStreamWriter<EventSubscriptionResponse>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents(EventSubscriptionRequest, IServerStreamWriter(Of EventSubscriptionResponse), ServerCallContext)
+  nameWithType: GrpcEventsService.GetEvents(EventSubscriptionRequest, IServerStreamWriter<EventSubscriptionResponse>, ServerCallContext)
+  nameWithType.vb: GrpcEventsService.GetEvents(EventSubscriptionRequest, IServerStreamWriter(Of EventSubscriptionResponse), ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents*
+  name: GetEvents
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcEventsService_GetEvents_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcEventsService.GetEvents
+  nameWithType: GrpcEventsService.GetEvents
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcResultsService
   name: GrpcResultsService
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcResultsService.html
@@ -8609,6 +9029,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
   nameWithType: TaskRequest.PayloadChunks
+- uid: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc
+  name: WatchToGrpc
+  href: api/ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.WatchToGrpc
+  fullName: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc
+  nameWithType: WatchToGrpc
+- uid: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.Events.ITaskWatcher,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.Events.IResultWatcher,ILogger)
+  name: WatchToGrpc(ITaskTable, ITaskWatcher, IResultTable, IResultWatcher, ILogger)
+  href: api/ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.html#ArmoniK_Core_Common_gRPC_Services_WatchToGrpc__ctor_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_Events_ITaskWatcher_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_Events_IResultWatcher_ILogger_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.Events.ITaskWatcher,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.Events.IResultWatcher,ILogger)
+  fullName: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.WatchToGrpc(ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.Events.ITaskWatcher, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.Events.IResultWatcher, ILogger)
+  nameWithType: WatchToGrpc.WatchToGrpc(ITaskTable, ITaskWatcher, IResultTable, IResultWatcher, ILogger)
+- uid: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.#ctor*
+  name: WatchToGrpc
+  href: api/ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.html#ArmoniK_Core_Common_gRPC_Services_WatchToGrpc__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.WatchToGrpc
+  nameWithType: WatchToGrpc.WatchToGrpc
+- uid: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.GetEvents(System.String,CancellationToken)
+  name: GetEvents(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.html#ArmoniK_Core_Common_gRPC_Services_WatchToGrpc_GetEvents_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.GetEvents(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.GetEvents(System.String, CancellationToken)
+  nameWithType: WatchToGrpc.GetEvents(String, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.GetEvents*
+  name: GetEvents
+  href: api/ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.html#ArmoniK_Core_Common_gRPC_Services_WatchToGrpc_GetEvents_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.GetEvents
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.WatchToGrpc.GetEvents
+  nameWithType: WatchToGrpc.GetEvents
 - uid: ArmoniK.Core.Common.gRPC.Validators
   name: ArmoniK.Core.Common.gRPC.Validators
   href: api/ArmoniK.Core.Common.gRPC.Validators.html
@@ -10897,6 +11349,473 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.Application.Version
   nameWithType: Application.Version
+- uid: ArmoniK.Core.Common.Storage.Events
+  name: ArmoniK.Core.Common.Storage.Events
+  href: api/ArmoniK.Core.Common.Storage.Events.html
+  commentId: N:ArmoniK.Core.Common.Storage.Events
+  fullName: ArmoniK.Core.Common.Storage.Events
+  nameWithType: ArmoniK.Core.Common.Storage.Events
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher
+  name: IResultWatcher
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.IResultWatcher
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher
+  nameWithType: IResultWatcher
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetNewResults(System.String,CancellationToken)
+  name: GetNewResults(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html#ArmoniK_Core_Common_Storage_Events_IResultWatcher_GetNewResults_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetNewResults(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetNewResults(System.String, CancellationToken)
+  nameWithType: IResultWatcher.GetNewResults(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetNewResults*
+  name: GetNewResults
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html#ArmoniK_Core_Common_Storage_Events_IResultWatcher_GetNewResults_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetNewResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetNewResults
+  nameWithType: IResultWatcher.GetNewResults
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultOwnerUpdates(System.String,CancellationToken)
+  name: GetResultOwnerUpdates(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html#ArmoniK_Core_Common_Storage_Events_IResultWatcher_GetResultOwnerUpdates_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultOwnerUpdates(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultOwnerUpdates(System.String, CancellationToken)
+  nameWithType: IResultWatcher.GetResultOwnerUpdates(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultOwnerUpdates*
+  name: GetResultOwnerUpdates
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html#ArmoniK_Core_Common_Storage_Events_IResultWatcher_GetResultOwnerUpdates_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultOwnerUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultOwnerUpdates
+  nameWithType: IResultWatcher.GetResultOwnerUpdates
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultStatusUpdates(System.String,CancellationToken)
+  name: GetResultStatusUpdates(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html#ArmoniK_Core_Common_Storage_Events_IResultWatcher_GetResultStatusUpdates_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultStatusUpdates(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultStatusUpdates(System.String, CancellationToken)
+  nameWithType: IResultWatcher.GetResultStatusUpdates(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultStatusUpdates*
+  name: GetResultStatusUpdates
+  href: api/ArmoniK.Core.Common.Storage.Events.IResultWatcher.html#ArmoniK_Core_Common_Storage_Events_IResultWatcher_GetResultStatusUpdates_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultStatusUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.IResultWatcher.GetResultStatusUpdates
+  nameWithType: IResultWatcher.GetResultStatusUpdates
+- uid: ArmoniK.Core.Common.Storage.Events.ITaskWatcher
+  name: ITaskWatcher
+  href: api/ArmoniK.Core.Common.Storage.Events.ITaskWatcher.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.ITaskWatcher
+  fullName: ArmoniK.Core.Common.Storage.Events.ITaskWatcher
+  nameWithType: ITaskWatcher
+- uid: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetNewTasks(System.String,CancellationToken)
+  name: GetNewTasks(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.Events.ITaskWatcher.html#ArmoniK_Core_Common_Storage_Events_ITaskWatcher_GetNewTasks_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetNewTasks(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetNewTasks(System.String, CancellationToken)
+  nameWithType: ITaskWatcher.GetNewTasks(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetNewTasks*
+  name: GetNewTasks
+  href: api/ArmoniK.Core.Common.Storage.Events.ITaskWatcher.html#ArmoniK_Core_Common_Storage_Events_ITaskWatcher_GetNewTasks_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetNewTasks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetNewTasks
+  nameWithType: ITaskWatcher.GetNewTasks
+- uid: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetTaskStatusUpdates(System.String,CancellationToken)
+  name: GetTaskStatusUpdates(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.Events.ITaskWatcher.html#ArmoniK_Core_Common_Storage_Events_ITaskWatcher_GetTaskStatusUpdates_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetTaskStatusUpdates(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetTaskStatusUpdates(System.String, CancellationToken)
+  nameWithType: ITaskWatcher.GetTaskStatusUpdates(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetTaskStatusUpdates*
+  name: GetTaskStatusUpdates
+  href: api/ArmoniK.Core.Common.Storage.Events.ITaskWatcher.html#ArmoniK_Core_Common_Storage_Events_ITaskWatcher_GetTaskStatusUpdates_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetTaskStatusUpdates
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ITaskWatcher.GetTaskStatusUpdates
+  nameWithType: ITaskWatcher.GetTaskStatusUpdates
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult
+  name: NewResult
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.NewResult
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult
+  nameWithType: NewResult
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.#ctor(System.String,System.String,System.String,ResultStatus)
+  name: NewResult(String, String, String, ResultStatus)
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult__ctor_System_String_System_String_System_String_ResultStatus_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.NewResult.#ctor(System.String,System.String,System.String,ResultStatus)
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.NewResult(System.String, System.String, System.String, ResultStatus)
+  nameWithType: NewResult.NewResult(String, String, String, ResultStatus)
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.#ctor*
+  name: NewResult
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewResult.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.NewResult
+  nameWithType: NewResult.NewResult
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.OwnerId
+  name: OwnerId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_OwnerId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewResult.OwnerId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.OwnerId
+  nameWithType: NewResult.OwnerId
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.OwnerId*
+  name: OwnerId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_OwnerId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewResult.OwnerId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.OwnerId
+  nameWithType: NewResult.OwnerId
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.ResultId
+  name: ResultId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_ResultId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewResult.ResultId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.ResultId
+  nameWithType: NewResult.ResultId
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.ResultId*
+  name: ResultId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_ResultId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewResult.ResultId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.ResultId
+  nameWithType: NewResult.ResultId
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewResult.SessionId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.SessionId
+  nameWithType: NewResult.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewResult.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.SessionId
+  nameWithType: NewResult.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_Status
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewResult.Status
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.Status
+  nameWithType: NewResult.Status
+- uid: ArmoniK.Core.Common.Storage.Events.NewResult.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.NewResult.html#ArmoniK_Core_Common_Storage_Events_NewResult_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewResult.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewResult.Status
+  nameWithType: NewResult.Status
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask
+  name: NewTask
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.NewTask
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask
+  nameWithType: NewTask
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.#ctor(System.String,System.String,System.String,System.String,IEnumerable{System.String},IEnumerable{System.String},IEnumerable{System.String},TaskStatus)
+  name: NewTask(String, String, String, String, IEnumerable<String>, IEnumerable<String>, IEnumerable<String>, TaskStatus)
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask__ctor_System_String_System_String_System_String_System_String_IEnumerable_System_String__IEnumerable_System_String__IEnumerable_System_String__TaskStatus_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.NewTask.#ctor(System.String,System.String,System.String,System.String,IEnumerable{System.String},IEnumerable{System.String},IEnumerable{System.String},TaskStatus)
+  name.vb: NewTask(String, String, String, String, IEnumerable(Of String), IEnumerable(Of String), IEnumerable(Of String), TaskStatus)
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.NewTask(System.String, System.String, System.String, System.String, IEnumerable<System.String>, IEnumerable<System.String>, IEnumerable<System.String>, TaskStatus)
+  fullName.vb: ArmoniK.Core.Common.Storage.Events.NewTask.NewTask(System.String, System.String, System.String, System.String, IEnumerable(Of System.String), IEnumerable(Of System.String), IEnumerable(Of System.String), TaskStatus)
+  nameWithType: NewTask.NewTask(String, String, String, String, IEnumerable<String>, IEnumerable<String>, IEnumerable<String>, TaskStatus)
+  nameWithType.vb: NewTask.NewTask(String, String, String, String, IEnumerable(Of String), IEnumerable(Of String), IEnumerable(Of String), TaskStatus)
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.#ctor*
+  name: NewTask
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.NewTask
+  nameWithType: NewTask.NewTask
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.DataDependencies
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_DataDependencies
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.DataDependencies
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.DataDependencies
+  nameWithType: NewTask.DataDependencies
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.DataDependencies*
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_DataDependencies_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.DataDependencies
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.DataDependencies
+  nameWithType: NewTask.DataDependencies
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.ExpectedOutputKeys
+  name: ExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_ExpectedOutputKeys
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.ExpectedOutputKeys
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.ExpectedOutputKeys
+  nameWithType: NewTask.ExpectedOutputKeys
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.ExpectedOutputKeys*
+  name: ExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_ExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.ExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.ExpectedOutputKeys
+  nameWithType: NewTask.ExpectedOutputKeys
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.OriginTaskId
+  name: OriginTaskId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_OriginTaskId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.OriginTaskId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.OriginTaskId
+  nameWithType: NewTask.OriginTaskId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.OriginTaskId*
+  name: OriginTaskId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_OriginTaskId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.OriginTaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.OriginTaskId
+  nameWithType: NewTask.OriginTaskId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.PayloadId
+  name: PayloadId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_PayloadId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.PayloadId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.PayloadId
+  nameWithType: NewTask.PayloadId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.PayloadId*
+  name: PayloadId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_PayloadId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.PayloadId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.PayloadId
+  nameWithType: NewTask.PayloadId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.RetryOfIds
+  name: RetryOfIds
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_RetryOfIds
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.RetryOfIds
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.RetryOfIds
+  nameWithType: NewTask.RetryOfIds
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.RetryOfIds*
+  name: RetryOfIds
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_RetryOfIds_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.RetryOfIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.RetryOfIds
+  nameWithType: NewTask.RetryOfIds
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.SessionId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.SessionId
+  nameWithType: NewTask.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.SessionId
+  nameWithType: NewTask.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_Status
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.Status
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.Status
+  nameWithType: NewTask.Status
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.Status
+  nameWithType: NewTask.Status
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_TaskId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.NewTask.TaskId
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.TaskId
+  nameWithType: NewTask.TaskId
+- uid: ArmoniK.Core.Common.Storage.Events.NewTask.TaskId*
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Storage.Events.NewTask.html#ArmoniK_Core_Common_Storage_Events_NewTask_TaskId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.NewTask.TaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.NewTask.TaskId
+  nameWithType: NewTask.TaskId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate
+  name: ResultOwnerUpdate
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate
+  nameWithType: ResultOwnerUpdate
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.#ctor(System.String,System.String,System.String,System.String)
+  name: ResultOwnerUpdate(String, String, String, String)
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate__ctor_System_String_System_String_System_String_System_String_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.#ctor(System.String,System.String,System.String,System.String)
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultOwnerUpdate(System.String, System.String, System.String, System.String)
+  nameWithType: ResultOwnerUpdate.ResultOwnerUpdate(String, String, String, String)
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.#ctor*
+  name: ResultOwnerUpdate
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultOwnerUpdate
+  nameWithType: ResultOwnerUpdate.ResultOwnerUpdate
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.NewOwner
+  name: NewOwner
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_NewOwner
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.NewOwner
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.NewOwner
+  nameWithType: ResultOwnerUpdate.NewOwner
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.NewOwner*
+  name: NewOwner
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_NewOwner_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.NewOwner
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.NewOwner
+  nameWithType: ResultOwnerUpdate.NewOwner
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.PreviousOwnerId
+  name: PreviousOwnerId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_PreviousOwnerId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.PreviousOwnerId
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.PreviousOwnerId
+  nameWithType: ResultOwnerUpdate.PreviousOwnerId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.PreviousOwnerId*
+  name: PreviousOwnerId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_PreviousOwnerId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.PreviousOwnerId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.PreviousOwnerId
+  nameWithType: ResultOwnerUpdate.PreviousOwnerId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultId
+  name: ResultId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_ResultId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultId
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultId
+  nameWithType: ResultOwnerUpdate.ResultId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultId*
+  name: ResultId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_ResultId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.ResultId
+  nameWithType: ResultOwnerUpdate.ResultId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.SessionId
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.SessionId
+  nameWithType: ResultOwnerUpdate.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultOwnerUpdate_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultOwnerUpdate.SessionId
+  nameWithType: ResultOwnerUpdate.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate
+  name: ResultStatusUpdate
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate
+  nameWithType: ResultStatusUpdate
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.#ctor(System.String,System.String,ResultStatus)
+  name: ResultStatusUpdate(String, String, ResultStatus)
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate__ctor_System_String_System_String_ResultStatus_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.#ctor(System.String,System.String,ResultStatus)
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultStatusUpdate(System.String, System.String, ResultStatus)
+  nameWithType: ResultStatusUpdate.ResultStatusUpdate(String, String, ResultStatus)
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.#ctor*
+  name: ResultStatusUpdate
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultStatusUpdate
+  nameWithType: ResultStatusUpdate.ResultStatusUpdate
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultId
+  name: ResultId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate_ResultId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultId
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultId
+  nameWithType: ResultStatusUpdate.ResultId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultId*
+  name: ResultId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate_ResultId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.ResultId
+  nameWithType: ResultStatusUpdate.ResultId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.SessionId
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.SessionId
+  nameWithType: ResultStatusUpdate.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.SessionId
+  nameWithType: ResultStatusUpdate.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate_Status
+  commentId: P:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.Status
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.Status
+  nameWithType: ResultStatusUpdate.Status
+- uid: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_ResultStatusUpdate_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.ResultStatusUpdate.Status
+  nameWithType: ResultStatusUpdate.Status
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate
+  name: TaskStatusUpdate
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html
+  commentId: T:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate
+  nameWithType: TaskStatusUpdate
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.#ctor(System.String,System.String,TaskStatus)
+  name: TaskStatusUpdate(String, String, TaskStatus)
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate__ctor_System_String_System_String_TaskStatus_
+  commentId: M:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.#ctor(System.String,System.String,TaskStatus)
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskStatusUpdate(System.String, System.String, TaskStatus)
+  nameWithType: TaskStatusUpdate.TaskStatusUpdate(String, String, TaskStatus)
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.#ctor*
+  name: TaskStatusUpdate
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskStatusUpdate
+  nameWithType: TaskStatusUpdate.TaskStatusUpdate
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.SessionId
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.SessionId
+  nameWithType: TaskStatusUpdate.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.SessionId
+  nameWithType: TaskStatusUpdate.SessionId
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate_Status
+  commentId: P:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.Status
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.Status
+  nameWithType: TaskStatusUpdate.Status
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.Status
+  nameWithType: TaskStatusUpdate.Status
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate_TaskId
+  commentId: P:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskId
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskId
+  nameWithType: TaskStatusUpdate.TaskId
+- uid: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskId*
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html#ArmoniK_Core_Common_Storage_Events_TaskStatusUpdate_TaskId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.TaskId
+  nameWithType: TaskStatusUpdate.TaskId
 - uid: ArmoniK.Core.Common.Storage.IObjectStorage
   name: IObjectStorage
   href: api/ArmoniK.Core.Common.Storage.IObjectStorage.html
@@ -14059,6 +14978,35 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetCreateLargeTaskTestCases
   nameWithType: AuthenticationIntegrationTest.GetCreateLargeTaskTestCases
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name: GetEventsStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetEventsStreamAuthShouldMatch_System_Type_System_String_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_System_Object___ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ResultType_StatusCode_
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch(System.Type,System.String,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,System.Object[],ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType,StatusCode)
+  name.vb: GetEventsStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object[], ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  fullName.vb: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch(System.Type, System.String, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType, ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex, System.Object(), ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType: AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object[], AuthenticationIntegrationTest.ResultType, StatusCode)
+  nameWithType.vb: AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch(System.Type, String, AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex, Object(), AuthenticationIntegrationTest.ResultType, StatusCode)
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch*
+  name: GetEventsStreamAuthShouldMatch
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetEventsStreamAuthShouldMatch_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch
+  nameWithType: AuthenticationIntegrationTest.GetEventsStreamAuthShouldMatch
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetGetEventsStreamTestCases
+  name: GetGetEventsStreamTestCases()
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetGetEventsStreamTestCases
+  commentId: M:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetGetEventsStreamTestCases
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetGetEventsStreamTestCases()
+  nameWithType: AuthenticationIntegrationTest.GetGetEventsStreamTestCases()
+- uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetGetEventsStreamTestCases*
+  name: GetGetEventsStreamTestCases
+  href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetGetEventsStreamTestCases_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetGetEventsStreamTestCases
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetGetEventsStreamTestCases
+  nameWithType: AuthenticationIntegrationTest.GetGetEventsStreamTestCases
 - uid: ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.GetHeaders(ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType,ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex)
   name: GetHeaders(AuthenticationIntegrationTest.IdentityIndex, AuthenticationIntegrationTest.ImpersonationType, AuthenticationIntegrationTest.IdentityIndex)
   href: api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html#ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_GetHeaders_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_ImpersonationType_ArmoniK_Core_Common_Tests_Auth_AuthenticationIntegrationTest_IdentityIndex_
@@ -21589,6 +22537,121 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.TearDown
   nameWithType: ResultTableTestBase.TearDown
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase
+  name: ResultWatcherTestBase
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html
+  commentId: T:ArmoniK.Core.Common.Tests.ResultWatcherTestBase
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase
+  nameWithType: ResultWatcherTestBase
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.GetInstance
+  name: GetInstance()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_GetInstance
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.GetInstance
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.GetInstance()
+  nameWithType: ResultWatcherTestBase.GetInstance()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.GetInstance*
+  name: GetInstance
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_GetInstance_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.GetInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.GetInstance
+  nameWithType: ResultWatcherTestBase.GetInstance
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.InitShouldSucceed()
+  nameWithType: ResultWatcherTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.InitShouldSucceed
+  nameWithType: ResultWatcherTestBase.InitShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.ResultTable
+  name: ResultTable
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_ResultTable
+  commentId: F:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.ResultTable
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.ResultTable
+  nameWithType: ResultWatcherTestBase.ResultTable
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.ResultWatcher
+  name: ResultWatcher
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_ResultWatcher
+  commentId: F:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.ResultWatcher
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.ResultWatcher
+  nameWithType: ResultWatcherTestBase.ResultWatcher
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.RunTests
+  name: RunTests
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_RunTests
+  commentId: F:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.RunTests
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.RunTests
+  nameWithType: ResultWatcherTestBase.RunTests
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.SetUp
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.SetUp()
+  nameWithType: ResultWatcherTestBase.SetUp()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.SetUp
+  nameWithType: ResultWatcherTestBase.SetUp
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.TearDown
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.TearDown()
+  nameWithType: ResultWatcherTestBase.TearDown()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.TearDown
+  nameWithType: ResultWatcherTestBase.TearDown
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchNewResultShouldSucceed
+  name: WatchNewResultShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_WatchNewResultShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchNewResultShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchNewResultShouldSucceed()
+  nameWithType: ResultWatcherTestBase.WatchNewResultShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchNewResultShouldSucceed*
+  name: WatchNewResultShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_WatchNewResultShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchNewResultShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchNewResultShouldSucceed
+  nameWithType: ResultWatcherTestBase.WatchNewResultShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed
+  name: WatchResultOwnerUpdateShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_WatchResultOwnerUpdateShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed()
+  nameWithType: ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed*
+  name: WatchResultOwnerUpdateShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_WatchResultOwnerUpdateShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed
+  nameWithType: ResultWatcherTestBase.WatchResultOwnerUpdateShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  name: WatchResultStatusUpdateShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_WatchResultStatusUpdateShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed()
+  nameWithType: ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed*
+  name: WatchResultStatusUpdateShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultWatcherTestBase.html#ArmoniK_Core_Common_Tests_ResultWatcherTestBase_WatchResultStatusUpdateShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  nameWithType: ResultWatcherTestBase.WatchResultStatusUpdateShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.RpcExtTests
   name: RpcExtTests
   href: api/ArmoniK.Core.Common.Tests.RpcExtTests.html
@@ -24499,6 +25562,108 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.UpdateTaskStatusAsyncShouldSucceed
   nameWithType: TaskTableTestBase.UpdateTaskStatusAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase
+  name: TaskWatcherTestBase
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html
+  commentId: T:ArmoniK.Core.Common.Tests.TaskWatcherTestBase
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase
+  nameWithType: TaskWatcherTestBase
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.GetInstance
+  name: GetInstance()
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_GetInstance
+  commentId: M:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.GetInstance
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.GetInstance()
+  nameWithType: TaskWatcherTestBase.GetInstance()
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.GetInstance*
+  name: GetInstance
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_GetInstance_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.GetInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.GetInstance
+  nameWithType: TaskWatcherTestBase.GetInstance
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.InitShouldSucceed
+  name: InitShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_InitShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.InitShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.InitShouldSucceed()
+  nameWithType: TaskWatcherTestBase.InitShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.InitShouldSucceed*
+  name: InitShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_InitShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.InitShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.InitShouldSucceed
+  nameWithType: TaskWatcherTestBase.InitShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.RunTests
+  name: RunTests
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_RunTests
+  commentId: F:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.RunTests
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.RunTests
+  nameWithType: TaskWatcherTestBase.RunTests
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.SetUp
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.SetUp()
+  nameWithType: TaskWatcherTestBase.SetUp()
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.SetUp
+  nameWithType: TaskWatcherTestBase.SetUp
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TaskTable
+  name: TaskTable
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_TaskTable
+  commentId: F:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TaskTable
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TaskTable
+  nameWithType: TaskWatcherTestBase.TaskTable
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TaskWatcher
+  name: TaskWatcher
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_TaskWatcher
+  commentId: F:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TaskWatcher
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TaskWatcher
+  nameWithType: TaskWatcherTestBase.TaskWatcher
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TearDown
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TearDown()
+  nameWithType: TaskWatcherTestBase.TearDown()
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.TearDown
+  nameWithType: TaskWatcherTestBase.TearDown
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchNewResultShouldSucceed
+  name: WatchNewResultShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_WatchNewResultShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchNewResultShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchNewResultShouldSucceed()
+  nameWithType: TaskWatcherTestBase.WatchNewResultShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchNewResultShouldSucceed*
+  name: WatchNewResultShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_WatchNewResultShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchNewResultShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchNewResultShouldSucceed
+  nameWithType: TaskWatcherTestBase.WatchNewResultShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  name: WatchResultStatusUpdateShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_WatchResultStatusUpdateShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed()
+  nameWithType: TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed*
+  name: WatchResultStatusUpdateShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskWatcherTestBase.html#ArmoniK_Core_Common_Tests_TaskWatcherTestBase_WatchResultStatusUpdateShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed
+  nameWithType: TaskWatcherTestBase.WatchResultStatusUpdateShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Utils
   name: ArmoniK.Core.Common.Tests.Utils
   href: api/ArmoniK.Core.Common.Tests.Utils.html
@@ -24641,6 +25806,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown
   nameWithType: ExecutionSingleizerTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.WatchToGrpcTests
+  name: WatchToGrpcTests
+  href: api/ArmoniK.Core.Common.Tests.WatchToGrpcTests.html
+  commentId: T:ArmoniK.Core.Common.Tests.WatchToGrpcTests
+  fullName: ArmoniK.Core.Common.Tests.WatchToGrpcTests
+  nameWithType: WatchToGrpcTests
+- uid: ArmoniK.Core.Common.Tests.WatchToGrpcTests.MultipleWatchShouldSucceed(System.Int32)
+  name: MultipleWatchShouldSucceed(Int32)
+  href: api/ArmoniK.Core.Common.Tests.WatchToGrpcTests.html#ArmoniK_Core_Common_Tests_WatchToGrpcTests_MultipleWatchShouldSucceed_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.WatchToGrpcTests.MultipleWatchShouldSucceed(System.Int32)
+  fullName: ArmoniK.Core.Common.Tests.WatchToGrpcTests.MultipleWatchShouldSucceed(System.Int32)
+  nameWithType: WatchToGrpcTests.MultipleWatchShouldSucceed(Int32)
+- uid: ArmoniK.Core.Common.Tests.WatchToGrpcTests.MultipleWatchShouldSucceed*
+  name: MultipleWatchShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.WatchToGrpcTests.html#ArmoniK_Core_Common_Tests_WatchToGrpcTests_MultipleWatchShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.WatchToGrpcTests.MultipleWatchShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.WatchToGrpcTests.MultipleWatchShouldSucceed
+  nameWithType: WatchToGrpcTests.MultipleWatchShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.WatchToGrpcTests.WatchShouldSucceed
+  name: WatchShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.WatchToGrpcTests.html#ArmoniK_Core_Common_Tests_WatchToGrpcTests_WatchShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.WatchToGrpcTests.WatchShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.WatchToGrpcTests.WatchShouldSucceed()
+  nameWithType: WatchToGrpcTests.WatchShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.WatchToGrpcTests.WatchShouldSucceed*
+  name: WatchShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.WatchToGrpcTests.html#ArmoniK_Core_Common_Tests_WatchToGrpcTests_WatchShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.WatchToGrpcTests.WatchShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.WatchToGrpcTests.WatchShouldSucceed
+  nameWithType: WatchToGrpcTests.WatchShouldSucceed
 - uid: ArmoniK.Core.Common.Utils
   name: ArmoniK.Core.Common.Utils
   href: api/ArmoniK.Core.Common.Utils.html
@@ -26262,6 +27459,19 @@ references:
   commentId: F:ArmoniK.Samples.Bench.Client.Options.BenchOptions.SettingSection
   fullName: ArmoniK.Samples.Bench.Client.Options.BenchOptions.SettingSection
   nameWithType: BenchOptions.SettingSection
+- uid: ArmoniK.Samples.Bench.Client.Options.BenchOptions.ShowEvents
+  name: ShowEvents
+  href: api/ArmoniK.Samples.Bench.Client.Options.BenchOptions.html#ArmoniK_Samples_Bench_Client_Options_BenchOptions_ShowEvents
+  commentId: P:ArmoniK.Samples.Bench.Client.Options.BenchOptions.ShowEvents
+  fullName: ArmoniK.Samples.Bench.Client.Options.BenchOptions.ShowEvents
+  nameWithType: BenchOptions.ShowEvents
+- uid: ArmoniK.Samples.Bench.Client.Options.BenchOptions.ShowEvents*
+  name: ShowEvents
+  href: api/ArmoniK.Samples.Bench.Client.Options.BenchOptions.html#ArmoniK_Samples_Bench_Client_Options_BenchOptions_ShowEvents_
+  commentId: Overload:ArmoniK.Samples.Bench.Client.Options.BenchOptions.ShowEvents
+  isSpec: "True"
+  fullName: ArmoniK.Samples.Bench.Client.Options.BenchOptions.ShowEvents
+  nameWithType: BenchOptions.ShowEvents
 - uid: ArmoniK.Samples.Bench.Client.Options.BenchOptions.TaskDurationMs
   name: TaskDurationMs
   href: api/ArmoniK.Samples.Bench.Client.Options.BenchOptions.html#ArmoniK_Samples_Bench_Client_Options_BenchOptions_TaskDurationMs
