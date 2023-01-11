@@ -4,10 +4,19 @@ services:
 
   database:
     image: mongo
+    command: --replSet "replSet0"
     networks:
       - armonik-backend
     ports:
       - 27017:27017
+    volumes:
+      - ./mongodb:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: test $$(mongosh --quiet --eval "rs.status().ok") -eq 1
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 10
 
   object:
     image: redis:bullseye
@@ -21,7 +30,7 @@ services:
     image: ${ARMONIK_SUBMITTER}
     depends_on:
       database:
-        condition: service_started
+        condition: service_healthy
       queue:
         condition: service_started
       object:
@@ -41,6 +50,7 @@ services:
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
       - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__DirectConnection=true
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:01
       - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
@@ -59,10 +69,14 @@ services:
   armonik.control.metrics:
     image: ${ARMONIK_METRICS}
     depends_on:
-      - database
-      - object
-      - queue
-      - fluentbit
+      database:
+        condition: service_healthy
+      queue:
+        condition: service_started
+      object:
+        condition: service_started
+      fluentbit:
+        condition: service_started
     networks:
       - armonik-net
       - armonik-backend
@@ -74,6 +88,7 @@ services:
       - MongoDB__Host=database
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
+      - MongoDB__DirectConnection=true
       - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
@@ -86,11 +101,16 @@ services:
   armonik.control.partitionmetrics:
     image: ${ARMONIK_PARTITIONMETRICS}
     depends_on:
-      - database
-      - object
-      - queue
-      - fluentbit
-      - armonik.control.metrics
+      database:
+        condition: service_healthy
+      queue:
+        condition: service_started
+      object:
+        condition: service_started
+      fluentbit:
+        condition: service_started
+      armonik.control.metrics:
+        condition: service_started
     networks:
       - armonik-net
       - armonik-backend
@@ -103,6 +123,7 @@ services:
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
       - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__DirectConnection=true
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
@@ -118,7 +139,7 @@ services:
     image: ${ARMONIK_POLLINGAGENT}
     depends_on:
       database:
-        condition: service_started
+        condition: service_healthy
       queue:
         condition: service_started
       object:
@@ -136,6 +157,7 @@ services:
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
       - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__DirectConnection=true
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
       - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage

@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -32,24 +33,23 @@ using NUnit.Framework;
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture]
-public class ObjectStorageTests : ObjectStorageTestBase
+public class TaskWatcherTests : TaskWatcherTestBase
 {
   public override void TearDown()
   {
-    ObjectStorage = null;
     tableProvider_?.Dispose();
     RunTests = false;
   }
 
   private MongoDatabaseProvider? tableProvider_;
 
-  public override void GetObjectStorageInstance()
+  public override void GetInstance()
   {
-    tableProvider_ = new MongoDatabaseProvider(serviceConfigurator: collection => collection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>());
+    tableProvider_ = new MongoDatabaseProvider(true);
     var provider = tableProvider_.GetServiceProvider();
 
-    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
-    RunTests             = true;
+    TaskTable   = provider.GetRequiredService<ITaskTable>();
+    TaskWatcher = provider.GetRequiredService<ITaskWatcher>();
+    RunTests    = true;
   }
 }

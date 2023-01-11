@@ -22,34 +22,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests;
+using ArmoniK.Api.gRPC.V1;
 
-using Microsoft.Extensions.DependencyInjection;
+namespace ArmoniK.Core.Common.Storage.Events;
 
-using NUnit.Framework;
-
-namespace ArmoniK.Core.Adapters.MongoDB.Tests;
-
-[TestFixture]
-public class ObjectStorageTests : ObjectStorageTestBase
-{
-  public override void TearDown()
-  {
-    ObjectStorage = null;
-    tableProvider_?.Dispose();
-    RunTests = false;
-  }
-
-  private MongoDatabaseProvider? tableProvider_;
-
-  public override void GetObjectStorageInstance()
-  {
-    tableProvider_ = new MongoDatabaseProvider(serviceConfigurator: collection => collection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>());
-    var provider = tableProvider_.GetServiceProvider();
-
-    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
-    RunTests             = true;
-  }
-}
+/// <summary>
+///   Represents a new result update
+/// </summary>
+/// <param name="SessionId">The id of the session</param>
+/// <param name="ResultId">The id of the result</param>
+/// <param name="OwnerId">The owner id of the result</param>
+/// <param name="Status">The status of the result</param>
+public record NewResult(string       SessionId,
+                        string       ResultId,
+                        string       OwnerId,
+                        ResultStatus Status);

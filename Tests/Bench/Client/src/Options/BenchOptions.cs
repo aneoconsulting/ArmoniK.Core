@@ -74,4 +74,10 @@ public class BenchOptions
   ///   Partition in which to submit the tasks
   /// </summary>
   public string Partition { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Print the event updates
+  ///   default : false
+  /// </summary>
+  public bool ShowEvents { get; set; }
 }

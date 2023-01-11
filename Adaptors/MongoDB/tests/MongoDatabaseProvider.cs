@@ -49,7 +49,8 @@ internal class MongoDatabaseProvider : IDisposable
   private readonly        ServiceProvider provider_;
   private readonly        IMongoRunner?   runner_;
 
-  public MongoDatabaseProvider(Action<IServiceCollection>? serviceConfigurator = null)
+  public MongoDatabaseProvider(bool                        useSingleNodeReplicaSet = false,
+                               Action<IServiceCollection>? serviceConfigurator     = null)
   {
     var loggerSerilog = new LoggerConfiguration().WriteTo.Console()
                                                  .Enrich.FromLogContext()
@@ -60,9 +61,10 @@ internal class MongoDatabaseProvider : IDisposable
 
     var options = new MongoRunnerOptions
                   {
-                    UseSingleNodeReplicaSet = false,
+                    UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
                     StandardOuputLogger     = line => logger.LogInformation(line),
                     StandardErrorLogger     = line => logger.LogError(line),
+                    ReplicaSetSetupTimeout  = TimeSpan.FromSeconds(30),
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -111,7 +113,7 @@ internal class MongoDatabaseProvider : IDisposable
     serviceCollection.AddSingleton(ActivitySource);
     serviceCollection.AddTransient<IMongoClient>(_ => client);
 
-    serviceCollection.AddLogging();
+    serviceCollection.AddLogging(builder => builder.AddSerilog(loggerSerilog));
     serviceConfigurator?.Invoke(serviceCollection);
 
     provider_ = serviceCollection.BuildServiceProvider(new ServiceProviderOptions
