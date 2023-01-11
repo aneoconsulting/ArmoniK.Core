@@ -1,0 +1,99 @@
+module "fluenbit" {
+  source  = "./modules/monitoring/fluentbit"
+  image   = var.log_driver_image
+  network = docker_network.armonik.name
+}
+
+module "seq" {
+  source  = "./modules/monitoring/seq"
+  image   = var.seq_image
+  network = docker_network.armonik.name
+}
+
+module "zipkin" {
+  source  = "./modules/monitoring/zipkin"
+  image   = var.zipkin_image
+  network = docker_network.armonik.name
+}
+
+module "database" {
+  source         = "./modules/storage/database/mongo"
+  image          = var.database_image
+  network        = docker_network.armonik.name
+  mongodb_params = var.mongodb_params
+  partition_list = local.partition_list
+}
+
+module "object_redis" {
+  source  = "./modules/storage/object/redis"
+  count   = var.object_storage.name == "redis" ? 1 : 0
+  image   = var.object_storage.image
+  network = docker_network.armonik.name
+}
+
+module "object_local" {
+  source = "./modules/storage/object/local"
+  count  = var.object_storage.name == "local" ? 1 : 0
+}
+
+module "queue_rabbitmq" {
+  source        = "./modules/storage/queue/rabbitmq"
+  count         = var.queue_storage.broker.name == "rabbitmq" ? 1 : 0
+  queue_storage = var.queue_storage
+  image         = var.queue_storage.broker.image
+  network       = docker_network.armonik.name
+}
+
+module "queue_activemq" {
+  source        = "./modules/storage/queue/activemq"
+  count         = var.queue_storage.broker.name == "activemq" ? 1 : 0
+  queue_storage = var.queue_storage
+  image         = var.queue_storage.broker.image
+  network       = docker_network.armonik.name
+}
+
+module "submitter" {
+  source             = "./modules/submitter"
+  container_name     = local.submitter.name
+  core_tag           = local.submitter.tag
+  docker_image       = local.submitter.image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  zipkin_uri         = module.zipkin.zipkin_uri
+  log_driver         = module.fluenbit.log_driver
+}
+
+module "compute_plane" {
+  source             = "./modules/compute_plane"
+  for_each           = local.replicas
+  replica_counter    = each.key
+  num_partitions     = var.num_partitions
+  core_tag           = local.compute_plane.tag
+  polling_agent      = local.compute_plane.polling_agent
+  worker             = local.compute_plane.worker
+  generated_env_vars = local.environment
+  network            = docker_network.armonik.name
+  zipkin_uri         = module.zipkin.zipkin_uri
+  log_driver         = module.fluenbit.log_driver
+}
+
+module "metrics_exporter" {
+  source             = "./modules/monitoring/metrics"
+  tag                = var.core_tag
+  image              = var.armonik_metrics_image
+  use_local_image    = var.use_local_image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  log_driver         = module.fluenbit.log_driver
+}
+
+module "partition_metrics_exporter" {
+  source             = "./modules/monitoring/partition_metrics"
+  tag                = var.core_tag
+  image              = var.armonik_partition_metrics_image
+  use_local_image    = var.use_local_image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  metrics_env_vars   = module.metrics_exporter.metrics_env_vars
+  log_driver         = module.fluenbit.log_driver
+}
