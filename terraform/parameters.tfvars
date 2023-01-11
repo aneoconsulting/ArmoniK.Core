@@ -15,17 +15,19 @@ mongodb_params = {
 queue_storage = {
   protocol = "amqp1_0"
   broker = {
-    name  = "activemq"
-    image = "symptoma/activemq:5.16.3"
+    name  = "rabbitmq"
+    image = "rabbitmq:3-management"
   }
-  host         = "queue"
-  link_credit  = 2
-  max_priority = 10
-  max_retries  = 10
-  partition    = "TestPartition"
-  password     = "admin"
-  port         = 5672
-  user         = "admin"
+  envs = {
+    host         = "queue"
+    link_credit  = 2
+    max_priority = 10
+    max_retries  = 10
+    partition    = "TestPartition"
+    password     = "admin"
+    port         = 5672
+    user         = "admin"
+  }
 }
 
 object_storage = {
