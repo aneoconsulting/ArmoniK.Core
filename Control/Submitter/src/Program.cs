@@ -34,6 +34,7 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Adapters.Redis;
+using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -89,6 +90,8 @@ public static class Program
                        logger.GetLogger())
              .AddLocalStorage(builder.Configuration,
                               logger.GetLogger())
+             .AddS3(builder.Configuration,
+                    logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
