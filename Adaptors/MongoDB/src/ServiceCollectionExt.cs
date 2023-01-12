@@ -33,6 +33,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Events;
 
 using JetBrains.Annotations;
 
@@ -78,7 +79,9 @@ public static class ServiceCollectionExt
               .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
               .AddTransient<IResultTable, ResultTable>()
-              .AddTransient<IPartitionTable, PartitionTable>();
+              .AddTransient<IPartitionTable, PartitionTable>()
+              .AddTransient<ITaskWatcher, TaskWatcher>()
+              .AddTransient<IResultWatcher, ResultWatcher>();
     }
 
     if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
@@ -189,11 +192,12 @@ public static class ServiceCollectionExt
     }
 
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-    settings.AllowInsecureTls      = mongoOptions.AllowInsecureTls;
-    settings.UseTls                = mongoOptions.Tls;
-    settings.DirectConnection      = mongoOptions.DirectConnection;
-    settings.Scheme                = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
+    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+    settings.UseTls                 = mongoOptions.Tls;
+    settings.DirectConnection       = mongoOptions.DirectConnection;
+    settings.Scheme                 = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+    settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
 
     services.AddTransient<IMongoClient>(_ =>
                                         {

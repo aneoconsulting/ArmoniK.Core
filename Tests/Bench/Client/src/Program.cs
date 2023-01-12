@@ -25,17 +25,21 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Samples.Bench.Client.Options;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+
+using Grpc.Core;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -72,8 +76,7 @@ internal static class Program
                           benchOptions);
     using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
-    var channel = GrpcChannelFactory.CreateChannel(options);
-
+    var channel         = GrpcChannelFactory.CreateChannel(options);
     var submitterClient = new Submitter.SubmitterClient(channel);
 
     var createSessionRequest = new CreateSessionRequest
@@ -114,6 +117,30 @@ internal static class Program
     var sessionCreated     = Stopwatch.GetTimestamp();
     logger.LogInformation("Session Id : {sessionId}",
                           createSessionReply.SessionId);
+
+    var cts       = new CancellationTokenSource();
+    var eventTask = Task.CompletedTask;
+    if (benchOptions.ShowEvents)
+    {
+      eventTask = Task.Factory.StartNew(async () =>
+                                        {
+                                          var eventsClient = new Events.EventsClient(channel);
+
+                                          using var eventsCall = eventsClient.GetEvents(new EventSubscriptionRequest
+                                                                                        {
+                                                                                          SessionId = createSessionReply.SessionId,
+                                                                                        });
+
+                                          while (await eventsCall.ResponseStream.MoveNext(cts.Token)
+                                                                 .ConfigureAwait(false))
+                                          {
+                                            logger.LogInformation("{@eventUpdate}",
+                                                                  eventsCall.ResponseStream.Current);
+                                          }
+                                        },
+                                        cts.Token)
+                      .Unwrap();
+    }
 
     Console.CancelKeyPress += (_,
                                args) =>
@@ -239,5 +266,20 @@ internal static class Program
                 };
     logger.LogInformation("executions stats {@stats}",
                           stats);
+
+    if (benchOptions.ShowEvents)
+    {
+      cts.CancelAfter(TimeSpan.FromSeconds(1));
+      try
+      {
+        await eventTask.WaitAsync(CancellationToken.None)
+                       .ConfigureAwait(false);
+      }
+      catch (RpcException e) when (e.StatusCode == StatusCode.Cancelled)
+      {
+        logger.LogWarning(e,
+                          $"{nameof(Events.EventsClient.GetEvents)} interrupted.");
+      }
+    }
   }
 }

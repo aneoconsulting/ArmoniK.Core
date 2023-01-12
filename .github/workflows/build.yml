@@ -673,6 +673,15 @@ jobs:
             -e BenchOptions__TaskDurationMs=100 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
+      - name: Run Bench test tasks - many tasks (200) with events
+        timeout-minutes: 10
+        run: |
+          docker run --net armonik-net --rm \
+            -e BenchOptions__NTasks=200 \
+            -e BenchOptions__TaskDurationMs=100 \
+            -e BenchOptions__ShowEvents=true \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test time - long tasks (10s)
         timeout-minutes: 10
         run: |
