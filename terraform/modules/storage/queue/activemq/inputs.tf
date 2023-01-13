@@ -6,7 +6,7 @@ variable "network" {
   type = string
 }
 
-variable "queue_storage" {
+variable "queue_envs" {
   type = object({
     user         = string,
     password     = string,

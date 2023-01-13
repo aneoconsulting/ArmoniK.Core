@@ -54,19 +54,21 @@ variable "object_storage" {
 
 variable "queue_storage" {
   type = object({
-    protocol = string,
+    protocol = string, # Only relevant for the RabbitMQ module
     broker = object({
       name  = string
       image = string
     })
-    user         = string,
-    password     = string,
-    host         = string,
-    port         = number,
-    max_priority = number,
-    max_retries  = number,
-    link_credit  = number,
-    partition    = string
+    envs = object({
+      user         = string,
+      password     = string,
+      host         = string,
+      port         = number,
+      max_priority = number,
+      max_retries  = number,
+      link_credit  = number,
+      partition    = string
+    })
   })
   description = "Parameters to define the broker, protocol and queue settings"
   validation {
