@@ -24,11 +24,12 @@
 
 namespace ArmoniK.Core.Adapters.S3.Options;
 
-internal class S3
+public class S3
 {
   public const string SettingSection = nameof(S3);
   public       string EndpointUrl        { get; set; } = "";
   public       string Login              { get; set; } = "";
   public       string Password           { get; set; } = "";
   public       bool   MustForcePathStyle { get; set; } = false;
+  public       string BucketName         { get; set; } = "";
 }

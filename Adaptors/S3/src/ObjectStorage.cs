@@ -33,31 +33,36 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using CommunityToolkit.HighPerformance;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.S3;
 
 public class ObjectStorage : IObjectStorage
 {
-  private readonly string                 bucketName_;
+  private readonly string     bucketName_;
+  private readonly Options.S3 options_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
   private readonly AmazonS3Client         s3Client_;
 
   /// <summary>
-  ///   <see cref="IObjectStorage" /> implementation for Redis
+  ///   <see cref="IObjectStorage" /> implementation for S3
   /// </summary>
   /// <param name="s3Client">Connection to S3</param>
   /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
+  /// <param name="options">S3 object storage options</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(AmazonS3Client         s3Client,
                        string                 objectStorageName,
-                       string                 bucketName,
+                       Options.S3             options,
                        ILogger<ObjectStorage> logger)
   {
     s3Client_          = s3Client;
     objectStorageName_ = objectStorageName;
-    bucketName_        = bucketName;
+    options_           = options;
+    bucketName_        = options.BucketName;
     logger_            = logger;
   }
 
@@ -197,12 +202,12 @@ public class ObjectStorage : IObjectStorage
 
 internal static class S3StorageHelper
 {
-  public static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
-                                                         string              bucketName,
-                                                         string              key,
-                                                         byte[]              chunk)
+  internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
+                                                           string              bucketName,
+                                                           string              key,
+                                                           byte[]              chunk)
   {
-    using Stream stream = new MemoryStream(chunk);
+    Stream stream = new MemoryStream(chunk);
     var request = new PutObjectRequest
                   {
                     BucketName  = bucketName,
@@ -217,18 +222,18 @@ internal static class S3StorageHelper
                                  });
   }
 
-  public static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
-                                                         string               bucketName,
-                                                         string               key,
-                                                         ReadOnlyMemory<byte> chunk)
+  internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
+                                                           string               bucketName,
+                                                           string               key,
+                                                           ReadOnlyMemory<byte> chunk)
     => s3Client.WriteObjectAsync(bucketName,
                                  key,
                                  chunk.ToArray());
 
-  public static Task<PutObjectResponse> WriteStringAsync(this AmazonS3Client s3Client,
-                                                         string              bucketName,
-                                                         string              key,
-                                                         string              dataString)
+  internal static Task<PutObjectResponse> WriteStringAsync(this AmazonS3Client s3Client,
+                                                           string              bucketName,
+                                                           string              key,
+                                                           string              dataString)
   {
     var requestcount = new PutObjectRequest
                        {
@@ -239,10 +244,10 @@ internal static class S3StorageHelper
     return s3Client.PutObjectAsync(requestcount);
   }
 
-  public static async Task<byte[]> StringByteGetAsync(this AmazonS3Client    s3Client,
-                                                      string                 bucketName,
-                                                      string                 key,
-                                                      ILogger<ObjectStorage> logger)
+  internal static async Task<byte[]> StringByteGetAsync(this AmazonS3Client    s3Client,
+                                                        string                 bucketName,
+                                                        string                 key,
+                                                        ILogger<ObjectStorage> logger)
   {
     var request = new GetObjectRequest
                   {
@@ -260,20 +265,22 @@ internal static class S3StorageHelper
     return fileContent;
   }
 
-  public static async Task<string?> StringGetValueAsync(this AmazonS3Client    s3Client,
-                                                        string                 bucketName,
-                                                        string                 key,
-                                                        ILogger<ObjectStorage> logger)
+  internal static async Task<string?> StringGetValueAsync(this AmazonS3Client    s3Client,
+                                                          string                 bucketName,
+                                                          string                 key,
+                                                          ILogger<ObjectStorage> logger)
   {
     var response = await s3Client.GetObjectAsync(bucketName,
                                                  key);
 
     // Get the data from the response stream
-    using var responseStream = response.ResponseStream;
+    await using var responseStream = response.ResponseStream;
+
     var       retrievedData  = new byte[responseStream.Length];
-    responseStream.Read(retrievedData,
+    _ = await responseStream.ReadAsync(retrievedData,
                         0,
                         retrievedData.Length);
     return Encoding.UTF8.GetString(retrievedData);
+
   }
 }

@@ -49,26 +49,27 @@ public static class ServiceCollectionExt
     if (components["ObjectStorage"] == "ArmoniK.Adapters.S3.ObjectStorage")
     {
       // ReSharper disable once InlineOutVariableDeclaration
-      Options.S3 S3Options;
+      Options.S3 s3Options;
       serviceCollection.AddOption(configuration,
                                   Options.S3.SettingSection,
-                                  out S3Options);
+                                  out s3Options);
 
       using var _ = logger.BeginNamedScope("S3 configuration",
-                                           ("EndpointUrl", S3Options.EndpointUrl));
+                                           ("EndpointUrl", s3Options.EndpointUrl));
 
-      logger.LogInformation("setup connection to S3 at {EndpointUrl} with user {user} with option ForcePathStyle = {ForcePathStyle}",
-                            S3Options.EndpointUrl,
-                            S3Options.Login,
-                            S3Options.MustForcePathStyle);
+      logger.LogInformation("setup connection to S3 at {EndpointUrl} with user {user} with option ForcePathStyle = {ForcePathStyle} with BucketName = {BucketName}",
+                            s3Options.EndpointUrl,
+                            s3Options.Login,
+                            s3Options.MustForcePathStyle,
+                            s3Options.BucketName);
 
       var s3Config = new AmazonS3Config
                      {
-                       ForcePathStyle = S3Options.MustForcePathStyle,
-                       ServiceURL     = S3Options.EndpointUrl,
+                       ForcePathStyle = s3Options.MustForcePathStyle,
+                       ServiceURL     = s3Options.EndpointUrl,
                      };
-      var s3Client = new AmazonS3Client(S3Options.Login,
-                                        S3Options.Password,
+      var s3Client = new AmazonS3Client(s3Options.Login,
+                                        s3Options.Password,
                                         s3Config);
 
       serviceCollection.AddSingleton(_ => s3Client);

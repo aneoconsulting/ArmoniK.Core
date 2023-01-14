@@ -36,13 +36,13 @@ public class ObjectStorageFactory : IObjectStorageFactory
 {
   private readonly ILoggerFactory loggerFactory_;
   private readonly AmazonS3Client s3Client_;
-  private readonly string         bucketName_ = "defaultbucket"; //TODO: Arnaud.L how to get it from ServiceCollectionExt ?
+  private readonly Options.S3 options_;
   private          bool           isInitialized_;
 
-  public ObjectStorageFactory(AmazonS3Client s3Client,
-                              ILoggerFactory loggerFactory)
+  public ObjectStorageFactory(AmazonS3Client s3Client, Options.S3 options, ILoggerFactory loggerFactory)
   {
     s3Client_      = s3Client;
+    options_ = options;
     loggerFactory_ = loggerFactory;
   }
 
@@ -81,6 +81,6 @@ public class ObjectStorageFactory : IObjectStorageFactory
   public IObjectStorage CreateObjectStorage(string objectStorageName)
     => new ObjectStorage(s3Client_,
                          objectStorageName,
-                         bucketName_,
+                         options_,
                          loggerFactory_.CreateLogger<ObjectStorage>());
 }
