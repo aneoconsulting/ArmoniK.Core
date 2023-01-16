@@ -68,9 +68,19 @@ public static class ServiceCollectionExt
                        ForcePathStyle = s3Options.MustForcePathStyle,
                        ServiceURL     = s3Options.EndpointUrl,
                      };
-      var s3Client = new AmazonS3Client(s3Options.Login,
+
+      AmazonS3Client s3Client;
+      if (string.IsNullOrWhiteSpace(s3Options.Login))
+      {
+          s3Client = new AmazonS3Client(s3Config);
+      }
+      else
+      {
+          s3Client = new AmazonS3Client(s3Options.Login,
                                         s3Options.Password,
                                         s3Config);
+      }
+
 
       serviceCollection.AddSingleton(_ => s3Client);
 
