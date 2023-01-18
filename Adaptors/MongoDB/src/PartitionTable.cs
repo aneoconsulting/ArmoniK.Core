@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -81,6 +82,7 @@ public class PartitionTable : IPartitionTable
     }
   }
 
+  /// <inheritdoc />
   public async Task CreatePartitionsAsync(IEnumerable<PartitionData> partitions,
                                           CancellationToken          cancellationToken = default)
   {
@@ -94,6 +96,7 @@ public class PartitionTable : IPartitionTable
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<PartitionData> ReadPartitionAsync(string            partitionId,
                                                       CancellationToken cancellationToken = default)
   {
@@ -118,6 +121,7 @@ public class PartitionTable : IPartitionTable
     }
   }
 
+  /// <inheritdoc />
   public IAsyncEnumerable<PartitionData> GetPartitionWithAllocationAsync(CancellationToken cancellationToken = default)
   {
     using var _              = logger_.LogFunction();
@@ -130,6 +134,7 @@ public class PartitionTable : IPartitionTable
                          .ToAsyncEnumerable();
   }
 
+  /// <inheritdoc />
   public async Task DeletePartitionAsync(string            partitionId,
                                          CancellationToken cancellationToken = default)
   {
@@ -149,6 +154,7 @@ public class PartitionTable : IPartitionTable
     }
   }
 
+  /// <inheritdoc />
   public async Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
                                                      CancellationToken   cancellationToken = default)
   {
@@ -161,5 +167,32 @@ public class PartitionTable : IPartitionTable
                                .CountAsync(tdm => partitionIds.Contains(tdm.PartitionId),
                                            cancellationToken)
                                .ConfigureAwait(false) == partitionIds.Count();
+  }
+
+  /// <inheritdoc />
+  public async Task<(IEnumerable<PartitionData> partitions, int totalCount)> ListPartitionsAsync(Expression<Func<PartitionData, bool>>    filter,
+                                                                                                 Expression<Func<PartitionData, object?>> orderField,
+                                                                                                 bool                                     ascOrder,
+                                                                                                 int                                      page,
+                                                                                                 int                                      pageSize,
+                                                                                                 CancellationToken                        cancellationToken = default)
+  {
+    using var activity            = activitySource_.StartActivity($"{nameof(ListPartitionsAsync)}");
+    var       sessionHandle       = sessionProvider_.Get();
+    var       partitionCollection = partitionCollectionProvider_.Get();
+
+    var queryable = partitionCollection.AsQueryable(sessionHandle)
+                                       .Where(filter);
+
+    var ordered = ascOrder
+                    ? queryable.OrderBy(orderField)
+                    : queryable.OrderByDescending(orderField);
+
+    var partitionResult = ordered.Skip(page * pageSize)
+                                 .Take(pageSize)
+                                 .ToListAsync(cancellationToken);
+
+    return (await partitionResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
+                                                                      .ConfigureAwait(false));
   }
 }
