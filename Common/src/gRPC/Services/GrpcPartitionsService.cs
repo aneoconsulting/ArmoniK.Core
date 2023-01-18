@@ -41,8 +41,8 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcPartitionsService : Partitions.PartitionsBase
 {
-  private readonly IPartitionTable                partitionTable_;
   private readonly ILogger<GrpcPartitionsService> logger_;
+  private readonly IPartitionTable                partitionTable_;
 
   public GrpcPartitionsService(IPartitionTable                partitionTable,
                                ILogger<GrpcPartitionsService> logger)
