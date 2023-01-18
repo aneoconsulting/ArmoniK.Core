@@ -33,18 +33,16 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
-using CommunityToolkit.HighPerformance;
-
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.S3;
 
 public class ObjectStorage : IObjectStorage
 {
-  private readonly string     bucketName_;
-  private readonly Options.S3 options_;
+  private readonly string                 bucketName_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
+  private readonly Options.S3             options_;
   private readonly AmazonS3Client         s3Client_;
 
   /// <summary>
@@ -122,13 +120,17 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-
-    var response = await s3Client_.GetObjectAsync(bucketName_,
-                                                  $"{objectStorageName_}{key}_count");
-
-    if (response == null)
+    using var          _        = logger_.LogFunction(objectStorageName_ + key);
+    GetObjectResponse? response = null;
+    try
     {
+      response = await s3Client_.GetObjectAsync(bucketName_,
+                                                $"{objectStorageName_}{key}_count");
+    }
+    catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
+    {
+      logger_.LogError("The key {key} was not found.",
+                       key);
       throw new ObjectDataNotFoundException("Key not found");
     }
 
@@ -202,6 +204,22 @@ public class ObjectStorage : IObjectStorage
 
 internal static class S3StorageHelper
 {
+  //internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
+  //                                                         string              bucketName,
+  //                                                         string              key,
+  //                                                         byte[]              chunk)
+  //{
+  //  await using Stream stream = new MemoryStream(chunk);
+  //  var request = new PutObjectRequest
+  //                {
+  //                  BucketName  = bucketName,
+  //                  Key         = key,
+  //                  InputStream = stream,
+  //                };
+  //  return await s3Client.PutObjectAsync(request);
+
+  //}
+
   internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
                                                            string              bucketName,
                                                            string              key,
@@ -221,6 +239,7 @@ internal static class S3StorageHelper
                                    return prevTask.Result;
                                  });
   }
+
 
   internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
                                                            string               bucketName,
@@ -276,11 +295,10 @@ internal static class S3StorageHelper
     // Get the data from the response stream
     await using var responseStream = response.ResponseStream;
 
-    var       retrievedData  = new byte[responseStream.Length];
+    var retrievedData = new byte[responseStream.Length];
     _ = await responseStream.ReadAsync(retrievedData,
-                        0,
-                        retrievedData.Length);
+                                       0,
+                                       retrievedData.Length);
     return Encoding.UTF8.GetString(retrievedData);
-
   }
 }

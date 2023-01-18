@@ -35,14 +35,16 @@ namespace ArmoniK.Core.Adapters.S3;
 public class ObjectStorageFactory : IObjectStorageFactory
 {
   private readonly ILoggerFactory loggerFactory_;
+  private readonly Options.S3     options_;
   private readonly AmazonS3Client s3Client_;
-  private readonly Options.S3 options_;
   private          bool           isInitialized_;
 
-  public ObjectStorageFactory(AmazonS3Client s3Client, Options.S3 options, ILoggerFactory loggerFactory)
+  public ObjectStorageFactory(AmazonS3Client s3Client,
+                              Options.S3     options,
+                              ILoggerFactory loggerFactory)
   {
     s3Client_      = s3Client;
-    options_ = options;
+    options_       = options;
     loggerFactory_ = loggerFactory;
   }
 

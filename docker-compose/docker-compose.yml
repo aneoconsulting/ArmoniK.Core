@@ -26,6 +26,17 @@ services:
     expose:
       - 6379
 
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    entrypoint: /bin/bash
+    command: ["-c", "mkdir -p /data/miniobucket && minio server /data --console-address :9001"]
+    networks:
+      - armonik-backend
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
   armonik.control.submitter:
     image: ${ARMONIK_SUBMITTER}
     depends_on:
@@ -56,6 +67,11 @@ services:
       - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
       - LocalStorage__Path=/local_storage
       - Redis__EndpointUrl=object:6379
+      - S3__EndpointUrl=http://minio:9000
+      - S3__BucketName=miniobucket
+      - S3__Login=minioadmin
+      - S3__Password=minioadmin
+      - S3__MustForcePathStyle=true
       - Submitter__DefaultPartition=TestPartition0
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
@@ -163,6 +179,11 @@ services:
       - Components__ObjectStorage=ArmoniK.Adapters.${OBJECT_STORAGE:-Redis}.ObjectStorage
       - LocalStorage__Path=/local_storage
       - Redis__EndpointUrl=object:6379
+      - S3__EndpointUrl=http://minio:9000
+      - S3__BucketName=miniobucket
+      - S3__Login=minioadmin
+      - S3__Password=minioadmin
+      - S3__MustForcePathStyle=true      
       - Pollster__MaxErrorAllowed=-1
       - InitWorker__WorkerCheckRetries=10
       - InitWorker__WorkerCheckDelay=00:00:10

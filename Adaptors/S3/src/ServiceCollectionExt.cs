@@ -72,13 +72,13 @@ public static class ServiceCollectionExt
       AmazonS3Client s3Client;
       if (string.IsNullOrWhiteSpace(s3Options.Login))
       {
-          s3Client = new AmazonS3Client(s3Config);
+        s3Client = new AmazonS3Client(s3Config);
       }
       else
       {
-          s3Client = new AmazonS3Client(s3Options.Login,
-                                        s3Options.Password,
-                                        s3Config);
+        s3Client = new AmazonS3Client(s3Options.Login,
+                                      s3Options.Password,
+                                      s3Config);
       }
 
 
