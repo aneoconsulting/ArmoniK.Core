@@ -27,8 +27,8 @@ export QUEUE := if queue == "rabbitmq" {
 }
 
 # Sets the object storage
-# export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "Redis")
-export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "S3")
+export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "Redis")
+# export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "S3")
 
 # Sets the override to feed docker-compose
 export OVERRIDE := if queue == "rabbitmq091" {
