@@ -22,13 +22,11 @@ validate:
 
 apply:
 	terraform apply \
-		-var-file $(PARAMETERS_FILE) \
 		-state $(STATE_FILE) \
 		-auto-approve
 
 delete:
 	terraform destroy \
-		-var-file $(PARAMETERS_FILE) \
 		-state $(STATE_FILE) \
 		-auto-approve
 
