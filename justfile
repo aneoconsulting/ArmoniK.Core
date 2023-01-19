@@ -5,44 +5,39 @@ set positional-arguments
 set shell := ["bash", "-exc"]
 
 # Default values for the deployment
-tag    := "test"
-queue  := "activemqp"
-worker := "htcmock"
+tag       := "0.8.0"
+log_level := "Information"
+queue     := "activemq"
+worker    := "htcmock"
+object    := "local"
 
-# Base compose file
-export COMPOSE_BASE := "./docker-compose/docker-compose.yml"
-
-# loggin level of deployment
-export LOGGING_LEVEL := "Information"
+# Export them as terraform environment variables
+export TF_VAR_core_tag      := tag
+export TF_VAR_serilog_level := log_level
 
 # Sets the queue
-export QUEUE := if queue == "rabbitmq" {
-  "./docker-compose/docker-compose.queue-rabbitmq.yml"
+export TF_VAR_queue_storage := if queue == "rabbitmq" {
+  '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp1_0" }'
 } else if queue == "rabbitmq091" {
-  "./docker-compose/docker-compose.queue-rabbitmq.yml"
-} else if queue == "artemis" {
-  "./docker-compose/docker-compose.queue-artemis.yml"
+  '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
 } else {
-  "./docker-compose/docker-compose.queue-activemqp.yml"
+  '{ name = "activemq", image = "symptoma/activemq:5.16.3", protocol = "amqp1_0" }'
 }
 
 # Sets the object storage
-export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "Redis")
-
-# Sets the override to feed docker-compose
-export OVERRIDE := if queue == "rabbitmq091" {
-  "./docker-compose/docker-compose.override-rabbitmq091.yml"
+export TF_VAR_object_storage := if object == "redis" {
+  '{ name = "redis", image = "redis:bullseye" }'
 } else {
-  "./docker-compose/docker-compose.override.yml"
+  '{ name = "local", image = "" }'
 }
 
-# Defines worker and enviroment variables for deployment
+# Defines worker and environment variables for deployment
 defaultWorkerImage := if worker == "stream" {
-  "dockerhubaneo/armonik_core_stream_test_worker:" + tag
+  "dockerhubaneo/armonik_core_stream_test_worker"
 } else if worker == "bench" {
-  "dockerhubaneo/armonik_core_bench_test_worker:" + tag
+  "dockerhubaneo/armonik_core_bench_test_worker"
 } else {
-  "dockerhubaneo/armonik_core_htcmock_test_worker:" + tag
+  "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 defaultWorkerDockerFile := if worker == "stream" {
   "./Tests/Stream/Server/Dockerfile"
@@ -51,18 +46,14 @@ defaultWorkerDockerFile := if worker == "stream" {
 } else {
   "./Tests/HtcMock/Server/src/Dockerfile"
 }
-export ARMONIK_WORKER             := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
-export ARMONIK_WORKER_DOCKER_FILE := env_var_or_default('WORKER_DOCKER_FILE', defaultWorkerDockerFile)
-export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + tag
-export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
-export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
-export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
+
+export TF_VAR_worker_image            := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
+export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE', defaultWorkerDockerFile)
 
 # List recipes and their usage
 @default:
   just --list
   just _usage
-  echo
 
 _usage:
   #!/usr/bin/env bash
@@ -70,7 +61,7 @@ _usage:
   cat <<-EOF
 
   The recipe deploy uses three variables
-    usage: just tag=<tag> queue=<queue> worker=<worker> deploy
+    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> deploy
             if any of the variables is not set, its default value is used
 
       tag: The core tag image to use, defaults to test
@@ -78,12 +69,15 @@ _usage:
         activemqp   :  for activemq (1.0.0 protocol) (default)
         rabbitmq    :  for rabbitmq (1.0.0 protocol)
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
-        artemis     :  for artemismq (1.0.0 protocol)
 
       worker: allowed values below
         htcmock: for HtcMock V3 (default)
         stream: for Stream worker
         bench:  for Benchmark worker
+
+      object: allowed values below
+        local: to mount a local volume for object storage (default)
+        redis: to use redis for object storage
 
   It is possible to use a custom worker, this is handled by
   defining either of the following environment variables:
@@ -92,33 +86,21 @@ _usage:
         WORKER_DOCKER_FILE: to compile the image locally
   EOF
 
-# Custom command to build a single image
-build $imageTag $dockerFile:
-  docker build -t "$imageTag" -f "$dockerFile" ./
+# Call terraform init
+init:
+  terraform -chdir=./terraform init
 
-# Build all images necessary for the deployment 
-build-all: (build ARMONIK_WORKER ARMONIK_WORKER_DOCKER_FILE) (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
-
-# Insert partitions in database
-set-partitions:
-  docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database \
-    --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition2", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
-
-# Custom compose generic rule
-compose *args:
-  docker-compose -f "$COMPOSE_BASE" -f "$OVERRIDE" -f "$QUEUE" "$@"
-
-# Call custom docker-compose
-compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
-
-# Call custom docker-compose up
-compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
+# Validate deployment
+validate:
+  terraform -chdir=./terraform validate
 
 # Deploy ArmoniK Core
-deploy: (compose-invoke "database") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
+deploy: (init)
+  terraform -chdir=./terraform apply -auto-approve
 
-# Build and Deploy ArmoniK Core
-build-deploy: build-all deploy
+# Destroy ArmoniK Core
+destroy:
+  terraform -chdir=./terraform destroy -auto-approve
 
 # Run health checks
 healthChecks:
@@ -134,23 +116,3 @@ healthChecks:
   echo -e "\nHealth Checking Submitter"
   echo -n "  startup: " && curl -sSL localhost:5011/startup
   echo -n "  liveness: " && curl -sSL localhost:5011/liveness
-
-# Remove dangling images
-remove-dangling:
-  docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
-
-# Remove deployment images
-remove:
-  docker rmi -f "$ARMONIK_WORKER" "$ARMONIK_METRICS" "$ARMONIK_PARTITIONMETRICS" "$ARMONIK_SUBMITTER" "$ARMONIK_POLLINGAGENT"
-
-# Destroy deployment with docker-compose down
-destroy: (compose "down" "-v")
-
-# Custom command to restart the given service
-restart serviceName: (compose "restart" serviceName)
-
-# Custom command to stop the given service
-stop serviceName: (compose "stop" serviceName)
-
-# Custom command to restore a deployment after restarting a given service
-restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter") (restart "armonik.compute.pollingagent0") (restart "armonik.compute.pollingagent1") (restart "armonik.compute.pollingagent2")
