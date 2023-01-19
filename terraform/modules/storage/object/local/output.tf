@@ -1,4 +1,4 @@
-output "object_env_vars" {
+output "generated_env_vars" {
   value = ({
     "Components__ObjectStorage" = "ArmoniK.Adapters.LocalStorage.ObjectStorage",
     "LocalStorage__Path"        = "/local_storage"

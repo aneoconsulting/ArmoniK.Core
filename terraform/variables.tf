@@ -31,15 +31,15 @@ variable "mongodb_params" {
   }
 }
 
-variable "logging_env_vars" {
-  type = object({
-    log_level       = string,
-    aspnet_core_env = string,
-  })
-  default = {
-    aspnet_core_env = "Development"
-    log_level       = "Information"
-  }
+
+variable "serilog_level" {
+  type    = string
+  default = "Information"
+}
+
+variable "aspnet_core_env" {
+  type    = string
+  default = "Development"
 }
 
 variable "submitter" {
@@ -72,57 +72,65 @@ variable "object_storage" {
 
 variable "queue_storage" {
   type = object({
-    protocol = string, # Only relevant for the RabbitMQ module
-    broker = object({
-      name  = string
-      image = string
-    })
-    envs = object({
-      user         = string,
-      password     = string,
-      host         = string,
-      port         = number,
-      max_priority = number,
-      max_retries  = number,
-      link_credit  = number,
-      partition    = string
-    })
+    protocol = string # Only relevant for RabbitMQ
+    name     = string
+    image    = string
   })
-  description = "Parameters to define the broker, protocol and queue settings"
+  description = "Parameters to define the broker and protocol"
   validation {
     condition     = can(regex("^(amqp1_0|amqp0_9_1)$", var.queue_storage.protocol))
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq)$", var.queue_storage.broker.name))
+    condition     = can(regex("^(activemq|rabbitmq)$", var.queue_storage.name))
     error_message = "Must be activemq or rabbitmq"
   }
   default = {
     protocol = "amqp1_0"
-    broker = {
-      name  = "rabbitmq"
-      image = "rabbitmq:3-management"
-    }
-    envs = {
-      host         = "queue"
-      link_credit  = 2
-      max_priority = 10
-      max_retries  = 10
-      partition    = "TestPartition"
-      password     = "admin"
-      port         = 5672
-      user         = "admin"
-    }
+    name     = "rabbitmq"
+    image    = "rabbitmq:3-management"
   }
+}
+
+variable "queue_env_vars" {
+  type = object({
+    user         = string,
+    password     = string,
+    host         = string,
+    port         = number,
+    max_priority = number,
+    max_retries  = number,
+    link_credit  = number,
+    partition    = string
+  })
+  description = "Environment variables for the queue"
+  default = {
+    host         = "queue"
+    link_credit  = 2
+    max_priority = 10
+    max_retries  = 10
+    partition    = "TestPartition"
+    password     = "admin"
+    port         = 5672
+    user         = "admin"
+  }
+}
+
+variable "worker_image" {
+  type    = string
+  default = "dockerhubaneo/armonik_core_htcmock_test_worker"
+}
+
+variable "worker_docker_file_path" {
+  type    = string
+  default = "../Tests/HtcMock/Server/src"
 }
 
 variable "compute_plane" {
   type = object({
     worker = object({
       name                     = string,
-      image                    = string,
       port                     = number,
-      docker_file_path         = string,
       serilog_application_name = string
     })
 
@@ -145,11 +153,9 @@ variable "compute_plane" {
       worker_check_retries = 10
     }
     worker = {
-      image                    = "dockerhubaneo/armonik_core_htcmock_test_worker"
       name                     = "armonik.compute.worker"
       port                     = 1080
       serilog_application_name = "ArmoniK.Compute.Worker"
-      docker_file_path         = "../Tests/HtcMock/Server/src"
     }
   }
 }

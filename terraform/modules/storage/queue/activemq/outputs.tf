@@ -1,4 +1,4 @@
-output "queue_env_vars" {
+output "generated_env_vars" {
   value = ({
     "Components__QueueStorage" = "ArmoniK.Adapters.Amqp.QueueStorage"
     "Amqp__User"               = "${var.queue_envs.user}"
