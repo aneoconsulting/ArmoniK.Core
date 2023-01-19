@@ -403,5 +403,6 @@ public static class ServiceCollectionExt
                .AddValidator<ListTasksRequestValidator>()
                .AddValidator<ListResultsRequestValidator>()
                .AddValidator<ListApplicationsRequestValidator>()
+               .AddValidator<ListPartitionsRequestValidator>()
                .AddGrpcValidation();
 }

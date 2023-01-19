@@ -22,7 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -90,4 +92,23 @@ public interface IPartitionTable : IInitializable
   /// </returns>
   Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
                                         CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  ///   List all partitions matching the given filter and ordering
+  /// </summary>
+  /// <param name="filter">Filter to select partitions</param>
+  /// <param name="orderField">Select the field that will be used to order the partitions</param>
+  /// <param name="ascOrder">Is the order ascending</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="page">The page of results to retrieve</param>
+  /// <param name="pageSize">The number of results pages</param>
+  /// <returns>
+  ///   Collection of partition metadata matching the request and total number of results without paging
+  /// </returns>
+  Task<(IEnumerable<PartitionData> partitions, int totalCount)> ListPartitionsAsync(Expression<Func<PartitionData, bool>>    filter,
+                                                                                    Expression<Func<PartitionData, object?>> orderField,
+                                                                                    bool                                     ascOrder,
+                                                                                    int                                      page,
+                                                                                    int                                      pageSize,
+                                                                                    CancellationToken                        cancellationToken = default);
 }
