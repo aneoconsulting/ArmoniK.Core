@@ -111,6 +111,7 @@ jobs:
         jb cleanupcode ArmoniK.Core.sln
 
     - name: Check Diff
+      id: check-diff
       run: |
         DIFF="$(git diff --name-only)"
 
@@ -124,6 +125,16 @@ jobs:
           exit 1
         fi
 
+    - name: Generate patch
+      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
+      run: |
+        git diff > patch.diff
+
+    - uses: actions/upload-artifact@v3
+      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
+      with:
+        name: patch
+        path: ./patch.diff
 
   tests:
     strategy:
