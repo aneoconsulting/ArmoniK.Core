@@ -29,6 +29,8 @@ using ArmoniK.Core.Common.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using NUnit.Framework;
+
 namespace ArmoniK.Core.Adapters.S3.Tests;
 
 [TestFixture]

@@ -62,30 +62,6 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                   key,
-                                     IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken        cancellationToken = default)
-  {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-
-    var idx      = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
-                                         chunk));
-      ++idx;
-    }
-
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx)
-                .ConfigureAwait(false);
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)

@@ -102,21 +102,6 @@ public interface IObjectStorage
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  /// <exception cref="ArmoniKException">there is 0 chunk</exception>
-  Task AddOrUpdateAsync(string                   key,
-                        IAsyncEnumerable<byte[]> valueChunks,
-                        CancellationToken        cancellationToken = default);
-
-  /// <summary>
-  ///   Add the given data in the storage at the given key
-  ///   Update data if it already exists
-  /// </summary>
-  /// <param name="key">Key representing the object</param>
-  /// <param name="valueChunks">Chunks of data that will be stored in the Object Storage</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
   Task AddOrUpdateAsync(string                                 key,
                         IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,

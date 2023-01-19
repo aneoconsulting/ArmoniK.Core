@@ -51,7 +51,7 @@ public class ObjectStorageTestBase
       return;
     }
 
-    var dataBytesList = new List<byte[]>();
+    var dataBytesList = new List<ReadOnlyMemory<byte>>();
     dataBytesList.Add(Encoding.ASCII.GetBytes("AAAA"));
     dataBytesList.Add(Encoding.ASCII.GetBytes("BBBB"));
     dataBytesList.Add(Encoding.ASCII.GetBytes("CCCC"));
@@ -60,13 +60,13 @@ public class ObjectStorageTestBase
                                     dataBytesList.ToAsyncEnumerable())
                   .Wait();
 
-    dataBytesList = new List<byte[]>();
+    dataBytesList = new List<ReadOnlyMemory<byte>>();
     dataBytesList.Add(Encoding.ASCII.GetBytes("AAAABBBB"));
     ObjectStorage.AddOrUpdateAsync("dataKey2",
                                    dataBytesList.ToAsyncEnumerable())
                  .Wait();
 
-    dataBytesList = new List<byte[]>();
+    dataBytesList = new List<ReadOnlyMemory<byte>>();
     dataBytesList.Add(Array.Empty<byte>());
     ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
                                    dataBytesList.ToAsyncEnumerable())
@@ -131,7 +131,7 @@ public class ObjectStorageTestBase
     if (RunTests)
     {
       await ObjectStorage!.AddOrUpdateAsync("dataKeyNoChunk",
-                                            AsyncEnumerable.Empty<byte[]>())
+                                            AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
                           .ConfigureAwait(false);
       var data = new List<byte>();
       await foreach (var chunk in ObjectStorage!.GetValuesAsync("dataKeyNoChunk")
@@ -216,7 +216,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var listChunks = new List<byte[]>
+      var listChunks = new List<ReadOnlyMemory<byte>>
                        {
                          Encoding.ASCII.GetBytes("Armonik Payload chunk"),
                          Encoding.ASCII.GetBytes("Data 1"),
@@ -237,7 +237,7 @@ public class ObjectStorageTestBase
                       res.Count);
 
       Assert.AreEqual(string.Join("",
-                                  listChunks.Select(chunk => Encoding.ASCII.GetString(chunk))),
+                                  listChunks.Select(chunk => Encoding.ASCII.GetString(chunk.Span))),
                       string.Join("",
                                   res.Select(chunk => Encoding.ASCII.GetString(chunk))));
 

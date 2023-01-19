@@ -33,6 +33,8 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using CommunityToolkit.HighPerformance;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.S3;
@@ -62,32 +64,6 @@ public class ObjectStorage : IObjectStorage
     options_           = options;
     bucketName_        = options.BucketName;
     logger_            = logger;
-  }
-
-  /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                   key,
-                                     IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken        cancellationToken = default)
-  {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-
-    var idx      = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      taskList.Add(s3Client_.WriteObjectAsync(bucketName_,
-                                              $"{objectStorageName_}{key}_{idx}",
-                                              chunk));
-      ++idx;
-    }
-
-    await s3Client_.WriteStringAsync(bucketName_,
-                                     $"{objectStorageName_}{key}_count",
-                                     idx.ToString())
-                   .ConfigureAwait(false);
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -204,42 +180,22 @@ public class ObjectStorage : IObjectStorage
 
 internal static class S3StorageHelper
 {
-  //internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
-  //                                                         string              bucketName,
-  //                                                         string              key,
-  //                                                         byte[]              chunk)
-  //{
-  //  await using Stream stream = new MemoryStream(chunk);
-  //  var request = new PutObjectRequest
-  //                {
-  //                  BucketName  = bucketName,
-  //                  Key         = key,
-  //                  InputStream = stream,
-  //                };
-  //  return await s3Client.PutObjectAsync(request);
-
-  //}
-
-  internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
-                                                           string              bucketName,
-                                                           string              key,
-                                                           byte[]              chunk)
+  internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
+                                                           string bucketName,
+                                                           string key,
+                                                           byte[] chunk)
   {
-    Stream stream = new MemoryStream(chunk);
+    ReadOnlyMemory<byte> memChunk = chunk;
+    //await using Stream stream = new MemoryStream(chunk);
     var request = new PutObjectRequest
-                  {
-                    BucketName  = bucketName,
-                    Key         = key,
-                    InputStream = stream,
-                  };
-    return s3Client.PutObjectAsync(request)
-                   .ContinueWith(prevTask =>
-                                 {
-                                   stream.DisposeAsync();
-                                   return prevTask.Result;
-                                 });
-  }
+    {
+      BucketName = bucketName,
+      Key = key,
+      InputStream = memChunk.AsStream(),
+    };
+    return await s3Client.PutObjectAsync(request);
 
+  }
 
   internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
                                                            string               bucketName,
