@@ -811,7 +811,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
+          just tag=${VERSION} object=redis deploy
           sleep 10
           ls -la terraform/logs/*.json
 
@@ -831,9 +831,9 @@ jobs:
       - name: Health Check Test when database is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} stop database
+          just tag=${VERSION} object=redis database
           just healthChecks
-          just tag=${VERSION} restoreDeployment database
+          just tag=${VERSION} object=redis restoreDeployment database
           sleep 10
           just healthChecks
 
@@ -853,9 +853,9 @@ jobs:
       - name: Health Check Test when queue is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} stop queue
+          just tag=${VERSION} object=redis stop queue
           just healthChecks
-          just tag=${VERSION} restoreDeployment queue
+          just tag=${VERSION} object=redis restoreDeployment queue
           sleep 10
           just healthChecks
 
@@ -875,9 +875,9 @@ jobs:
       - name: Health Check Test when object is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} stop object
+          just tag=${VERSION} object=redis stop object
           just healthChecks
-          just tag=${VERSION} restoreDeployment object
+          just tag=${VERSION} object=redis restoreDeployment object
           sleep 10
           just healthChecks
 
