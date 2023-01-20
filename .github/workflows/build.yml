@@ -831,7 +831,7 @@ jobs:
       - name: Health Check Test when database is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} object=redis database
+          just tag=${VERSION} object=redis stop database
           just healthChecks
           just tag=${VERSION} object=redis restoreDeployment database
           sleep 10
