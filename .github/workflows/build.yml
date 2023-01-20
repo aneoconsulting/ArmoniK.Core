@@ -648,7 +648,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} queue=activemqp worker=bench deploy
+          just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
           sleep 10
           ls -la terraform/logs/*.json
 

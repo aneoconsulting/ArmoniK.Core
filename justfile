@@ -5,15 +5,19 @@ set positional-arguments
 set shell := ["bash", "-exc"]
 
 # Default values for the deployment
-tag       := "0.8.0"
-log_level := "Information"
-queue     := "activemq"
-worker    := "htcmock"
-object    := "local"
+tag        := "0.8.0"
+log_level  := "Information"
+queue      := "activemq"
+worker     := "htcmock"
+object     := "local"
+replicas   := "3"
+partitions := "2"
 
 # Export them as terraform environment variables
-export TF_VAR_core_tag      := tag
-export TF_VAR_serilog_level := log_level
+export TF_VAR_core_tag       := tag
+export TF_VAR_serilog_level  := log_level
+export TF_VAR_num_replicas   := replicas
+export TF_VAR_num_partitions := partitions
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
@@ -60,8 +64,8 @@ _usage:
   set -euo pipefail
   cat <<-EOF
 
-  The recipe deploy uses four variables
-    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> deploy
+  The recipe deploy uses six variables
+    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> deploy
             if any of the variables is not set, its default value is used
 
       tag: The core tag image to use, defaults to test
@@ -84,6 +88,9 @@ _usage:
 
         WORKER_IMAGE:       to pull an already compiled image
         WORKER_DOCKER_FILE: to compile the image locally
+
+      replicas: Number of polling agents / worker to be replicated (default = 3)
+      partitions: Number of partitions (default = 2)
   EOF
 
 # Call terraform init
@@ -102,11 +109,32 @@ deploy: (init)
 destroy:
   terraform -chdir=./terraform destroy -auto-approve
 
+# Custom docker generic rule
+container *args:
+  docker container "$@"
+
+# Custom command to stop the given service
+stop serviceName: (container "stop" serviceName)
+
+# Custom command to start the given service
+start serviceName: (container "start" serviceName)
+
+# Custom command to start the given service
+restart serviceName: (container "restart" serviceName)
+
+# Custom command to restore a deployment after restarting a given service
+restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter")
+  #!/usr/bin/env bash
+  set -euo pipefail
+  for (( i=0; i<{{replicas}}; i++ )); do
+    docker container restart "armonik.compute.pollingagent${i}"
+  done
+
 # Run health checks
 healthChecks:
   #!/usr/bin/env bash
   set -euo pipefail
-  for i in {0..2}; do 
+  for (( i=0; i<{{replicas}}; i++ )); do
     echo -e "\nHealth Checking PollingAggent${i}"
     echo -n "  startup: " && curl -sSL localhost:998${i}/startup
     echo -n "  liveness: " && curl -sSL localhost:998${i}/liveness
