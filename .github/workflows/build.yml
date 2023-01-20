@@ -464,7 +464,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level:=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
 
       - name: Run Stream Test
