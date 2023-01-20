@@ -454,26 +454,18 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
           just-version: '1.8.0'
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
       - name: Deploy Core
         run: |
           just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
 
       - name: Run Stream Test
         timeout-minutes: 10
@@ -520,7 +512,7 @@ jobs:
       fail-fast: false
       matrix:
         queue:
-          - activemqp
+          - activemq
           - rabbitmq
           - rabbitmq091
         log-level:
@@ -540,26 +532,18 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
           just-version: '1.8.0'
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
       - name: Deploy Core
         run: |
           just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 10
@@ -634,7 +618,6 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
 
-
   runBench:
     needs:
       - versionning
@@ -655,20 +638,13 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
           just-version: '1.8.0'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
@@ -739,7 +715,6 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
 
-
   defaultPartitionMock:
     needs:
       - versionning
@@ -760,20 +735,13 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
           just-version: '1.8.0'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
@@ -833,20 +801,13 @@ jobs:
           sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
         uses: extractions/setup-just@v1
         with:
           just-version: '1.8.0'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
