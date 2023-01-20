@@ -60,7 +60,7 @@ _usage:
   set -euo pipefail
   cat <<-EOF
 
-  The recipe deploy uses three variables
+  The recipe deploy uses four variables
     usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> deploy
             if any of the variables is not set, its default value is used
 
