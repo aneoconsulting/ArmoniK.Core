@@ -9,13 +9,13 @@ variable "use_local_image" {
 }
 
 variable "num_replicas" {
-  type    = number
-  default = 3
+  type    = string
+  default = "3"
 }
 
 variable "num_partitions" {
-  type    = number
-  default = 3
+  type    = string
+  default = "3"
 }
 
 variable "mongodb_params" {
