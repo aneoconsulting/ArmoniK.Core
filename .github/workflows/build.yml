@@ -464,7 +464,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+          just log_level:=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
 
       - name: Run Stream Test
@@ -542,7 +542,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
+          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
           sleep 10
 
       - name: Run HtcMock test 100 tasks 1 level
@@ -648,7 +648,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} queue=activemqp worker=bench deploy
+          just log_level=Information tag=${VERSION} queue=activemqp worker=bench deploy
           sleep 10
           ls -la docker-compose/logs/*.json
 
@@ -745,7 +745,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
+          just log_level=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
           sleep 10
           ls -la docker-compose/logs/*.json
 
@@ -811,7 +811,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
+          just log_level=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
           sleep 10
           ls -la docker-compose/logs/*.json
 
