@@ -180,30 +180,19 @@ public class ObjectStorage : IObjectStorage
 
 internal static class S3StorageHelper
 {
-  internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client s3Client,
-                                                           string bucketName,
-                                                           string key,
-                                                           byte[] chunk)
+  internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
+                                                                 string               bucketName,
+                                                                 string               key,
+                                                                 ReadOnlyMemory<byte> chunk)
   {
-    ReadOnlyMemory<byte> memChunk = chunk;
-    //await using Stream stream = new MemoryStream(chunk);
     var request = new PutObjectRequest
-    {
-      BucketName = bucketName,
-      Key = key,
-      InputStream = memChunk.AsStream(),
-    };
+                  {
+                    BucketName  = bucketName,
+                    Key         = key,
+                    InputStream = chunk.AsStream(),
+                  };
     return await s3Client.PutObjectAsync(request);
-
   }
-
-  internal static Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
-                                                           string               bucketName,
-                                                           string               key,
-                                                           ReadOnlyMemory<byte> chunk)
-    => s3Client.WriteObjectAsync(bucketName,
-                                 key,
-                                 chunk.ToArray());
 
   internal static Task<PutObjectResponse> WriteStringAsync(this AmazonS3Client s3Client,
                                                            string              bucketName,

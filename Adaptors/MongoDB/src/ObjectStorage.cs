@@ -74,48 +74,6 @@ public class ObjectStorage : IObjectStorage
 
   public int ChunkSize { get; }
 
-
-  /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                   key,
-                                     IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken        cancellationToken = default)
-  {
-    var       dbKey            = objectStorageName_ + key;
-    using var _                = logger_.LogFunction(dbKey);
-    var       objectCollection = objectCollectionProvider_.Get();
-
-    var taskList = new List<Task>();
-
-    var idx = 0;
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
-                                                   {
-                                                     Chunk    = chunk,
-                                                     ChunkIdx = idx,
-                                                     Key      = dbKey,
-                                                   },
-                                                   cancellationToken: cancellationToken));
-      ++idx;
-    }
-
-    // If there was no chunks, add an empty chunk, just so that it could be found in the future
-    if (idx == 0)
-    {
-      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
-                                                   {
-                                                     Chunk    = Array.Empty<byte>(),
-                                                     ChunkIdx = idx,
-                                                     Key      = dbKey,
-                                                   },
-                                                   cancellationToken: cancellationToken));
-    }
-
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
-  }
-
   /// <inheritdoc />
   public Task AddOrUpdateAsync(string                                 key,
                                IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
@@ -180,5 +138,47 @@ public class ObjectStorage : IObjectStorage
     {
       yield return key;
     }
+  }
+
+
+  /// <inheritdoc />
+  public async Task AddOrUpdateAsync(string                   key,
+                                     IAsyncEnumerable<byte[]> valueChunks,
+                                     CancellationToken        cancellationToken = default)
+  {
+    var       dbKey            = objectStorageName_ + key;
+    using var _                = logger_.LogFunction(dbKey);
+    var       objectCollection = objectCollectionProvider_.Get();
+
+    var taskList = new List<Task>();
+
+    var idx = 0;
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+                                           .ConfigureAwait(false))
+    {
+      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
+                                                   {
+                                                     Chunk    = chunk,
+                                                     ChunkIdx = idx,
+                                                     Key      = dbKey,
+                                                   },
+                                                   cancellationToken: cancellationToken));
+      ++idx;
+    }
+
+    // If there was no chunks, add an empty chunk, just so that it could be found in the future
+    if (idx == 0)
+    {
+      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
+                                                   {
+                                                     Chunk    = Array.Empty<byte>(),
+                                                     ChunkIdx = idx,
+                                                     Key      = dbKey,
+                                                   },
+                                                   cancellationToken: cancellationToken));
+    }
+
+    await taskList.WhenAll()
+                  .ConfigureAwait(false);
   }
 }

@@ -65,14 +65,6 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public Task AddOrUpdateAsync(string                   key,
-                               IAsyncEnumerable<byte[]> valueChunks,
-                               CancellationToken        cancellationToken = default)
-    => AddOrUpdateAsync(key,
-                        valueChunks.Select(chunk => (ReadOnlyMemory<byte>)chunk.AsMemory()),
-                        cancellationToken);
-
-  /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)
@@ -178,4 +170,12 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
     => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public Task AddOrUpdateAsync(string                   key,
+                               IAsyncEnumerable<byte[]> valueChunks,
+                               CancellationToken        cancellationToken = default)
+    => AddOrUpdateAsync(key,
+                        valueChunks.Select(chunk => (ReadOnlyMemory<byte>)chunk.AsMemory()),
+                        cancellationToken);
 }
