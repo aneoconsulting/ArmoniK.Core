@@ -72,7 +72,7 @@ variable "object_storage" {
 
 variable "queue_storage" {
   type = object({
-    protocol = string # Only relevant for RabbitMQ
+    protocol = optional(string, "amqp1_0")
     name     = string
     image    = string
   })
@@ -86,7 +86,6 @@ variable "queue_storage" {
     error_message = "Must be activemq or rabbitmq"
   }
   default = {
-    protocol = "amqp1_0"
     name     = "rabbitmq"
     image    = "rabbitmq:3-management"
   }
