@@ -455,9 +455,10 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt update
+          sudo apt install just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -533,9 +534,10 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt update
+          sudo apt install just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -639,9 +641,10 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt update
+          sudo apt install just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -736,9 +739,10 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt update
+          sudo apt install just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -802,9 +806,10 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt update
+          sudo apt install just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
