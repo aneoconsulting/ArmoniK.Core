@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Amazon.S3;
+using Amazon.S3.Util;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
@@ -51,11 +52,14 @@ public class ObjectStorageFactory : IObjectStorageFactory
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
+    var logger = loggerFactory_.CreateLogger<ObjectStorage>();
     if (!isInitialized_)
     {
-      //await AmazonS3Util.DoesS3BucketExistV2Async(s3Client_, bucketName_);
+      await AmazonS3Util.DoesS3BucketExistV2Async(s3Client_,
+                                                  options_.BucketName);
     }
 
+    logger.LogInformation("ObjectStorageFactory has correctly been initialized.");
     isInitialized_ = true;
   }
 
