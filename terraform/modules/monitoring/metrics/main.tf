@@ -15,7 +15,7 @@ module "metrics_local" {
 
 resource "docker_container" "metrics" {
   name  = "armonik.control.metrics"
-  image = var.use_local_image ? module.metrics_local[0].image_id : docker_image.metrics[0].image_id
+  image = one(concat(module.metrics_local, docker_image.metrics)).image_id
 
   networks_advanced {
     name = var.network
