@@ -5,27 +5,29 @@ set positional-arguments
 set shell := ["bash", "-exc"]
 
 # Default values for the deployment
-tag        := "0.8.0"
-log_level  := "Information"
-queue      := "activemq"
-worker     := "htcmock"
-object     := "local"
-replicas   := "3"
-partitions := "2"
+tag          := "0.8.0"
+local_images := "false"
+log_level    := "Information"
+queue        := "activemq"
+worker       := "htcmock"
+object       := "local"
+replicas     := "3"
+partitions   := "2"
 
 # Export them as terraform environment variables
-export TF_VAR_core_tag       := tag
-export TF_VAR_serilog_level  := log_level
-export TF_VAR_num_replicas   := replicas
-export TF_VAR_num_partitions := partitions
+export TF_VAR_core_tag        := tag
+export TF_VAR_use_local_image := local_images
+export TF_VAR_serilog_level   := log_level
+export TF_VAR_num_replicas    := replicas
+export TF_VAR_num_partitions  := partitions
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
-  '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp1_0" }'
+  '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
 } else if queue == "rabbitmq091" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
 } else {
-  '{ name = "activemq", image = "symptoma/activemq:5.16.3", protocol = "amqp1_0" }'
+  '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 }
 
 # Sets the object storage
@@ -43,16 +45,17 @@ defaultWorkerImage := if worker == "stream" {
 } else {
   "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
-defaultWorkerDockerFile := if worker == "stream" {
-  "./Tests/Stream/Server/Dockerfile"
+# The path is given relative to the terraform directory
+defaultWorkerDockerFilePath := if worker == "stream" {
+  "../Tests/Stream/Server/"
 } else if worker == "bench" {
-  "./Tests/Bench/Server/src/Dockerfile"
+  "../Tests/Bench/Server/src/"
 } else {
-  "./Tests/HtcMock/Server/src/Dockerfile"
+  "../Tests/HtcMock/Server/src/"
 }
 
 export TF_VAR_worker_image            := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
-export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE', defaultWorkerDockerFile)
+export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE_PATH', defaultWorkerDockerFilePath)
 
 # List recipes and their usage
 @default:
@@ -83,8 +86,8 @@ _usage:
         It is possible to use a custom worker, this is handled by
         defining either of the following environment variables:
 
-        WORKER_IMAGE:       to pull an already compiled image
-        WORKER_DOCKER_FILE: to compile the image locally
+        WORKER_IMAGE:            to pull an already compiled image
+        WORKER_DOCKER_FILE_PATH: to compile the image locally
 
       object: allowed values below
         local: to mount a local volume for object storage (default)
@@ -102,6 +105,10 @@ init:
 # Validate deployment
 validate:
   terraform -chdir=./terraform validate
+
+# Invoke terraform console
+console:
+  terraform -chdir=./terraform console
 
 # Deploy ArmoniK Core
 deploy: (init)
@@ -131,6 +138,10 @@ restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.
   for (( i=0; i<{{replicas}}; i++ )); do
     docker container restart "armonik.compute.pollingagent${i}"
   done
+
+# Remove dangling images
+remove-dangling:
+  docker images --quiet --filter=dangling=true | xargs --no-run-if-empty docker rmi
 
 # Run health checks
 healthChecks:
