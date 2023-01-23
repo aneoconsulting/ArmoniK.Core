@@ -69,8 +69,9 @@ _usage:
             if any of the variables is not set, its default value is used
 
       tag: The core tag image to use, defaults to test
+
       queue: allowed values below
-        activemqp   :  for activemq (1.0.0 protocol) (default)
+        activemq    :  for activemq (1.0.0 protocol) (default)
         rabbitmq    :  for rabbitmq (1.0.0 protocol)
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
 
@@ -79,17 +80,18 @@ _usage:
         stream: for Stream worker
         bench:  for Benchmark worker
 
-      object: allowed values below
-        local: to mount a local volume for object storage (default)
-        redis: to use redis for object storage
-
-  It is possible to use a custom worker, this is handled by
-  defining either of the following environment variables:
+        It is possible to use a custom worker, this is handled by
+        defining either of the following environment variables:
 
         WORKER_IMAGE:       to pull an already compiled image
         WORKER_DOCKER_FILE: to compile the image locally
 
+      object: allowed values below
+        local: to mount a local volume for object storage (default)
+        redis: to use redis for object storage
+
       replicas: Number of polling agents / worker to be replicated (default = 3)
+
       partitions: Number of partitions (default = 2)
   EOF
 
@@ -119,7 +121,7 @@ stop serviceName: (container "stop" serviceName)
 # Custom command to start the given service
 start serviceName: (container "start" serviceName)
 
-# Custom command to start the given service
+# Custom command to restart the given service
 restart serviceName: (container "restart" serviceName)
 
 # Custom command to restore a deployment after restarting a given service
