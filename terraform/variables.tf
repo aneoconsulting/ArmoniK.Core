@@ -122,7 +122,7 @@ variable "worker_image" {
 
 variable "worker_docker_file_path" {
   type    = string
-  default = "../Tests/HtcMock/Server/src"
+  default = "../Tests/HtcMock/Server/src/"
 }
 
 variable "compute_plane" {

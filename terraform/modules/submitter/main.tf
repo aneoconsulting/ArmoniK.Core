@@ -13,8 +13,8 @@ module "submitter_local" {
   source          = "../build_image"
   use_local_image = var.use_local_image
   image_name      = "submitter_local"
-  context_path    = "${path.root}../"
-  dockerfile_path = "${path.root}../Control/Submitter/src/"
+  context_path    = "${path.root}/../"
+  dockerfile_path = "${path.root}/../Control/Submitter/src/"
 }
 
 resource "docker_container" "submitter" {

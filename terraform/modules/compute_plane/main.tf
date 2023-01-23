@@ -16,9 +16,9 @@ module "worker_local" {
   count           = var.use_local_image ? 1 : 0
   source          = "../build_image"
   use_local_image = var.use_local_image
-  image_name      = "submitter_local"
-  context_path    = "${path.root}../"
-  dockerfile_path = "${path.root}${var.worker.docker_file_path}"
+  image_name      = "worker_local"
+  context_path    = "${path.root}/../"
+  dockerfile_path = "${path.root}/${var.worker.docker_file_path}"
 }
 
 resource "docker_container" "worker" {
@@ -60,8 +60,8 @@ module "pollingagent_local" {
   source          = "../build_image"
   use_local_image = var.use_local_image
   image_name      = "pollingagent_local"
-  context_path    = "${path.root}../"
-  dockerfile_path = "${path.root}../Compute/PollingAgent/src/"
+  context_path    = "${path.root}/../"
+  dockerfile_path = "${path.root}/../Compute/PollingAgent/src/"
 }
 
 resource "docker_container" "polling_agent" {

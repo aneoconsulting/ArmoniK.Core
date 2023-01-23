@@ -9,8 +9,8 @@ module "metrics_local" {
   source          = "../../build_image"
   use_local_image = var.use_local_image
   image_name      = "metrics_local"
-  context_path    = "${path.root}../"
-  dockerfile_path = "${path.root}../Control/Metrics/src/"
+  context_path    = "${path.root}/../"
+  dockerfile_path = "${path.root}/../Control/Metrics/src/"
 }
 
 resource "docker_container" "metrics" {
