@@ -403,7 +403,11 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            Status = TaskStatus.Completed,
+                            Status =
+                            {
+                              TaskStatus.Completed,
+                              TaskStatus.Error,
+                            },
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -426,7 +430,11 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            Status = TaskStatus.Completed,
+                            Status =
+                            {
+                              TaskStatus.Completed,
+                              TaskStatus.Error,
+                            },
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {

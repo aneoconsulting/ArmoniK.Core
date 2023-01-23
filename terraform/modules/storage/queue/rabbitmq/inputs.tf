@@ -1,25 +1,17 @@
 variable "image" {
-  type = string
+  type    = string
+  default = "rabbitmq:3-management"
 }
 
 variable "network" {
   type = string
 }
 
-variable "plugins" {
-  type = object({
-    management       = string,
-    management_agent = string,
-    protocol1_0      = string
-  })
-  default = {
-    management       = "rabbitmq_management"
-    management_agent = "rabbitmq_management_agent"
-    protocol1_0      = "rabbitmq_amqp1_0"
-  }
+variable "protocol" {
+  type = string
 }
 
-variable "queue_storage" {
+variable "queue_envs" {
   type = object({
     user         = string,
     password     = string,

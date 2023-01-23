@@ -37,19 +37,20 @@ module "object_local" {
 }
 
 module "queue_rabbitmq" {
-  source        = "./modules/storage/queue/rabbitmq"
-  count         = var.queue_storage.broker.name == "rabbitmq" ? 1 : 0
-  queue_storage = var.queue_storage
-  image         = var.queue_storage.broker.image
-  network       = docker_network.armonik.name
+  source     = "./modules/storage/queue/rabbitmq"
+  count      = var.queue_storage.broker.name == "rabbitmq" ? 1 : 0
+  queue_envs = var.queue_storage.envs
+  image      = var.queue_storage.broker.image
+  protocol   = var.queue_storage.protocol
+  network    = docker_network.armonik.name
 }
 
 module "queue_activemq" {
-  source        = "./modules/storage/queue/activemq"
-  count         = var.queue_storage.broker.name == "activemq" ? 1 : 0
-  queue_storage = var.queue_storage
-  image         = var.queue_storage.broker.image
-  network       = docker_network.armonik.name
+  source     = "./modules/storage/queue/activemq"
+  count      = var.queue_storage.broker.name == "activemq" ? 1 : 0
+  queue_envs = var.queue_storage.envs
+  image      = var.queue_storage.broker.image
+  network    = docker_network.armonik.name
 }
 
 module "submitter" {
