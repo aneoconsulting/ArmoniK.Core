@@ -178,7 +178,7 @@ jobs:
         projects:
           - Adaptors/Amqp/tests
         queue:
-          - activemqp
+          - activemq
           - rabbitmq
         os:
           - ubuntu-latest
@@ -434,7 +434,7 @@ jobs:
       fail-fast: false
       matrix:
         queue:
-          - activemqp
+          - activemq
           - artemis
           - rabbitmq
           - rabbitmq091
@@ -753,7 +753,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
+          just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
           sleep 10
           ls -la terraform/logs/*.json
 
