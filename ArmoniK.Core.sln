@@ -66,15 +66,20 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.RabbitMQ", "Adaptors\RabbitMQ\src\ArmoniK.Core.Adapters.RabbitMQ.csproj", "{1A305C85-6C34-413F-8763-424647557FC7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.RabbitMQ.Tests", "Adaptors\RabbitMQ\tests\ArmoniK.Core.Adapters.RabbitMQ.Tests.csproj", "{7038A98B-CBD5-4972-9B6C-2E4EADB50CC1}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bench", "Bench", "{FC59D706-F16E-4A99-A3A9-59A3DE1C4069}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Bench.Client", "Tests\Bench\Client\src\ArmoniK.Samples.Bench.Client.csproj", "{DE31B46F-495E-47B1-A136-6574DBB81B92}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Bench.Server", "Tests\Bench\Server\src\ArmoniK.Samples.Bench.Server.csproj", "{2ED5C3A5-779C-4D17-855B-81838AC105E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Core.Adapters.LocalStorage", "Adaptors\LocalStorage\src\ArmoniK.Core.Adapters.LocalStorage.csproj", "{3BDD2ABF-98D7-4413-9D55-4361F020993B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.LocalStorage", "Adaptors\LocalStorage\src\ArmoniK.Core.Adapters.LocalStorage.csproj", "{3BDD2ABF-98D7-4413-9D55-4361F020993B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Core.Adapters.LocalStorage.Tests", "Adaptors\LocalStorage\tests\ArmoniK.Core.Adapters.LocalStorage.Tests.csproj", "{19BEC0E4-8943-4AB8-8383-F7C11CFC3DB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.LocalStorage.Tests", "Adaptors\LocalStorage\tests\ArmoniK.Core.Adapters.LocalStorage.Tests.csproj", "{19BEC0E4-8943-4AB8-8383-F7C11CFC3DB9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.S3", "Adaptors\S3\src\ArmoniK.Core.Adapters.S3.csproj", "{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.S3.Tests", "Adaptors\S3\tests\ArmoniK.Core.Adapters.S3.Tests.csproj", "{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -300,6 +305,22 @@ Global
 		{19BEC0E4-8943-4AB8-8383-F7C11CFC3DB9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19BEC0E4-8943-4AB8-8383-F7C11CFC3DB9}.Release|x64.ActiveCfg = Release|Any CPU
 		{19BEC0E4-8943-4AB8-8383-F7C11CFC3DB9}.Release|x64.Build.0 = Release|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Debug|x64.Build.0 = Debug|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Release|x64.ActiveCfg = Release|Any CPU
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803}.Release|x64.Build.0 = Release|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Debug|x64.Build.0 = Debug|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Release|x64.ActiveCfg = Release|Any CPU
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -340,6 +361,8 @@ Global
 		{2ED5C3A5-779C-4D17-855B-81838AC105E6} = {FC59D706-F16E-4A99-A3A9-59A3DE1C4069}
 		{3BDD2ABF-98D7-4413-9D55-4361F020993B} = {1A9BCE53-79D0-4761-B3A2-6967B610FA94}
 		{19BEC0E4-8943-4AB8-8383-F7C11CFC3DB9} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
+		{4979ADF2-4574-4FF5-BDF4-B5EC0EFAC803} = {1A9BCE53-79D0-4761-B3A2-6967B610FA94}
+		{35AC9746-51AC-4EB5-A6B9-AFC169868ABF} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1285A466-2AF6-43E6-8DCC-2F93A5D5F02E}

@@ -1265,6 +1265,30 @@ public class TaskTableTestBase
   }
 
 
+  [Test]
+  public async Task ListTaskWithListInRequestShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var statusList = new List<TaskStatus>
+                       {
+                         TaskStatus.Error,
+                         TaskStatus.Completed,
+                       };
+
+      var listTasks = await TaskTable!.ListTasksAsync(data => statusList.Contains(data.Status),
+                                                      data => data.SessionId,
+                                                      false,
+                                                      0,
+                                                      20,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(2,
+                      listTasks.totalCount);
+    }
+  }
+
   [TestCase(TaskStatus.Error)]
   [TestCase(TaskStatus.Completed)]
   [TestCase(TaskStatus.Cancelled)]

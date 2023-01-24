@@ -1,6 +1,6 @@
 variable "core_tag" {
   type    = string
-  default = "0.8.0"
+  default = "test"
 }
 
 variable "use_local_image" {

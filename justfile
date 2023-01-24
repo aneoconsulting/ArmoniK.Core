@@ -5,12 +5,12 @@ set positional-arguments
 set shell := ["bash", "-exc"]
 
 # Default values for the deployment
-tag          := "0.8.0"
+tag          := "test"
 local_images := "false"
 log_level    := "Information"
 queue        := "activemq"
 worker       := "htcmock"
-object       := "local"
+object       := "redis"
 replicas     := "3"
 partitions   := "2"
 
@@ -45,17 +45,23 @@ defaultWorkerImage := if worker == "stream" {
 } else {
   "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
-# The path is given relative to the terraform directory
+# The path is given relative to ArmoniK.Core's root directory
 defaultWorkerDockerFilePath := if worker == "stream" {
-  "../Tests/Stream/Server/"
+  "./Tests/Stream/Server/"
 } else if worker == "bench" {
-  "../Tests/Bench/Server/src/"
+  "./Tests/Bench/Server/src/"
 } else {
-  "../Tests/HtcMock/Server/src/"
+  "./Tests/HtcMock/Server/src/"
 }
 
 export TF_VAR_worker_image            := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
 export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE_PATH', defaultWorkerDockerFilePath)
+
+# This env vars will be used only for the build-all recipe
+export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + tag
+export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
+export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
+export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
 
 # List recipes and their usage
 @default:
@@ -67,8 +73,8 @@ _usage:
   set -euo pipefail
   cat <<-EOF
 
-  The recipe deploy uses six variables
-    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> deploy
+  The recipe deploy takes variables
+    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> local_images=<bool> deploy
             if any of the variables is not set, its default value is used
 
       tag: The core tag image to use, defaults to test
@@ -90,12 +96,17 @@ _usage:
         WORKER_DOCKER_FILE_PATH: to compile the image locally
 
       object: allowed values below
-        local: to mount a local volume for object storage (default)
-        redis: to use redis for object storage
+        local: to mount a local volume for object storage
+        redis: to use redis for object storage (default)
 
       replicas: Number of polling agents / worker to be replicated (default = 3)
 
       partitions: Number of partitions (default = 2)
+
+      local_images: Let terraform build the docker images locally (default = false)
+
+    IMPORTANT: In order to properly destroy the resources created you should call the recipe destroy with the
+    same parameters used for deploy
   EOF
 
 # Call terraform init
@@ -130,6 +141,16 @@ start serviceName: (container "start" serviceName)
 
 # Custom command to restart the given service
 restart serviceName: (container "restart" serviceName)
+
+# Custom command to build a single image
+build $imageTag $dockerFile:
+  docker build -t "$imageTag" -f "$dockerFile" ./
+
+# Build all images necessary for the deployment
+build-all: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" ) (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
+
+# Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
+build-deploy: build-all deploy
 
 # Custom command to restore a deployment after restarting a given service
 restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter")

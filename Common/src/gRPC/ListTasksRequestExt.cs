@@ -23,9 +23,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 
@@ -103,9 +103,9 @@ public static class ListTasksRequestExt
       predicate = predicate.And(data => data.StartDate < filter.StartedBefore.ToDateTime());
     }
 
-    if (filter.Status != TaskStatus.Unspecified)
+    if (filter.Status.Any())
     {
-      predicate = predicate.And(data => data.Status == filter.Status);
+      predicate = predicate.And(data => filter.Status.Contains(data.Status));
     }
 
     return predicate;
