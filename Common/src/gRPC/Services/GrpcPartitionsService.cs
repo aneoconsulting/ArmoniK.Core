@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,7 +68,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
                            Priority = partition.Priority,
                            PodConfiguration =
                            {
-                             partition.PodConfiguration?.Configuration,
+                             partition.PodConfiguration?.Configuration ?? new Dictionary<string, string>(),
                            },
                            PodMax               = partition.PodMax,
                            PodReserved          = partition.PodReserved,
@@ -103,7 +104,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
                                                    Priority = p.Priority,
                                                    PodConfiguration =
                                                    {
-                                                     p.PodConfiguration?.Configuration,
+                                                     p.PodConfiguration?.Configuration ?? new Dictionary<string, string>(),
                                                    },
                                                    PodMax      = p.PodMax,
                                                    PodReserved = p.PodReserved,
