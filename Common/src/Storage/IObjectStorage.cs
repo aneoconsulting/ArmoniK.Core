@@ -60,7 +60,7 @@ public static class ObjectStorageFactoryExt
   ///   The created Object Storage
   /// </returns>
   public static IObjectStorage CreatePayloadStorage(this IObjectStorageFactory factory,
-                                                    string                     session)
+                                                    string session)
     => factory.CreateObjectStorage($"payloads/{session}");
 
   /// <summary>
@@ -72,7 +72,7 @@ public static class ObjectStorageFactoryExt
   ///   The created Object Storage
   /// </returns>
   public static IObjectStorage CreateResultStorage(this IObjectStorageFactory factory,
-                                                   string                     session)
+                                                   string session)
     => factory.CreateObjectStorage($"results/{session}");
 
   /// <summary>
@@ -102,10 +102,25 @@ public interface IObjectStorage
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
+  /// <exception cref="ArmoniKException">there is 0 chunk</exception>
+  Task AddOrUpdateAsync(string key,
+                        IAsyncEnumerable<byte[]> valueChunks,
+                        CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Add the given data in the storage at the given key
+  ///   Update data if it already exists
+  /// </summary>
+  /// <param name="key">Key representing the object</param>
+  /// <param name="valueChunks">Chunks of data that will be stored in the Object Storage</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task AddOrUpdateAsync(string                                 key,
+  Task AddOrUpdateAsync(string key,
                         IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                        CancellationToken                      cancellationToken = default);
+                        CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Get object in the Object Storage
@@ -116,7 +131,7 @@ public interface IObjectStorage
   ///   Byte arrays representing the object chunked
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
+  IAsyncEnumerable<byte[]> GetValuesAsync(string key,
                                           CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -128,7 +143,7 @@ public interface IObjectStorage
   ///   A bool representing the success of the deletion
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task<bool> TryDeleteAsync(string            key,
+  Task<bool> TryDeleteAsync(string key,
                             CancellationToken cancellationToken = default);
 
   /// <summary>

@@ -40,9 +40,9 @@ namespace ArmoniK.Core.Adapters.LocalStorage;
 
 public class ObjectStorage : IObjectStorage
 {
-  private readonly int                    chunkSize_;
+  private readonly int chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
-  private readonly string                 path_;
+  private readonly string path_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for LocalStorage
@@ -50,12 +50,12 @@ public class ObjectStorage : IObjectStorage
   /// <param name="path">Path where the objects are stored</param>
   /// <param name="chunkSize">Size of the chunks when reading</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(string                 path,
-                       int                    chunkSize,
+  public ObjectStorage(string path,
+                       int chunkSize,
                        ILogger<ObjectStorage> logger)
   {
-    path_      = path;
-    logger_    = logger;
+    path_ = path;
+    logger_ = logger;
     chunkSize_ = chunkSize;
 
     logger.LogDebug("Creating Local ObjectStorage at {path}",
@@ -65,9 +65,17 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
+  public Task AddOrUpdateAsync(string key,
+                               IAsyncEnumerable<byte[]> valueChunks,
+                               CancellationToken cancellationToken = default)
+    => AddOrUpdateAsync(key,
+                        valueChunks.Select(chunk => (ReadOnlyMemory<byte>)chunk.AsMemory()),
+                        cancellationToken);
+
+  /// <inheritdoc />
+  public async Task AddOrUpdateAsync(string key,
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
+                                     CancellationToken cancellationToken = default)
   {
     var filename = Path.Combine(path_,
                                 key);
@@ -106,7 +114,7 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(string key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var filename = Path.Combine(path_,
@@ -154,7 +162,7 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public Task<bool> TryDeleteAsync(string            key,
+  public Task<bool> TryDeleteAsync(string key,
                                    CancellationToken cancellationToken = default)
   {
     var filename = Path.Combine(path_,
@@ -170,12 +178,4 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
     => throw new NotImplementedException();
-
-  /// <inheritdoc />
-  public Task AddOrUpdateAsync(string                   key,
-                               IAsyncEnumerable<byte[]> valueChunks,
-                               CancellationToken        cancellationToken = default)
-    => AddOrUpdateAsync(key,
-                        valueChunks.Select(chunk => (ReadOnlyMemory<byte>)chunk.AsMemory()),
-                        cancellationToken);
 }
