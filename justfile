@@ -136,6 +136,10 @@ start serviceName: (container "start" serviceName)
 # Custom command to restart the given service
 restart serviceName: (container "restart" serviceName)
 
+# Custom command to build a single image
+build $imageTag $dockerFile:
+  docker build -t "$imageTag" -f "$dockerFile" ./
+
 # Custom command to restore a deployment after restarting a given service
 restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter")
   #!/usr/bin/env bash
