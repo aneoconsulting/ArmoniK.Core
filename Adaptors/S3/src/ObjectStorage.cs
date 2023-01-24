@@ -66,6 +66,15 @@ public class ObjectStorage : IObjectStorage
     logger_            = logger;
   }
 
+  public async Task AddOrUpdateAsync(string                   key,
+                               IAsyncEnumerable<byte[]> valueChunks,
+                               CancellationToken        cancellationToken = default)
+  {
+    await AddOrUpdateAsync(key,
+                     valueChunks.Select(elem => new ReadOnlyMemory<byte>(elem)).AsAsyncEnumerable(),
+                     cancellationToken);
+  }
+
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
