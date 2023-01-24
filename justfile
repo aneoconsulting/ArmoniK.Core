@@ -28,7 +28,6 @@ export QUEUE := if queue == "rabbitmq" {
 
 # Sets the object storage
 export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "Redis")
-# export OBJECT_STORAGE := env_var_or_default("OBJECT_STORAGE", "S3")
 
 # Sets the override to feed docker-compose
 export OVERRIDE := if queue == "rabbitmq091" {
@@ -116,7 +115,7 @@ compose-invoke serviceName: (compose "rm" "-f" "-s" serviceName)
 compose-up: (compose "--compatibility" "up" "-d" "--build" "--force-recreate" "--remove-orphans")
 
 # Deploy ArmoniK Core
-deploy: (compose-invoke "database") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "minio") (compose-invoke "seq") (compose-up) (set-partitions)
+deploy: (compose-invoke "database") (compose-invoke "queue") (compose-invoke "object") (compose-invoke "seq") (compose-up) (set-partitions)
 
 # Build and Deploy ArmoniK Core
 build-deploy: build-all deploy
