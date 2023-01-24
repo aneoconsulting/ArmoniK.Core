@@ -121,12 +121,7 @@ public class ObjectStorage : IObjectStorage
 
     // Get the data from the response stream
     using var reader      = new StreamReader(response.ResponseStream);
-    var       fileContent = reader.ReadToEnd();
-
-    if (fileContent == null)
-    {
-      throw new ObjectDataNotFoundException($"Error reading file : {objectStorageName_}{key}_count : data is empty.");
-    }
+    var       fileContent = await reader.ReadToEndAsync();
 
     var valuesCount = int.Parse(fileContent);
 
