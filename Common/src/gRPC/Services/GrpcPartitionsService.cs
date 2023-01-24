@@ -67,7 +67,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
                            Priority = partition.Priority,
                            PodConfiguration =
                            {
-                             partition.PodConfiguration.Configuration,
+                             partition.PodConfiguration?.Configuration,
                            },
                            PodMax               = partition.PodMax,
                            PodReserved          = partition.PodReserved,
@@ -103,7 +103,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
                                                    Priority = p.Priority,
                                                    PodConfiguration =
                                                    {
-                                                     p.PodConfiguration.Configuration,
+                                                     p.PodConfiguration?.Configuration,
                                                    },
                                                    PodMax      = p.PodMax,
                                                    PodReserved = p.PodReserved,
