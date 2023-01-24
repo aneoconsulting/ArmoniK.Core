@@ -48,16 +48,16 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 [PublicAPI]
 public class ObjectStorage : IObjectStorage
 {
-  private readonly ILogger<ObjectStorage> logger_;
+  private readonly ILogger<ObjectStorage>                                                  logger_;
   private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
-  private readonly string objectStorageName_;
-  private readonly SessionProvider sessionProvider_;
+  private readonly string                                                                  objectStorageName_;
+  private readonly SessionProvider                                                         sessionProvider_;
 
-  public ObjectStorage(SessionProvider sessionProvider,
+  public ObjectStorage(SessionProvider                                                         sessionProvider,
                        MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider,
-                       string objectStorageName,
-                       ILogger<ObjectStorage> logger,
-                       Options.ObjectStorage options)
+                       string                                                                  objectStorageName,
+                       ILogger<ObjectStorage>                                                  logger,
+                       Options.ObjectStorage                                                   options)
   {
     if (options.ChunkSize == 0)
     {
@@ -65,24 +65,24 @@ public class ObjectStorage : IObjectStorage
                                             $"Minimum value for {nameof(Options.ObjectStorage.ChunkSize)} is 1.");
     }
 
-    sessionProvider_ = sessionProvider;
+    sessionProvider_          = sessionProvider;
     objectCollectionProvider_ = objectCollectionProvider;
-    objectStorageName_ = objectStorageName;
-    ChunkSize = options.ChunkSize;
-    logger_ = logger;
+    objectStorageName_        = objectStorageName;
+    ChunkSize                 = options.ChunkSize;
+    logger_                   = logger;
   }
 
   public int ChunkSize { get; }
 
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string key,
+  public async Task AddOrUpdateAsync(string                   key,
                                      IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken cancellationToken = default)
+                                     CancellationToken        cancellationToken = default)
   {
-    var dbKey = objectStorageName_ + key;
-    using var _ = logger_.LogFunction(dbKey);
-    var objectCollection = objectCollectionProvider_.Get();
+    var       dbKey            = objectStorageName_ + key;
+    using var _                = logger_.LogFunction(dbKey);
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var taskList = new List<Task>();
 
@@ -91,11 +91,11 @@ public class ObjectStorage : IObjectStorage
                                            .ConfigureAwait(false))
     {
       taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
-      {
-        Chunk = chunk,
-        ChunkIdx = idx,
-        Key = dbKey,
-      },
+                                                   {
+                                                     Chunk    = chunk,
+                                                     ChunkIdx = idx,
+                                                     Key      = dbKey,
+                                                   },
                                                    cancellationToken: cancellationToken));
       ++idx;
     }
@@ -104,11 +104,11 @@ public class ObjectStorage : IObjectStorage
     if (idx == 0)
     {
       taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
-      {
-        Chunk = Array.Empty<byte>(),
-        ChunkIdx = idx,
-        Key = dbKey,
-      },
+                                                   {
+                                                     Chunk    = Array.Empty<byte>(),
+                                                     ChunkIdx = idx,
+                                                     Key      = dbKey,
+                                                   },
                                                    cancellationToken: cancellationToken));
     }
 
@@ -117,20 +117,20 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public Task AddOrUpdateAsync(string key,
+  public Task AddOrUpdateAsync(string                                 key,
                                IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                               CancellationToken cancellationToken = default)
+                               CancellationToken                      cancellationToken = default)
     => AddOrUpdateAsync(key,
                         valueChunks.Select(chunk => chunk.ToArray()),
                         cancellationToken);
 
   /// <inheritdoc />
-  async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string key,
+  async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string                                     key,
                                                                [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var sessionHandle = sessionProvider_.Get();
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       sessionHandle    = sessionProvider_.Get();
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var throwException = true;
     await foreach (var chunk in objectCollection.AsQueryable(sessionHandle)
@@ -152,11 +152,11 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string key,
+  public async Task<bool> TryDeleteAsync(string            key,
                                          CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var res = await objectCollection.DeleteManyAsync(odm => odm.Key == objectStorageName_ + key,
                                                      cancellationToken)
@@ -167,9 +167,9 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
-    var sessionHandle = sessionProvider_.Get();
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction();
+    var       sessionHandle    = sessionProvider_.Get();
+    var       objectCollection = objectCollectionProvider_.Get();
 
     await foreach (var key in objectCollection.AsQueryable(sessionHandle)
                                               .Where(odm => odm.ChunkIdx == 0)
