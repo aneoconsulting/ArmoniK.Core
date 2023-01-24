@@ -1,4 +1,4 @@
-output "queue_env_vars" {
+output "generated_env_vars" {
   value = ({
     # RabbitMQ adapter targets version 0.9.1 of the protocol, if the version 1.0.0 is to be used the AMQP adapter should be employed
     "Components__QueueStorage" = var.protocol == "amqp1_0" ? "ArmoniK.Adapters.Amqp.QueueStorage" : "ArmoniK.Adapters.RabbitMQ.QueueStorage"

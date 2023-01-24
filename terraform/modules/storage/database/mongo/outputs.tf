@@ -1,4 +1,4 @@
-output "database_env_vars" {
+output "generated_env_vars" {
   value = ({
     "Components__TableStorage"               = "ArmoniK.Adapters.MongoDB.TableStorage"
     "MongoDB__Host"                          = docker_container.database.name
