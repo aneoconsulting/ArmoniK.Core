@@ -67,8 +67,8 @@ _usage:
   set -euo pipefail
   cat <<-EOF
 
-  The recipe deploy uses six variables
-    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> deploy
+  The recipe deploy takes variables
+    usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> local_images=<bool> deploy
             if any of the variables is not set, its default value is used
 
       tag: The core tag image to use, defaults to test
@@ -96,6 +96,11 @@ _usage:
       replicas: Number of polling agents / worker to be replicated (default = 3)
 
       partitions: Number of partitions (default = 2)
+
+      local_images: Build local docker images (default = false)
+
+    IMPORTANT: In order to properly destroy the resources created you should call the recipe destroy with the
+    same parameters used for deploy
   EOF
 
 # Call terraform init
