@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+
+  minio:
+    image: quay.io/minio/minio
+    entrypoint: /bin/bash
+    command: ["-c", "mkdir -p /data/miniobucket && minio server /data --console-address :9001"]
+    ports:
+      - "9000:9000"
+      - "9001:9001"

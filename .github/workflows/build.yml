@@ -143,6 +143,7 @@ jobs:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
+          - Adaptors/S3/tests
         os:
           - ubuntu-latest
       fail-fast: false
@@ -158,6 +159,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
+
+    - name: Minio Server UP
+      uses: isbang/compose-action@v1.4.0
+      with:
+        compose-file: "./docker-compose/S3/docker-compose-minio.yml"
 
     - name: Run tests
       run: |
