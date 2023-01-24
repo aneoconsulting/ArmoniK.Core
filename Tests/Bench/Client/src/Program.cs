@@ -33,6 +33,9 @@ using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
+
+using Armonik.Api.Grpc.V1.Partitions;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Samples.Bench.Client.Options;
 
@@ -76,7 +79,32 @@ internal static class Program
                           benchOptions);
     using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
-    var channel         = GrpcChannelFactory.CreateChannel(options);
+    var channel          = GrpcChannelFactory.CreateChannel(options);
+    var partitionsClient = new Partitions.PartitionsClient(channel);
+
+    var partitions = await partitionsClient.ListPartitionsAsync(new ListPartitionsRequest
+                                                                {
+                                                                  Filter = new ListPartitionsRequest.Types.Filter
+                                                                           {
+                                                                             Id                   = "",
+                                                                             ParentPartitionId    = "",
+                                                                             PodMax               = 0,
+                                                                             PodReserved          = 0,
+                                                                             PreemptionPercentage = 0,
+                                                                             Priority             = 0,
+                                                                           },
+                                                                  Sort = new ListPartitionsRequest.Types.Sort
+                                                                         {
+                                                                           Direction = ListPartitionsRequest.Types.OrderDirection.Desc,
+                                                                           Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                                                         },
+                                                                  PageSize = 10,
+                                                                  Page     = 0,
+                                                                });
+
+    logger.LogInformation("{@partitions}",
+                          partitions);
+
     var submitterClient = new Submitter.SubmitterClient(channel);
 
     var createSessionRequest = new CreateSessionRequest
