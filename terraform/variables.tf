@@ -179,9 +179,7 @@ variable "partition_data" {
     PodMax               = 100
     PreemptionPercentage = 20
     ParentPartitionIds   = []
-    PodConfiguration     = {
-      Configuration = {}
-    }
+    PodConfiguration     = null
   }
 }
 
