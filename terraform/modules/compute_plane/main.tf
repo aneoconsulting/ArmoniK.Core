@@ -18,7 +18,7 @@ module "worker_local" {
   use_local_image = var.use_local_image
   image_name      = "worker_local"
   context_path    = "${path.root}/../"
-  dockerfile_path = "${path.root}/${var.worker.docker_file_path}"
+  dockerfile_path = "${path.root}/../${var.worker.docker_file_path}"
 }
 
 resource "docker_container" "worker" {
