@@ -201,4 +201,22 @@ public class PartitionTableTestBase
       Assert.IsFalse(result);
     }
   }
+
+  [Test]
+  public async Task ListPartitionsEmptyResultShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var listTasks = await PartitionTable!.ListPartitionsAsync(data => data.PartitionId == "NotExisting",
+                                                                data => data.ParentPartitionIds,
+                                                                false,
+                                                                0,
+                                                                20,
+                                                                CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.AreEqual(0,
+                      listTasks.totalCount);
+    }
+  }
 }
