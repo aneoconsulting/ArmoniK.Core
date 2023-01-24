@@ -67,13 +67,12 @@ public class ObjectStorage : IObjectStorage
   }
 
   public async Task AddOrUpdateAsync(string                   key,
-                               IAsyncEnumerable<byte[]> valueChunks,
-                               CancellationToken        cancellationToken = default)
-  {
-    await AddOrUpdateAsync(key,
-                     valueChunks.Select(elem => new ReadOnlyMemory<byte>(elem)).AsAsyncEnumerable(),
-                     cancellationToken);
-  }
+                                     IAsyncEnumerable<byte[]> valueChunks,
+                                     CancellationToken        cancellationToken = default)
+    => await AddOrUpdateAsync(key,
+                              valueChunks.Select(elem => new ReadOnlyMemory<byte>(elem))
+                                         .AsAsyncEnumerable(),
+                              cancellationToken);
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
@@ -110,7 +109,8 @@ public class ObjectStorage : IObjectStorage
     try
     {
       response = await s3Client_.GetObjectAsync(bucketName_,
-                                                $"{objectStorageName_}{key}_count");
+                                                $"{objectStorageName_}{key}_count",
+                                                cancellationToken);
     }
     catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
     {
@@ -122,6 +122,11 @@ public class ObjectStorage : IObjectStorage
     // Get the data from the response stream
     using var reader      = new StreamReader(response.ResponseStream);
     var       fileContent = reader.ReadToEnd();
+
+    if (fileContent == null)
+    {
+      throw new ObjectDataNotFoundException($"Error reading file : {objectStorageName_}{key}_count : data is empty.");
+    }
 
     var valuesCount = int.Parse(fileContent!);
 
@@ -187,7 +192,7 @@ public class ObjectStorage : IObjectStorage
     => throw new NotImplementedException();
 }
 
-internal static class S3StorageHelper
+internal static class AmazonS3ClientExt
 {
   internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
                                                                  string               bucketName,
