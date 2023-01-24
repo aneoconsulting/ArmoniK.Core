@@ -128,7 +128,7 @@ public class ObjectStorage : IObjectStorage
       throw new ObjectDataNotFoundException($"Error reading file : {objectStorageName_}{key}_count : data is empty.");
     }
 
-    var valuesCount = int.Parse(fileContent!);
+    var valuesCount = int.Parse(fileContent);
 
     if (valuesCount == 0)
     {
