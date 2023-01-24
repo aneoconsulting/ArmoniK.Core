@@ -5627,6 +5627,296 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Redis.Tests.ObjectStorageTests.TearDown
   nameWithType: ObjectStorageTests.TearDown
+- uid: ArmoniK.Core.Adapters.S3
+  name: ArmoniK.Core.Adapters.S3
+  href: api/ArmoniK.Core.Adapters.S3.html
+  commentId: N:ArmoniK.Core.Adapters.S3
+  fullName: ArmoniK.Core.Adapters.S3
+  nameWithType: ArmoniK.Core.Adapters.S3
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage
+  name: ObjectStorage
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html
+  commentId: T:ArmoniK.Core.Adapters.S3.ObjectStorage
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage
+  nameWithType: ObjectStorage
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.#ctor(AmazonS3Client,System.String,ArmoniK.Core.Adapters.S3.Options.S3,ILogger{ArmoniK.Core.Adapters.S3.ObjectStorage})
+  name: ObjectStorage(AmazonS3Client, String, S3, ILogger<ObjectStorage>)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage__ctor_AmazonS3Client_System_String_ArmoniK_Core_Adapters_S3_Options_S3_ILogger_ArmoniK_Core_Adapters_S3_ObjectStorage__
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorage.#ctor(AmazonS3Client,System.String,ArmoniK.Core.Adapters.S3.Options.S3,ILogger{ArmoniK.Core.Adapters.S3.ObjectStorage})
+  name.vb: ObjectStorage(AmazonS3Client, String, S3, ILogger(Of ObjectStorage))
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.ObjectStorage(AmazonS3Client, System.String, ArmoniK.Core.Adapters.S3.Options.S3, ILogger<ArmoniK.Core.Adapters.S3.ObjectStorage>)
+  fullName.vb: ArmoniK.Core.Adapters.S3.ObjectStorage.ObjectStorage(AmazonS3Client, System.String, ArmoniK.Core.Adapters.S3.Options.S3, ILogger(Of ArmoniK.Core.Adapters.S3.ObjectStorage))
+  nameWithType: ObjectStorage.ObjectStorage(AmazonS3Client, String, S3, ILogger<ObjectStorage>)
+  nameWithType.vb: ObjectStorage.ObjectStorage(AmazonS3Client, String, S3, ILogger(Of ObjectStorage))
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.#ctor*
+  name: ObjectStorage
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorage.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.ObjectStorage
+  nameWithType: ObjectStorage.ObjectStorage
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.Byte[]},System.Threading.CancellationToken)
+  name: AddOrUpdateAsync(String, IAsyncEnumerable<Byte[]>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_AddOrUpdateAsync_System_String_System_Collections_Generic_IAsyncEnumerable_System_Byte____System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.Byte[]},System.Threading.CancellationToken)
+  name.vb: AddOrUpdateAsync(String, IAsyncEnumerable(Of Byte()), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String, System.Collections.Generic.IAsyncEnumerable<System.Byte[]>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String, System.Collections.Generic.IAsyncEnumerable(Of System.Byte()), System.Threading.CancellationToken)
+  nameWithType: ObjectStorage.AddOrUpdateAsync(String, IAsyncEnumerable<Byte[]>, CancellationToken)
+  nameWithType.vb: ObjectStorage.AddOrUpdateAsync(String, IAsyncEnumerable(Of Byte()), CancellationToken)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.ReadOnlyMemory{System.Byte}},System.Threading.CancellationToken)
+  name: AddOrUpdateAsync(String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_AddOrUpdateAsync_System_String_System_Collections_Generic_IAsyncEnumerable_System_ReadOnlyMemory_System_Byte___System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.ReadOnlyMemory{System.Byte}},System.Threading.CancellationToken)
+  name.vb: AddOrUpdateAsync(String, IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String, System.Collections.Generic.IAsyncEnumerable<System.ReadOnlyMemory<System.Byte>>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync(System.String, System.Collections.Generic.IAsyncEnumerable(Of System.ReadOnlyMemory(Of System.Byte)), System.Threading.CancellationToken)
+  nameWithType: ObjectStorage.AddOrUpdateAsync(String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
+  nameWithType.vb: ObjectStorage.AddOrUpdateAsync(String, IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)), CancellationToken)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync*
+  name: AddOrUpdateAsync
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_AddOrUpdateAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.AddOrUpdateAsync
+  nameWithType: ObjectStorage.AddOrUpdateAsync
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.GetValuesAsync(System.String,System.Threading.CancellationToken)
+  name: GetValuesAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_GetValuesAsync_System_String_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorage.GetValuesAsync(System.String,System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.GetValuesAsync(System.String, System.Threading.CancellationToken)
+  nameWithType: ObjectStorage.GetValuesAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.GetValuesAsync*
+  name: GetValuesAsync
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_GetValuesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorage.GetValuesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.GetValuesAsync
+  nameWithType: ObjectStorage.GetValuesAsync
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.ListKeysAsync(System.Threading.CancellationToken)
+  name: ListKeysAsync(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_ListKeysAsync_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorage.ListKeysAsync(System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.ListKeysAsync(System.Threading.CancellationToken)
+  nameWithType: ObjectStorage.ListKeysAsync(CancellationToken)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.ListKeysAsync*
+  name: ListKeysAsync
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_ListKeysAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorage.ListKeysAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.ListKeysAsync
+  nameWithType: ObjectStorage.ListKeysAsync
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.TryDeleteAsync(System.String,System.Threading.CancellationToken)
+  name: TryDeleteAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_TryDeleteAsync_System_String_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorage.TryDeleteAsync(System.String,System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.TryDeleteAsync(System.String, System.Threading.CancellationToken)
+  nameWithType: ObjectStorage.TryDeleteAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorage.TryDeleteAsync*
+  name: TryDeleteAsync
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorage.html#ArmoniK_Core_Adapters_S3_ObjectStorage_TryDeleteAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorage.TryDeleteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorage.TryDeleteAsync
+  nameWithType: ObjectStorage.TryDeleteAsync
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory
+  name: ObjectStorageFactory
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html
+  commentId: T:ArmoniK.Core.Adapters.S3.ObjectStorageFactory
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory
+  nameWithType: ObjectStorageFactory
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.#ctor(AmazonS3Client,ArmoniK.Core.Adapters.S3.Options.S3,ILoggerFactory)
+  name: ObjectStorageFactory(AmazonS3Client, S3, ILoggerFactory)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory__ctor_AmazonS3Client_ArmoniK_Core_Adapters_S3_Options_S3_ILoggerFactory_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.#ctor(AmazonS3Client,ArmoniK.Core.Adapters.S3.Options.S3,ILoggerFactory)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.ObjectStorageFactory(AmazonS3Client, ArmoniK.Core.Adapters.S3.Options.S3, ILoggerFactory)
+  nameWithType: ObjectStorageFactory.ObjectStorageFactory(AmazonS3Client, S3, ILoggerFactory)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.#ctor*
+  name: ObjectStorageFactory
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.ObjectStorageFactory
+  nameWithType: ObjectStorageFactory.ObjectStorageFactory
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: ObjectStorageFactory.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Check
+  nameWithType: ObjectStorageFactory.Check
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.CreateObjectStorage(System.String)
+  name: CreateObjectStorage(String)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory_CreateObjectStorage_System_String_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.CreateObjectStorage(System.String)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.CreateObjectStorage(System.String)
+  nameWithType: ObjectStorageFactory.CreateObjectStorage(String)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.CreateObjectStorage*
+  name: CreateObjectStorage
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory_CreateObjectStorage_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.CreateObjectStorage
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.CreateObjectStorage
+  nameWithType: ObjectStorageFactory.CreateObjectStorage
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Init(System.Threading.CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory_Init_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Init(System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Init(System.Threading.CancellationToken)
+  nameWithType: ObjectStorageFactory.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.S3.ObjectStorageFactory.html#ArmoniK_Core_Adapters_S3_ObjectStorageFactory_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ObjectStorageFactory.Init
+  nameWithType: ObjectStorageFactory.Init
+- uid: ArmoniK.Core.Adapters.S3.Options
+  name: ArmoniK.Core.Adapters.S3.Options
+  href: api/ArmoniK.Core.Adapters.S3.Options.html
+  commentId: N:ArmoniK.Core.Adapters.S3.Options
+  fullName: ArmoniK.Core.Adapters.S3.Options
+  nameWithType: ArmoniK.Core.Adapters.S3.Options
+- uid: ArmoniK.Core.Adapters.S3.Options.S3
+  name: S3
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html
+  commentId: T:ArmoniK.Core.Adapters.S3.Options.S3
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3
+  nameWithType: S3
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.BucketName
+  name: BucketName
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_BucketName
+  commentId: P:ArmoniK.Core.Adapters.S3.Options.S3.BucketName
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.BucketName
+  nameWithType: S3.BucketName
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.BucketName*
+  name: BucketName
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_BucketName_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Options.S3.BucketName
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.BucketName
+  nameWithType: S3.BucketName
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.EndpointUrl
+  name: EndpointUrl
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_EndpointUrl
+  commentId: P:ArmoniK.Core.Adapters.S3.Options.S3.EndpointUrl
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.EndpointUrl
+  nameWithType: S3.EndpointUrl
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.EndpointUrl*
+  name: EndpointUrl
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_EndpointUrl_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Options.S3.EndpointUrl
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.EndpointUrl
+  nameWithType: S3.EndpointUrl
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.Login
+  name: Login
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_Login
+  commentId: P:ArmoniK.Core.Adapters.S3.Options.S3.Login
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.Login
+  nameWithType: S3.Login
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.Login*
+  name: Login
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_Login_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Options.S3.Login
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.Login
+  nameWithType: S3.Login
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.MustForcePathStyle
+  name: MustForcePathStyle
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_MustForcePathStyle
+  commentId: P:ArmoniK.Core.Adapters.S3.Options.S3.MustForcePathStyle
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.MustForcePathStyle
+  nameWithType: S3.MustForcePathStyle
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.MustForcePathStyle*
+  name: MustForcePathStyle
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_MustForcePathStyle_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Options.S3.MustForcePathStyle
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.MustForcePathStyle
+  nameWithType: S3.MustForcePathStyle
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.Password
+  name: Password
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_Password
+  commentId: P:ArmoniK.Core.Adapters.S3.Options.S3.Password
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.Password
+  nameWithType: S3.Password
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.Password*
+  name: Password
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_Password_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Options.S3.Password
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.Password
+  nameWithType: S3.Password
+- uid: ArmoniK.Core.Adapters.S3.Options.S3.SettingSection
+  name: SettingSection
+  href: api/ArmoniK.Core.Adapters.S3.Options.S3.html#ArmoniK_Core_Adapters_S3_Options_S3_SettingSection
+  commentId: F:ArmoniK.Core.Adapters.S3.Options.S3.SettingSection
+  fullName: ArmoniK.Core.Adapters.S3.Options.S3.SettingSection
+  nameWithType: S3.SettingSection
+- uid: ArmoniK.Core.Adapters.S3.ServiceCollectionExt
+  name: ServiceCollectionExt
+  href: api/ArmoniK.Core.Adapters.S3.ServiceCollectionExt.html
+  commentId: T:ArmoniK.Core.Adapters.S3.ServiceCollectionExt
+  fullName: ArmoniK.Core.Adapters.S3.ServiceCollectionExt
+  nameWithType: ServiceCollectionExt
+- uid: ArmoniK.Core.Adapters.S3.ServiceCollectionExt.AddS3(IServiceCollection,ConfigurationManager,ILogger)
+  name: AddS3(IServiceCollection, ConfigurationManager, ILogger)
+  href: api/ArmoniK.Core.Adapters.S3.ServiceCollectionExt.html#ArmoniK_Core_Adapters_S3_ServiceCollectionExt_AddS3_IServiceCollection_ConfigurationManager_ILogger_
+  commentId: M:ArmoniK.Core.Adapters.S3.ServiceCollectionExt.AddS3(IServiceCollection,ConfigurationManager,ILogger)
+  fullName: ArmoniK.Core.Adapters.S3.ServiceCollectionExt.AddS3(IServiceCollection, ConfigurationManager, ILogger)
+  nameWithType: ServiceCollectionExt.AddS3(IServiceCollection, ConfigurationManager, ILogger)
+- uid: ArmoniK.Core.Adapters.S3.ServiceCollectionExt.AddS3*
+  name: AddS3
+  href: api/ArmoniK.Core.Adapters.S3.ServiceCollectionExt.html#ArmoniK_Core_Adapters_S3_ServiceCollectionExt_AddS3_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.ServiceCollectionExt.AddS3
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.ServiceCollectionExt.AddS3
+  nameWithType: ServiceCollectionExt.AddS3
+- uid: ArmoniK.Core.Adapters.S3.Tests
+  name: ArmoniK.Core.Adapters.S3.Tests
+  href: api/ArmoniK.Core.Adapters.S3.Tests.html
+  commentId: N:ArmoniK.Core.Adapters.S3.Tests
+  fullName: ArmoniK.Core.Adapters.S3.Tests
+  nameWithType: ArmoniK.Core.Adapters.S3.Tests
+- uid: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests
+  name: ObjectStorageTests
+  href: api/ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.html
+  commentId: T:ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests
+  fullName: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests
+  nameWithType: ObjectStorageTests
+- uid: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.GetObjectStorageInstance
+  name: GetObjectStorageInstance()
+  href: api/ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.html#ArmoniK_Core_Adapters_S3_Tests_ObjectStorageTests_GetObjectStorageInstance
+  commentId: M:ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.GetObjectStorageInstance
+  fullName: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.GetObjectStorageInstance()
+  nameWithType: ObjectStorageTests.GetObjectStorageInstance()
+- uid: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.GetObjectStorageInstance*
+  name: GetObjectStorageInstance
+  href: api/ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.html#ArmoniK_Core_Adapters_S3_Tests_ObjectStorageTests_GetObjectStorageInstance_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.GetObjectStorageInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.GetObjectStorageInstance
+  nameWithType: ObjectStorageTests.GetObjectStorageInstance
+- uid: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.html#ArmoniK_Core_Adapters_S3_Tests_ObjectStorageTests_TearDown
+  commentId: M:ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.TearDown
+  fullName: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.TearDown()
+  nameWithType: ObjectStorageTests.TearDown()
+- uid: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.html#ArmoniK_Core_Adapters_S3_Tests_ObjectStorageTests_TearDown_
+  commentId: Overload:ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.S3.Tests.ObjectStorageTests.TearDown
+  nameWithType: ObjectStorageTests.TearDown
 - uid: ArmoniK.Core.Common
   name: ArmoniK.Core.Common
   href: api/ArmoniK.Core.Common.html
