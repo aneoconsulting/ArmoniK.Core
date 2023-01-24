@@ -10,7 +10,7 @@ local_images := "false"
 log_level    := "Information"
 queue        := "activemq"
 worker       := "htcmock"
-object       := "local"
+object       := "redis"
 replicas     := "3"
 partitions   := "2"
 
@@ -96,8 +96,8 @@ _usage:
         WORKER_DOCKER_FILE_PATH: to compile the image locally
 
       object: allowed values below
-        local: to mount a local volume for object storage (default)
-        redis: to use redis for object storage
+        local: to mount a local volume for object storage
+        redis: to use redis for object storage (default)
 
       replicas: Number of polling agents / worker to be replicated (default = 3)
 
