@@ -59,10 +59,17 @@ variable "object_storage" {
   type = object({
     name  = string
     image = string
+    # used by minio :
+    host        = optional(string, "minio")
+    port        = optional(number, 9000)
+    login       = optional(string, "minioadmin")
+    password    = optional(string, "minioadmin")
+    bucket_name = optional(string, "minioBucket")
+
   })
   validation {
-    condition     = can(regex("^(redis|local)$", var.object_storage.name))
-    error_message = "Must be redis or local"
+    condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
+    error_message = "Must be redis, minio, or local"
   }
   default = {
     image = ""
@@ -86,8 +93,8 @@ variable "queue_storage" {
     error_message = "Must be activemq, rabbitmq or artemis"
   }
   default = {
-    name     = "rabbitmq"
-    image    = "rabbitmq:3-management"
+    name  = "rabbitmq"
+    image = "rabbitmq:3-management"
   }
 }
 
@@ -168,7 +175,7 @@ variable "partition_data" {
     PodMax               = number
     PreemptionPercentage = number
     ParentPartitionIds   = list(string)
-    PodConfiguration     = object({
+    PodConfiguration = object({
       Configuration = map(string)
     })
   })

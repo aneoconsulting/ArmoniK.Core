@@ -35,6 +35,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 # Sets the object storage
 export TF_VAR_object_storage := if object == "redis" {
   '{ name = "redis", image = "redis:bullseye" }'
+} else if object == "minio" {
+  '{ name = "minio", image = "quay.io/minio/minio" }'
 } else {
   '{ name = "local", image = "" }'
 }
@@ -99,9 +101,10 @@ _usage:
         WORKER_DOCKER_FILE_PATH: to compile the image locally
 
       object: allowed values below
-        local: to mount a local volume for object storage
         redis: to use redis for object storage (default)
-
+        minio: to use minio for object storage.
+        local: to mount a local volume for object storage
+        
       replicas: Number of polling agents / worker to be replicated (default = 3)
 
       partitions: Number of partitions (default = 2)
