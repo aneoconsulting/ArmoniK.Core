@@ -61,12 +61,30 @@ variable "object_storage" {
     image = string
   })
   validation {
-    condition     = can(regex("^(redis|local)$", var.object_storage.name))
-    error_message = "Must be redis or local"
+    condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
+    error_message = "Must be redis, minio, or local"
   }
   default = {
     image = ""
     name  = "local"
+  }
+}
+
+variable "minio_parameters" {
+  description = "Parameters of minio"
+  type = object({
+  host               = string
+  port               = number
+  login              = string
+  password           = string
+  bucket_name        = string
+  })
+  default = {
+    host               = "minio"
+    port               = 9000
+    login              = "minioadmin"
+    password           = "minioadmin"
+    bucket_name        = "minioBucket"
   }
 }
 

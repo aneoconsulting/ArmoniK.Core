@@ -523,6 +523,10 @@ jobs:
           - activemq
           - rabbitmq
           - rabbitmq091
+        object:
+          - local
+          - redis
+          - minio
         log-level:
           - Information
           - Verbose
@@ -552,7 +556,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
+          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} deploy worker=htcmock deploy
           sleep 10
 
       - name: Run HtcMock test 100 tasks 1 level

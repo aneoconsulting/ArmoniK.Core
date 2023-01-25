@@ -33,6 +33,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 # Sets the object storage
 export TF_VAR_object_storage := if object == "redis" {
   '{ name = "redis", image = "redis:bullseye" }'
+} else if object == "minio" {
+  '{ name = "minio", image = "quay.io/minio/minio" }'
 } else {
   '{ name = "local", image = "" }'
 }

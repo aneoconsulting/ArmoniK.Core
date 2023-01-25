@@ -31,6 +31,14 @@ module "object_redis" {
   network = docker_network.armonik.name
 }
 
+module "object_minio" {
+  source  = "./modules/storage/object/minio"
+  count   = var.object_storage.name == "minio" ? 1 : 0
+  image   = var.object_storage.image
+  minio_parameters = var.minio_parameters
+  network = docker_network.armonik.name
+}
+
 module "object_local" {
   source = "./modules/storage/object/local"
   count  = var.object_storage.name == "local" ? 1 : 0
