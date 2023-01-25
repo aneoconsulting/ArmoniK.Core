@@ -180,7 +180,7 @@ public static class Program
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcEventsService>()
          .EnableGrpcWeb();
-      app.MapGrpcService<GrpcApplicationsService>()
+      app.MapGrpcService<GrpcPartitionsService>()
          .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",

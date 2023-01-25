@@ -36,10 +36,10 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="PreemptionPercentage">Percentage of pods that can be preempted</param>
 /// <param name="Priority">Priority of the partition</param>
 /// <param name="PodConfiguration">Pod configuration used to select machines</param>
-public record PartitionData(string           PartitionId,
-                            IList<string>    ParentPartitionIds,
-                            int              PodReserved,
-                            int              PodMax,
-                            int              PreemptionPercentage,
-                            int              Priority,
-                            PodConfiguration PodConfiguration);
+public record PartitionData(string            PartitionId,
+                            IList<string>     ParentPartitionIds,
+                            int               PodReserved,
+                            int               PodMax,
+                            int               PreemptionPercentage,
+                            int               Priority,
+                            PodConfiguration? PodConfiguration);

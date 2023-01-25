@@ -1289,6 +1289,24 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task ListTaskEmptyResultShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var listTasks = await TaskTable!.ListTasksAsync(data => data.TaskId == "NotExisting",
+                                                      data => data.SessionId,
+                                                      false,
+                                                      0,
+                                                      20,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(0,
+                      listTasks.totalCount);
+    }
+  }
+
   [TestCase(TaskStatus.Error)]
   [TestCase(TaskStatus.Completed)]
   [TestCase(TaskStatus.Cancelled)]
