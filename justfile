@@ -102,10 +102,9 @@ _usage:
 
       object: allowed values below
         redis: to use redis for object storage (default)
-        minio: to use minio for object storage
+        minio: to use minio for object storage.
         local: to mount a local volume for object storage
-
-
+        
       replicas: Number of polling agents / worker to be replicated (default = 3)
 
       partitions: Number of partitions (default = 2)
