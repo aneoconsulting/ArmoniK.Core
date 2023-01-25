@@ -66,6 +66,14 @@ module "queue_activemq" {
   network    = docker_network.armonik.name
 }
 
+module "queue_artemis" {
+  source     = "./modules/storage/queue/artemis"
+  count      = var.queue_storage.name == "artemis" ? 1 : 0
+  queue_envs = var.queue_env_vars
+  image      = var.queue_storage.image
+  network    = docker_network.armonik.name
+}
+
 module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
