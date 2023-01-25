@@ -77,24 +77,6 @@ variable "object_storage" {
   }
 }
 
-variable "minio_parameters" {
-  description = "Parameters of minio"
-  type = object({
-    host        = string
-    port        = number
-    login       = string
-    password    = string
-    bucket_name = string
-  })
-  default = {
-    host        = "minio"
-    port        = 9000
-    login       = "minioadmin"
-    password    = "minioadmin"
-    bucket_name = "minioBucket"
-  }
-}
-
 variable "queue_storage" {
   type = object({
     protocol = optional(string, "amqp1_0")
