@@ -5,7 +5,7 @@ locals {
     "ASPNETCORE_ENVIRONMENT" = "${var.aspnet_core_env}"
   }
   worker            = merge(var.compute_plane.worker, { image = var.worker_image, docker_file_path = var.worker_docker_file_path })
-  queue             = one(concat(module.queue_activemq, module.queue_rabbitmq))
+  queue             = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis))
   queue_env_vars    = local.queue.generated_env_vars
   object            = one(concat(module.object_redis, module.object_local))
   object_env_vars   = local.object.generated_env_vars
