@@ -530,7 +530,7 @@ jobs:
         log-level:
           - Information
           - Verbose
-    name: HtcMock ${{ matrix.queue }} ${{ matrix.log-level }}
+    name: HtcMock ${{ matrix.queue }} ${{ matrix.object }} ${{ matrix.log-level }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -556,7 +556,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} deploy worker=htcmock deploy
+          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
           sleep 10
 
       - name: Run HtcMock test 100 tasks 1 level
