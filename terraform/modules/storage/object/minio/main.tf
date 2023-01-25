@@ -4,18 +4,18 @@ resource "docker_image" "object" {
 }
 
 resource "docker_container" "object" {
-  name  = var.minio_parameters.host
+  name  = var.host
   image = docker_image.object.image_id
   entrypoint = ["/bin/bash"]
-  command = ["-c", "mkdir -p /data/${var.minio_parameters.bucket_name} && minio server /data --console-address :9001"]
+  command = ["-c", "mkdir -p /data/${var.bucket_name} && minio server /data --console-address :9001"]
 
   networks_advanced {
     name = var.network
   }
 
   ports {
-    internal = var.minio_parameters.port
-    external = var.minio_parameters.port
+    internal = var.port
+    external = var.port
   }
   ports {
     internal = 9001

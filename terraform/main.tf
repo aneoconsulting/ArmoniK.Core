@@ -36,6 +36,11 @@ module "object_minio" {
   count   = var.object_storage.name == "minio" ? 1 : 0
   image   = var.object_storage.image
   minio_parameters = var.minio_parameters
+  host = var.object_storage.host
+  port = var.object_storage.port
+  login = var.object_storage.login
+  password = var.object_storage.password
+  bucket_name = var.object_storage.bucket_name
   network = docker_network.armonik.name
 }
 

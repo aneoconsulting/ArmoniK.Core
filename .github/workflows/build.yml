@@ -524,7 +524,6 @@ jobs:
           - rabbitmq
           - rabbitmq091
         object:
-          - local
           - redis
           - minio
         log-level:

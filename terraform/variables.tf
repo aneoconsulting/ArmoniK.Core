@@ -59,6 +59,13 @@ variable "object_storage" {
   type = object({
     name  = string
     image = string
+    # used by minio :
+    host = optional(string, "minio")
+    port = optional(number, 9000)
+    login = optional(string, "minioadmin")
+    password = optional(string, "minioadmin")
+    bucket_name = optional(string, "minioBucket")
+
   })
   validation {
     condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
