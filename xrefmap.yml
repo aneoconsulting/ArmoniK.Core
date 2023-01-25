@@ -21226,6 +21226,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed
   nameWithType: PartitionTableTestBase.InitShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed
+  name: ListPartitionsEmptyResultShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ListPartitionsEmptyResultShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed()
+  nameWithType: PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed*
+  name: ListPartitionsEmptyResultShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ListPartitionsEmptyResultShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed
+  nameWithType: PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.PartitionTable
   name: PartitionTable
   href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_PartitionTable
@@ -26058,6 +26071,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListApplicationFromTasksShouldSucceed
   nameWithType: TaskTableTestBase.ListApplicationFromTasksShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskEmptyResultShouldSucceed
+  name: ListTaskEmptyResultShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskEmptyResultShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskEmptyResultShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskEmptyResultShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskEmptyResultShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskEmptyResultShouldSucceed*
+  name: ListTaskEmptyResultShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskEmptyResultShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskEmptyResultShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskEmptyResultShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskEmptyResultShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed
   name: ListTaskShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskShouldSucceed
