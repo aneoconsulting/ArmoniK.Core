@@ -26,6 +26,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
 } else if queue == "rabbitmq091" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+} else if queue == "artemis" {
+  '{ name = "artemis", image = "vromero/activemq-artemis:2.6.1" }'
 } else {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 }
@@ -83,6 +85,7 @@ _usage:
         activemq    :  for activemq (1.0.0 protocol) (default)
         rabbitmq    :  for rabbitmq (1.0.0 protocol)
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
+        artemis     :  for artemis  (1.0.0 protocol)
 
       worker: allowed values below
         htcmock: for HtcMock V3 (default)

@@ -82,8 +82,8 @@ variable "queue_storage" {
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq)$", var.queue_storage.name))
-    error_message = "Must be activemq or rabbitmq"
+    condition     = can(regex("^(activemq|rabbitmq|artemis)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq or artemis"
   }
   default = {
     name     = "rabbitmq"
