@@ -60,10 +60,10 @@ variable "object_storage" {
     name  = string
     image = string
     # used by minio :
-    host = optional(string, "minio")
-    port = optional(number, 9000)
-    login = optional(string, "minioadmin")
-    password = optional(string, "minioadmin")
+    host        = optional(string, "minio")
+    port        = optional(number, 9000)
+    login       = optional(string, "minioadmin")
+    password    = optional(string, "minioadmin")
     bucket_name = optional(string, "minioBucket")
 
   })
@@ -80,18 +80,18 @@ variable "object_storage" {
 variable "minio_parameters" {
   description = "Parameters of minio"
   type = object({
-  host               = string
-  port               = number
-  login              = string
-  password           = string
-  bucket_name        = string
+    host        = string
+    port        = number
+    login       = string
+    password    = string
+    bucket_name = string
   })
   default = {
-    host               = "minio"
-    port               = 9000
-    login              = "minioadmin"
-    password           = "minioadmin"
-    bucket_name        = "minioBucket"
+    host        = "minio"
+    port        = 9000
+    login       = "minioadmin"
+    password    = "minioadmin"
+    bucket_name = "minioBucket"
   }
 }
 
@@ -111,8 +111,8 @@ variable "queue_storage" {
     error_message = "Must be activemq, rabbitmq or artemis"
   }
   default = {
-    name     = "rabbitmq"
-    image    = "rabbitmq:3-management"
+    name  = "rabbitmq"
+    image = "rabbitmq:3-management"
   }
 }
 
@@ -193,7 +193,7 @@ variable "partition_data" {
     PodMax               = number
     PreemptionPercentage = number
     ParentPartitionIds   = list(string)
-    PodConfiguration     = object({
+    PodConfiguration = object({
       Configuration = map(string)
     })
   })

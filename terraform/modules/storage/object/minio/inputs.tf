@@ -11,33 +11,22 @@ variable "exposed_port" {
   default = 9000
 }
 
-variable "minio_parameters" {
-  description = "Parameters of minio"
-  type = object({
-  host               = string
-  port               = number
-  login              = string
-  password           = string
-  bucket_name        = string
-  })
-}
-
 variable "host" {
-  type =  string
+  type = string
 }
 
 variable "port" {
-  type =  number
+  type = number
 }
 
 variable "login" {
-  type =  string
+  type = string
 }
 
 variable "password" {
-  type =  string
+  type = string
 }
 
 variable "bucket_name" {
-  type =  string
+  type = string
 }

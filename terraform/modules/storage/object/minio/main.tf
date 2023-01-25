@@ -4,10 +4,10 @@ resource "docker_image" "object" {
 }
 
 resource "docker_container" "object" {
-  name  = var.host
-  image = docker_image.object.image_id
+  name       = var.host
+  image      = docker_image.object.image_id
   entrypoint = ["/bin/bash"]
-  command = ["-c", "mkdir -p /data/${var.bucket_name} && minio server /data --console-address :9001"]
+  command    = ["-c", "mkdir -p /data/${var.bucket_name} && minio server /data --console-address :9001"]
 
   networks_advanced {
     name = var.network
