@@ -7,6 +7,12 @@ variable "network" {
 }
 
 variable "exposed_ports" {
-  type    = list(number)
-  default = [80, 5341]
+  type = object({
+    api       = number,
+    ingestion = number,
+  })
+  default = {
+    api       = 80
+    ingestion = 5341
+  }
 }
