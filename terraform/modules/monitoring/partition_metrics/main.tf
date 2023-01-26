@@ -15,7 +15,7 @@ module "partition_metrics_local" {
 
 resource "docker_container" "partition_metrics" {
   name  = "armonik.control.partition_metrics"
-  image =  one(concat(module.partition_metrics_local, docker_image.partition_metrics)).image_id
+  image = one(concat(module.partition_metrics_local, docker_image.partition_metrics)).image_id
 
   networks_advanced {
     name = var.network
