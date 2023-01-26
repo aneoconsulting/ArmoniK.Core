@@ -59,10 +59,17 @@ variable "object_storage" {
   type = object({
     name  = string
     image = string
+    # used by minio :
+    host        = optional(string, "minio")
+    port        = optional(number, 9000)
+    login       = optional(string, "minioadmin")
+    password    = optional(string, "minioadmin")
+    bucket_name = optional(string, "minioBucket")
+
   })
   validation {
-    condition     = can(regex("^(redis|local)$", var.object_storage.name))
-    error_message = "Must be redis or local"
+    condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
+    error_message = "Must be redis, minio, or local"
   }
   default = {
     image = ""
@@ -82,12 +89,12 @@ variable "queue_storage" {
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq)$", var.queue_storage.name))
-    error_message = "Must be activemq or rabbitmq"
+    condition     = can(regex("^(activemq|rabbitmq|artemis)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq or artemis"
   }
   default = {
-    name     = "rabbitmq"
-    image    = "rabbitmq:3-management"
+    name  = "rabbitmq"
+    image = "rabbitmq:3-management"
   }
 }
 
@@ -162,22 +169,24 @@ variable "compute_plane" {
 variable "partition_data" {
   description = "Template to create multiple partitions"
   type = object({
-    _id                   = string
-    priority              = number
-    reserved_pods         = number
-    max_pods              = number
-    preemption_percentage = number
-    parent_partition_ids  = string
-    pod_configuration     = string
+    _id                  = string
+    Priority             = number
+    PodReserved          = number
+    PodMax               = number
+    PreemptionPercentage = number
+    ParentPartitionIds   = list(string)
+    PodConfiguration = object({
+      Configuration = map(string)
+    })
   })
   default = {
-    _id                   = "TestPartition"
-    priority              = 1
-    reserved_pods         = 50
-    max_pods              = 100
-    preemption_percentage = 20
-    parent_partition_ids  = "[]"
-    pod_configuration     = "null"
+    _id                  = "TestPartition"
+    Priority             = 1
+    PodReserved          = 50
+    PodMax               = 100
+    PreemptionPercentage = 20
+    ParentPartitionIds   = []
+    PodConfiguration     = null
   }
 }
 

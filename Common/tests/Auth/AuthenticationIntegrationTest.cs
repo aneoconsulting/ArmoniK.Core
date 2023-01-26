@@ -37,6 +37,9 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Auth;
 using ArmoniK.Api.gRPC.V1.Events;
+
+using Armonik.Api.Grpc.V1.Partitions;
+
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -87,6 +90,7 @@ public class AuthenticationIntegrationTest
                                                s.AddSingleton<ITaskTable>(new SimpleTaskTable())
                                                 .AddSingleton<ISessionTable>(new SimpleSessionTable())
                                                 .AddSingleton<IResultTable>(new SimpleResultTable())
+                                                .AddSingleton<IPartitionTable>(new SimplePartitionTable())
                                                 .AddSingleton<ITaskWatcher>(new SimpleTaskWatcher())
                                                 .AddSingleton<IResultWatcher>(new SimpleResultWatcher());
                                              });
@@ -138,6 +142,8 @@ public class AuthenticationIntegrationTest
   private static readonly ListResultsRequest       ListResultsRequest;
   private static readonly GetCurrentUserRequest    GetCurrentUserRequest;
   private static readonly EventSubscriptionRequest EventSubscriptionRequest;
+  private static readonly ListPartitionsRequest    ListPartitionsRequest;
+  private static readonly GetPartitionRequest      GetPartitionRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -334,6 +340,26 @@ public class AuthenticationIntegrationTest
                                {
                                  SessionId = SessionId,
                                };
+
+    ListPartitionsRequest = new ListPartitionsRequest
+                            {
+                              Filter = new ListPartitionsRequest.Types.Filter
+                                       {
+                                         Id = "Id",
+                                       },
+                              Sort = new ListPartitionsRequest.Types.Sort
+                                     {
+                                       Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
+                                       Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                     },
+                              PageSize = 10,
+                              Page     = 0,
+                            };
+
+    GetPartitionRequest = new GetPartitionRequest
+                          {
+                            Id = "PartitionId",
+                          };
   }
 
   public enum AuthenticationType
@@ -737,6 +763,10 @@ public class AuthenticationIntegrationTest
                                                                                                                           typeof(Events.EventsClient),
                                                                                                                           typeof(GrpcEventsService)
                                                                                                                         },
+                                                                                                                        {
+                                                                                                                          typeof(Partitions.PartitionsClient),
+                                                                                                                          typeof(GrpcPartitionsService)
+                                                                                                                        },
                                                                                                                       });
 
   public static IEnumerable GetTestCases(string suffix)
@@ -780,6 +810,8 @@ public class AuthenticationIntegrationTest
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.CancelTasks), CancelTasksRequest),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.GetOwnerTaskId), GetOwnerTaskIdRequest),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.ListResults), ListResultsRequest),
+                                                       (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.GetPartition), GetPartitionRequest),
+                                                       (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.ListPartitions), ListPartitionsRequest),
                                                      };
 
     return GetCases(methodObjectList.Select(t => (t.Item1, t.Item2 + suffix, t.Item3))

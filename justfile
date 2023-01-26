@@ -26,6 +26,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
 } else if queue == "rabbitmq091" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+} else if queue == "artemis" {
+  '{ name = "artemis", image = "vromero/activemq-artemis:2.6.1" }'
 } else {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 }
@@ -33,6 +35,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 # Sets the object storage
 export TF_VAR_object_storage := if object == "redis" {
   '{ name = "redis", image = "redis:bullseye" }'
+} else if object == "minio" {
+  '{ name = "minio", image = "quay.io/minio/minio" }'
 } else {
   '{ name = "local", image = "" }'
 }
@@ -83,6 +87,7 @@ _usage:
         activemq    :  for activemq (1.0.0 protocol) (default)
         rabbitmq    :  for rabbitmq (1.0.0 protocol)
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
+        artemis     :  for artemis  (1.0.0 protocol)
 
       worker: allowed values below
         htcmock: for HtcMock V3 (default)
@@ -96,9 +101,10 @@ _usage:
         WORKER_DOCKER_FILE_PATH: to compile the image locally
 
       object: allowed values below
-        local: to mount a local volume for object storage
         redis: to use redis for object storage (default)
-
+        minio: to use minio for object storage.
+        local: to mount a local volume for object storage
+        
       replicas: Number of polling agents / worker to be replicated (default = 3)
 
       partitions: Number of partitions (default = 2)

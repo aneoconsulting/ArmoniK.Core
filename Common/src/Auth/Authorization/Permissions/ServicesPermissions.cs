@@ -68,6 +68,9 @@ public static class ServicesPermissions
                                                                                     {
                                                                                       typeof(GrpcAuthService), "Authentication"
                                                                                     },
+                                                                                    {
+                                                                                      typeof(GrpcPartitionsService), "Partitions"
+                                                                                    },
                                                                                   });
 
   /// <summary>

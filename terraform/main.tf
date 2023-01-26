@@ -31,6 +31,18 @@ module "object_redis" {
   network = docker_network.armonik.name
 }
 
+module "object_minio" {
+  source           = "./modules/storage/object/minio"
+  count            = var.object_storage.name == "minio" ? 1 : 0
+  image            = var.object_storage.image
+  host             = var.object_storage.host
+  port             = var.object_storage.port
+  login            = var.object_storage.login
+  password         = var.object_storage.password
+  bucket_name      = var.object_storage.bucket_name
+  network          = docker_network.armonik.name
+}
+
 module "object_local" {
   source = "./modules/storage/object/local"
   count  = var.object_storage.name == "local" ? 1 : 0
@@ -48,6 +60,14 @@ module "queue_rabbitmq" {
 module "queue_activemq" {
   source     = "./modules/storage/queue/activemq"
   count      = var.queue_storage.name == "activemq" ? 1 : 0
+  queue_envs = var.queue_env_vars
+  image      = var.queue_storage.image
+  network    = docker_network.armonik.name
+}
+
+module "queue_artemis" {
+  source     = "./modules/storage/queue/artemis"
+  count      = var.queue_storage.name == "artemis" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
   network    = docker_network.armonik.name
