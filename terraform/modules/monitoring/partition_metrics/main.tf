@@ -9,13 +9,13 @@ module "partition_metrics_local" {
   source          = "../../build_image"
   use_local_image = var.use_local_image
   image_name      = "partition_metrics_local"
-  context_path    = "${path.root}../"
-  dockerfile_path = "${path.root}../Control/PartitionMetrics/src/"
+  context_path    = "${path.root}/../"
+  dockerfile_path = "${path.root}/../Control/PartitionMetrics/src/"
 }
 
 resource "docker_container" "partition_metrics" {
   name  = "armonik.control.partition_metrics"
-  image = var.use_local_image ? module.partition_metrics_local[0].image_id : docker_image.partition_metrics[0].image_id
+  image = one(concat(module.partition_metrics_local, docker_image.partition_metrics)).image_id
 
   networks_advanced {
     name = var.network

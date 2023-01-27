@@ -6,7 +6,7 @@ resource "null_resource" "build_local_image" {
   }
 
   provisioner "local-exec" {
-    command     = "docker build -t \"${var.image_name}:\"${null_resource.build_local_image[0].id} -f \"${var.dockerfile_path}/Dockerfile\" ${var.context_path}"
+    command     = "docker build -t \"${var.image_name}:\"${null_resource.build_local_image[0].id} -f \"${var.dockerfile_path}Dockerfile\" ${var.context_path}"
     interpreter = ["/bin/bash", "-c"]
   }
 }

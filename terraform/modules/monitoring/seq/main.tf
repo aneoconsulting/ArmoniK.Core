@@ -17,11 +17,11 @@ resource "docker_container" "seq" {
 
   ports {
     internal = 80
-    external = 80
+    external = var.exposed_ports.api
   }
 
   ports {
     internal = 5341
-    external = 5341
+    external = var.exposed_ports.ingestion
   }
 }

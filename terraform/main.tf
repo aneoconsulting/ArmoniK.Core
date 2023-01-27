@@ -32,15 +32,15 @@ module "object_redis" {
 }
 
 module "object_minio" {
-  source           = "./modules/storage/object/minio"
-  count            = var.object_storage.name == "minio" ? 1 : 0
-  image            = var.object_storage.image
-  host             = var.object_storage.host
-  port             = var.object_storage.port
-  login            = var.object_storage.login
-  password         = var.object_storage.password
-  bucket_name      = var.object_storage.bucket_name
-  network          = docker_network.armonik.name
+  source      = "./modules/storage/object/minio"
+  count       = var.object_storage.name == "minio" ? 1 : 0
+  image       = var.object_storage.image
+  host        = var.object_storage.host
+  port        = var.object_storage.port
+  login       = var.object_storage.login
+  password    = var.object_storage.password
+  bucket_name = var.object_storage.bucket_name
+  network     = docker_network.armonik.name
 }
 
 module "object_local" {
@@ -77,6 +77,7 @@ module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
   core_tag           = local.submitter.tag
+  use_local_image    = var.use_local_image
   docker_image       = local.submitter.image
   network            = docker_network.armonik.name
   generated_env_vars = local.environment
@@ -90,6 +91,7 @@ module "compute_plane" {
   replica_counter    = each.key
   num_partitions     = var.num_partitions
   core_tag           = local.compute_plane.tag
+  use_local_image    = var.use_local_image
   polling_agent      = local.compute_plane.polling_agent
   worker             = local.compute_plane.worker
   generated_env_vars = local.environment

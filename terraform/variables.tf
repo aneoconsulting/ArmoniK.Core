@@ -20,17 +20,12 @@ variable "num_partitions" {
 
 variable "mongodb_params" {
   type = object({
-    max_connection_pool_size = string
-    min_polling_delay        = string
-    max_polling_delay        = string
+    max_connection_pool_size = optional(string, "500")
+    min_polling_delay        = optional(string, "00:00:01")
+    max_polling_delay        = optional(string, "00:00:10")
   })
-  default = {
-    max_connection_pool_size = "500"
-    min_polling_delay        = "00:00:01"
-    max_polling_delay        = "00:00:10"
-  }
+  default = {}
 }
-
 
 variable "serilog_level" {
   type    = string
@@ -44,21 +39,17 @@ variable "aspnet_core_env" {
 
 variable "submitter" {
   type = object({
-    name  = string,
-    image = string,
-    port  = number,
+    name  = optional(string, "armonik.control.submitter")
+    image = optional(string, "dockerhubaneo/armonik_control")
+    port  = optional(number, 5001)
   })
-  default = {
-    image = "dockerhubaneo/armonik_control"
-    name  = "armonik.control.submitter"
-    port  = 5001
-  }
+  default = {}
 }
 
 variable "object_storage" {
   type = object({
-    name  = string
-    image = string
+    name  = optional(string, "local")
+    image = optional(string, "")
     # used by minio :
     host        = optional(string, "minio")
     port        = optional(number, 9000)
@@ -71,17 +62,14 @@ variable "object_storage" {
     condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
     error_message = "Must be redis, minio, or local"
   }
-  default = {
-    image = ""
-    name  = "local"
-  }
+  default = {}
 }
 
 variable "queue_storage" {
   type = object({
     protocol = optional(string, "amqp1_0")
-    name     = string
-    image    = string
+    name     = optional(string, "rabbitmq")
+    image    = optional(string, "rabbitmq:3-management")
   })
   description = "Parameters to define the broker and protocol"
   validation {
@@ -92,34 +80,22 @@ variable "queue_storage" {
     condition     = can(regex("^(activemq|rabbitmq|artemis)$", var.queue_storage.name))
     error_message = "Must be activemq, rabbitmq or artemis"
   }
-  default = {
-    name  = "rabbitmq"
-    image = "rabbitmq:3-management"
-  }
+  default = {}
 }
 
 variable "queue_env_vars" {
   type = object({
-    user         = string,
-    password     = string,
-    host         = string,
-    port         = number,
-    max_priority = number,
-    max_retries  = number,
-    link_credit  = number,
-    partition    = string
+    user         = optional(string, "admin"),
+    password     = optional(string, "admin"),
+    host         = optional(string, "queue")
+    port         = optional(number, 5672)
+    max_priority = optional(number, 10)
+    max_retries  = optional(number, 10)
+    link_credit  = optional(number, 2)
+    partition    = optional(string, "TestPartition")
   })
   description = "Environment variables for the queue"
-  default = {
-    host         = "queue"
-    link_credit  = 2
-    max_priority = 10
-    max_retries  = 10
-    partition    = "TestPartition"
-    password     = "admin"
-    port         = 5672
-    user         = "admin"
-  }
+  default     = {}
 }
 
 variable "worker_image" {
@@ -129,65 +105,46 @@ variable "worker_image" {
 
 variable "worker_docker_file_path" {
   type    = string
-  default = "../Tests/HtcMock/Server/src"
+  default = "../Tests/HtcMock/Server/src/"
 }
 
 variable "compute_plane" {
   type = object({
     worker = object({
-      name                     = string,
-      port                     = number,
-      serilog_application_name = string
+      name                     = optional(string, "armonik.compute.worker")
+      port                     = optional(number, 1080)
+      serilog_application_name = optional(string, "ArmoniK.Compute.Worker")
     })
 
     polling_agent = object({
-      name                 = string,
-      image                = string,
-      port                 = number,
-      max_error_allowed    = number,
-      worker_check_retries = number,
-      worker_check_delay   = string,
+      name                 = optional(string, "armonik.compute.pollingagent")
+      image                = optional(string, "dockerhubaneo/armonik_pollingagent")
+      port                 = optional(number, 9980)
+      max_error_allowed    = optional(number, -1)
+      worker_check_retries = optional(number, 10)
+      worker_check_delay   = optional(string, "00:00:10")
     })
   })
   default = {
-    polling_agent = {
-      image                = "dockerhubaneo/armonik_pollingagent"
-      max_error_allowed    = -1
-      name                 = "armonik.compute.pollingagent"
-      port                 = 9980
-      worker_check_delay   = "00:00:10"
-      worker_check_retries = 10
-    }
-    worker = {
-      name                     = "armonik.compute.worker"
-      port                     = 1080
-      serilog_application_name = "ArmoniK.Compute.Worker"
-    }
+    polling_agent = {}
+    worker        = {}
   }
 }
 
 variable "partition_data" {
   description = "Template to create multiple partitions"
   type = object({
-    _id                  = string
-    Priority             = number
-    PodReserved          = number
-    PodMax               = number
-    PreemptionPercentage = number
-    ParentPartitionIds   = list(string)
-    PodConfiguration = object({
+    _id                  = optional(string, "TestPartition")
+    Priority             = optional(number, 1)
+    PodReserved          = optional(number, 50)
+    PodMax               = optional(number, 100)
+    PreemptionPercentage = optional(number, 20)
+    ParentPartitionIds   = optional(list(string), [])
+    PodConfiguration = optional(object({
       Configuration = map(string)
-    })
+    }), null)
   })
-  default = {
-    _id                  = "TestPartition"
-    Priority             = 1
-    PodReserved          = 50
-    PodMax               = 100
-    PreemptionPercentage = 20
-    ParentPartitionIds   = []
-    PodConfiguration     = null
-  }
+  default = {}
 }
 
 variable "armonik_metrics_image" {
