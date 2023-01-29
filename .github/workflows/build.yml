@@ -420,10 +420,13 @@ jobs:
       with:
         file: ${{ matrix.path }}
         context: .
-        platforms: linux/amd64, linux/arm64
+        platforms: linux/arm64
         push: true
         tags: |
-            ${{ matrix.img }}:${{ needs.versionning.outputs.version }}
+            ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm
+
+    - name: Create multi-arch manifest
+      run: docker buildx imagetools create ${{ matrix.img }}:${VERSION} --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-arm
 
   testStreamDC:
     needs:
