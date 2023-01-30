@@ -7,5 +7,6 @@ output "generated_env_vars" {
     "MongoDB__MaxConnectionPoolSize"         = "${var.mongodb_params.max_connection_pool_size}"
     "MongoDB__TableStorage__PollingDelayMin" = "${var.mongodb_params.min_polling_delay}"
     "MongoDB__TableStorage__PollingDelayMax" = "${var.mongodb_params.max_polling_delay}"
+    "MongoDB__DirectConnection"              = "true"
   })
 }
