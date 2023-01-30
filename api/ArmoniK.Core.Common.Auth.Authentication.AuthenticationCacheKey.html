@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class AuthenticationCacheKey
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class AuthenticationCacheKey
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class AuthenticationCacheKey
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class AuthenticationCacheKey
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -77,32 +77,32 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">AuthenticationCacheKey</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
-    <div><span class="xref">System.IEquatable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.html">AuthenticationCacheKey</a>&gt;</div>
+    <div><span class="xref">System.IEquatable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.html">AuthenticationCacheKey</a>&gt;</div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.html">ArmoniK.Core.Common.Auth.Authentication</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<span class="xref">Auth</span>.<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.html">Authentication</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -118,13 +118,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/AuthenticationCache.cs/#L45">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey__ctor_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey__ctor_System_String_System_String_System_String_System_String_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.#ctor(System.String,System.String,System.String,System.String,System.String)">AuthenticationCacheKey(String, String, String, String, String)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey__ctor_System_String_System_String_System_String_System_String_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.#ctor(System.String,System.String,System.String,System.String,System.String)">AuthenticationCacheKey(string, string?, string?, string?, string?)</h4>
   <div class="markdown level1 summary"><p>Creates an authentication cache key from request headers</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public AuthenticationCacheKey(string connectionId, string cn = &quot;&quot;, string fingerprint = &quot;&quot;, string impersonateId = &quot;&quot;, string impersonateUsername = &quot;&quot;)</code></pre>
+    <pre><code class="lang-csharp hljs">public AuthenticationCacheKey(string connectionId, string? cn = &quot;&quot;, string? fingerprint = &quot;&quot;, string? impersonateId = &quot;&quot;, string? impersonateUsername = &quot;&quot;)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -137,31 +137,31 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">connectionId</span></td>
         <td><p>Connection id</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">cn</span></td>
         <td><p>Certificate Common Name</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">fingerprint</span></td>
         <td><p>Certificate fingerprint</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">impersonateId</span></td>
         <td><p>User Id to impersonate</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">impersonateUsername</span></td>
         <td><p>Username to impersonate</p>
 </td>
@@ -196,7 +196,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -227,7 +227,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -258,7 +258,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -289,7 +289,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -320,7 +320,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -335,13 +335,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/AuthenticationCache.cs/#L84">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_Equals_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.Equals*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_Equals_ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.Equals(ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey)">Equals(AuthenticationCacheKey)</h4>
-  <div class="markdown level1 summary"><p>Class used as the key for the authentication cache</p>
-</div>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_Equals_ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.Equals(ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey)">Equals(AuthenticationCacheKey?)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public bool Equals(AuthenticationCacheKey other)</code></pre>
+    <pre><code class="lang-csharp hljs">public bool Equals(AuthenticationCacheKey? other)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -370,7 +369,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -383,13 +382,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/AuthenticationCache.cs/#L102">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_Equals_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.Equals*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_Equals_System_Object_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.Equals(System.Object)">Equals(Object)</h4>
-  <div class="markdown level1 summary"><p>Class used as the key for the authentication cache</p>
-</div>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_Equals_System_Object_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.Equals(System.Object)">Equals(object?)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override bool Equals(object obj)</code></pre>
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -402,7 +400,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Object</span></td>
+        <td><span class="xref">object</span></td>
         <td><span class="parametername">obj</span></td>
         <td></td>
       </tr>
@@ -418,13 +416,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <h5 class="overrides">Overrides</h5>
-  <div><span class="xref">System.Object.Equals(System.Object)</span></div>
+  <div><span class="xref">object.Equals(object)</span></div>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_GetHashCode.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.GetHashCode%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
@@ -434,8 +432,7 @@
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_GetHashCode_" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.GetHashCode*"></a>
   <h4 id="ArmoniK_Core_Common_Auth_Authentication_AuthenticationCacheKey_GetHashCode" data-uid="ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.GetHashCode">GetHashCode()</h4>
-  <div class="markdown level1 summary"><p>Class used as the key for the authentication cache</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
@@ -451,13 +448,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <h5 class="overrides">Overrides</h5>
-  <div><span class="xref">System.Object.GetHashCode()</span></div>
+  <div><span class="xref">object.GetHashCode()</span></div>
   <h3 id="implements">Implements</h3>
   <div>
       <span class="xref">System.IEquatable&lt;T&gt;</span>

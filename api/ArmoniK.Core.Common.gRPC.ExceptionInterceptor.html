@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class ExceptionInterceptor
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class ExceptionInterceptor
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class ExceptionInterceptor
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class ExceptionInterceptor
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -78,14 +78,14 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">ExceptionInterceptor</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
     <div><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.gRPC.html">ArmoniK.Core.Common.gRPC</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.gRPC.html">gRPC</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -126,7 +126,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html">ExceptionInterceptor</a>&gt;</td>
+        <td><span class="xref">ILogger&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.html">ExceptionInterceptor</a>&gt;</td>
         <td><span class="parametername">logger</span></td>
         <td><p>Logger to be used by the interceptor</p>
 </td>
@@ -179,7 +179,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
         <td><p>The result of the check containing the status of the class for the health check type.</p>
 </td>
       </tr>
@@ -194,13 +194,11 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ClientStreamingServerHandler_" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ClientStreamingServerHandler__2_IAsyncStreamReader___0__ServerCallContext_ClientStreamingServerMethod___0___1__" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ClientStreamingServerHandler``2(IAsyncStreamReader{``0},ServerCallContext,ClientStreamingServerMethod{``0,``1})">ClientStreamingServerHandler&lt;TRequest, TResponse&gt;(IAsyncStreamReader&lt;TRequest&gt;, ServerCallContext, ClientStreamingServerMethod&lt;TRequest, TResponse&gt;)</h4>
-  <div class="markdown level1 summary"><p>Interceptor that counts all the exceptions thrown by the gRPC services
-It is then marked Unhealthy if number of errors is higher than a threshold</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;TResponse&gt; ClientStreamingServerHandler&lt;TRequest, TResponse&gt;(IAsyncStreamReader&lt;TRequest&gt; requestStream, ServerCallContext context, ClientStreamingServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
+    <pre><code class="lang-csharp hljs">public override Task&lt;TResponse&gt; ClientStreamingServerHandler&lt;TRequest, TResponse&gt;(IAsyncStreamReader&lt;TRequest&gt; requestStream, ServerCallContext context, ClientStreamingServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -213,7 +211,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IAsyncStreamReader</span>&lt;TRequest&gt;</td>
+        <td><span class="xref">IAsyncStreamReader&lt;&gt;</span>&lt;TRequest&gt;</td>
         <td><span class="parametername">requestStream</span></td>
         <td></td>
       </tr>
@@ -223,7 +221,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">ClientStreamingServerMethod</span>&lt;TRequest, TResponse&gt;</td>
+        <td><span class="xref">ClientStreamingServerMethod&lt;, &gt;</span>&lt;TRequest, TResponse&gt;</td>
         <td><span class="parametername">continuation</span></td>
         <td></td>
       </tr>
@@ -239,7 +237,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;TResponse&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;TResponse&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -272,13 +270,11 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_DuplexStreamingServerHandler_" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_DuplexStreamingServerHandler__2_IAsyncStreamReader___0__IServerStreamWriter___1__ServerCallContext_DuplexStreamingServerMethod___0___1__" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.DuplexStreamingServerHandler``2(IAsyncStreamReader{``0},IServerStreamWriter{``1},ServerCallContext,DuplexStreamingServerMethod{``0,``1})">DuplexStreamingServerHandler&lt;TRequest, TResponse&gt;(IAsyncStreamReader&lt;TRequest&gt;, IServerStreamWriter&lt;TResponse&gt;, ServerCallContext, DuplexStreamingServerMethod&lt;TRequest, TResponse&gt;)</h4>
-  <div class="markdown level1 summary"><p>Interceptor that counts all the exceptions thrown by the gRPC services
-It is then marked Unhealthy if number of errors is higher than a threshold</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task DuplexStreamingServerHandler&lt;TRequest, TResponse&gt;(IAsyncStreamReader&lt;TRequest&gt; requestStream, IServerStreamWriter&lt;TResponse&gt; responseStream, ServerCallContext context, DuplexStreamingServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
+    <pre><code class="lang-csharp hljs">public override Task DuplexStreamingServerHandler&lt;TRequest, TResponse&gt;(IAsyncStreamReader&lt;TRequest&gt; requestStream, IServerStreamWriter&lt;TResponse&gt; responseStream, ServerCallContext context, DuplexStreamingServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -291,12 +287,12 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IAsyncStreamReader</span>&lt;TRequest&gt;</td>
+        <td><span class="xref">IAsyncStreamReader&lt;&gt;</span>&lt;TRequest&gt;</td>
         <td><span class="parametername">requestStream</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">IServerStreamWriter</span>&lt;TResponse&gt;</td>
+        <td><span class="xref">IServerStreamWriter&lt;&gt;</span>&lt;TResponse&gt;</td>
         <td><span class="parametername">responseStream</span></td>
         <td></td>
       </tr>
@@ -306,7 +302,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">DuplexStreamingServerMethod</span>&lt;TRequest, TResponse&gt;</td>
+        <td><span class="xref">DuplexStreamingServerMethod&lt;, &gt;</span>&lt;TRequest, TResponse&gt;</td>
         <td><span class="parametername">continuation</span></td>
         <td></td>
       </tr>
@@ -355,13 +351,11 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ServerStreamingServerHandler_" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_ServerStreamingServerHandler__2___0_IServerStreamWriter___1__ServerCallContext_ServerStreamingServerMethod___0___1__" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.ServerStreamingServerHandler``2(``0,IServerStreamWriter{``1},ServerCallContext,ServerStreamingServerMethod{``0,``1})">ServerStreamingServerHandler&lt;TRequest, TResponse&gt;(TRequest, IServerStreamWriter&lt;TResponse&gt;, ServerCallContext, ServerStreamingServerMethod&lt;TRequest, TResponse&gt;)</h4>
-  <div class="markdown level1 summary"><p>Interceptor that counts all the exceptions thrown by the gRPC services
-It is then marked Unhealthy if number of errors is higher than a threshold</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task ServerStreamingServerHandler&lt;TRequest, TResponse&gt;(TRequest request, IServerStreamWriter&lt;TResponse&gt; responseStream, ServerCallContext context, ServerStreamingServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
+    <pre><code class="lang-csharp hljs">public override Task ServerStreamingServerHandler&lt;TRequest, TResponse&gt;(TRequest request, IServerStreamWriter&lt;TResponse&gt; responseStream, ServerCallContext context, ServerStreamingServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -379,7 +373,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">IServerStreamWriter</span>&lt;TResponse&gt;</td>
+        <td><span class="xref">IServerStreamWriter&lt;&gt;</span>&lt;TResponse&gt;</td>
         <td><span class="parametername">responseStream</span></td>
         <td></td>
       </tr>
@@ -389,7 +383,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">ServerStreamingServerMethod</span>&lt;TRequest, TResponse&gt;</td>
+        <td><span class="xref">ServerStreamingServerMethod&lt;, &gt;</span>&lt;TRequest, TResponse&gt;</td>
         <td><span class="parametername">continuation</span></td>
         <td></td>
       </tr>
@@ -438,13 +432,11 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_UnaryServerHandler_" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_ExceptionInterceptor_UnaryServerHandler__2___0_ServerCallContext_UnaryServerMethod___0___1__" data-uid="ArmoniK.Core.Common.gRPC.ExceptionInterceptor.UnaryServerHandler``2(``0,ServerCallContext,UnaryServerMethod{``0,``1})">UnaryServerHandler&lt;TRequest, TResponse&gt;(TRequest, ServerCallContext, UnaryServerMethod&lt;TRequest, TResponse&gt;)</h4>
-  <div class="markdown level1 summary"><p>Interceptor that counts all the exceptions thrown by the gRPC services
-It is then marked Unhealthy if number of errors is higher than a threshold</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;TResponse&gt; UnaryServerHandler&lt;TRequest, TResponse&gt;(TRequest request, ServerCallContext context, UnaryServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
+    <pre><code class="lang-csharp hljs">public override Task&lt;TResponse&gt; UnaryServerHandler&lt;TRequest, TResponse&gt;(TRequest request, ServerCallContext context, UnaryServerMethod&lt;TRequest, TResponse&gt; continuation)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -467,7 +459,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">UnaryServerMethod</span>&lt;TRequest, TResponse&gt;</td>
+        <td><span class="xref">UnaryServerMethod&lt;, &gt;</span>&lt;TRequest, TResponse&gt;</td>
         <td><span class="parametername">continuation</span></td>
         <td></td>
       </tr>
@@ -483,7 +475,7 @@ It is then marked Unhealthy if number of errors is higher than a threshold</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;TResponse&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;TResponse&gt;</td>
         <td></td>
       </tr>
     </tbody>

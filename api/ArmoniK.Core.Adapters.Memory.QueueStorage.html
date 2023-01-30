@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class QueueStorage
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class QueueStorage
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class QueueStorage
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class QueueStorage
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,7 +76,7 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">QueueStorage</span></div>
   </div>
   <div class="implements">
@@ -88,28 +88,28 @@
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.Memory.html">ArmoniK.Core.Adapters.Memory</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<span class="xref">Adapters</span>.<a class="xref" href="ArmoniK.Core.Adapters.Memory.html">Memory</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.Memory.dll</h6>
   <h5 id="ArmoniK_Core_Adapters_Memory_QueueStorage_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -143,7 +143,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -173,7 +173,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -222,7 +222,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -285,12 +285,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L68">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32,System.Threading.CancellationToken)">PullMessagesAsync(Int32, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32,System.Threading.CancellationToken)">PullMessagesAsync(int, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async IAsyncEnumerable&lt;IQueueMessageHandler&gt; PullMessagesAsync(int nbMessages, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public IAsyncEnumerable&lt;IQueueMessageHandler&gt; PullMessagesAsync(int nbMessages, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -303,7 +303,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">nbMessages</span></td>
         <td></td>
       </tr>
@@ -324,7 +324,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.IQueueMessageHandler.html">IQueueMessageHandler</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.IQueueMessageHandler.html">IQueueMessageHandler</a>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -337,12 +337,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L106">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_System_Collections_Generic_IEnumerable_System_String__System_String_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Threading.CancellationToken)">PushMessagesAsync(IEnumerable&lt;String&gt;, String, Int32, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_System_Collections_Generic_IEnumerable_System_String__System_String_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Threading.CancellationToken)">PushMessagesAsync(IEnumerable&lt;string&gt;, string, int, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task PushMessagesAsync(IEnumerable&lt;string&gt; messages, string partitionId, int priority = 1, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task PushMessagesAsync(IEnumerable&lt;string&gt; messages, string partitionId, int priority = 1, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -355,17 +355,17 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">messages</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">partitionId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">priority</span></td>
         <td></td>
       </tr>

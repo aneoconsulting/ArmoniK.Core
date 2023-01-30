@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface IPushQueueStorage
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Interface IPushQueueStorage
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface IPushQueueStorage
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Interface IPushQueueStorage
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -87,7 +87,7 @@
       <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html#ArmoniK_Core_Common_IHealthCheckProvider_Check_ArmoniK_Core_Common_HealthCheckTag_">IHealthCheckProvider.Check(HealthCheckTag)</a>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Storage.html">ArmoniK.Core.Common.Storage</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Storage.html">Storage</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Storage_IPushQueueStorage_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -103,13 +103,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IPushQueueStorage.cs/#L46">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IPushQueueStorage_PushMessagesAsync_" data-uid="ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IPushQueueStorage_PushMessagesAsync_System_Collections_Generic_IEnumerable_System_String__System_String_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Threading.CancellationToken)">PushMessagesAsync(IEnumerable&lt;String&gt;, String, Int32, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IPushQueueStorage_PushMessagesAsync_System_Collections_Generic_IEnumerable_System_String__System_String_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Threading.CancellationToken)">PushMessagesAsync(IEnumerable&lt;string&gt;, string, int, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Puts messages into the queue</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task PushMessagesAsync(IEnumerable&lt;string&gt; messages, string partitionId, int priority = 1, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task PushMessagesAsync(IEnumerable&lt;string&gt; messages, string partitionId, int priority = 1, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -122,19 +122,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">messages</span></td>
         <td><p>Collection of messages</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">partitionId</span></td>
         <td><p>Id of the partition</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">priority</span></td>
         <td><p>Priority of the tasks associated to the messages</p>
 </td>

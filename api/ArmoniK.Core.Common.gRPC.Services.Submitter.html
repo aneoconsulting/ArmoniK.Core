@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class Submitter
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Submitter
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class Submitter
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Submitter
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,7 +76,7 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">Submitter</span></div>
   </div>
   <div class="implements">
@@ -86,28 +86,28 @@
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.gRPC.Services.html">ArmoniK.Core.Common.gRPC.Services</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.gRPC.html">gRPC</a>.<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.html">Services</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_gRPC_Services_Submitter_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -151,7 +151,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.Submitter.html">Submitter</a>&gt;</td>
+        <td><span class="xref">ILogger&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.Submitter.html">Submitter</a>&gt;</td>
         <td><span class="parametername">logger</span></td>
         <td></td>
       </tr>
@@ -197,12 +197,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L104">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_CancelSession_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CancelSession*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CancelSession_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CancelSession(System.String,System.Threading.CancellationToken)">CancelSession(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CancelSession_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CancelSession(System.String,System.Threading.CancellationToken)">CancelSession(string, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CancelSession(string sessionId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CancelSession(string sessionId, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -215,7 +215,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td></td>
       </tr>
@@ -254,7 +254,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CancelTasks(TaskFilter request, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CancelTasks(TaskFilter request, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -301,12 +301,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L445">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_CompleteTaskAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CompleteTaskAsync_ArmoniK_Core_Common_Storage_TaskData_System_Boolean_ArmoniK_Api_gRPC_V1_Output_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,System.Threading.CancellationToken)">CompleteTaskAsync(TaskData, Boolean, Output, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CompleteTaskAsync_ArmoniK_Core_Common_Storage_TaskData_System_Boolean_ArmoniK_Api_gRPC_V1_Output_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,System.Threading.CancellationToken)">CompleteTaskAsync(TaskData, bool, Output, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CompleteTaskAsync(TaskData taskData, bool resubmit, Output output, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CompleteTaskAsync(TaskData taskData, bool resubmit, Output output, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -324,7 +324,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td><span class="parametername">resubmit</span></td>
         <td></td>
       </tr>
@@ -368,7 +368,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;Count&gt; CountTasks(TaskFilter request, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;Count&gt; CountTasks(TaskFilter request, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -402,7 +402,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Count</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Count</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -415,12 +415,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L197">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_System_Collections_Generic_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(System.Collections.Generic.IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,System.Threading.CancellationToken)">CreateSession(IList&lt;String&gt;, TaskOptions, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_System_Collections_Generic_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(System.Collections.Generic.IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,System.Threading.CancellationToken)">CreateSession(IList&lt;string&gt;, TaskOptions, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;CreateSessionReply&gt; CreateSession(IList&lt;string&gt; partitionIds, TaskOptions defaultTaskOptions, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;CreateSessionReply&gt; CreateSession(IList&lt;string&gt; partitionIds, TaskOptions defaultTaskOptions, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -433,7 +433,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IList&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">partitionIds</span></td>
         <td></td>
       </tr>
@@ -459,7 +459,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">CreateSessionReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">CreateSessionReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -472,12 +472,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L670">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_System_Collections_Generic_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,System.Collections.Generic.IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},System.Threading.CancellationToken)">CreateTasks(String, String, TaskOptions, IAsyncEnumerable&lt;TaskRequest&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_System_Collections_Generic_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,System.Collections.Generic.IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},System.Threading.CancellationToken)">CreateTasks(string, string, TaskOptions, IAsyncEnumerable&lt;TaskRequest&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;(IEnumerable&lt;TaskRequest&gt; requests, int priority, string partitionId)&gt; CreateTasks(string sessionId, string parentTaskId, TaskOptions options, IAsyncEnumerable&lt;TaskRequest&gt; taskRequests, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;(IEnumerable&lt;TaskRequest&gt; requests, int priority, string partitionId)&gt; CreateTasks(string sessionId, string parentTaskId, TaskOptions options, IAsyncEnumerable&lt;TaskRequest&gt; taskRequests, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -490,12 +490,12 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">parentTaskId</span></td>
         <td></td>
       </tr>
@@ -505,7 +505,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.TaskRequest.html">TaskRequest</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.TaskRequest.html">TaskRequest</a>&gt;</td>
         <td><span class="parametername">taskRequests</span></td>
         <td></td>
       </tr>
@@ -526,7 +526,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.ValueTuple</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt;, <span class="xref">System.Int32</span>, <span class="xref">System.String</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;(<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt; <span class="xref">requests</span>, <span class="xref">int</span> <span class="xref">priority</span>, <span class="xref">string</span> <span class="xref">partitionId</span>)&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -539,12 +539,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L143">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_System_Collections_Generic_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(System.Collections.Generic.IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)">FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt;, Int32, String, String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_System_Collections_Generic_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(System.Collections.Generic.IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,System.Threading.CancellationToken)">FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt;, int, string, string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt; requests, int priority, string partitionId, string sessionId, string parentTaskId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt; requests, int priority, string partitionId, string sessionId, string parentTaskId, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -557,27 +557,27 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt;</td>
         <td><span class="parametername">requests</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">priority</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">partitionId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">parentTaskId</span></td>
         <td></td>
       </tr>
@@ -616,7 +616,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;GetResultStatusReply&gt; GetResultStatusAsync(GetResultStatusRequest request, CancellationToken contextCancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;GetResultStatusReply&gt; GetResultStatusAsync(GetResultStatusRequest request, CancellationToken contextCancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -650,7 +650,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">GetResultStatusReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">GetResultStatusReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -702,7 +702,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Configuration</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Configuration</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -720,7 +720,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;GetTaskStatusReply&gt; GetTaskStatusAsync(GetTaskStatusRequest request, CancellationToken contextCancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;GetTaskStatusReply&gt; GetTaskStatusAsync(GetTaskStatusRequest request, CancellationToken contextCancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -754,7 +754,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">GetTaskStatusReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">GetTaskStatusReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -772,7 +772,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;SessionIdList&gt; ListSessionsAsync(SessionFilter request, CancellationToken contextCancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;SessionIdList&gt; ListSessionsAsync(SessionFilter request, CancellationToken contextCancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -806,7 +806,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">SessionIdList</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">SessionIdList</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -824,7 +824,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;TaskIdList&gt; ListTasksAsync(TaskFilter request, CancellationToken contextCancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;TaskIdList&gt; ListTasksAsync(TaskFilter request, CancellationToken contextCancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -858,7 +858,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">TaskIdList</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">TaskIdList</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -871,12 +871,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L648">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_SetResult_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_SetResult_System_String_System_String_System_String_System_Collections_Generic_IAsyncEnumerable_System_ReadOnlyMemory_System_Byte___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String,System.String,System.String,System.Collections.Generic.IAsyncEnumerable{System.ReadOnlyMemory{System.Byte}},System.Threading.CancellationToken)">SetResult(String, String, String, IAsyncEnumerable&lt;ReadOnlyMemory&lt;Byte&gt;&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_SetResult_System_String_System_String_System_String_System_Collections_Generic_IAsyncEnumerable_System_ReadOnlyMemory_System_Byte___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String,System.String,System.String,System.Collections.Generic.IAsyncEnumerable{System.ReadOnlyMemory{System.Byte}},System.Threading.CancellationToken)">SetResult(string, string, string, IAsyncEnumerable&lt;ReadOnlyMemory&lt;byte&gt;&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task SetResult(string sessionId, string ownerTaskId, string key, IAsyncEnumerable&lt;ReadOnlyMemory&lt;byte&gt;&gt; chunks, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task SetResult(string sessionId, string ownerTaskId, string key, IAsyncEnumerable&lt;ReadOnlyMemory&lt;byte&gt;&gt; chunks, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -889,22 +889,22 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">ownerTaskId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<span class="xref">System.ReadOnlyMemory</span>&lt;<span class="xref">System.Byte</span>&gt;&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<span class="xref">ReadOnlyMemory</span>&lt;<span class="xref">byte</span>&gt;&gt;</td>
         <td><span class="parametername">chunks</span></td>
         <td></td>
       </tr>
@@ -938,12 +938,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L90">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_StartTask_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.StartTask*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_StartTask_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.StartTask(System.String,System.Threading.CancellationToken)">StartTask(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_StartTask_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.StartTask(System.String,System.Threading.CancellationToken)">StartTask(string, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task StartTask(string taskId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task StartTask(string taskId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -956,7 +956,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">taskId</span></td>
         <td></td>
       </tr>
@@ -995,7 +995,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task TryGetResult(ResultRequest request, IServerStreamWriter&lt;ResultReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task TryGetResult(ResultRequest request, IServerStreamWriter&lt;ResultReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1013,7 +1013,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">IServerStreamWriter</span>&lt;<span class="xref">ResultReply</span>&gt;</td>
+        <td><span class="xref">IServerStreamWriter&lt;&gt;</span>&lt;<span class="xref">ResultReply</span>&gt;</td>
         <td><span class="parametername">responseStream</span></td>
         <td></td>
       </tr>
@@ -1052,7 +1052,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;Output&gt; TryGetTaskOutputAsync(TaskOutputRequest request, CancellationToken contextCancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;Output&gt; TryGetTaskOutputAsync(TaskOutputRequest request, CancellationToken contextCancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1086,7 +1086,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">ArmoniK.Api.gRPC.V1.Output</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">ArmoniK.Api.gRPC.V1.Output</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -1099,12 +1099,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/Submitter.cs/#L433">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_Submitter_UpdateTaskStatusAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.UpdateTaskStatusAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_UpdateTaskStatusAsync_System_String_ArmoniK_Api_gRPC_V1_TaskStatus_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,System.Threading.CancellationToken)">UpdateTaskStatusAsync(String, TaskStatus, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_Submitter_UpdateTaskStatusAsync_System_String_ArmoniK_Api_gRPC_V1_TaskStatus_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.Submitter.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,System.Threading.CancellationToken)">UpdateTaskStatusAsync(string, TaskStatus, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task UpdateTaskStatusAsync(string id, TaskStatus status, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task UpdateTaskStatusAsync(string id, TaskStatus status, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1117,7 +1117,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">id</span></td>
         <td></td>
       </tr>
@@ -1161,7 +1161,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;AvailabilityReply&gt; WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;AvailabilityReply&gt; WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1195,7 +1195,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">AvailabilityReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">AvailabilityReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -1213,7 +1213,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;Count&gt; WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;Count&gt; WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1247,7 +1247,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Count</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Count</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>

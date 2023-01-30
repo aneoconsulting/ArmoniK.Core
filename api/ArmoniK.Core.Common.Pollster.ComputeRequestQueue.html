@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class ComputeRequestQueue
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class ComputeRequestQueue
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class ComputeRequestQueue
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class ComputeRequestQueue
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -78,34 +78,34 @@ the request ordering with state machines</p>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">ComputeRequestQueue</span></div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Pollster.html">ArmoniK.Core.Common.Pollster</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Pollster.html">Pollster</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -338,7 +338,7 @@ the request ordering with state machines</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.Queue</span>&lt;<span class="xref">ProcessRequest.Types.ComputeRequest</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.Queue&lt;T&gt;</span>&lt;<span class="xref">ProcessRequest</span>.<span class="xref">Types</span>.<span class="xref">ComputeRequest</span>&gt;</td>
         <td><p>The queue with the complete compute request</p>
 </td>
       </tr>
@@ -368,7 +368,7 @@ the request ordering with state machines</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Pollster/ComputeRequestQueue.cs/#L70">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_Init_" data-uid="ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init*"></a>
-  <h4 id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_Init_System_Int32_System_String_System_String_TaskOptions_System_Nullable_ByteString__System_Collections_Generic_IList_System_String__" data-uid="ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32,System.String,System.String,TaskOptions,System.Nullable{ByteString},System.Collections.Generic.IList{System.String})">Init(Int32, String, String, TaskOptions, Nullable&lt;ByteString&gt;, IList&lt;String&gt;)</h4>
+  <h4 id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_Init_System_Int32_System_String_System_String_TaskOptions_System_Nullable_ByteString__System_Collections_Generic_IList_System_String__" data-uid="ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32,System.String,System.String,TaskOptions,System.Nullable{ByteString},System.Collections.Generic.IList{System.String})">Init(int, string, string, TaskOptions, ByteString?, IList&lt;string&gt;)</h4>
   <div class="markdown level1 summary"><p>Create the init computation request with the given parameters</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -387,19 +387,19 @@ the request ordering with state machines</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">dataChunkMaxSize</span></td>
         <td><p>The maximum size of a data chunk</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>The session identifier</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">taskId</span></td>
         <td><p>The task identifier</p>
 </td>
@@ -411,13 +411,13 @@ the request ordering with state machines</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">ByteString</span>&gt;</td>
+        <td><span class="xref">ByteString</span>?</td>
         <td><span class="parametername">payload</span></td>
         <td><p>The input data of the task</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IList</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IList&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">expectedOutputKeys</span></td>
         <td><p>Collection of data ids for the expected outputs of the task</p>
 </td>
@@ -448,7 +448,7 @@ the request ordering with state machines</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Pollster/ComputeRequestQueue.cs/#L141">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_InitDataDependency_" data-uid="ArmoniK.Core.Common.Pollster.ComputeRequestQueue.InitDataDependency*"></a>
-  <h4 id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_InitDataDependency_System_String_" data-uid="ArmoniK.Core.Common.Pollster.ComputeRequestQueue.InitDataDependency(System.String)">InitDataDependency(String)</h4>
+  <h4 id="ArmoniK_Core_Common_Pollster_ComputeRequestQueue_InitDataDependency_System_String_" data-uid="ArmoniK.Core.Common.Pollster.ComputeRequestQueue.InitDataDependency(System.String)">InitDataDependency(string)</h4>
   <div class="markdown level1 summary"><p>Add a request representing the start of a data dependency in the queue</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -467,7 +467,7 @@ the request ordering with state machines</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>The identifier of the data dependency</p>
 </td>

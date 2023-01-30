@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class GrpcSubmitterService
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class GrpcSubmitterService
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class GrpcSubmitterService
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class GrpcSubmitterService
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,10 +76,10 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">GrpcSubmitterService</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.gRPC.Services.html">ArmoniK.Core.Common.gRPC.Services</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.gRPC.html">gRPC</a>.<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.html">Services</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -118,7 +118,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html">GrpcSubmitterService</a>&gt;</td>
+        <td><span class="xref">ILogger&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html">GrpcSubmitterService</a>&gt;</td>
         <td><span class="parametername">logger</span></td>
         <td></td>
       </tr>
@@ -139,7 +139,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;Empty&gt; CancelSession(Session request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;Empty&gt; CancelSession(Session request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -173,7 +174,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Empty</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Empty</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -191,7 +192,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;Empty&gt; CancelTasks(TaskFilter request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;Empty&gt; CancelTasks(TaskFilter request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -225,7 +227,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Empty</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Empty</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -243,7 +245,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;Count&gt; CountTasks(TaskFilter request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;Count&gt; CountTasks(TaskFilter request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -277,7 +280,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Count</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Count</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -295,7 +298,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;CreateTaskReply&gt; CreateLargeTasks(IAsyncStreamReader&lt;CreateLargeTaskRequest&gt; requestStream, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;CreateTaskReply&gt; CreateLargeTasks(IAsyncStreamReader&lt;CreateLargeTaskRequest&gt; requestStream, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -308,7 +312,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IAsyncStreamReader</span>&lt;<span class="xref">CreateLargeTaskRequest</span>&gt;</td>
+        <td><span class="xref">IAsyncStreamReader&lt;&gt;</span>&lt;<span class="xref">CreateLargeTaskRequest</span>&gt;</td>
         <td><span class="parametername">requestStream</span></td>
         <td></td>
       </tr>
@@ -329,7 +333,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">CreateTaskReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">CreateTaskReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -347,7 +351,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;CreateSessionReply&gt; CreateSession(CreateSessionRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;CreateSessionReply&gt; CreateSession(CreateSessionRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -381,7 +386,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">CreateSessionReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">CreateSessionReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -399,7 +404,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;CreateTaskReply&gt; CreateSmallTasks(CreateSmallTaskRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;CreateTaskReply&gt; CreateSmallTasks(CreateSmallTaskRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -433,7 +439,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">CreateTaskReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">CreateTaskReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -451,7 +457,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;GetResultStatusReply&gt; GetResultStatus(GetResultStatusRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;GetResultStatusReply&gt; GetResultStatus(GetResultStatusRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -485,7 +492,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">GetResultStatusReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">GetResultStatusReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -503,7 +510,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;Configuration&gt; GetServiceConfiguration(Empty request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;Configuration&gt; GetServiceConfiguration(Empty request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -537,7 +545,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Configuration</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Configuration</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -555,7 +563,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;GetTaskStatusReply&gt; GetTaskStatus(GetTaskStatusRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;GetTaskStatusReply&gt; GetTaskStatus(GetTaskStatusRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -589,7 +598,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">GetTaskStatusReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">GetTaskStatusReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -607,7 +616,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;SessionIdList&gt; ListSessions(SessionFilter request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;SessionIdList&gt; ListSessions(SessionFilter request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -641,7 +651,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">SessionIdList</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">SessionIdList</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -659,7 +669,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;TaskIdList&gt; ListTasks(TaskFilter request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;TaskIdList&gt; ListTasks(TaskFilter request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -693,7 +704,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">TaskIdList</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">TaskIdList</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -711,7 +722,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task TryGetResultStream(ResultRequest request, IServerStreamWriter&lt;ResultReply&gt; responseStream, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task TryGetResultStream(ResultRequest request, IServerStreamWriter&lt;ResultReply&gt; responseStream, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -729,7 +741,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">IServerStreamWriter</span>&lt;<span class="xref">ResultReply</span>&gt;</td>
+        <td><span class="xref">IServerStreamWriter&lt;&gt;</span>&lt;<span class="xref">ResultReply</span>&gt;</td>
         <td><span class="parametername">responseStream</span></td>
         <td></td>
       </tr>
@@ -768,7 +780,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;Output&gt; TryGetTaskOutput(TaskOutputRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;Output&gt; TryGetTaskOutput(TaskOutputRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -802,7 +815,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Output</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Output</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -820,7 +833,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;AvailabilityReply&gt; WaitForAvailability(ResultRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;AvailabilityReply&gt; WaitForAvailability(ResultRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -854,7 +868,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">AvailabilityReply</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">AvailabilityReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -872,7 +886,8 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override async Task&lt;Count&gt; WaitForCompletion(WaitRequest request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">[RequiresPermissionAttribute]
+public override Task&lt;Count&gt; WaitForCompletion(WaitRequest request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -906,7 +921,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">Count</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">Count</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>

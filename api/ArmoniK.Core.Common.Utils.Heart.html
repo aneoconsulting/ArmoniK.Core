@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class Heart
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Heart
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class Heart
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Heart
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,34 +76,34 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">Heart</span></div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Utils.html">ArmoniK.Core.Common.Utils</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Utils.html">Utils</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Utils_Heart_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -119,12 +119,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/Heart.cs/#L74">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Utils_Heart__ctor_" data-uid="ArmoniK.Core.Common.Utils.Heart.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Utils_Heart__ctor_System_Func_System_Boolean__System_TimeSpan_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Utils.Heart.#ctor(System.Func{System.Boolean},System.TimeSpan,System.Threading.CancellationToken)">Heart(Func&lt;Boolean&gt;, TimeSpan, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Utils_Heart__ctor_System_Func_System_Boolean__System_TimeSpan_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Utils.Heart.#ctor(System.Func{System.Boolean},System.TimeSpan,System.Threading.CancellationToken)">Heart(Func&lt;bool&gt;, TimeSpan, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Heart(Func&lt;bool&gt; pulse, TimeSpan beatPeriod, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Heart(Func&lt;bool&gt; pulse, TimeSpan beatPeriod, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -137,7 +137,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Func</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><span class="xref">System.Func&lt;TResult&gt;</span>&lt;<span class="xref">bool</span>&gt;</td>
         <td><span class="parametername">pulse</span></td>
         <td><p>The function to execute at each beat
 It returns a predicate indicating if the heart must continue beating</p>
@@ -164,12 +164,12 @@ It returns a predicate indicating if the heart must continue beating</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Utils/Heart.cs/#L54">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Utils_Heart__ctor_" data-uid="ArmoniK.Core.Common.Utils.Heart.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Utils_Heart__ctor_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task_System_Boolean___System_TimeSpan_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Utils.Heart.#ctor(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.TimeSpan,System.Threading.CancellationToken)">Heart(Func&lt;CancellationToken, Task&lt;Boolean&gt;&gt;, TimeSpan, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Utils_Heart__ctor_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task_System_Boolean___System_TimeSpan_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Utils.Heart.#ctor(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.TimeSpan,System.Threading.CancellationToken)">Heart(Func&lt;CancellationToken, Task&lt;bool&gt;&gt;, TimeSpan, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Heart(Func&lt;CancellationToken, Task&lt;bool&gt;&gt; pulse, TimeSpan beatPeriod, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Heart(Func&lt;CancellationToken, Task&lt;bool&gt;&gt; pulse, TimeSpan beatPeriod, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -182,7 +182,7 @@ It returns a predicate indicating if the heart must continue beating</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Func</span>&lt;<span class="xref">System.Threading.CancellationToken</span>, <span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Boolean</span>&gt;&gt;</td>
+        <td><span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<span class="xref">System.Threading.CancellationToken</span>, <span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">bool</span>&gt;&gt;</td>
         <td><span class="parametername">pulse</span></td>
         <td><p>The function to execute at each beat
 It returns a predicate indicating if the heart must continue beating</p>
@@ -266,7 +266,7 @@ It returns a predicate indicating if the heart must continue beating</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task Stop()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task Stop()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">

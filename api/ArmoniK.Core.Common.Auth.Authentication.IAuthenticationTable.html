@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface IAuthenticationTable
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Interface IAuthenticationTable
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface IAuthenticationTable
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Interface IAuthenticationTable
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -84,7 +84,7 @@
       <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html#ArmoniK_Core_Common_IHealthCheckProvider_Check_ArmoniK_Core_Common_HealthCheckTag_">IHealthCheckProvider.Check(HealthCheckTag)</a>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.html">ArmoniK.Core.Common.Auth.Authentication</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<span class="xref">Auth</span>.<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.html">Authentication</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -119,7 +119,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthData.html">AuthData</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthData.html">AuthData</a>&gt;</td>
         <td><span class="parametername">certificates</span></td>
         <td><p>Certificates to be added</p>
 </td>
@@ -153,7 +153,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.RoleData.html">RoleData</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.RoleData.html">RoleData</a>&gt;</td>
         <td><span class="parametername">roles</span></td>
         <td><p>Roles to be added</p>
 </td>
@@ -187,7 +187,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserData.html">UserData</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserData.html">UserData</a>&gt;</td>
         <td><span class="parametername">users</span></td>
         <td><p>Users to be added</p>
 </td>
@@ -202,13 +202,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/IAuthenticationTable.cs/#L44">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_GetIdentityFromCertificateAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.GetIdentityFromCertificateAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_GetIdentityFromCertificateAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.GetIdentityFromCertificateAsync(System.String,System.String,System.Threading.CancellationToken)">GetIdentityFromCertificateAsync(String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_GetIdentityFromCertificateAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.GetIdentityFromCertificateAsync(System.String,System.String,System.Threading.CancellationToken)">GetIdentityFromCertificateAsync(string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the User authentication data from the database, based on the provided certificate</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;UserAuthenticationResult&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;UserAuthenticationResult?&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -221,13 +221,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">cn</span></td>
         <td><p>Common name of the certificate</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">fingerprint</span></td>
         <td><p>Fingerprint of the certificate</p>
 </td>
@@ -250,7 +250,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html">UserAuthenticationResult</a>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html">UserAuthenticationResult</a>&gt;</td>
         <td><p>User authentication data matching the provided certificate, null if not found</p>
 </td>
       </tr>
@@ -264,14 +264,14 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/IAuthenticationTable.cs/#L56">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_GetIdentityFromUserAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.GetIdentityFromUserAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_GetIdentityFromUserAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.GetIdentityFromUserAsync(System.String,System.String,System.Threading.CancellationToken)">GetIdentityFromUserAsync(String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_IAuthenticationTable_GetIdentityFromUserAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.GetIdentityFromUserAsync(System.String,System.String,System.Threading.CancellationToken)">GetIdentityFromUserAsync(string?, string?, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the User authentication data from the database, based on the id or username. If id is not null, will be used for
 matching, otherwise tries to match the username</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;UserAuthenticationResult&gt; GetIdentityFromUserAsync(string id, string username, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;UserAuthenticationResult?&gt; GetIdentityFromUserAsync(string? id, string? username, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -284,13 +284,13 @@ matching, otherwise tries to match the username</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">id</span></td>
         <td><p>User Id</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">username</span></td>
         <td><p>User name</p>
 </td>
@@ -313,7 +313,7 @@ matching, otherwise tries to match the username</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html">UserAuthenticationResult</a>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html">UserAuthenticationResult</a>&gt;</td>
         <td><p>User authentication data matching the id, if not null, otherwise the username, null if not found</p>
 </td>
       </tr>

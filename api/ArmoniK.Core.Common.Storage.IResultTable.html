@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface IResultTable
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Interface IResultTable
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface IResultTable
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Interface IResultTable
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -84,7 +84,7 @@
       <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html#ArmoniK_Core_Common_IHealthCheckProvider_Check_ArmoniK_Core_Common_HealthCheckTag_">IHealthCheckProvider.Check(HealthCheckTag)</a>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Storage.html">ArmoniK.Core.Common.Storage</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Storage.html">Storage</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Storage_IResultTable_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -133,13 +133,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L209">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_AbortTaskResults_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_AbortTaskResults_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults(System.String,System.String,System.Threading.CancellationToken)">AbortTaskResults(String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_AbortTaskResults_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults(System.String,System.String,System.Threading.CancellationToken)">AbortTaskResults(string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Abort the results of the given task</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task AbortTaskResults(string sessionId, string ownerTaskId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task AbortTaskResults(string sessionId, string ownerTaskId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -152,13 +152,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">ownerTaskId</span></td>
         <td><p>id of the task from which abort the results</p>
 </td>
@@ -195,13 +195,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L58">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_AreResultsAvailableAsync_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.AreResultsAvailableAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_AreResultsAvailableAsync_System_String_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.AreResultsAvailableAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">AreResultsAvailableAsync(String, IEnumerable&lt;String&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_AreResultsAvailableAsync_System_String_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.AreResultsAvailableAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">AreResultsAvailableAsync(string, IEnumerable&lt;string&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Check the status of the given results</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;ResultStatusCount&gt;&gt; AreResultsAvailableAsync(string sessionId, IEnumerable&lt;string&gt; keys, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;ResultStatusCount&gt;&gt; AreResultsAvailableAsync(string sessionId, IEnumerable&lt;string&gt; keys, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -214,13 +214,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>Session id of the session using the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">keys</span></td>
         <td><p>Ids of the results that will be checked</p>
 </td>
@@ -243,7 +243,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.ResultStatusCount.html">ResultStatusCount</a>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.ResultStatusCount.html">ResultStatusCount</a>&gt;&gt;</td>
         <td><p>The number of results in each kind of status</p>
 </td>
       </tr>
@@ -257,7 +257,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L72">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnership_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnership_System_String_System_String_System_Collections_Generic_IEnumerable_ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String,System.String,System.Collections.Generic.IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},System.Threading.CancellationToken)">ChangeResultOwnership(String, String, IEnumerable&lt;IResultTable.ChangeResultOwnershipRequest&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnership_System_String_System_String_System_Collections_Generic_IEnumerable_ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String,System.String,System.Collections.Generic.IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},System.Threading.CancellationToken)">ChangeResultOwnership(string, string, IEnumerable&lt;ChangeResultOwnershipRequest&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Change ownership (in batch) of the results in the given request</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -276,19 +276,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>Session id of the session using the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">oldTaskId</span></td>
         <td><p>Task Id of the previous owner</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html">IResultTable.ChangeResultOwnershipRequest</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.IResultTable.html">IResultTable</a>.<a class="xref" href="ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html">ChangeResultOwnershipRequest</a>&gt;</td>
         <td><span class="parametername">requests</span></td>
         <td><p>Change ownership requests that will be executed</p>
 </td>
@@ -331,7 +331,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task Create(IEnumerable&lt;Result&gt; results, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task Create(IEnumerable&lt;Result&gt; results, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -344,7 +344,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</td>
         <td><span class="parametername">results</span></td>
         <td><p>Results that will be inserted into the database</p>
 </td>
@@ -381,13 +381,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L97">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_DeleteResult_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.DeleteResult*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_DeleteResult_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.DeleteResult(System.String,System.String,System.Threading.CancellationToken)">DeleteResult(String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_DeleteResult_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.DeleteResult(System.String,System.String,System.Threading.CancellationToken)">DeleteResult(string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Delete the results from the database</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task DeleteResult(string session, string key, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task DeleteResult(string session, string key, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -400,13 +400,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">session</span></td>
         <td><p>id of the session containing the result</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>id of the result to be deleted</p>
 </td>
@@ -443,13 +443,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L109">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_DeleteResults_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.DeleteResults*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_DeleteResults_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.DeleteResults(System.String,System.Threading.CancellationToken)">DeleteResults(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_DeleteResults_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.DeleteResults(System.String,System.Threading.CancellationToken)">DeleteResults(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Delete all the results from a session</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task DeleteResults(string sessionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task DeleteResults(string sessionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -462,7 +462,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the result</p>
 </td>
@@ -499,13 +499,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L222">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_GetResult_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResult*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_GetResult_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResult(System.String,System.String,System.Threading.CancellationToken)">GetResult(String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_GetResult_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResult(System.String,System.String,System.Threading.CancellationToken)">GetResult(string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the result from its id</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">virtual async Task&lt;Result&gt; GetResult(string sessionId, string key, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;Result&gt; GetResult(string sessionId, string key, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -518,13 +518,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the result</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>id of the result to be retrieved</p>
 </td>
@@ -547,7 +547,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</td>
         <td><p>Result metadata from the database</p>
 </td>
       </tr>
@@ -561,13 +561,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L121">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_GetResults_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResults*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_GetResults_System_String_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResults(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">GetResults(String, IEnumerable&lt;String&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_GetResults_System_String_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResults(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">GetResults(string, IEnumerable&lt;string&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the results from a collection of ids</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;Result&gt; GetResults(string sessionId, IEnumerable&lt;string&gt; keys, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;Result&gt; GetResults(string sessionId, IEnumerable&lt;string&gt; keys, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -580,13 +580,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the result</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">keys</span></td>
         <td><p>Collection of id of the result to be retrieved</p>
 </td>
@@ -609,7 +609,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</td>
         <td><p>Collection of results metadata from the database</p>
 </td>
       </tr>
@@ -623,13 +623,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L196">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_GetResultStatus_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_GetResultStatus_System_Collections_Generic_IEnumerable_System_String__System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(System.Collections.Generic.IEnumerable{System.String},System.String,System.Threading.CancellationToken)">GetResultStatus(IEnumerable&lt;String&gt;, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_GetResultStatus_System_Collections_Generic_IEnumerable_System_String__System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(System.Collections.Generic.IEnumerable{System.String},System.String,System.Threading.CancellationToken)">GetResultStatus(IEnumerable&lt;string&gt;, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the status of the given results</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;GetResultStatusReply.Types.IdStatus&gt;&gt; GetResultStatus(IEnumerable&lt;string&gt; ids, string sessionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;GetResultStatusReply.Types.IdStatus&gt;&gt; GetResultStatus(IEnumerable&lt;string&gt; ids, string sessionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -642,13 +642,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">ids</span></td>
         <td><p>ids of the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the results</p>
 </td>
@@ -671,7 +671,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">GetResultStatusReply.Types.IdStatus</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">GetResultStatusReply</span>.<span class="xref">Types</span>.<span class="xref">IdStatus</span>&gt;&gt;</td>
         <td><p>A map between the ids of the results found and their status</p>
 </td>
       </tr>
@@ -685,13 +685,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L148">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_Result_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_Result_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.Result,System.Boolean}},System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.Result,System.Object}},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">ListResultsAsync(Expression&lt;Func&lt;Result, Boolean&gt;&gt;, Expression&lt;Func&lt;Result, Object&gt;&gt;, Boolean, Int32, Int32, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_Result_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_Result_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.Result,System.Boolean}},System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.Result,System.Object}},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">ListResultsAsync(Expression&lt;Func&lt;Result, bool&gt;&gt;, Expression&lt;Func&lt;Result, object?&gt;&gt;, bool, int, int, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>List all results matching the given request</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;Result&gt; results, int totalCount)&gt; ListResultsAsync(Expression&lt;Func&lt;Result, bool&gt;&gt; filter, Expression&lt;Func&lt;Result, object&gt;&gt; orderField, bool ascOrder, int page, int pageSize, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;Result&gt; results, int totalCount)&gt; ListResultsAsync(Expression&lt;Func&lt;Result, bool&gt;&gt; filter, Expression&lt;Func&lt;Result, object?&gt;&gt; orderField, bool ascOrder, int page, int pageSize, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -704,31 +704,31 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Linq.Expressions.Expression</span>&lt;<span class="xref">System.Func</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>, <span class="xref">System.Boolean</span>&gt;&gt;</td>
+        <td><span class="xref">System.Linq.Expressions.Expression&lt;TDelegate&gt;</span>&lt;<span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>, <span class="xref">bool</span>&gt;&gt;</td>
         <td><span class="parametername">filter</span></td>
         <td><p>Filter to select results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Linq.Expressions.Expression</span>&lt;<span class="xref">System.Func</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>, <span class="xref">System.Object</span>&gt;&gt;</td>
+        <td><span class="xref">System.Linq.Expressions.Expression&lt;TDelegate&gt;</span>&lt;<span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>, <span class="xref">object</span>&gt;&gt;</td>
         <td><span class="parametername">orderField</span></td>
         <td><p>Select the field that will be used to order the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td><span class="parametername">ascOrder</span></td>
         <td><p>Is the order ascending</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">page</span></td>
         <td><p>The page of results to retrieve</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">pageSize</span></td>
         <td><p>The number of results pages</p>
 </td>
@@ -751,7 +751,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.ValueTuple</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;, <span class="xref">System.Int32</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;(<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt; <span class="xref">results</span>, <span class="xref">int</span> <span class="xref">totalCount</span>)&gt;</td>
         <td><p>Collection of results metadata that matched the filter and total number of results without paging</p>
 </td>
       </tr>
@@ -765,13 +765,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L133">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync(System.String,System.Threading.CancellationToken)">ListResultsAsync(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync(System.String,System.Threading.CancellationToken)">ListResultsAsync(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>List results from a session</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;string&gt; ListResultsAsync(string sessionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;string&gt; ListResultsAsync(string sessionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -784,7 +784,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the results</p>
 </td>
@@ -807,7 +807,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><p>The ids of the results in the session</p>
 </td>
       </tr>
@@ -821,13 +821,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L166">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_SetResult_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.SetResult*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_SetResult_System_String_System_String_System_String_System_Byte___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.SetResult(System.String,System.String,System.String,System.Byte[],System.Threading.CancellationToken)">SetResult(String, String, String, Byte[], CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_SetResult_System_String_System_String_System_String_System_Byte___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.SetResult(System.String,System.String,System.String,System.Byte[],System.Threading.CancellationToken)">SetResult(string, string, string, byte[], CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Update result with small payload</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -840,25 +840,25 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">ownerTaskId</span></td>
         <td><p>id of the task owning the result</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>id of the result to be modified</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="xref">byte</span>[]</td>
         <td><span class="parametername">smallPayload</span></td>
         <td><p>payload data</p>
 </td>
@@ -895,13 +895,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IResultTable.cs/#L182">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IResultTable_SetResult_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.SetResult*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_SetResult_System_String_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.SetResult(System.String,System.String,System.String,System.Threading.CancellationToken)">SetResult(String, String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IResultTable_SetResult_System_String_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IResultTable.SetResult(System.String,System.String,System.String,System.Threading.CancellationToken)">SetResult(string, string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Update result</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -914,19 +914,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>id of the session containing the results</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">ownerTaskId</span></td>
         <td><p>id of the task owning the result</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>id of the result to be modified</p>
 </td>

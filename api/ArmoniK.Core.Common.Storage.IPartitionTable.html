@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface IPartitionTable
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Interface IPartitionTable
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface IPartitionTable
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Interface IPartitionTable
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -85,7 +85,7 @@ in the data base</p>
       <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html#ArmoniK_Core_Common_IHealthCheckProvider_Check_ArmoniK_Core_Common_HealthCheckTag_">IHealthCheckProvider.Check(HealthCheckTag)</a>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Storage.html">ArmoniK.Core.Common.Storage</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Storage.html">Storage</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Storage_IPartitionTable_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -101,13 +101,13 @@ in the data base</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IPartitionTable.cs/#L93">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IPartitionTable_ArePartitionsExistingAsync_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_ArePartitionsExistingAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">ArePartitionsExistingAsync(IEnumerable&lt;String&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_ArePartitionsExistingAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">ArePartitionsExistingAsync(IEnumerable&lt;string&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Check the availability of the given partitions in the data base</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; ArePartitionsExistingAsync(IEnumerable&lt;string&gt; partitionIds, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; ArePartitionsExistingAsync(IEnumerable&lt;string&gt; partitionIds, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -120,7 +120,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><span class="parametername">partitionIds</span></td>
         <td><p>Collection of partition ids</p>
 </td>
@@ -143,7 +143,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">bool</span>&gt;</td>
         <td><p>A bool representing whether all the partitions are available</p>
 </td>
       </tr>
@@ -163,7 +163,7 @@ in the data base</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task CreatePartitionsAsync(IEnumerable&lt;PartitionData&gt; partitions, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task CreatePartitionsAsync(IEnumerable&lt;PartitionData&gt; partitions, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -176,7 +176,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;</td>
         <td><span class="parametername">partitions</span></td>
         <td><p>Collection of partitions to be inserted</p>
 </td>
@@ -213,13 +213,13 @@ in the data base</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IPartitionTable.cs/#L82">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IPartitionTable_DeletePartitionAsync_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_DeletePartitionAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync(System.String,System.Threading.CancellationToken)">DeletePartitionAsync(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_DeletePartitionAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync(System.String,System.Threading.CancellationToken)">DeletePartitionAsync(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Remove a partition from the data base given its id</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task DeletePartitionAsync(string partitionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task DeletePartitionAsync(string partitionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -232,7 +232,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">partitionId</span></td>
         <td><p>Id of the partition to be deleted</p>
 </td>
@@ -291,7 +291,7 @@ in the data base</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;PartitionData&gt; GetPartitionWithAllocationAsync(CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;PartitionData&gt; GetPartitionWithAllocationAsync(CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -321,7 +321,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;</td>
         <td><p>Collection of partitions respecting the request</p>
 </td>
       </tr>
@@ -335,13 +335,13 @@ in the data base</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IPartitionTable.cs/#L108">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IPartitionTable_ListPartitionsAsync_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ListPartitionsAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_ListPartitionsAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_PartitionData_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_PartitionData_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ListPartitionsAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.PartitionData,System.Boolean}},System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.PartitionData,System.Object}},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">ListPartitionsAsync(Expression&lt;Func&lt;PartitionData, Boolean&gt;&gt;, Expression&lt;Func&lt;PartitionData, Object&gt;&gt;, Boolean, Int32, Int32, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_ListPartitionsAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_PartitionData_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_PartitionData_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ListPartitionsAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.PartitionData,System.Boolean}},System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.PartitionData,System.Object}},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">ListPartitionsAsync(Expression&lt;Func&lt;PartitionData, bool&gt;&gt;, Expression&lt;Func&lt;PartitionData, object?&gt;&gt;, bool, int, int, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>List all partitions matching the given filter and ordering</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;PartitionData&gt; partitions, int totalCount)&gt; ListPartitionsAsync(Expression&lt;Func&lt;PartitionData, bool&gt;&gt; filter, Expression&lt;Func&lt;PartitionData, object&gt;&gt; orderField, bool ascOrder, int page, int pageSize, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;PartitionData&gt; partitions, int totalCount)&gt; ListPartitionsAsync(Expression&lt;Func&lt;PartitionData, bool&gt;&gt; filter, Expression&lt;Func&lt;PartitionData, object?&gt;&gt; orderField, bool ascOrder, int page, int pageSize, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -354,31 +354,31 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Linq.Expressions.Expression</span>&lt;<span class="xref">System.Func</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>, <span class="xref">System.Boolean</span>&gt;&gt;</td>
+        <td><span class="xref">System.Linq.Expressions.Expression&lt;TDelegate&gt;</span>&lt;<span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>, <span class="xref">bool</span>&gt;&gt;</td>
         <td><span class="parametername">filter</span></td>
         <td><p>Filter to select partitions</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Linq.Expressions.Expression</span>&lt;<span class="xref">System.Func</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>, <span class="xref">System.Object</span>&gt;&gt;</td>
+        <td><span class="xref">System.Linq.Expressions.Expression&lt;TDelegate&gt;</span>&lt;<span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>, <span class="xref">object</span>&gt;&gt;</td>
         <td><span class="parametername">orderField</span></td>
         <td><p>Select the field that will be used to order the partitions</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td><span class="parametername">ascOrder</span></td>
         <td><p>Is the order ascending</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">page</span></td>
         <td><p>The page of results to retrieve</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td><span class="parametername">pageSize</span></td>
         <td><p>The number of results pages</p>
 </td>
@@ -401,7 +401,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.ValueTuple</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;, <span class="xref">System.Int32</span>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;(<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt; <span class="xref">partitions</span>, <span class="xref">int</span> <span class="xref">totalCount</span>)&gt;</td>
         <td><p>Collection of partition metadata matching the request and total number of results without paging</p>
 </td>
       </tr>
@@ -415,13 +415,13 @@ in the data base</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IPartitionTable.cs/#L61">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IPartitionTable_ReadPartitionAsync_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_ReadPartitionAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync(System.String,System.Threading.CancellationToken)">ReadPartitionAsync(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IPartitionTable_ReadPartitionAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync(System.String,System.Threading.CancellationToken)">ReadPartitionAsync(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Retrieves a partition from the data base</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;PartitionData&gt; ReadPartitionAsync(string partitionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;PartitionData&gt; ReadPartitionAsync(string partitionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -434,7 +434,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">partitionId</span></td>
         <td><p>Id of the partition to read</p>
 </td>
@@ -457,7 +457,7 @@ in the data base</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionData.html">PartitionData</a>&gt;</td>
         <td><p>Task metadata of the retrieved partition</p>
 </td>
       </tr>

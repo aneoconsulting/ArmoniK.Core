@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class PollsterTest
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class PollsterTest
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class PollsterTest
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class PollsterTest
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,34 +76,34 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">PollsterTest</span></div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Tests.Pollster.html">ArmoniK.Core.Common.Tests.Pollster</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Tests.html">Tests</a>.<a class="xref" href="ArmoniK.Core.Common.Tests.Pollster.html">Pollster</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.Tests.dll</h6>
   <h5 id="ArmoniK_Core_Common_Tests_Pollster_PollsterTest_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -151,12 +151,12 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Pollster/PollsterTest.cs/#L449">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTaskShouldSucceed_" data-uid="ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed*"></a>
-  <h4 id="ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTaskShouldSucceed_System_Double_" data-uid="ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed(System.Double)">ExecuteTaskShouldSucceed(Double)</h4>
+  <h4 id="ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTaskShouldSucceed_System_Double_" data-uid="ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed(System.Double)">ExecuteTaskShouldSucceed(double)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ExecuteTaskShouldSucceed(double delay)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ExecuteTaskShouldSucceed(double delay)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -169,7 +169,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Double</span></td>
+        <td><span class="xref">double</span></td>
         <td><span class="parametername">delay</span></td>
         <td></td>
       </tr>
@@ -203,7 +203,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ExecuteTooManyErrorShouldFail(Mock&lt;IWorkerStreamHandler&gt; mockStreamHandler, Mock&lt;IPullQueueStorage&gt; mockPullQueueStorage, Mock&lt;IAgentHandler&gt; mockAgentHandler)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ExecuteTooManyErrorShouldFail(Mock&lt;IWorkerStreamHandler&gt; mockStreamHandler, Mock&lt;IPullQueueStorage&gt; mockPullQueueStorage, Mock&lt;IAgentHandler&gt; mockAgentHandler)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -216,17 +216,17 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Mock</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html">IWorkerStreamHandler</a>&gt;</td>
+        <td><span class="xref">Mock&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html">IWorkerStreamHandler</a>&gt;</td>
         <td><span class="parametername">mockStreamHandler</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">Mock</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.IPullQueueStorage.html">IPullQueueStorage</a>&gt;</td>
+        <td><span class="xref">Mock&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.IPullQueueStorage.html">IPullQueueStorage</a>&gt;</td>
         <td><span class="parametername">mockPullQueueStorage</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">Mock</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Pollster.IAgentHandler.html">IAgentHandler</a>&gt;</td>
+        <td><span class="xref">Mock&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Pollster.IAgentHandler.html">IAgentHandler</a>&gt;</td>
         <td><span class="parametername">mockAgentHandler</span></td>
         <td></td>
       </tr>
@@ -275,7 +275,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task InitShouldFail()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task InitShouldFail()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -305,7 +305,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task InitShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task InitShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -335,7 +335,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task RunThenCancelPollster()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task RunThenCancelPollster()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -395,7 +395,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task UnavailableWorkerShouldFail()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task UnavailableWorkerShouldFail()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">

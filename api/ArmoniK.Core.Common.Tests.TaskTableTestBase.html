@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class TaskTableTestBase
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class TaskTableTestBase
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class TaskTableTestBase
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class TaskTableTestBase
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,7 +76,7 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">TaskTableTestBase</span></div>
       <div class="level2"><a class="xref" href="ArmoniK.Core.Adapters.Memory.Tests.TaskTableTests.html">TaskTableTests</a></div>
       <div class="level2"><a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Tests.TaskTableTests.html">TaskTableTests</a></div>
@@ -84,28 +84,28 @@
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Tests.html">ArmoniK.Core.Common.Tests</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Tests.html">Tests</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.Tests.dll</h6>
   <h5 id="ArmoniK_Core_Common_Tests_TaskTableTestBase_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -137,7 +137,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -154,7 +154,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">protected ITaskTable TaskTable</code></pre>
+    <pre><code class="lang-csharp hljs">protected ITaskTable? TaskTable</code></pre>
   </div>
   <h5 class="fieldValue">Field Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -186,7 +186,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task AcquireAcquiredTaskShouldReturnSame()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task AcquireAcquiredTaskShouldReturnSame()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -216,7 +216,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task AcquireCreatingTaskShouldFail()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task AcquireCreatingTaskShouldFail()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -246,7 +246,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task AcquireTaskShouldFail()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task AcquireTaskShouldFail()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -276,7 +276,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task AcquireTaskShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task AcquireTaskShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -321,7 +321,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CancelSessionAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CancelSessionAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -351,7 +351,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CancelTasksAsyncEmptyListShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CancelTasksAsyncEmptyListShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -381,7 +381,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CancelTasksAsyncShouldNotChangeTheGivenStatus(TaskStatus status)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CancelTasksAsyncShouldNotChangeTheGivenStatus(TaskStatus status)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -428,7 +428,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CancelTasksShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CancelTasksShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -458,7 +458,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CountAllTasksAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CountAllTasksAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -488,7 +488,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CountPartitionTasksAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CountPartitionTasksAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -518,7 +518,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task CountTasksAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task CountTasksAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -563,7 +563,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task DeleteTaskShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task DeleteTaskShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -593,7 +593,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task FinalizeTaskCreationShouldFail()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task FinalizeTaskCreationShouldFail()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -623,7 +623,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task FinalizeTaskCreationShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task FinalizeTaskCreationShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -683,7 +683,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task GetParentTaskIdsShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task GetParentTaskIdsShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -728,7 +728,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task GetTaskExpectedOutputKeysShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task GetTaskExpectedOutputKeysShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -773,7 +773,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task GetTaskOutputShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task GetTaskOutputShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -818,7 +818,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task InitShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task InitShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -863,7 +863,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task IsTaskCanceledShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task IsTaskCanceledShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -893,7 +893,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ListApplicationFromTasksShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ListApplicationFromTasksShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -923,7 +923,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ListTaskEmptyResultShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ListTaskEmptyResultShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -953,7 +953,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ListTaskShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ListTaskShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -983,7 +983,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ListTaskWithListInRequestShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ListTaskWithListInRequestShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1013,7 +1013,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ListTaskWithRequestShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ListTaskWithRequestShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1043,7 +1043,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task OptionsAreEqual()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task OptionsAreEqual()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1073,7 +1073,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task PayloadIdAfterRetryShouldBeCorrect()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task PayloadIdAfterRetryShouldBeCorrect()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1118,7 +1118,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ReadTaskAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ReadTaskAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1148,7 +1148,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task ReleaseTaskShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task ReleaseTaskShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1178,7 +1178,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task RetryTaskShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task RetryTaskShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1208,7 +1208,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task SetTaskCanceledAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task SetTaskCanceledAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1238,7 +1238,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task SetTaskErrorAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task SetTaskErrorAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1268,7 +1268,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task SetTaskSuccessAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task SetTaskSuccessAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1328,7 +1328,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task StartTaskShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task StartTaskShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1405,7 +1405,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task UpdateAllTaskStatusAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task UpdateAllTaskStatusAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1435,7 +1435,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task UpdateAllTaskStatusAsyncShouldSucceedIfNoStatusGiven()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task UpdateAllTaskStatusAsyncShouldSucceedIfNoStatusGiven()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1480,7 +1480,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task UpdateTaskStatusAsyncShouldSucceed()</code></pre>
+    <pre><code class="lang-csharp hljs">public Task UpdateTaskStatusAsyncShouldSucceed()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">

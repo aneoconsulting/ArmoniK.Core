@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class Permission
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Permission
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class Permission
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Permission
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -77,29 +77,29 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">Permission</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
-    <div><span class="xref">System.IEquatable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html">Permission</a>&gt;</div>
+    <div><span class="xref">System.IEquatable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html">Permission</a>&gt;</div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.html">ArmoniK.Core.Common.Auth.Authorization.Permissions</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<span class="xref">Auth</span>.<a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.html">Authorization</a>.<a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.html">Permissions</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -115,13 +115,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L113">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_System_String_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String,System.String)">Permission(String, String, String)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_System_String_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String,System.String)">Permission(string, string, string?)</h4>
   <div class="markdown level1 summary"><p>Creates a permission with the given service, name and target</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Permission(string service, string name, string target)</code></pre>
+    <pre><code class="lang-csharp hljs">public Permission(string service, string name, string? target)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -134,19 +134,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">service</span></td>
         <td><p>Service</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">name</span></td>
         <td><p>Name</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">target</span></td>
         <td><p>Target, if null defaults to
 <returns>Default</returns></p>
@@ -162,7 +162,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L96">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String)">Permission(String, String)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String,System.String)">Permission(string, string)</h4>
   <div class="markdown level1 summary"><p>Creates a permission with the given service and name, target is
 <returns>Default</returns></p>
 </div>
@@ -182,13 +182,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">service</span></td>
         <td><p>Service</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">name</span></td>
         <td><p>Name</p>
 </td>
@@ -203,7 +203,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L69">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String)">Permission(String)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission__ctor_System_String_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.#ctor(System.String)">Permission(string)</h4>
   <div class="markdown level1 summary"><p>Constructs the permission from a string with format :
 Service:Name
 or
@@ -225,7 +225,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">actionString</span></td>
         <td><p>String representation of the permission</p>
 </td>
@@ -310,7 +310,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -340,7 +340,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Char</span></td>
+        <td><span class="xref">char</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -370,7 +370,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -400,7 +400,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -415,13 +415,12 @@ Service:Name:Target</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L125">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Equals*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Equals(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission)">Equals(Permission)</h4>
-  <div class="markdown level1 summary"><p>Class used to store a permission</p>
-</div>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Equals(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission)">Equals(Permission?)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public bool Equals(Permission other)</code></pre>
+    <pre><code class="lang-csharp hljs">public bool Equals(Permission? other)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -450,7 +449,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -463,13 +462,12 @@ Service:Name:Target</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L164">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Equals*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_System_Object_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Equals(System.Object)">Equals(Object)</h4>
-  <div class="markdown level1 summary"><p>Class used to store a permission</p>
-</div>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_System_Object_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.Equals(System.Object)">Equals(object?)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override bool Equals(object obj)</code></pre>
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -482,7 +480,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Object</span></td>
+        <td><span class="xref">object</span></td>
         <td><span class="parametername">obj</span></td>
         <td></td>
       </tr>
@@ -498,13 +496,13 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <h5 class="overrides">Overrides</h5>
-  <div><span class="xref">System.Object.Equals(System.Object)</span></div>
+  <div><span class="xref">object.Equals(object)</span></div>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_GetHashCode.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.GetHashCode%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
@@ -514,8 +512,7 @@ Service:Name:Target</p>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_GetHashCode_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.GetHashCode*"></a>
   <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_GetHashCode" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.GetHashCode">GetHashCode()</h4>
-  <div class="markdown level1 summary"><p>Class used to store a permission</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
@@ -531,13 +528,13 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">int</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <h5 class="overrides">Overrides</h5>
-  <div><span class="xref">System.Object.GetHashCode()</span></div>
+  <div><span class="xref">object.GetHashCode()</span></div>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ToBasePermission.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.ToBasePermission%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
@@ -564,7 +561,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><p>The base permission string of this permission, no target</p>
 </td>
       </tr>
@@ -596,14 +593,14 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><p>Returns the full permission string</p>
 </td>
       </tr>
     </tbody>
   </table>
   <h5 class="overrides">Overrides</h5>
-  <div><span class="xref">System.Object.ToString()</span></div>
+  <div><span class="xref">object.ToString()</span></div>
   <h3 id="operators">Operators
 </h3>
   <span class="small pull-right mobile-hide">
@@ -614,13 +611,13 @@ Service:Name:Target</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L180">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_op_Equality_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.op_Equality*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_op_Equality_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.op_Equality(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission,ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission)">Equality(Permission, Permission)</h4>
-  <div class="markdown level1 summary"><p>Equality operator, see <a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_">Equals(Permission)</a></p>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_op_Equality_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.op_Equality(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission,ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission)">operator ==(Permission?, Permission?)</h4>
+  <div class="markdown level1 summary"><p>Equality operator, see <a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_">Equals(Permission?)</a></p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static bool operator ==(Permission left, Permission right)</code></pre>
+    <pre><code class="lang-csharp hljs">public static bool operator ==(Permission? left, Permission? right)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -656,7 +653,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td><p>true if left is equal to right, false otherwise</p>
 </td>
       </tr>
@@ -670,13 +667,13 @@ Service:Name:Target</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authorization/Permissions/Permission.cs/#L191">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_op_Inequality_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.op_Inequality*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_op_Inequality_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.op_Inequality(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission,ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission)">Inequality(Permission, Permission)</h4>
-  <div class="markdown level1 summary"><p>Inequality operator, see <a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_">Equals(Permission)</a></p>
+  <h4 id="ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_op_Inequality_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_" data-uid="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.op_Inequality(ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission,ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission)">operator !=(Permission?, Permission?)</h4>
+  <div class="markdown level1 summary"><p>Inequality operator, see <a class="xref" href="ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_Equals_ArmoniK_Core_Common_Auth_Authorization_Permissions_Permission_">Equals(Permission?)</a></p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static bool operator !=(Permission left, Permission right)</code></pre>
+    <pre><code class="lang-csharp hljs">public static bool operator !=(Permission? left, Permission? right)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -712,7 +709,7 @@ Service:Name:Target</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Boolean</span></td>
+        <td><span class="xref">bool</span></td>
         <td><p>false if left is equal to right, true otherwise</p>
 </td>
       </tr>

@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class TaskWatcher
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class TaskWatcher
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class TaskWatcher
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class TaskWatcher
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -77,7 +77,7 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">TaskWatcher</span></div>
   </div>
   <div class="implements">
@@ -89,28 +89,28 @@
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.html">ArmoniK.Core.Adapters.MongoDB</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<span class="xref">Adapters</span>.<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.html">MongoDB</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.MongoDB.dll</h6>
   <h5 id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -163,7 +163,7 @@
 </td>
       </tr>
       <tr>
-        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html">TaskWatcher</a>&gt;</td>
+        <td><span class="xref">ILogger&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.html">TaskWatcher</a>&gt;</td>
         <td><span class="parametername">logger</span></td>
         <td><p>Logger used to produce logs</p>
 </td>
@@ -181,8 +181,7 @@
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_Check_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
-  <div class="markdown level1 summary"><p>Implementation of <a class="xref" href="ArmoniK.Core.Common.Storage.Events.ITaskWatcher.html">ITaskWatcher</a> for MongoDB</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
@@ -215,7 +214,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -228,13 +227,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/TaskWatcher.cs/#L92">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetNewTasks_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks*"></a>
-  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetNewTasks_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks(System.String,System.Threading.CancellationToken)">GetNewTasks(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetNewTasks_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetNewTasks(System.String,System.Threading.CancellationToken)">GetNewTasks(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Receive a <a class="xref" href="ArmoniK.Core.Common.Storage.Events.NewTask.html">NewTask</a> event when a new task is added in the given session</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;IAsyncEnumerable&lt;NewTask&gt;&gt; GetNewTasks(string sessionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;IAsyncEnumerable&lt;NewTask&gt;&gt; GetNewTasks(string sessionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -247,7 +246,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>The session id</p>
 </td>
@@ -270,7 +269,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Events.NewTask.html">NewTask</a>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Events.NewTask.html">NewTask</a>&gt;&gt;</td>
         <td><p>A <span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span> that holds the updates when they are available</p>
 </td>
       </tr>
@@ -284,13 +283,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/TaskWatcher.cs/#L126">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetTaskStatusUpdates_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates*"></a>
-  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetTaskStatusUpdates_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates(System.String,System.Threading.CancellationToken)">GetTaskStatusUpdates(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskWatcher_GetTaskStatusUpdates_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskWatcher.GetTaskStatusUpdates(System.String,System.Threading.CancellationToken)">GetTaskStatusUpdates(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Receive a <a class="xref" href="ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html">TaskStatusUpdate</a> event when the Status of a task changes in the given session</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;IAsyncEnumerable&lt;TaskStatusUpdate&gt;&gt; GetTaskStatusUpdates(string sessionId, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;IAsyncEnumerable&lt;TaskStatusUpdate&gt;&gt; GetTaskStatusUpdates(string sessionId, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -303,7 +302,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td><p>The session id</p>
 </td>
@@ -326,7 +325,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html">TaskStatusUpdate</a>&gt;&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Events.TaskStatusUpdate.html">TaskStatusUpdate</a>&gt;&gt;</td>
         <td><p>A <span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span> that holds the updates when they are available</p>
 </td>
       </tr>
@@ -346,7 +345,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task Init(CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task Init(CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">

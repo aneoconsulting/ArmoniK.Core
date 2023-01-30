@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface IObjectStorage
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Interface IObjectStorage
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface IObjectStorage
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Interface IObjectStorage
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,7 +76,7 @@
 It is used to store data in ArmoniK</p>
 </div>
   <div class="markdown level0 conceptual"></div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Storage.html">ArmoniK.Core.Common.Storage</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Storage.html">Storage</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Storage_IObjectStorage_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -92,14 +92,14 @@ It is used to store data in ArmoniK</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IObjectStorage.cs/#L106">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IObjectStorage_AddOrUpdateAsync_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.AddOrUpdateAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_AddOrUpdateAsync_System_String_System_Collections_Generic_IAsyncEnumerable_System_Byte____System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.Byte[]},System.Threading.CancellationToken)">AddOrUpdateAsync(String, IAsyncEnumerable&lt;Byte[]&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_AddOrUpdateAsync_System_String_System_Collections_Generic_IAsyncEnumerable_System_Byte____System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.Byte[]},System.Threading.CancellationToken)">AddOrUpdateAsync(string, IAsyncEnumerable&lt;byte[]&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Add the given data in the storage at the given key
 Update data if it already exists</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task AddOrUpdateAsync(string key, IAsyncEnumerable&lt;byte[]&gt; valueChunks, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task AddOrUpdateAsync(string key, IAsyncEnumerable&lt;byte[]&gt; valueChunks, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -112,13 +112,13 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>Key representing the object</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<span class="xref">System.Byte</span>[]&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<span class="xref">byte</span>[]&gt;</td>
         <td><span class="parametername">valueChunks</span></td>
         <td><p>Chunks of data that will be stored in the Object Storage</p>
 </td>
@@ -171,14 +171,14 @@ Update data if it already exists</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IObjectStorage.cs/#L121">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IObjectStorage_AddOrUpdateAsync_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.AddOrUpdateAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_AddOrUpdateAsync_System_String_System_Collections_Generic_IAsyncEnumerable_System_ReadOnlyMemory_System_Byte___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.ReadOnlyMemory{System.Byte}},System.Threading.CancellationToken)">AddOrUpdateAsync(String, IAsyncEnumerable&lt;ReadOnlyMemory&lt;Byte&gt;&gt;, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_AddOrUpdateAsync_System_String_System_Collections_Generic_IAsyncEnumerable_System_ReadOnlyMemory_System_Byte___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.AddOrUpdateAsync(System.String,System.Collections.Generic.IAsyncEnumerable{System.ReadOnlyMemory{System.Byte}},System.Threading.CancellationToken)">AddOrUpdateAsync(string, IAsyncEnumerable&lt;ReadOnlyMemory&lt;byte&gt;&gt;, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Add the given data in the storage at the given key
 Update data if it already exists</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task AddOrUpdateAsync(string key, IAsyncEnumerable&lt;ReadOnlyMemory&lt;byte&gt;&gt; valueChunks, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task AddOrUpdateAsync(string key, IAsyncEnumerable&lt;ReadOnlyMemory&lt;byte&gt;&gt; valueChunks, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -191,13 +191,13 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>Key representing the object</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<span class="xref">System.ReadOnlyMemory</span>&lt;<span class="xref">System.Byte</span>&gt;&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<span class="xref">ReadOnlyMemory</span>&lt;<span class="xref">byte</span>&gt;&gt;</td>
         <td><span class="parametername">valueChunks</span></td>
         <td><p>Chunks of data that will be stored in the Object Storage</p>
 </td>
@@ -250,13 +250,13 @@ Update data if it already exists</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IObjectStorage.cs/#L134">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IObjectStorage_GetValuesAsync_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.GetValuesAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_GetValuesAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.GetValuesAsync(System.String,System.Threading.CancellationToken)">GetValuesAsync(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_GetValuesAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.GetValuesAsync(System.String,System.Threading.CancellationToken)">GetValuesAsync(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get object in the Object Storage</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;byte[]&gt; GetValuesAsync(string key, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;byte[]&gt; GetValuesAsync(string key, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -269,7 +269,7 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>Key representing the object to be retrieved</p>
 </td>
@@ -292,7 +292,7 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<span class="xref">System.Byte</span>[]&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<span class="xref">byte</span>[]&gt;</td>
         <td><p>Byte arrays representing the object chunked</p>
 </td>
       </tr>
@@ -328,7 +328,7 @@ Update data if it already exists</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;string&gt; ListKeysAsync(CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;string&gt; ListKeysAsync(CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -358,7 +358,7 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">System.Collections.Generic.IAsyncEnumerable&lt;T&gt;</span>&lt;<span class="xref">string</span>&gt;</td>
         <td><p>The keys representing data found in the Object Storage</p>
 </td>
       </tr>
@@ -372,13 +372,13 @@ Update data if it already exists</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/IObjectStorage.cs/#L146">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_IObjectStorage_TryDeleteAsync_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.TryDeleteAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_TryDeleteAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.TryDeleteAsync(System.String,System.Threading.CancellationToken)">TryDeleteAsync(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_IObjectStorage_TryDeleteAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.IObjectStorage.TryDeleteAsync(System.String,System.Threading.CancellationToken)">TryDeleteAsync(string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Delete data in the object storage</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; TryDeleteAsync(string key, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; TryDeleteAsync(string key, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -391,7 +391,7 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td><p>Key representing the object to delete</p>
 </td>
@@ -414,7 +414,7 @@ Update data if it already exists</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">bool</span>&gt;</td>
         <td><p>A bool representing the success of the deletion</p>
 </td>
       </tr>

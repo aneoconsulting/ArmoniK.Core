@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class SessionDataModelMapping
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class SessionDataModelMapping
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class SessionDataModelMapping
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class SessionDataModelMapping
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,43 +76,43 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">SessionDataModelMapping</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
     <div><a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Common.IMongoDataModelMapping-1.html">IMongoDataModelMapping</a>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.SessionData.html">SessionData</a>&gt;</div>
-    <div><span class="xref">System.IEquatable</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html">SessionDataModelMapping</a>&gt;</div>
+    <div><span class="xref">System.IEquatable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html">SessionDataModelMapping</a>&gt;</div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.html">ArmoniK.Core.Adapters.MongoDB.Table.DataModel</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<span class="xref">Adapters</span>.<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.html">MongoDB</a>.<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.html">Table</a>.<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.html">DataModel</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.MongoDB.dll</h6>
   <h5 id="ArmoniK_Core_Adapters_MongoDB_Table_DataModel_SessionDataModelMapping_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class SessionDataModelMapping : IMongoDataModelMapping&lt;SessionData&gt;, IEquatable&lt;SessionDataModelMapping&gt;</code></pre>
+    <pre><code class="lang-csharp hljs">public record SessionDataModelMapping : IMongoDataModelMapping&lt;SessionData&gt;, IEquatable&lt;SessionDataModelMapping&gt;</code></pre>
   </div>
   <h3 id="properties">Properties
 </h3>
@@ -141,7 +141,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -161,7 +161,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection&lt;SessionData&gt; collection)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection&lt;SessionData&gt; collection)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -179,7 +179,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">IMongoCollection</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.SessionData.html">SessionData</a>&gt;</td>
+        <td><span class="xref">IMongoCollection&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.SessionData.html">SessionData</a>&gt;</td>
         <td><span class="parametername">collection</span></td>
         <td></td>
       </tr>

@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class ExecutionSingleizer&lt;T&gt;
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class ExecutionSingleizer&lt;T&gt;
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class ExecutionSingleizer&lt;T&gt;
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class ExecutionSingleizer&lt;T&gt;
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -78,7 +78,7 @@ all the others waiting the result from the one actually doing the call.</p>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">ExecutionSingleizer&lt;T&gt;</span></div>
   </div>
   <div class="implements">
@@ -88,28 +88,28 @@ all the others waiting the result from the one actually doing the call.</p>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Utils.html">ArmoniK.Core.Common.Utils</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Utils.html">Utils</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -149,7 +149,7 @@ The actual call to func is cancelled only when all callers have cancelled it.</p
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;T&gt; Call(Func&lt;CancellationToken, Task&lt;T&gt;&gt; func, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;T&gt; Call(Func&lt;CancellationToken, Task&lt;T&gt;&gt; func, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -162,7 +162,7 @@ The actual call to func is cancelled only when all callers have cancelled it.</p
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Func</span>&lt;<span class="xref">System.Threading.CancellationToken</span>, <span class="xref">System.Threading.Tasks.Task</span>&lt;T&gt;&gt;</td>
+        <td><span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<span class="xref">System.Threading.CancellationToken</span>, <span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;T&gt;&gt;</td>
         <td><span class="parametername">func</span></td>
         <td><p>Function to call</p>
 </td>
@@ -185,7 +185,7 @@ The actual call to func is cancelled only when all callers have cancelled it.</p
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;T&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;T&gt;</td>
         <td><p>Result of func</p>
 </td>
       </tr>
@@ -200,9 +200,7 @@ The actual call to func is cancelled only when all callers have cancelled it.</p
   </span>
   <a id="ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_Dispose_" data-uid="ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Dispose*"></a>
   <h4 id="ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_Dispose" data-uid="ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Dispose">Dispose()</h4>
-  <div class="markdown level1 summary"><p>Limit the access to a function call to a single thread,
-all the others waiting the result from the one actually doing the call.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">

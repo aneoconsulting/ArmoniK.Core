@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class Result
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Result
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class Result
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Result
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -76,42 +76,42 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">Result</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
-    <div><span class="xref">System.IEquatable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</div>
+    <div><span class="xref">System.IEquatable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a>&gt;</div>
   </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
-      <span class="xref">System.Object.Equals(System.Object)</span>
+      <span class="xref">object.Equals(object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+      <span class="xref">object.Equals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetHashCode()</span>
+      <span class="xref">object.GetHashCode()</span>
     </div>
     <div>
-      <span class="xref">System.Object.GetType()</span>
+      <span class="xref">object.GetType()</span>
     </div>
     <div>
-      <span class="xref">System.Object.MemberwiseClone()</span>
+      <span class="xref">object.MemberwiseClone()</span>
     </div>
     <div>
-      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+      <span class="xref">object.ReferenceEquals(object, object)</span>
     </div>
     <div>
-      <span class="xref">System.Object.ToString()</span>
+      <span class="xref">object.ToString()</span>
     </div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Storage.html">ArmoniK.Core.Common.Storage</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<a class="xref" href="ArmoniK.Core.Common.Storage.html">Storage</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Storage_Result_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class Result : IEquatable&lt;Result&gt;</code></pre>
+    <pre><code class="lang-csharp hljs">public record Result : IEquatable&lt;Result&gt;</code></pre>
   </div>
   <h3 id="constructors">Constructors
 </h3>
@@ -123,7 +123,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/Result.cs/#L42">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_Result__ctor_" data-uid="ArmoniK.Core.Common.Storage.Result.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_Result__ctor_System_String_System_String_System_String_ResultStatus_System_DateTime_System_Byte___" data-uid="ArmoniK.Core.Common.Storage.Result.#ctor(System.String,System.String,System.String,ResultStatus,System.DateTime,System.Byte[])">Result(String, String, String, ResultStatus, DateTime, Byte[])</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_Result__ctor_System_String_System_String_System_String_ResultStatus_System_DateTime_System_Byte___" data-uid="ArmoniK.Core.Common.Storage.Result.#ctor(System.String,System.String,System.String,ResultStatus,System.DateTime,System.Byte[])">Result(string, string, string, ResultStatus, DateTime, byte[])</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
@@ -141,19 +141,19 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">SessionId</span></td>
         <td><p>Id of the session that produces and consumes this data</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">Name</span></td>
         <td><p>Name to reference and access this result</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">OwnerTaskId</span></td>
         <td><p>Id of the task that is responsible of generating this result.</p>
 </td>
@@ -171,7 +171,7 @@
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="xref">byte</span>[]</td>
         <td><span class="parametername">Data</span></td>
         <td><p>Data for the current <code data-dev-comment-type="paramref" class="paramref">Name</code></p>
 </td>
@@ -194,7 +194,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DateTime CreationDate { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DateTime CreationDate { get; init; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -225,7 +225,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public byte[] Data { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public byte[] Data { get; init; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -237,7 +237,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="xref">byte</span>[]</td>
         <td></td>
       </tr>
     </tbody>
@@ -267,7 +267,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -286,7 +286,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string Name { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public string Name { get; init; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -298,7 +298,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -317,7 +317,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string OwnerTaskId { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public string OwnerTaskId { get; init; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -329,7 +329,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -348,7 +348,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string SessionId { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public string SessionId { get; init; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -360,7 +360,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -379,7 +379,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ResultStatus Status { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public ResultStatus Status { get; init; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -406,7 +406,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/Result.cs/#L70">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_Result_GenerateId_" data-uid="ArmoniK.Core.Common.Storage.Result.GenerateId*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_Result_GenerateId_System_String_System_String_" data-uid="ArmoniK.Core.Common.Storage.Result.GenerateId(System.String,System.String)">GenerateId(String, String)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_Result_GenerateId_System_String_System_String_" data-uid="ArmoniK.Core.Common.Storage.Result.GenerateId(System.String,System.String)">GenerateId(string, string)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
@@ -424,12 +424,12 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">sessionId</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">key</span></td>
         <td></td>
       </tr>
@@ -445,7 +445,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -460,7 +460,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/Result.cs/#L60">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_Result_op_Implicit_" data-uid="ArmoniK.Core.Common.Storage.Result.op_Implicit*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_Result_op_Implicit_ArmoniK_Core_Common_Storage_Result__ResultRaw" data-uid="ArmoniK.Core.Common.Storage.Result.op_Implicit(ArmoniK.Core.Common.Storage.Result)~ResultRaw">Implicit(Result to ResultRaw)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_Result_op_Implicit_ArmoniK_Core_Common_Storage_Result__ResultRaw" data-uid="ArmoniK.Core.Common.Storage.Result.op_Implicit(ArmoniK.Core.Common.Storage.Result)~ResultRaw">implicit operator ResultRaw(Result)</h4>
   <div class="markdown level1 summary"><p>Conversion operator from <a class="xref" href="ArmoniK.Core.Common.Storage.Result.html">Result</a> to <see cref="!:ResultRaw"></see></p>
 </div>
   <div class="markdown level1 conceptual"></div>

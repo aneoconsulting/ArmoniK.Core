@@ -4,22 +4,22 @@
 
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class Authenticator
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Authenticator
  </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class Authenticator
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Authenticator
  ">
-  
-    <link rel="shortcut icon" href="../favicon.ico">
-    <link rel="stylesheet" href="../styles/docfx.vendor.css">
-    <link rel="stylesheet" href="../styles/docfx.css">
-    <link rel="stylesheet" href="../styles/main.css">
-    <meta property="docfx:navrel" content="../toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-  
-  
-  
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
   </head>
   <body data-spy="scroll" data-target="#affix" data-offset="120">
     <div id="wrapper">
@@ -77,10 +77,10 @@
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
-    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level0"><span class="xref">object</span></div>
     <div class="level1"><span class="xref">Authenticator</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.html">ArmoniK.Core.Common.Auth.Authentication</a></h6>
+  <h6><strong>Namespace</strong>: <span class="xref">ArmoniK</span>.<span class="xref">Core</span>.<a class="xref" href="ArmoniK.Core.Common.html">Common</a>.<span class="xref">Auth</span>.<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.html">Authentication</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_syntax">Syntax</h5>
   <div class="codewrapper">
@@ -115,7 +115,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IOptionsMonitor</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions.html">AuthenticatorOptions</a>&gt;</td>
+        <td><span class="xref">IOptionsMonitor&lt;&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions.html">AuthenticatorOptions</a>&gt;</td>
         <td><span class="parametername">options</span></td>
         <td><p>Options (See <see cref="!:AuthenticationHandler&lt;TOptions>"></see>)</p>
 </td>
@@ -195,7 +195,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -210,13 +210,13 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L288">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetIdentityFromCertificateAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetIdentityFromCertificateAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetIdentityFromCertificateAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetIdentityFromCertificateAsync(System.String,System.String,System.Threading.CancellationToken)">GetIdentityFromCertificateAsync(String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetIdentityFromCertificateAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetIdentityFromCertificateAsync(System.String,System.String,System.Threading.CancellationToken)">GetIdentityFromCertificateAsync(string, string, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the UserIdentity from the CN and Fingerprint of a certificate</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;ClaimsPrincipal&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;ClaimsPrincipal?&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -229,13 +229,13 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">cn</span></td>
         <td><p>Common name of the certificate</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">fingerprint</span></td>
         <td><p>Fingerprint of the certificate</p>
 </td>
@@ -258,7 +258,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Security.Claims.ClaimsPrincipal</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Security.Claims.ClaimsPrincipal</span>&gt;</td>
         <td><p>A UserIdentity object which can be used in authentication, corresponding to the certificate. Null if it
 doesn't correspond to any user.</p>
 </td>
@@ -273,13 +273,13 @@ doesn't correspond to any user.</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Auth/Authentication/Authenticator.cs/#L322">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync*"></a>
-  <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_System_Security_Claims_ClaimsPrincipal_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync(System.Security.Claims.ClaimsPrincipal,System.String,System.String,System.Threading.CancellationToken)">GetImpersonatedIdentityAsync(ClaimsPrincipal, String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Auth_Authentication_Authenticator_GetImpersonatedIdentityAsync_System_Security_Claims_ClaimsPrincipal_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Auth.Authentication.Authenticator.GetImpersonatedIdentityAsync(System.Security.Claims.ClaimsPrincipal,System.String,System.String,System.Threading.CancellationToken)">GetImpersonatedIdentityAsync(ClaimsPrincipal, string?, string?, CancellationToken)</h4>
   <div class="markdown level1 summary"><p>Get the UserIdentity attempting to be impersonated by the user</p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;ClaimsPrincipal&gt; GetImpersonatedIdentityAsync(ClaimsPrincipal baseIdentity, string impersonationId, string impersonationUsername, CancellationToken cancellationToken = default(CancellationToken))</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;ClaimsPrincipal&gt; GetImpersonatedIdentityAsync(ClaimsPrincipal baseIdentity, string? impersonationId, string? impersonationUsername, CancellationToken cancellationToken = default)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -298,13 +298,13 @@ doesn't correspond to any user.</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">impersonationId</span></td>
         <td><p>Id of the user being impersonated</p>
 </td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">string</span></td>
         <td><span class="parametername">impersonationUsername</span></td>
         <td><p>Username of the user being impersonated</p>
 </td>
@@ -327,7 +327,7 @@ doesn't correspond to any user.</p>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">System.Security.Claims.ClaimsPrincipal</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Security.Claims.ClaimsPrincipal</span>&gt;</td>
         <td><p>The impersonated user's UserIdentity</p>
 </td>
       </tr>
@@ -365,7 +365,7 @@ or the impersonating user doesn't have the permissions to impersonate the specif
   <div class="markdown level1 conceptual"></div>
   <h5 class="declaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">protected override async Task&lt;AuthenticateResult&gt; HandleAuthenticateAsync()</code></pre>
+    <pre><code class="lang-csharp hljs">protected override Task&lt;AuthenticateResult&gt; HandleAuthenticateAsync()</code></pre>
   </div>
   <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -377,7 +377,7 @@ or the impersonating user doesn't have the permissions to impersonate the specif
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Threading.Tasks.Task</span>&lt;<span class="xref">AuthenticateResult</span>&gt;</td>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">AuthenticateResult</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
