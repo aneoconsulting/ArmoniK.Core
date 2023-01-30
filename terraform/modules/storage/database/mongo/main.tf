@@ -4,10 +4,10 @@ resource "docker_image" "database" {
 }
 
 resource "docker_container" "database" {
-  name  = "database"
+  name  = var.mongodb_params.database_name
   image = docker_image.database.image_id
 
-  command = ["--replSet", "replSet0"]
+  command = ["--replSet", var.mongodb_params.replica_set_name]
 
   networks_advanced {
     name = var.network
@@ -21,7 +21,7 @@ resource "docker_container" "database" {
 
   ports {
     internal = 27017
-    external = var.exposed_port
+    external = var.mongodb_params.exposed_port
   }
 
   wait         = true

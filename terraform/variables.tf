@@ -23,6 +23,10 @@ variable "mongodb_params" {
     max_connection_pool_size = optional(string, "500")
     min_polling_delay        = optional(string, "00:00:01")
     max_polling_delay        = optional(string, "00:00:10")
+    replica_set_name         = optional(string, "repSet0")
+    use_direct_connection    = optional(bool, true)
+    database_name            = optional(string, "database")
+    exposed_port             = optional(number, 27017)
   })
   default = {}
 }
