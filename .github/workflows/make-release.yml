@@ -60,13 +60,11 @@ jobs:
     - name: login
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
-    - name: ReTag
-      run: |
-        set -xe
-        docker buildx imagetools inspect ${{ matrix.image }}:${VERSION} --raw | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:${RELEASE} -a
-        docker buildx imagetools inspect ${{ matrix.image }}:${VERSION} --raw | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:latest -a
-        docker manifest push ${{ matrix.image }}:${RELEASE}
-        docker manifest push ${{ matrix.image }}:latest
+    - name: ReTag release
+      run: docker buildx imagetools create ${{ matrix.image }}:${VERSION} --tag ${{ matrix.image }}:${RELEASE}
+
+    - name: ReTag latest
+      run: docker buildx imagetools create ${{ matrix.image }}:${VERSION} --tag ${{ matrix.image }}:latest
 
   tag:
     runs-on: ubuntu-latest
