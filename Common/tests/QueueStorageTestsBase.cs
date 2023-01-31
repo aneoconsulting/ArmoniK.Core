@@ -121,28 +121,28 @@ public class QueueStorageTestsBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                         await PullQueueStorage!.Check(HealthCheckTag.Liveness)
-                                                .ConfigureAwait(false));
-      Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                         await PullQueueStorage.Check(HealthCheckTag.Readiness)
-                                               .ConfigureAwait(false));
-      Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                         await PullQueueStorage.Check(HealthCheckTag.Startup)
-                                               .ConfigureAwait(false));
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await PullQueueStorage!.Check(HealthCheckTag.Liveness)
+                                                 .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await PullQueueStorage.Check(HealthCheckTag.Readiness)
+                                                .ConfigureAwait(false)).Status);
+      Assert.AreNotEqual(HealthStatus.Healthy,
+                         (await PullQueueStorage.Check(HealthCheckTag.Startup)
+                                                .ConfigureAwait(false)).Status);
 
       await PullQueueStorage.Init(CancellationToken.None)
                             .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthCheckResult.Healthy(),
-                      await PullQueueStorage.Check(HealthCheckTag.Liveness)
-                                            .ConfigureAwait(false));
-      Assert.AreEqual(HealthCheckResult.Healthy(),
-                      await PullQueueStorage.Check(HealthCheckTag.Readiness)
-                                            .ConfigureAwait(false));
-      Assert.AreEqual(HealthCheckResult.Healthy(),
-                      await PullQueueStorage.Check(HealthCheckTag.Startup)
-                                            .ConfigureAwait(false));
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await PullQueueStorage.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await PullQueueStorage.Check(HealthCheckTag.Readiness)
+                                            .ConfigureAwait(false)).Status);
+      Assert.AreEqual(HealthStatus.Healthy,
+                      (await PullQueueStorage.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false)).Status);
     }
   }
 
