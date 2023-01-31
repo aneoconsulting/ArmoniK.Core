@@ -173,16 +173,14 @@ public class ObjectStorage : IObjectStorage
     var deletedItem = 0;
     try
     {
-      var multiObjectDeleteRequest = new DeleteObjectsRequest
-                                     {
-                                       BucketName = bucketName_,
-                                       Objects    = null,
-                                     };
-
       await keyList.Chunk(MaxAllowedKeysPerDelete)
                    .Select(async chunkedKeyList =>
                            {
-                             multiObjectDeleteRequest.Objects = chunkedKeyList.ToList();
+                             var multiObjectDeleteRequest = new DeleteObjectsRequest
+                                                            {
+                                                              BucketName = bucketName_,
+                                                              Objects    = chunkedKeyList.ToList(),
+                                                            };
                              var deleteObjectsResponse = await s3Client_.DeleteObjectsAsync(multiObjectDeleteRequest,
                                                                                             cancellationToken)
                                                                         .ConfigureAwait(false);
