@@ -6,6 +6,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Tests/Bench/Client/src/ArmoniK.Samples.Bench.Client.csproj", "Tests/Bench/Client/src/"]
+COPY ["Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj", "Tests/Common/Client/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/Bench/Client/src/ArmoniK.Samples.Bench.Client.csproj"
 COPY . .

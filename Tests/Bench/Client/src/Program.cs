@@ -37,6 +37,7 @@ using ArmoniK.Api.gRPC.V1.Events;
 using Armonik.Api.Grpc.V1.Partitions;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
 
 using Google.Protobuf;
@@ -294,6 +295,10 @@ internal static class Program
                 };
     logger.LogInformation("executions stats {@stats}",
                           stats);
+
+    await channel.LogStatsFromSessionAsync(createSessionReply.SessionId,
+                                           logger)
+                 .ConfigureAwait(false);
 
     if (benchOptions.ShowEvents)
     {
