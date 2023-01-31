@@ -63,13 +63,14 @@ internal class ForwardingLoggerProvider : ILoggerProvider
       logAction_    = logAction;
     }
 
+    public bool IsEnabled(LogLevel logLevel)
+      => true;
+
     public IDisposable BeginScope<TState>(TState state)
+      where TState : notnull
       => Disposable.Create(() =>
                            {
                            });
-
-    public bool IsEnabled(LogLevel logLevel)
-      => true;
 
     public void Log<TState>(LogLevel                         logLevel,
                             EventId                          eventId,
