@@ -139,7 +139,7 @@ public class QueueStorageTestsBase
                                              .ConfigureAwait(false)).Status);
       Assert.AreEqual(HealthStatus.Healthy,
                       (await PullQueueStorage.Check(HealthCheckTag.Readiness)
-                                            .ConfigureAwait(false)).Status);
+                                             .ConfigureAwait(false)).Status);
       Assert.AreEqual(HealthStatus.Healthy,
                       (await PullQueueStorage.Check(HealthCheckTag.Startup)
                                              .ConfigureAwait(false)).Status);

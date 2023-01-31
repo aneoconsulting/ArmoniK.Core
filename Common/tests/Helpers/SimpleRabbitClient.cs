@@ -74,9 +74,7 @@ public class SimpleRabbitClient : IConnectionRabbit
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    return Task.FromResult(connection_ is not null && connection_.IsOpen && Channel is not null && Channel.IsOpen
-                             ? HealthCheckResult.Healthy()
-                             : HealthCheckResult.Unhealthy());
-  }
+    => Task.FromResult(connection_ is not null && connection_.IsOpen && Channel is not null && Channel.IsOpen
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 }

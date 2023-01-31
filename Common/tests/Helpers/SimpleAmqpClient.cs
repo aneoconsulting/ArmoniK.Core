@@ -47,7 +47,7 @@ public class SimpleAmqpClient : IConnectionAmqp, IAsyncDisposable
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
 
-    address_ = new Address("amqp://guest:guest@localhost:5672");
+    address_ = new Address("amqp://admin:admin@localhost:5672");
 
     connectionFactory_ = new ConnectionFactory();
   }
