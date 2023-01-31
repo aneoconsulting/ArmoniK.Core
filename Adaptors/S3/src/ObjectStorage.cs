@@ -41,10 +41,10 @@ namespace ArmoniK.Core.Adapters.S3;
 
 public class ObjectStorage : IObjectStorage
 {
+  private const    int                    MaxAllowedKeysPerDelete = 1000;
   private readonly string                 bucketName_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
-  private readonly Options.S3             options_;
   private readonly AmazonS3Client         s3Client_;
 
   /// <summary>
@@ -61,7 +61,6 @@ public class ObjectStorage : IObjectStorage
   {
     s3Client_          = s3Client;
     objectStorageName_ = objectStorageName;
-    options_           = options;
     bucketName_        = options.BucketName;
     logger_            = logger;
   }
@@ -169,17 +168,35 @@ public class ObjectStorage : IObjectStorage
                                       {
                                         Key = $"{objectStorageName_}{key}_count",
                                       },
-                                    })
-                            .ToList();
-    var multiObjectDeleteRequest = new DeleteObjectsRequest
-                                   {
-                                     BucketName = bucketName_,
-                                     Objects    = keyList,
-                                   };
+                                    });
 
-    var deleteObjectsResponse = await s3Client_.DeleteObjectsAsync(multiObjectDeleteRequest)
-                                               .ConfigureAwait(false);
-    return deleteObjectsResponse.DeletedObjects.Count == valuesCount + 1;
+    var deletedItem = 0;
+    try
+    {
+      await keyList.Chunk(MaxAllowedKeysPerDelete)
+                   .Select(async chunkedKeyList =>
+                           {
+                             var multiObjectDeleteRequest = new DeleteObjectsRequest
+                                                            {
+                                                              BucketName = bucketName_,
+                                                              Objects    = chunkedKeyList.ToList(),
+                                                            };
+                             var deleteObjectsResponse = await s3Client_.DeleteObjectsAsync(multiObjectDeleteRequest,
+                                                                                            cancellationToken)
+                                                                        .ConfigureAwait(false);
+                             Interlocked.Add(ref deletedItem,
+                                             deleteObjectsResponse.DeletedObjects.Count);
+                           })
+                   .WhenAll();
+    }
+    catch (Exception ex)
+    {
+      logger_.LogError(ex,
+                       "Error deleting S3 bucket : {bucketName}",
+                       bucketName_);
+    }
+
+    return deletedItem == valuesCount + 1;
   }
 
   /// <inheritdoc />
@@ -208,13 +225,13 @@ internal static class AmazonS3ClientExt
                                                            string              key,
                                                            string              dataString)
   {
-    var requestcount = new PutObjectRequest
+    var requestCount = new PutObjectRequest
                        {
                          BucketName  = bucketName,
                          Key         = key,
                          ContentBody = dataString,
                        };
-    return s3Client.PutObjectAsync(requestcount);
+    return s3Client.PutObjectAsync(requestCount);
   }
 
   internal static async Task<byte[]> StringByteGetAsync(this AmazonS3Client    s3Client,
@@ -227,13 +244,10 @@ internal static class AmazonS3ClientExt
                     BucketName = bucketName,
                     Key        = key,
                   };
-    byte[]? fileContent = null;
-    using (var response = await s3Client.GetObjectAsync(request))
-    using (var memoryStream = new MemoryStream())
-    {
-      response.ResponseStream.CopyTo(memoryStream);
-      fileContent = memoryStream.ToArray();
-    }
+    using var response     = await s3Client.GetObjectAsync(request);
+    using var memoryStream = new MemoryStream();
+    await response.ResponseStream.CopyToAsync(memoryStream);
+    var fileContent = memoryStream.ToArray();
 
     return fileContent;
   }
