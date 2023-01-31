@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Common.Tests.Client;
 
 using Google.Protobuf;
 
@@ -43,6 +44,7 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public class SessionClient : ISessionClient
 {
+  private readonly GrpcChannel               channel_;
   private readonly ILogger<GridClient>       logger_;
   private readonly string                    sessionId_;
   private readonly Submitter.SubmitterClient submitterClient_;
@@ -52,16 +54,22 @@ public class SessionClient : ISessionClient
                        ILogger<GridClient> logger)
   {
     submitterClient_ = new Submitter.SubmitterClient(channel);
+    channel_         = channel;
     logger_          = logger;
     sessionId_       = sessionId;
   }
 
 
   public void Dispose()
-    => submitterClient_.CancelSession(new Session
-                                      {
-                                        Id = sessionId_,
-                                      });
+  {
+    submitterClient_.CancelSession(new Session
+                                   {
+                                     Id = sessionId_,
+                                   });
+    channel_.LogStatsFromSessionAsync(sessionId_,
+                                      logger_)
+            .Wait();
+  }
 
   public byte[] GetResult(string id)
   {

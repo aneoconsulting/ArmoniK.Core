@@ -91,6 +91,10 @@ public class GridClient : IGridClient
                                };
     var client             = new Submitter.SubmitterClient(channel_);
     var createSessionReply = client.CreateSession(createSessionRequest);
+
+    logger_.LogInformation("Session {sessionId} created",
+                           createSessionReply.SessionId);
+
     return new SessionClient(channel_,
                              createSessionReply.SessionId,
                              logger_);
