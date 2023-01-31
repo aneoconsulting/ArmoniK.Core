@@ -99,7 +99,7 @@ public class QueueStorageBase : IQueueStorage
   }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  public virtual Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     if (!IsInitialized)
     {

@@ -68,19 +68,22 @@ public class ConnectionRabbit : IConnectionRabbit
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
-    if (!isInitialized_)
+    switch (tag)
     {
-      return Task.FromResult(tag != HealthCheckTag.Liveness
-                               ? HealthCheckResult.Degraded($"{nameof(ConnectionRabbit)} is not yet initialized.")
-                               : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
+      case HealthCheckTag.Startup:
+      case HealthCheckTag.Readiness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
+      case HealthCheckTag.Liveness:
+        return Task.FromResult(isInitialized_ && Connection is not null && Connection.IsOpen && Channel is not null && Channel.IsOpen
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped."));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(tag),
+                                              tag,
+                                              null);
     }
-
-    if (Connection is null || !Connection.IsOpen || Channel is null || Channel.IsClosed)
-    {
-      return Task.FromResult(HealthCheckResult.Unhealthy("Rabbit connection dropped."));
-    }
-
-    return Task.FromResult(HealthCheckResult.Healthy());
   }
 
   public void Dispose()
