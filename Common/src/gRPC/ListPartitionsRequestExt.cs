@@ -73,6 +73,11 @@ public static class ListPartitionsRequestExt
       predicate = predicate.And(data => data.PartitionId == filter.Id);
     }
 
+    if (!string.IsNullOrEmpty(filter.ParentPartitionId))
+    {
+      predicate = predicate.And(data => data.ParentPartitionIds.Contains(filter.ParentPartitionId));
+    }
+
     if (filter.Priority > 0)
     {
       predicate = predicate.And(data => data.Priority == filter.Priority);
