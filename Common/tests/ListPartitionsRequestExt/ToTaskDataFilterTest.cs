@@ -262,4 +262,50 @@ public class ToPartitionDataFilterTest
                                  Priority = 877,
                                }));
   }
+
+  [Test]
+  public void FilterParentPartitionIdShouldSucceed()
+  {
+    var func = new ListPartitionsRequest
+               {
+                 Filter = new ListPartitionsRequest.Types.Filter
+                          {
+                            ParentPartitionId = "ParentPartitionId1",
+                          },
+                 Sort = new ListPartitionsRequest.Types.Sort
+                        {
+                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
+                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                        },
+               }.Filter.ToPartitionFilter()
+                .Compile();
+
+    Assert.IsTrue(func.Invoke(partitionData_));
+  }
+
+  [Test]
+  public void FilterWrongParentPartitionIdShouldFail()
+  {
+    var func = new ListPartitionsRequest
+               {
+                 Filter = new ListPartitionsRequest.Types.Filter
+                          {
+                            ParentPartitionId = "ParentPartitionId1",
+                          },
+                 Sort = new ListPartitionsRequest.Types.Sort
+                        {
+                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
+                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                        },
+               }.Filter.ToPartitionFilter()
+                .Compile();
+
+    Assert.IsFalse(func.Invoke(partitionData_ with
+                               {
+                                 ParentPartitionIds = new List<string>
+                                                      {
+                                                        "AnotherPartitionId",
+                                                      },
+                               }));
+  }
 }

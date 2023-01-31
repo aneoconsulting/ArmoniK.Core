@@ -61,6 +61,16 @@ public class PartitionTableTestBase
                                                                 50,
                                                                 1,
                                                                 new PodConfiguration(new Dictionary<string, string>())),
+                                              new PartitionData("PartitionId2",
+                                                                new List<string>
+                                                                {
+                                                                  "ParentPartitionId",
+                                                                },
+                                                                1,
+                                                                13,
+                                                                50,
+                                                                1,
+                                                                new PodConfiguration(new Dictionary<string, string>())),
                                             })
                      .Wait();
     }
@@ -216,6 +226,24 @@ public class PartitionTableTestBase
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(0,
+                      listTasks.totalCount);
+    }
+  }
+
+  [Test]
+  public async Task ListPartitionsContainsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var listTasks = await PartitionTable!.ListPartitionsAsync(data => data.ParentPartitionIds.Contains("ParentPartitionId"),
+                                                                data => data.PartitionId,
+                                                                false,
+                                                                0,
+                                                                20,
+                                                                CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.AreEqual(1,
                       listTasks.totalCount);
     }
   }
