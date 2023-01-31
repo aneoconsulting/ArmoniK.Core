@@ -52,15 +52,15 @@ internal class StreamWrapperTests
   [SetUp]
   public void SetUp()
   {
-    Dictionary<string, string> baseConfig = new()
-                                            {
-                                              {
-                                                "GrpcClient:Endpoint", "http://localhost:5001"
-                                              },
-                                              {
-                                                "Partition", "TestPartition"
-                                              },
-                                            };
+    Dictionary<string, string?> baseConfig = new()
+                                             {
+                                               {
+                                                 "GrpcClient:Endpoint", "http://localhost:5001"
+                                               },
+                                               {
+                                                 "Partition", "TestPartition"
+                                               },
+                                             };
 
     var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
                                             .AddEnvironmentVariables();
