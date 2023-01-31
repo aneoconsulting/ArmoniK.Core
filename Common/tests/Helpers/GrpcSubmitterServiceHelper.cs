@@ -31,6 +31,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
 
 using Grpc.Net.Client;
@@ -68,6 +69,9 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.Services.AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
            .AddSingleton(new AuthenticationCache())
+           .AddSingleton<ITaskTable, SimpleTaskTable>()
+           .AddSingleton<IResultTable, SimpleResultTable>()
+           .AddSingleton<ISessionTable, SimpleSessionTable>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
            .AddLogging(build => build.SetMinimumLevel(loglevel)
                                      .AddConsole())

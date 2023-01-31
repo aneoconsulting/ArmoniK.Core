@@ -493,7 +493,7 @@ public class TaskHandler : IAsyncDisposable
                                   .ConfigureAwait(false);
 
       logger_.LogInformation("Start processing task");
-      await submitter_.StartTask(taskData_.TaskId,
+      await taskTable_.StartTask(taskData_.TaskId,
                                  cancellationTokenSource_.Token)
                       .ConfigureAwait(false);
 

@@ -52,14 +52,12 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Submitter : ISubmitter
 {
-  private readonly ActivitySource        activitySource_;
-  private readonly ILogger<Submitter>    logger_;
-  private readonly IObjectStorageFactory objectStorageFactory_;
-  private readonly IPartitionTable       partitionTable_;
-  private readonly IPushQueueStorage     pushQueueStorage_;
-  private readonly IResultTable          resultTable_;
-
-
+  private readonly ActivitySource              activitySource_;
+  private readonly ILogger<Submitter>          logger_;
+  private readonly IObjectStorageFactory       objectStorageFactory_;
+  private readonly IPartitionTable             partitionTable_;
+  private readonly IPushQueueStorage           pushQueueStorage_;
+  private readonly IResultTable                resultTable_;
   private readonly ISessionTable               sessionTable_;
   private readonly Injection.Options.Submitter submitterOptions_;
   private readonly ITaskTable                  taskTable_;
@@ -85,12 +83,6 @@ public class Submitter : ISubmitter
     activitySource_       = activitySource;
     pushQueueStorage_     = pushQueueStorage;
   }
-
-  /// <inheritdoc />
-  public Task StartTask(string            taskId,
-                        CancellationToken cancellationToken = default)
-    => taskTable_.StartTask(taskId,
-                            cancellationToken);
 
   /// <inheritdoc />
   public Task<Configuration> GetServiceConfiguration(Empty             request,
@@ -120,23 +112,6 @@ public class Submitter : ISubmitter
                     .ConfigureAwait(false);
 
     await sessionCancelTask.ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task CancelTasks(TaskFilter        request,
-                                CancellationToken cancellationToken)
-  {
-    using var _        = logger_.LogFunction();
-    using var activity = activitySource_.StartActivity($"{nameof(CancelTasks)}");
-
-    if (logger_.IsEnabled(LogLevel.Trace))
-    {
-      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
-    }
-
-    await taskTable_.CancelTasks(request,
-                                 cancellationToken)
-                    .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -430,18 +405,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task UpdateTaskStatusAsync(string            id,
-                                          TaskStatus        status,
-                                          CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
-    await taskTable_.UpdateTaskStatusAsync(id,
-                                           status,
-                                           cancellationToken)
-                    .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
   public async Task CompleteTaskAsync(TaskData          taskData,
                                       bool              resubmit,
                                       Output            output,
@@ -513,17 +476,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
-                                                  CancellationToken contextCancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(TryGetTaskOutputAsync)}");
-    var output = await taskTable_.GetTaskOutput(request.TaskId,
-                                                contextCancellationToken)
-                                 .ConfigureAwait(false);
-    return new Output(output);
-  }
-
-  /// <inheritdoc />
   public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                                 CancellationToken contextCancellationToken)
   {
@@ -587,64 +539,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                                           CancellationToken    contextCancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusAsync)}");
-    return new GetTaskStatusReply
-           {
-             IdStatuses =
-             {
-               await taskTable_.GetTaskStatus(request.TaskIds.ToList(),
-                                              contextCancellationToken)
-                               .ConfigureAwait(false),
-             },
-           };
-  }
-
-  /// <inheritdoc />
-  public async Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                               CancellationToken      contextCancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusAsync)}");
-    return new GetResultStatusReply
-           {
-             IdStatuses =
-             {
-               await resultTable_.GetResultStatus(request.ResultIds.ToList(),
-                                                  request.SessionId,
-                                                  contextCancellationToken)
-                                 .ConfigureAwait(false),
-             },
-           };
-  }
-
-  /// <inheritdoc />
-  public async Task<TaskIdList> ListTasksAsync(TaskFilter        request,
-                                               CancellationToken contextCancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       idList   = new TaskIdList();
-    idList.TaskIds.AddRange(await taskTable_.ListTasksAsync(request,
-                                                            contextCancellationToken)
-                                            .ToListAsync(contextCancellationToken)
-                                            .ConfigureAwait(false));
-    return idList;
-  }
-
-  /// <inheritdoc />
-  public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                                     CancellationToken contextCancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       idList   = new SessionIdList();
-    idList.SessionIds.AddRange(await sessionTable_.ListSessionsAsync(request,
-                                                                     contextCancellationToken)
-                                                  .ToListAsync(contextCancellationToken)
-                                                  .ConfigureAwait(false));
-    return idList;
-  }
-
   public async Task SetResult(string                                 sessionId,
                               string                                 ownerTaskId,
                               string                                 key,

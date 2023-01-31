@@ -32,11 +32,14 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+
+using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -44,13 +47,22 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
   private readonly ILogger<GrpcSubmitterService> logger_;
+  private readonly IResultTable                  resultTable_;
+  private readonly ISessionTable                 sessionTable_;
   private readonly ISubmitter                    submitter_;
+  private readonly ITaskTable                    taskTable_;
 
   public GrpcSubmitterService(ISubmitter                    submitter,
+                              ITaskTable                    taskTable,
+                              ISessionTable                 sessionTable,
+                              IResultTable                  resultTable,
                               ILogger<GrpcSubmitterService> logger)
   {
-    submitter_ = submitter;
-    logger_    = logger;
+    submitter_    = submitter;
+    taskTable_    = taskTable;
+    sessionTable_ = sessionTable;
+    resultTable_  = resultTable;
+    logger_       = logger;
   }
 
 
@@ -126,9 +138,11 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     {
       logger_.LogTrace("request received {request}",
                        request);
-      await submitter_.CancelTasks(request,
+      await taskTable_.CancelTasks(request,
                                    context.CancellationToken)
                       .ConfigureAwait(false);
+
+
       return new Empty();
     }
     catch (ArmoniKException e)
@@ -455,8 +469,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await submitter_.TryGetTaskOutputAsync(request,
-                                                    context.CancellationToken)
+      return await taskTable_.GetTaskOutput(request.TaskId,
+                                            context.CancellationToken)
                              .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
@@ -537,9 +551,15 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await submitter_.GetTaskStatusAsync(request,
-                                                 context.CancellationToken)
-                             .ConfigureAwait(false);
+      return new GetTaskStatusReply
+             {
+               IdStatuses =
+               {
+                 await taskTable_.GetTaskStatus(request.TaskIds,
+                                                context.CancellationToken)
+                                 .ConfigureAwait(false),
+               },
+             };
     }
     catch (TaskNotFoundException e)
     {
@@ -571,9 +591,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await submitter_.GetResultStatusAsync(request,
-                                                   context.CancellationToken)
-                             .ConfigureAwait(false);
+      return new GetResultStatusReply
+             {
+               IdStatuses =
+               {
+                 await resultTable_.GetResultStatus(request.ResultIds,
+                                                    request.SessionId,
+                                                    context.CancellationToken)
+                                   .ConfigureAwait(false),
+               },
+             };
     }
     catch (ResultNotFoundException e)
     {
@@ -605,9 +632,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await submitter_.ListTasksAsync(request,
-                                             context.CancellationToken)
-                             .ConfigureAwait(false);
+      return new TaskIdList
+             {
+               TaskIds =
+               {
+                 await taskTable_.ListTasksAsync(request,
+                                                 context.CancellationToken)
+                                 .ToListAsync()
+                                 .ConfigureAwait(false),
+               },
+             };
     }
     catch (TaskNotFoundException e)
     {
@@ -639,9 +673,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await submitter_.ListSessionsAsync(request,
-                                                context.CancellationToken)
-                             .ConfigureAwait(false);
+      return new SessionIdList
+             {
+               SessionIds =
+               {
+                 await sessionTable_.ListSessionsAsync(request,
+                                                       context.CancellationToken)
+                                    .ToListAsync()
+                                    .ConfigureAwait(false),
+               },
+             };
     }
     catch (SessionNotFoundException e)
     {

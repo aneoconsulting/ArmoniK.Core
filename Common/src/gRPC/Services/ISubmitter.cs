@@ -35,7 +35,6 @@ using Grpc.Core;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -47,9 +46,6 @@ public interface ISubmitter
 {
   Task CancelSession(string            sessionId,
                      CancellationToken cancellationToken);
-
-  Task CancelTasks(TaskFilter        request,
-                   CancellationToken cancellationToken);
 
   Task<Count> CountTasks(TaskFilter        request,
                          CancellationToken cancellationToken);
@@ -71,9 +67,6 @@ public interface ISubmitter
                             string                           parentTaskId,
                             CancellationToken                cancellationToken);
 
-  Task StartTask(string            taskId,
-                 CancellationToken cancellationToken = default);
-
   Task<Configuration> GetServiceConfiguration(Empty             request,
                                               CancellationToken cancellationToken);
 
@@ -84,32 +77,13 @@ public interface ISubmitter
   Task<Count> WaitForCompletion(WaitRequest       request,
                                 CancellationToken cancellationToken);
 
-  Task UpdateTaskStatusAsync(string            id,
-                             TaskStatus        status,
-                             CancellationToken cancellationToken = default);
-
   Task CompleteTaskAsync(TaskData          taskData,
                          bool              resubmit,
                          Output            output,
                          CancellationToken cancellationToken = default);
 
-  Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
-                                     CancellationToken contextCancellationToken);
-
   Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                    CancellationToken contextCancellationToken);
-
-  Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                              CancellationToken    contextCancellationToken);
-
-  Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                  CancellationToken      contextCancellationToken);
-
-  Task<TaskIdList> ListTasksAsync(TaskFilter        request,
-                                  CancellationToken contextCancellationToken);
-
-  Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                        CancellationToken contextCancellationToken);
 
   Task SetResult(string                                 sessionId,
                  string                                 ownerTaskId,

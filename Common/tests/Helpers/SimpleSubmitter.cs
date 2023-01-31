@@ -62,10 +62,6 @@ public class SimpleSubmitter : ISubmitter
                             CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task CancelTasks(TaskFilter        request,
-                          CancellationToken cancellationToken)
-    => Task.CompletedTask;
-
   public Task<Count> CountTasks(TaskFilter        request,
                                 CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
@@ -100,10 +96,6 @@ public class SimpleSubmitter : ISubmitter
                                    CancellationToken        cancellationToken)
     => Task.CompletedTask;
 
-  public Task StartTask(string            taskId,
-                        CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task<Configuration> GetServiceConfiguration(Empty             request,
                                                      CancellationToken cancellationToken)
     => Task.FromResult(new Configuration
@@ -120,23 +112,11 @@ public class SimpleSubmitter : ISubmitter
                                        CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
-  public Task UpdateTaskStatusAsync(string            id,
-                                    TaskStatus        status,
-                                    CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task CompleteTaskAsync(TaskData          taskData,
                                 bool              resubmit,
                                 Output            output,
                                 CancellationToken cancellationToken = default)
     => Task.CompletedTask;
-
-  public Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
-                                            CancellationToken contextCancellationToken)
-    => Task.FromResult(new Output
-                       {
-                         Ok = new Empty(),
-                       });
 
   public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                           CancellationToken contextCancellationToken)
@@ -144,50 +124,6 @@ public class SimpleSubmitter : ISubmitter
                        {
                          Ok = new Empty(),
                        });
-
-  public Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                                     CancellationToken    contextCancellationToken)
-    => Task.FromResult(request.TaskIds.Aggregate(new GetTaskStatusReply(),
-                                                 (tsr,
-                                                  id) =>
-                                                 {
-                                                   tsr.IdStatuses.Add(new GetTaskStatusReply.Types.IdStatus
-                                                                      {
-                                                                        Status = TaskStatus.Completed,
-                                                                        TaskId = id,
-                                                                      });
-                                                   return tsr;
-                                                 }));
-
-  public Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                         CancellationToken      contextCancellationToken)
-    => Task.FromResult(request.ResultIds.Aggregate(new GetResultStatusReply(),
-                                                   (reply,
-                                                    s) =>
-                                                   {
-                                                     reply.IdStatuses.Add(new GetResultStatusReply.Types.IdStatus
-                                                                          {
-                                                                            ResultId = s,
-                                                                            Status   = ResultStatus.Completed,
-                                                                          });
-                                                     return reply;
-                                                   }));
-
-  public Task<TaskIdList> ListTasksAsync(TaskFilter        request,
-                                         CancellationToken contextCancellationToken)
-  {
-    var reply = new TaskIdList();
-    reply.TaskIds.Add("taskId1");
-    return Task.FromResult(reply);
-  }
-
-  public Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                               CancellationToken contextCancellationToken)
-  {
-    var reply = new SessionIdList();
-    reply.SessionIds.Add("sessionId1");
-    return Task.FromResult(reply);
-  }
 
   public Task SetResult(string                                 sessionId,
                         string                                 ownerTaskId,
