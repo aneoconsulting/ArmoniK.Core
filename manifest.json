@@ -2765,6 +2765,30 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.html",
+          "hash": "9+X9o3q0sToPCgAq/08PkqGt1U3Cglqa4vSViYxHp6U="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Client.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Client.html",
+          "hash": "56gycp745C/6fMN+a1aYSC3EhtFOmmEk0/Tx2SLnSb0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.CreateLargeTaskRequestValidatorTest.yml",
       "output": {
         ".html": {
@@ -4893,7 +4917,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.Client.SessionClient.html",
-          "hash": "n6tb2HZIyLAg9UezA2IlPNxQ77RDZgB78H6uxi3X0Ks="
+          "hash": "7gYVWpMiMp2Ym8G7hkxCMwNuwvjcygAy3o6m73B/9bc="
         }
       },
       "is_incremental": false,
@@ -4953,7 +4977,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "XyVB3Is0ztNz0/fOgSfoJMLKF86rvrbtXf8YE3D/tWs="
+          "hash": "tUFX2b9T/JcihSAN6GWMLvl+gSUD/3r4FZsezeOmH9g="
         }
       },
       "is_incremental": false,
@@ -5052,7 +5076,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 411,
+          "total_file_count": 413,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

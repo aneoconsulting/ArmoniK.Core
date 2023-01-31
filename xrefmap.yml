@@ -17258,6 +17258,47 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CancelTasksRequestValidatorTest.NoTaskIdsShouldSucceed
   nameWithType: CancelTasksRequestValidatorTest.NoTaskIdsShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Client
+  name: ArmoniK.Core.Common.Tests.Client
+  href: api/ArmoniK.Core.Common.Tests.Client.html
+  commentId: N:ArmoniK.Core.Common.Tests.Client
+  fullName: ArmoniK.Core.Common.Tests.Client
+  nameWithType: ArmoniK.Core.Common.Tests.Client
+- uid: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt
+  name: GrpcChannelExt
+  href: api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.html
+  commentId: T:ArmoniK.Core.Common.Tests.Client.GrpcChannelExt
+  fullName: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt
+  nameWithType: GrpcChannelExt
+- uid: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.ListTasksAsync(ChannelBase,ListTasksRequest.Types.Filter,ListTasksRequest.Types.Sort)
+  name: ListTasksAsync(ChannelBase, Filter, Sort)
+  href: api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.html#ArmoniK_Core_Common_Tests_Client_GrpcChannelExt_ListTasksAsync_ChannelBase_ListTasksRequest_Types_Filter_ListTasksRequest_Types_Sort_
+  commentId: M:ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.ListTasksAsync(ChannelBase,ListTasksRequest.Types.Filter,ListTasksRequest.Types.Sort)
+  fullName: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.ListTasksAsync(ChannelBase, ListTasksRequest.Types.Filter, ListTasksRequest.Types.Sort)
+  nameWithType: GrpcChannelExt.ListTasksAsync(ChannelBase, ListTasksRequest.Types.Filter, ListTasksRequest.Types.Sort)
+- uid: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.ListTasksAsync*
+  name: ListTasksAsync
+  href: api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.html#ArmoniK_Core_Common_Tests_Client_GrpcChannelExt_ListTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.ListTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.ListTasksAsync
+  nameWithType: GrpcChannelExt.ListTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync(ChannelBase,System.String,ILogger)
+  name: LogStatsFromSessionAsync(ChannelBase, string, ILogger)
+  href: api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.html#ArmoniK_Core_Common_Tests_Client_GrpcChannelExt_LogStatsFromSessionAsync_ChannelBase_System_String_ILogger_
+  commentId: M:ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync(ChannelBase,System.String,ILogger)
+  name.vb: LogStatsFromSessionAsync(ChannelBase, String, ILogger)
+  fullName: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync(ChannelBase, string, ILogger)
+  fullName.vb: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync(ChannelBase, String, ILogger)
+  nameWithType: GrpcChannelExt.LogStatsFromSessionAsync(ChannelBase, string, ILogger)
+  nameWithType.vb: GrpcChannelExt.LogStatsFromSessionAsync(ChannelBase, String, ILogger)
+- uid: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync*
+  name: LogStatsFromSessionAsync
+  href: api/ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.html#ArmoniK_Core_Common_Tests_Client_GrpcChannelExt_LogStatsFromSessionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Client.GrpcChannelExt.LogStatsFromSessionAsync
+  nameWithType: GrpcChannelExt.LogStatsFromSessionAsync
 - uid: ArmoniK.Core.Common.Tests.CreateLargeTaskRequestValidatorTest
   name: CreateLargeTaskRequestValidatorTest
   href: api/ArmoniK.Core.Common.Tests.CreateLargeTaskRequestValidatorTest.html
