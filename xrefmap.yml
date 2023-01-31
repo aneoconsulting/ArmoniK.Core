@@ -20949,6 +20949,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterIdShouldSucceed
   nameWithType: ToPartitionDataFilterTest.FilterIdShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed
+  name: FilterParentPartitionIdShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListPartitionsRequestExt_ToPartitionDataFilterTest_FilterParentPartitionIdShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed()
+  nameWithType: ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed*
+  name: FilterParentPartitionIdShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListPartitionsRequestExt_ToPartitionDataFilterTest_FilterParentPartitionIdShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed
+  nameWithType: ToPartitionDataFilterTest.FilterParentPartitionIdShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterPodMaxShouldSucceed
   name: FilterPodMaxShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListPartitionsRequestExt_ToPartitionDataFilterTest_FilterPodMaxShouldSucceed
@@ -21014,6 +21027,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongIdShouldFail
   nameWithType: ToPartitionDataFilterTest.FilterWrongIdShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail
+  name: FilterWrongParentPartitionIdShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListPartitionsRequestExt_ToPartitionDataFilterTest_FilterWrongParentPartitionIdShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail()
+  nameWithType: ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail*
+  name: FilterWrongParentPartitionIdShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListPartitionsRequestExt_ToPartitionDataFilterTest_FilterWrongParentPartitionIdShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail
+  nameWithType: ToPartitionDataFilterTest.FilterWrongParentPartitionIdShouldFail
 - uid: ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.FilterWrongPodMaxShouldFail
   name: FilterWrongPodMaxShouldFail()
   href: api/ArmoniK.Core.Common.Tests.ListPartitionsRequestExt.ToPartitionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListPartitionsRequestExt_ToPartitionDataFilterTest_FilterWrongPodMaxShouldFail
@@ -22617,6 +22643,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.InitShouldSucceed
   nameWithType: PartitionTableTestBase.InitShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsContainsShouldSucceed
+  name: ListPartitionsContainsShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ListPartitionsContainsShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsContainsShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsContainsShouldSucceed()
+  nameWithType: PartitionTableTestBase.ListPartitionsContainsShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsContainsShouldSucceed*
+  name: ListPartitionsContainsShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ListPartitionsContainsShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsContainsShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsContainsShouldSucceed
+  nameWithType: PartitionTableTestBase.ListPartitionsContainsShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ListPartitionsEmptyResultShouldSucceed
   name: ListPartitionsEmptyResultShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ListPartitionsEmptyResultShouldSucceed
