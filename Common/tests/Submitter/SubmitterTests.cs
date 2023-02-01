@@ -270,6 +270,7 @@ public class SubmitterTests
   }
 
   private static async Task<string> InitSubmitterCompleteTask(ISubmitter        submitter,
+                                                              ITaskTable        taskTable,
                                                               string            sessionId,
                                                               CancellationToken token)
   {
@@ -328,7 +329,7 @@ public class SubmitterTests
                                 new Output(false,
                                            ""));
 
-    await submitter.StartTask(taskCompletedId,
+    await taskTable.StartTask(taskCompletedId,
                               token)
                    .ConfigureAwait(false);
 
@@ -364,18 +365,19 @@ public class SubmitterTests
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
-    var result = await submitter_!.ListSessionsAsync(new SessionFilter
-                                                     {
-                                                       Sessions =
-                                                       {
-                                                         sessionId,
-                                                       },
-                                                     },
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
+    var result = await sessionTable_!.ListSessionsAsync(new SessionFilter
+                                                        {
+                                                          Sessions =
+                                                          {
+                                                            sessionId,
+                                                          },
+                                                        },
+                                                        CancellationToken.None)
+                                     .ToListAsync()
+                                     .ConfigureAwait(false);
 
     Assert.AreEqual(sessionId,
-                    result.SessionIds.Single());
+                    result.Single());
   }
 
   [Test]
@@ -448,7 +450,7 @@ public class SubmitterTests
                                                    CancellationToken.None)
                                  .ConfigureAwait(false);
 
-    var result = await submitter_!.ListTasksAsync(new TaskFilter
+    var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
                                                     Task = new TaskFilter.Types.IdsRequest
                                                            {
@@ -459,10 +461,11 @@ public class SubmitterTests
                                                            },
                                                   },
                                                   CancellationToken.None)
+                                  .ToListAsync()
                                   .ConfigureAwait(false);
 
     Assert.AreEqual(taskCreating,
-                    result.TaskIds.Single());
+                    result.Single());
   }
 
   [Test]
@@ -510,7 +513,7 @@ public class SubmitterTests
     Assert.AreEqual(DefaultPartition,
                     tuple.partitionId);
 
-    var result = await submitter_!.ListTasksAsync(new TaskFilter
+    var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
                                                     Task = new TaskFilter.Types.IdsRequest
                                                            {
@@ -522,11 +525,12 @@ public class SubmitterTests
                                                            },
                                                   },
                                                   CancellationToken.None)
+                                  .ToListAsync()
                                   .ConfigureAwait(false);
 
     Assert.AreEqual(tuple.requests.Single()
                          .Id,
-                    result.TaskIds.Single());
+                    result.Single());
   }
 
   [Test]
@@ -585,7 +589,7 @@ public class SubmitterTests
     Assert.AreEqual("part1",
                     tuple.partitionId);
 
-    var result = await submitter_!.ListTasksAsync(new TaskFilter
+    var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
                                                     Task = new TaskFilter.Types.IdsRequest
                                                            {
@@ -597,11 +601,12 @@ public class SubmitterTests
                                                            },
                                                   },
                                                   CancellationToken.None)
+                                  .ToListAsync()
                                   .ConfigureAwait(false);
 
     Assert.AreEqual(tuple.requests.Single()
                          .Id,
-                    result.TaskIds.Single());
+                    result.Single());
   }
 
   [Test]
@@ -626,29 +631,6 @@ public class SubmitterTests
   }
 
   [Test]
-  public async Task GetStatusShouldSucceed()
-  {
-    var (_, taskCreating, _) = await InitSubmitter(submitter_!,
-                                                   partitionTable_!,
-                                                   CancellationToken.None)
-                                 .ConfigureAwait(false);
-
-    var result = await submitter_!.GetTaskStatusAsync(new GetTaskStatusRequest
-                                                      {
-                                                        TaskIds =
-                                                        {
-                                                          taskCreating,
-                                                        },
-                                                      },
-                                                      CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-    Assert.AreEqual(TaskStatus.Creating,
-                    result.IdStatuses.Single()
-                          .Status);
-  }
-
-  [Test]
   public async Task FinalizeTaskCreationShouldSucceed()
   {
     var (_, _, taskSubmitted) = await InitSubmitter(submitter_!,
@@ -656,40 +638,16 @@ public class SubmitterTests
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    var result = await submitter_!.GetTaskStatusAsync(new GetTaskStatusRequest
-                                                      {
-                                                        TaskIds =
-                                                        {
-                                                          taskSubmitted,
-                                                        },
-                                                      },
-                                                      CancellationToken.None)
+    var result = await taskTable_!.GetTaskStatus(new[]
+                                                 {
+                                                   taskSubmitted,
+                                                 },
+                                                 CancellationToken.None)
                                   .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Submitted,
-                    result.IdStatuses.Single()
+                    result.Single()
                           .Status);
-  }
-
-  [Test]
-  public async Task GetStatusReturnEmptyList()
-  {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
-
-    var res = await submitter_!.GetTaskStatusAsync(new GetTaskStatusRequest
-                                                   {
-                                                     TaskIds =
-                                                     {
-                                                       "taskdoesnotexist",
-                                                     },
-                                                   },
-                                                   CancellationToken.None);
-
-    Assert.AreEqual(0,
-                    res.IdStatuses.Count);
   }
 
   [Test]
@@ -701,6 +659,7 @@ public class SubmitterTests
                               .ConfigureAwait(false);
 
     await InitSubmitterCompleteTask(submitter_!,
+                                    taskTable_!,
                                     sessionId,
                                     CancellationToken.None)
       .ConfigureAwait(false);
@@ -798,133 +757,6 @@ public class SubmitterTests
   }
 
   [Test]
-  public async Task GetTaskOutputShouldSucceed()
-  {
-    var (sessionId, _, _) = await InitSubmitter(submitter_!,
-                                                partitionTable_!,
-                                                CancellationToken.None)
-                              .ConfigureAwait(false);
-
-    var taskCompleted = await InitSubmitterCompleteTask(submitter_!,
-                                                        sessionId,
-                                                        CancellationToken.None)
-                          .ConfigureAwait(false);
-
-    await submitter_!.WaitForCompletion(new WaitRequest
-                                        {
-                                          Filter = new TaskFilter
-                                                   {
-                                                     Task = new TaskFilter.Types.IdsRequest
-                                                            {
-                                                              Ids =
-                                                              {
-                                                                taskCompleted,
-                                                              },
-                                                            },
-                                                   },
-                                        },
-                                        CancellationToken.None)
-                     .ConfigureAwait(false);
-
-    var output = await submitter_.TryGetTaskOutputAsync(new TaskOutputRequest
-                                                        {
-                                                          TaskId  = taskCompleted,
-                                                          Session = sessionId,
-                                                        },
-                                                        CancellationToken.None)
-                                 .ConfigureAwait(false);
-
-    Assert.AreEqual(Api.gRPC.V1.Output.TypeOneofCase.Ok,
-                    output.TypeCase);
-  }
-
-  [Test]
-  public async Task CancelTaskShouldSucceed()
-  {
-    var (sessionId, taskCreating, _) = await InitSubmitter(submitter_!,
-                                                           partitionTable_!,
-                                                           CancellationToken.None)
-                                         .ConfigureAwait(false);
-
-    await submitter_!.CancelTasks(new TaskFilter
-                                  {
-                                    Session = new TaskFilter.Types.IdsRequest
-                                              {
-                                                Ids =
-                                                {
-                                                  sessionId,
-                                                },
-                                              },
-                                  },
-                                  CancellationToken.None)
-                     .ConfigureAwait(false);
-
-    var reply = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
-                                                    {
-                                                      TaskIds =
-                                                      {
-                                                        taskCreating,
-                                                      },
-                                                    },
-                                                    CancellationToken.None)
-                                .ConfigureAwait(false);
-
-    Assert.AreEqual(TaskStatus.Cancelling,
-                    reply.IdStatuses.Single()
-                         .Status);
-  }
-
-  [Test]
-  public async Task GetResultStatusShouldSucceed()
-  {
-    var (sessionId, _, _) = await InitSubmitter(submitter_!,
-                                                partitionTable_!,
-                                                CancellationToken.None)
-                              .ConfigureAwait(false);
-
-    var result = await submitter_!.GetResultStatusAsync(new GetResultStatusRequest
-                                                        {
-                                                          SessionId = sessionId,
-                                                          ResultIds =
-                                                          {
-                                                            ExpectedOutput2,
-                                                          },
-                                                        },
-                                                        CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-    Assert.AreEqual(ResultStatus.Created,
-                    result.IdStatuses.Single()
-                          .Status);
-    Assert.AreEqual(ExpectedOutput2,
-                    result.IdStatuses.Single()
-                          .ResultId);
-  }
-
-  [Test]
-  public async Task GetNotExistingResultStatusShouldSucceed()
-  {
-    var (sessionId, _, _) = await InitSubmitter(submitter_!,
-                                                partitionTable_!,
-                                                CancellationToken.None)
-                              .ConfigureAwait(false);
-
-    var result = await submitter_!.GetResultStatusAsync(new GetResultStatusRequest
-                                                        {
-                                                          SessionId = sessionId,
-                                                          ResultIds =
-                                                          {
-                                                            "NotExistingId",
-                                                          },
-                                                        },
-                                                        CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-    Assert.AreEqual(0,
-                    result.IdStatuses.Count);
-  }
-
-  [Test]
   public async Task GetPartitionTaskStatus()
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
@@ -933,6 +765,7 @@ public class SubmitterTests
                               .ConfigureAwait(false);
 
     await InitSubmitterCompleteTask(submitter_!,
+                                    taskTable_!,
                                     sessionId,
                                     CancellationToken.None)
       .ConfigureAwait(false);

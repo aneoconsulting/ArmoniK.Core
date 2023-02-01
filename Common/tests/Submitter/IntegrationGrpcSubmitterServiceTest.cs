@@ -26,6 +26,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,7 +42,13 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
+using Moq.Language.Flow;
 
 using NUnit.Framework;
 
@@ -79,6 +86,8 @@ internal class IntegrationGrpcSubmitterServiceTest
       helper_.Dispose();
     }
   }
+
+  private readonly Mock<ISubmitter> mockSubmitter_ = new();
 
   private GrpcSubmitterServiceHelper? helper_;
 
@@ -153,14 +162,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                               CancellationToken cancellationToken)
       => Task.FromException(new T());
 
-    public Task CancelTasks(TaskFilter        request,
-                            CancellationToken cancellationToken)
-      => Task.FromException(new T());
-
-    public Task<Count> CountTasks(TaskFilter        request,
-                                  CancellationToken cancellationToken)
-      => Task.FromException<Count>(new T());
-
     public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
                                                   TaskOptions       defaultTaskOptions,
                                                   CancellationToken cancellationToken)
@@ -181,10 +182,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                      CancellationToken        cancellationToken)
       => Task.FromException(new T());
 
-    public Task StartTask(string            taskId,
-                          CancellationToken cancellationToken = default)
-      => Task.FromException(new T());
-
     public Task<Configuration> GetServiceConfiguration(Empty             request,
                                                        CancellationToken cancellationToken)
       => Task.FromException<Configuration>(new T());
@@ -198,40 +195,15 @@ internal class IntegrationGrpcSubmitterServiceTest
                                          CancellationToken cancellationToken)
       => Task.FromException<Count>(new T());
 
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => Task.FromException(new T());
-
     public Task CompleteTaskAsync(TaskData          taskData,
                                   bool              resubmit,
                                   Output            output,
                                   CancellationToken cancellationToken = default)
       => Task.FromException(new T());
 
-    public Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
-                                              CancellationToken contextCancellationToken)
-      => Task.FromException<Output>(new T());
-
     public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                             CancellationToken contextCancellationToken)
       => Task.FromException<AvailabilityReply>(new T());
-
-    public Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                                       CancellationToken    contextCancellationToken)
-      => Task.FromException<GetTaskStatusReply>(new T());
-
-    public Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                           CancellationToken      contextCancellationToken)
-      => Task.FromException<GetResultStatusReply>(new T());
-
-    public Task<TaskIdList> ListTasksAsync(TaskFilter        request,
-                                           CancellationToken contextCancellationToken)
-      => Task.FromException<TaskIdList>(new T());
-
-    public Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                                 CancellationToken contextCancellationToken)
-      => Task.FromException<SessionIdList>(new T());
 
     public Task SetResult(string                                 sessionId,
                           string                                 ownerTaskId,
@@ -246,14 +218,6 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     public Task CancelSession(string            sessionId,
                               CancellationToken cancellationToken)
-      => throw new T();
-
-    public Task CancelTasks(TaskFilter        request,
-                            CancellationToken cancellationToken)
-      => throw new T();
-
-    public Task<Count> CountTasks(TaskFilter        request,
-                                  CancellationToken cancellationToken)
       => throw new T();
 
     public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
@@ -276,10 +240,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                      CancellationToken        cancellationToken)
       => throw new T();
 
-    public Task StartTask(string            taskId,
-                          CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task<Configuration> GetServiceConfiguration(Empty             request,
                                                        CancellationToken cancellationToken)
       => throw new T();
@@ -293,39 +253,14 @@ internal class IntegrationGrpcSubmitterServiceTest
                                          CancellationToken cancellationToken)
       => throw new T();
 
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task CompleteTaskAsync(TaskData          taskData,
                                   bool              resubmit,
                                   Output            output,
                                   CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
-                                              CancellationToken contextCancellationToken)
-      => throw new T();
-
     public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                             CancellationToken contextCancellationToken)
-      => throw new T();
-
-    public Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                                       CancellationToken    contextCancellationToken)
-      => throw new T();
-
-    public Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                           CancellationToken      contextCancellationToken)
-      => throw new T();
-
-    public Task<TaskIdList> ListTasksAsync(TaskFilter        request,
-                                           CancellationToken contextCancellationToken)
-      => throw new T();
-
-    public Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                                 CancellationToken contextCancellationToken)
       => throw new T();
 
     public Task SetResult(string                                 sessionId,
@@ -431,12 +366,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  public async Task<StatusCode?> CancelTasksThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTableInternal))]
+  public async Task<StatusCode?> CancelTasksThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -464,14 +398,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFoundInternal))]
-  public async Task<StatusCode?> CountTasksThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTableInternal))]
+  public async Task<StatusCode?> CountTasksThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -658,18 +589,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultNotFound))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputSessionNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFound))]
-  public async Task<StatusCode?> TryGetTaskOutputThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTable))]
+  public async Task<StatusCode?> TryGetTaskOutputThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -718,18 +642,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputSessionNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFound))]
-  public async Task<StatusCode?> GetStatusThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTable))]
+  public async Task<StatusCode?> GetStatusThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -748,18 +665,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputSessionNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFound))]
-  public async Task<StatusCode?> GetTaskStatusAsyncThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTable))]
+  public async Task<StatusCode?> GetTaskStatusAsyncThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -779,18 +689,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultNotFound))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputSessionNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFoundInternal))]
-  public async Task<StatusCode?> GetResultStatusAsyncThrowsException(ISubmitter submitter)
+                  nameof(TestCasesResultTable))]
+  public async Task<StatusCode?> GetResultStatusAsyncThrowsException(IResultTable resultTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(resultTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -810,18 +713,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputSessionNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFound))]
-  public async Task<StatusCode?> ListTasksThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTable))]
+  public async Task<StatusCode?> ListTasksThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -937,6 +833,185 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       yield return new TestCaseData(new ThrowExceptionSubmitter<PartitionNotFoundException>()).Returns(StatusCode.InvalidArgument);
       yield return new TestCaseData(new AsyncThrowExceptionSubmitter<PartitionNotFoundException>()).Returns(StatusCode.InvalidArgument);
+    }
+  }
+
+  public class ThrowExceptionTaskTable<T> : ITaskTable
+    where T : Exception, new()
+
+  {
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => throw new T();
+
+    public Task Init(CancellationToken cancellationToken)
+      => throw new T();
+
+    public TimeSpan PollingDelayMin { get; } = TimeSpan.Zero;
+    public TimeSpan PollingDelayMax { get; } = TimeSpan.Zero;
+    public ILogger  Logger          { get; } = NullLogger.Instance;
+
+    public Task CreateTasks(IEnumerable<TaskData> tasks,
+                            CancellationToken     cancellationToken = default)
+      => throw new T();
+
+    public Task<TaskData> ReadTaskAsync(string            taskId,
+                                        CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task UpdateTaskStatusAsync(string            id,
+                                      TaskStatus        status,
+                                      CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
+                                              TaskStatus        status,
+                                              CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<bool> IsTaskCancelledAsync(string            taskId,
+                                           CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task StartTask(string            taskId,
+                          CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task CancelSessionAsync(string            sessionId,
+                                   CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
+                                                 CancellationToken   cancellationToken = default)
+      => throw new T();
+
+    public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
+                                                              CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<int> CountAllTasksAsync(TaskStatus        status,
+                                        CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task DeleteTaskAsync(string            id,
+                                CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
+                                                   CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                              Expression<Func<TaskData, object?>> orderField,
+                                                                              bool                                ascOrder,
+                                                                              int                                 page,
+                                                                              int                                 pageSize,
+                                                                              CancellationToken                   cancellationToken = default)
+      => throw new T();
+
+    public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
+                                                                                               Expression<Func<Application, object?>> orderField,
+                                                                                               bool                                   ascOrder,
+                                                                                               int                                    page,
+                                                                                               int                                    pageSize,
+                                                                                               CancellationToken                      cancellationToken = default)
+      => throw new T();
+
+    public Task SetTaskSuccessAsync(string            taskId,
+                                    CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task SetTaskCanceledAsync(string            taskId,
+                                     CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<bool> SetTaskErrorAsync(string            taskId,
+                                        string            errorDetail,
+                                        CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<Storage.Output> GetTaskOutput(string            taskId,
+                                              CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<TaskData> AcquireTask(string            taskId,
+                                      string            ownerPodId,
+                                      string            ownerPodName,
+                                      DateTime          receptionDate,
+                                      CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<TaskData> ReleaseTask(string            taskId,
+                                      string            ownerPodId,
+                                      CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                                              CancellationToken   cancellationToken = default)
+      => throw new T();
+
+    public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
+                                                                                                                CancellationToken   cancellationToken = default)
+      => throw new T();
+
+    public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
+                                                      CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<string> RetryTask(TaskData          taskData,
+                                  CancellationToken cancellationToken = default)
+      => throw new T();
+
+    public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
+                                          CancellationToken   cancellationToken = default)
+      => throw new T();
+  }
+
+  public static IEnumerable TestCasesTaskTable
+  {
+    get
+    {
+      yield return new TestCaseData(new ThrowExceptionTaskTable<TaskNotFoundException>()).Returns(StatusCode.NotFound);
+      yield return new TestCaseData(new ThrowExceptionTaskTable<Exception>()).Returns(StatusCode.Unknown);
+    }
+  }
+
+  public static IEnumerable TestCasesTaskTableInternal
+  {
+    get
+    {
+      yield return new TestCaseData(new ThrowExceptionTaskTable<TaskNotFoundException>()).Returns(StatusCode.Internal);
+      yield return new TestCaseData(new ThrowExceptionTaskTable<Exception>()).Returns(StatusCode.Unknown);
+    }
+  }
+
+  private static IResultTable CreateResultTableMock(Action<ISetup<IResultTable, Task<IEnumerable<GetResultStatusReply.Types.IdStatus>>>> setupAction)
+  {
+    var mock = new Mock<IResultTable>();
+    var setup = mock.Setup(table => table.GetResultStatus(It.IsAny<IEnumerable<string>>(),
+                                                          It.IsAny<string>(),
+                                                          It.IsAny<CancellationToken>()));
+    setupAction.Invoke(setup);
+    return mock.Object;
+  }
+
+  public static IEnumerable TestCasesResultTable
+  {
+    get
+    {
+      foreach (var (exception, statusCode) in new[]
+                                              {
+                                                (new TaskNotFoundException(), StatusCode.Internal),
+                                                (new ResultNotFoundException(), StatusCode.NotFound),
+                                                (new Exception(), StatusCode.Unknown),
+                                              })
+      {
+        yield return new TestCaseData(CreateResultTableMock(setup => setup.Throws(exception))).Returns(statusCode);
+        yield return new TestCaseData(CreateResultTableMock(setup => setup.ThrowsAsync(exception))).Returns(statusCode);
+        yield return new TestCaseData(CreateResultTableMock(setup => setup.Returns(() => throw exception))).Returns(statusCode);
+      }
     }
   }
 }
