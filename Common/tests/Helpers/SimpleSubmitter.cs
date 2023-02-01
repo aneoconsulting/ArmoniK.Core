@@ -62,10 +62,6 @@ public class SimpleSubmitter : ISubmitter
                             CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<Count> CountTasks(TaskFilter        request,
-                                CancellationToken cancellationToken)
-    => Task.FromResult(DefaultCount);
-
   public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
                                                 TaskOptions       defaultTaskOptions,
                                                 CancellationToken cancellationToken)

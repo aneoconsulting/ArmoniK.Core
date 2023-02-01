@@ -141,34 +141,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<Count> CountTasks(TaskFilter        request,
-                                      CancellationToken cancellationToken)
-
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CountTasks)}");
-
-    if (logger_.IsEnabled(LogLevel.Trace))
-    {
-      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
-    }
-
-    var count = await taskTable_.CountTasksAsync(request,
-                                                 cancellationToken)
-                                .ConfigureAwait(false);
-    return new Count
-           {
-             Values =
-             {
-               count.Select(tuple => new StatusCount
-                                     {
-                                       Status = tuple.Status,
-                                       Count  = tuple.Count,
-                                     }),
-             },
-           };
-  }
-
-  /// <inheritdoc />
   public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
                                                       TaskOptions       defaultTaskOptions,
                                                       CancellationToken cancellationToken)

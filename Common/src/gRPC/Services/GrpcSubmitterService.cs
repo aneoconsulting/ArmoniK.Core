@@ -356,9 +356,15 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await submitter_.CountTasks(request,
-                                         context.CancellationToken)
-                             .ConfigureAwait(false);
+      return new Count
+             {
+               Values =
+               {
+                 (await taskTable_.CountTasksAsync(request,
+                                                   context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(count => new StatusCount(count)),
+               },
+             };
     }
     catch (ArmoniKException e)
     {

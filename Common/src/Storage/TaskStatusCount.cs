@@ -32,4 +32,19 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Status">Status of the task</param>
 /// <param name="Count">Number of tasks with the associated status</param>
 public record TaskStatusCount(TaskStatus Status,
-                              int        Count);
+                              int        Count)
+{
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskStatusCount" /> to <see cref="StatusCount" />
+  /// </summary>
+  /// <param name="taskStatusCount">The input status count</param>
+  /// <returns>
+  ///   The converted status count
+  /// </returns>
+  public static implicit operator StatusCount(TaskStatusCount taskStatusCount)
+    => new()
+       {
+         Count  = taskStatusCount.Count,
+         Status = taskStatusCount.Status,
+       };
+}

@@ -47,9 +47,6 @@ public interface ISubmitter
   Task CancelSession(string            sessionId,
                      CancellationToken cancellationToken);
 
-  Task<Count> CountTasks(TaskFilter        request,
-                         CancellationToken cancellationToken);
-
   Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
                                          TaskOptions       defaultTaskOptions,
                                          CancellationToken cancellationToken);

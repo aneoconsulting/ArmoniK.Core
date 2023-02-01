@@ -162,10 +162,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                               CancellationToken cancellationToken)
       => Task.FromException(new T());
 
-    public Task<Count> CountTasks(TaskFilter        request,
-                                  CancellationToken cancellationToken)
-      => Task.FromException<Count>(new T());
-
     public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
                                                   TaskOptions       defaultTaskOptions,
                                                   CancellationToken cancellationToken)
@@ -222,10 +218,6 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     public Task CancelSession(string            sessionId,
                               CancellationToken cancellationToken)
-      => throw new T();
-
-    public Task<Count> CountTasks(TaskFilter        request,
-                                  CancellationToken cancellationToken)
       => throw new T();
 
     public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
@@ -406,14 +398,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutput))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputResultDataNotFoundInternal))]
-  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                  nameof(TestCasesOutputTaskNotFoundInternal))]
-  public async Task<StatusCode?> CountTasksThrowsException(ISubmitter submitter)
+                  nameof(TestCasesTaskTableInternal))]
+  public async Task<StatusCode?> CountTasksThrowsException(ITaskTable taskTable)
   {
-    helper_ = new GrpcSubmitterServiceHelper(submitter);
+    helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,
+                                             collection => collection.AddSingleton(taskTable));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
