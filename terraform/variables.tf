@@ -31,9 +31,12 @@ variable "mongodb_params" {
   default = {}
 }
 
-variable "serilog_level" {
-  type    = string
-  default = "Information"
+variable "serilog" {
+  type = object({
+    loggin_level         = optional(string, "Information")
+    loggin_level_routing = optional(string, "Warning")
+  })
+  default = {}
 }
 
 variable "aspnet_core_env" {
