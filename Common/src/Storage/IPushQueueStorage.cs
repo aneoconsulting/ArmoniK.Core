@@ -40,4 +40,10 @@ public interface IPushQueueStorage : IQueueStorage
                                 string              partitionId,
                                 int                 priority          = 1,
                                 CancellationToken   cancellationToken = default);
+
+
+  /// <summary>
+  /// Name of the queue that holds tasks with unresolved data dependencies
+  /// </summary>
+  public string UnresolvedDependenciesQueue { get; }
 }
