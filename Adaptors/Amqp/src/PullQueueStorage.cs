@@ -33,10 +33,12 @@ using System.Threading.Tasks;
 using Amqp;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
@@ -64,6 +66,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     receivers_ = Array.Empty<AsyncLazy<IReceiverLink>>();
     senders_   = Array.Empty<AsyncLazy<ISenderLink>>();
   }
+
+  public override Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => ConnectionAmqp.Check(tag);
 
   public override async Task Init(CancellationToken cancellationToken)
   {

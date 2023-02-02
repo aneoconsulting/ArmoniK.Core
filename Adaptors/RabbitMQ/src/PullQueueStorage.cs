@@ -30,10 +30,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
@@ -60,6 +62,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                             $"{nameof(Options.PartitionId)} is not defined.");
     }
   }
+
+  public override Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => ConnectionRabbit.Check(tag);
 
   public override async Task Init(CancellationToken cancellationToken)
   {
