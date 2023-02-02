@@ -825,15 +825,15 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (_, taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (_, unresolvedDependenciesTask, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                                  .ConfigureAwait(false);
 
-    sqmh.TaskId = taskId;
+    sqmh.TaskId = unresolvedDependenciesTask;
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.IsFalse(acquired);
+    Assert.IsTrue(acquired);
   }
 
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
