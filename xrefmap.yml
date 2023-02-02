@@ -136,6 +136,19 @@ references:
   fullName.vb: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.New
   nameWithType: PullQueueStorage.PullQueueStorage
   nameWithType.vb: PullQueueStorage.New
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: PullQueueStorage.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check
+  nameWithType: PullQueueStorage.Check
 - uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init(System.Threading.CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Init_System_Threading_CancellationToken_
@@ -5460,6 +5473,19 @@ references:
   fullName.vb: ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.New
   nameWithType: PullQueueStorage.PullQueueStorage
   nameWithType.vb: PullQueueStorage.New
+- uid: ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.html#ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: PullQueueStorage.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.html#ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check
+  nameWithType: PullQueueStorage.Check
 - uid: ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Init(System.Threading.CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.html#ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Init_System_Threading_CancellationToken_

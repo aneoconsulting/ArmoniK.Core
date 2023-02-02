@@ -33,7 +33,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html",
-          "hash": "ImPI20HlJFgOgBt8ZYUj7fBRUY2ToTs7luG9ddBQG2o="
+          "hash": "pJbFj3YyLpEqfYoZq6UFhXgYEx4FBCFPz4ubvC0cvHU="
         }
       },
       "is_incremental": false,
@@ -57,7 +57,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html",
-          "hash": "ZI4um/J/LUyjJ3kZkt0zp/w3myOtq6Uo37nCI4pehac="
+          "hash": "2CTDTvpxWGMb15OLOrD18osQ7xNeDuovoNXRDk+k3PY="
         }
       },
       "is_incremental": false,
@@ -1017,7 +1017,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.RabbitMQ.ConnectionRabbit.html",
-          "hash": "5yD60dSfRvlSW7dJiPkpYOpb6rHW8kJX+JDkee6F8VM="
+          "hash": "9vD0550wV8ExvhXQK9ZfjJLv+KzbXGCYixpviRRzsCU="
         }
       },
       "is_incremental": false,
@@ -1041,7 +1041,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.html",
-          "hash": "Xri3lLKmxfgzlGAu+9QmDzrOzY3qT6bWfxhDz4LvNrk="
+          "hash": "b61dW17mRvrtwSulCkdUUCfumHyi3w+TzR9B2yXJSKA="
         }
       },
       "is_incremental": false,
@@ -2433,7 +2433,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.QueueStorageBase.html",
-          "hash": "O1bQ+Jd7uHdFnBebNYUhlszVuyVU4+GZ2WFTKkq9AsM="
+          "hash": "HC7Ogm91Aag0Ip3uJN/GBUdvHkhZF1j/cuvf9hqPIgg="
         }
       },
       "is_incremental": false,
@@ -2973,7 +2973,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClient.html",
-          "hash": "pOakhz9UIYZi76H5dx5qBwGe9d5qrHia/89d1ytPISo="
+          "hash": "ruAwE7Y11ay96xWeyETiQWzzZaTcvTXk/CjDOn7Y8wU="
         }
       },
       "is_incremental": false,

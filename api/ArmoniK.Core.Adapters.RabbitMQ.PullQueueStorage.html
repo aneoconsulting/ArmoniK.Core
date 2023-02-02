@@ -100,9 +100,6 @@
       <a class="xref" href="ArmoniK.Core.Common.Storage.QueueStorageBase.html#ArmoniK_Core_Common_Storage_QueueStorageBase_IsInitialized">QueueStorageBase.IsInitialized</a>
     </div>
     <div>
-      <a class="xref" href="ArmoniK.Core.Common.Storage.QueueStorageBase.html#ArmoniK_Core_Common_Storage_QueueStorageBase_Check_ArmoniK_Core_Common_HealthCheckTag_">QueueStorageBase.Check(HealthCheckTag)</a>
-    </div>
-    <div>
       <a class="xref" href="ArmoniK.Core.Common.Storage.QueueStorageBase.html#ArmoniK_Core_Common_Storage_QueueStorageBase_MaxPriority">QueueStorageBase.MaxPriority</a>
     </div>
     <div>
@@ -140,7 +137,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage__ctor_ArmoniK_Core_Common_Injection_Options_Amqp_ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit_ILogger_ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.%23ctor(ArmoniK.Core.Common.Injection.Options.Amqp%2CArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit%2CILogger%7BArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage%7D)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L49">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L51">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage__ctor_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.#ctor*"></a>
   <h4 id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage__ctor_ArmoniK_Core_Common_Injection_Options_Amqp_ArmoniK_Core_Adapters_RabbitMQ_IConnectionRabbit_ILogger_ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage__" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.#ctor(ArmoniK.Core.Common.Injection.Options.Amqp,ArmoniK.Core.Adapters.RabbitMQ.IConnectionRabbit,ILogger{ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage})">PullQueueStorage(Amqp, IConnectionRabbit, ILogger&lt;PullQueueStorage&gt;)</h4>
@@ -181,10 +178,59 @@
 </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L66">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Check_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check*"></a>
+  <h4 id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override Task&lt;HealthCheckResult&gt; Check(HealthCheckTag tag)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.HealthCheckTag.html">HealthCheckTag</a></td>
+        <td><span class="parametername">tag</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">HealthCheckResult</span>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="ArmoniK.Core.Common.Storage.QueueStorageBase.html#ArmoniK_Core_Common_Storage_QueueStorageBase_Check_ArmoniK_Core_Common_HealthCheckTag_">QueueStorageBase.Check(HealthCheckTag)</a></div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Init_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Init(System.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L64">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L69">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Init_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Init*"></a>
   <h4 id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_Init_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.Init(System.Threading.CancellationToken)">Init(CancellationToken)</h4>
@@ -233,7 +279,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_PullMessagesAsync_System_Int32_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.PullMessagesAsync(System.Int32%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L170">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L175">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_PullMessagesAsync_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.PullMessagesAsync*"></a>
   <h4 id="ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage_PullMessagesAsync_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage.PullMessagesAsync(System.Int32,System.Threading.CancellationToken)">PullMessagesAsync(int, CancellationToken)</h4>
@@ -304,7 +350,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_RabbitMQ_PullQueueStorage.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L44" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/RabbitMQ/src/PullQueueStorage.cs/#L46" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
