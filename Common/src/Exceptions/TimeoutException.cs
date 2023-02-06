@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace ArmoniK.Core.Common.Exceptions;
 
@@ -43,13 +42,6 @@ public class TimeoutException : ArmoniKException
                           Exception innerException)
     : base(message,
            innerException)
-  {
-  }
-
-  protected TimeoutException(SerializationInfo info,
-                             StreamingContext  context)
-    : base(info,
-           context)
   {
   }
 }

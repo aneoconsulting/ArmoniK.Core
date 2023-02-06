@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace ArmoniK.Core.Common.Exceptions;
 
@@ -58,18 +57,6 @@ public class ArmoniKException : Exception
                           Exception innerException)
     : base(message,
            innerException)
-  {
-  }
-
-  /// <summary>
-  ///   Initializes a new instance of the <see cref="ArmoniKException" /> with serialized data
-  /// </summary>
-  /// <param name="info">Information for the perform the serialization</param>
-  /// <param name="context">Context passed to the Stream</param>
-  protected ArmoniKException(SerializationInfo info,
-                             StreamingContext  context)
-    : base(info,
-           context)
   {
   }
 }
