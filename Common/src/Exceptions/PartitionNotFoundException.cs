@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Runtime.Serialization;
 
 namespace ArmoniK.Core.Common.Exceptions;
 
@@ -43,13 +42,6 @@ public class PartitionNotFoundException : ArmoniKException
                                     Exception innerException)
     : base(message,
            innerException)
-  {
-  }
-
-  protected PartitionNotFoundException(SerializationInfo info,
-                                       StreamingContext  context)
-    : base(info,
-           context)
   {
   }
 }
