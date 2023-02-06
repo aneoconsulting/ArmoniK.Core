@@ -7580,58 +7580,6 @@ references:
   commentId: N:ArmoniK.Core.Common.Exceptions
   fullName: ArmoniK.Core.Common.Exceptions
   nameWithType: ArmoniK.Core.Common.Exceptions
-- uid: ArmoniK.Core.Common.Exceptions.AppSettingsException
-  name: AppSettingsException
-  href: api/ArmoniK.Core.Common.Exceptions.AppSettingsException.html
-  commentId: T:ArmoniK.Core.Common.Exceptions.AppSettingsException
-  fullName: ArmoniK.Core.Common.Exceptions.AppSettingsException
-  nameWithType: AppSettingsException
-- uid: ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor
-  name: AppSettingsException()
-  href: api/ArmoniK.Core.Common.Exceptions.AppSettingsException.html#ArmoniK_Core_Common_Exceptions_AppSettingsException__ctor
-  commentId: M:ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor
-  name.vb: New()
-  fullName: ArmoniK.Core.Common.Exceptions.AppSettingsException.AppSettingsException()
-  fullName.vb: ArmoniK.Core.Common.Exceptions.AppSettingsException.New()
-  nameWithType: AppSettingsException.AppSettingsException()
-  nameWithType.vb: AppSettingsException.New()
-- uid: ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: AppSettingsException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.AppSettingsException.html#ArmoniK_Core_Common_Exceptions_AppSettingsException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.AppSettingsException.AppSettingsException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.AppSettingsException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: AppSettingsException.AppSettingsException(SerializationInfo, StreamingContext)
-  nameWithType.vb: AppSettingsException.New(SerializationInfo, StreamingContext)
-- uid: ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor(System.String,System.Exception)
-  name: AppSettingsException(string, Exception)
-  href: api/ArmoniK.Core.Common.Exceptions.AppSettingsException.html#ArmoniK_Core_Common_Exceptions_AppSettingsException__ctor_System_String_System_Exception_
-  commentId: M:ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor(System.String,System.Exception)
-  name.vb: New(String, Exception)
-  fullName: ArmoniK.Core.Common.Exceptions.AppSettingsException.AppSettingsException(string, System.Exception)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.AppSettingsException.New(String, System.Exception)
-  nameWithType: AppSettingsException.AppSettingsException(string, Exception)
-  nameWithType.vb: AppSettingsException.New(String, Exception)
-- uid: ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor(System.String)
-  name: AppSettingsException(string)
-  href: api/ArmoniK.Core.Common.Exceptions.AppSettingsException.html#ArmoniK_Core_Common_Exceptions_AppSettingsException__ctor_System_String_
-  commentId: M:ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor(System.String)
-  name.vb: New(String)
-  fullName: ArmoniK.Core.Common.Exceptions.AppSettingsException.AppSettingsException(string)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.AppSettingsException.New(String)
-  nameWithType: AppSettingsException.AppSettingsException(string)
-  nameWithType.vb: AppSettingsException.New(String)
-- uid: ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor*
-  name: AppSettingsException
-  href: api/ArmoniK.Core.Common.Exceptions.AppSettingsException.html#ArmoniK_Core_Common_Exceptions_AppSettingsException__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Exceptions.AppSettingsException.#ctor
-  isSpec: "True"
-  name.vb: New
-  fullName: ArmoniK.Core.Common.Exceptions.AppSettingsException.AppSettingsException
-  fullName.vb: ArmoniK.Core.Common.Exceptions.AppSettingsException.New
-  nameWithType: AppSettingsException.AppSettingsException
-  nameWithType.vb: AppSettingsException.New
 - uid: ArmoniK.Core.Common.Exceptions.ArmoniKException
   name: ArmoniKException
   href: api/ArmoniK.Core.Common.Exceptions.ArmoniKException.html
@@ -7647,15 +7595,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.ArmoniKException.New()
   nameWithType: ArmoniKException.ArmoniKException()
   nameWithType.vb: ArmoniKException.New()
-- uid: ArmoniK.Core.Common.Exceptions.ArmoniKException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: ArmoniKException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.ArmoniKException.html#ArmoniK_Core_Common_Exceptions_ArmoniKException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ArmoniKException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.ArmoniKException.ArmoniKException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ArmoniKException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: ArmoniKException.ArmoniKException(SerializationInfo, StreamingContext)
-  nameWithType.vb: ArmoniKException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.ArmoniKException.#ctor(System.String,System.Exception)
   name: ArmoniKException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.ArmoniKException.html#ArmoniK_Core_Common_Exceptions_ArmoniKException__ctor_System_String_System_Exception_
@@ -7684,110 +7623,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.ArmoniKException.New
   nameWithType: ArmoniKException.ArmoniKException
   nameWithType.vb: ArmoniKException.New
-- uid: ArmoniK.Core.Common.Exceptions.ComputeLibInitException
-  name: ComputeLibInitException
-  href: api/ArmoniK.Core.Common.Exceptions.ComputeLibInitException.html
-  commentId: T:ArmoniK.Core.Common.Exceptions.ComputeLibInitException
-  fullName: ArmoniK.Core.Common.Exceptions.ComputeLibInitException
-  nameWithType: ComputeLibInitException
-- uid: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor
-  name: ComputeLibInitException()
-  href: api/ArmoniK.Core.Common.Exceptions.ComputeLibInitException.html#ArmoniK_Core_Common_Exceptions_ComputeLibInitException__ctor
-  commentId: M:ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor
-  name.vb: New()
-  fullName: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.ComputeLibInitException()
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.New()
-  nameWithType: ComputeLibInitException.ComputeLibInitException()
-  nameWithType.vb: ComputeLibInitException.New()
-- uid: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: ComputeLibInitException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.ComputeLibInitException.html#ArmoniK_Core_Common_Exceptions_ComputeLibInitException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.ComputeLibInitException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: ComputeLibInitException.ComputeLibInitException(SerializationInfo, StreamingContext)
-  nameWithType.vb: ComputeLibInitException.New(SerializationInfo, StreamingContext)
-- uid: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor(System.String,System.Exception)
-  name: ComputeLibInitException(string, Exception)
-  href: api/ArmoniK.Core.Common.Exceptions.ComputeLibInitException.html#ArmoniK_Core_Common_Exceptions_ComputeLibInitException__ctor_System_String_System_Exception_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor(System.String,System.Exception)
-  name.vb: New(String, Exception)
-  fullName: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.ComputeLibInitException(string, System.Exception)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.New(String, System.Exception)
-  nameWithType: ComputeLibInitException.ComputeLibInitException(string, Exception)
-  nameWithType.vb: ComputeLibInitException.New(String, Exception)
-- uid: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor(System.String)
-  name: ComputeLibInitException(string)
-  href: api/ArmoniK.Core.Common.Exceptions.ComputeLibInitException.html#ArmoniK_Core_Common_Exceptions_ComputeLibInitException__ctor_System_String_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor(System.String)
-  name.vb: New(String)
-  fullName: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.ComputeLibInitException(string)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.New(String)
-  nameWithType: ComputeLibInitException.ComputeLibInitException(string)
-  nameWithType.vb: ComputeLibInitException.New(String)
-- uid: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor*
-  name: ComputeLibInitException
-  href: api/ArmoniK.Core.Common.Exceptions.ComputeLibInitException.html#ArmoniK_Core_Common_Exceptions_ComputeLibInitException__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Exceptions.ComputeLibInitException.#ctor
-  isSpec: "True"
-  name.vb: New
-  fullName: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.ComputeLibInitException
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ComputeLibInitException.New
-  nameWithType: ComputeLibInitException.ComputeLibInitException
-  nameWithType.vb: ComputeLibInitException.New
-- uid: ArmoniK.Core.Common.Exceptions.KeyNotFoundException
-  name: KeyNotFoundException
-  href: api/ArmoniK.Core.Common.Exceptions.KeyNotFoundException.html
-  commentId: T:ArmoniK.Core.Common.Exceptions.KeyNotFoundException
-  fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException
-  nameWithType: KeyNotFoundException
-- uid: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor
-  name: KeyNotFoundException()
-  href: api/ArmoniK.Core.Common.Exceptions.KeyNotFoundException.html#ArmoniK_Core_Common_Exceptions_KeyNotFoundException__ctor
-  commentId: M:ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor
-  name.vb: New()
-  fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.KeyNotFoundException()
-  fullName.vb: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.New()
-  nameWithType: KeyNotFoundException.KeyNotFoundException()
-  nameWithType.vb: KeyNotFoundException.New()
-- uid: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: KeyNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.KeyNotFoundException.html#ArmoniK_Core_Common_Exceptions_KeyNotFoundException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.KeyNotFoundException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: KeyNotFoundException.KeyNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType.vb: KeyNotFoundException.New(SerializationInfo, StreamingContext)
-- uid: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor(System.String,System.Exception)
-  name: KeyNotFoundException(string, Exception)
-  href: api/ArmoniK.Core.Common.Exceptions.KeyNotFoundException.html#ArmoniK_Core_Common_Exceptions_KeyNotFoundException__ctor_System_String_System_Exception_
-  commentId: M:ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor(System.String,System.Exception)
-  name.vb: New(String, Exception)
-  fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.KeyNotFoundException(string, System.Exception)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.New(String, System.Exception)
-  nameWithType: KeyNotFoundException.KeyNotFoundException(string, Exception)
-  nameWithType.vb: KeyNotFoundException.New(String, Exception)
-- uid: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor(System.String)
-  name: KeyNotFoundException(string)
-  href: api/ArmoniK.Core.Common.Exceptions.KeyNotFoundException.html#ArmoniK_Core_Common_Exceptions_KeyNotFoundException__ctor_System_String_
-  commentId: M:ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor(System.String)
-  name.vb: New(String)
-  fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.KeyNotFoundException(string)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.New(String)
-  nameWithType: KeyNotFoundException.KeyNotFoundException(string)
-  nameWithType.vb: KeyNotFoundException.New(String)
-- uid: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor*
-  name: KeyNotFoundException
-  href: api/ArmoniK.Core.Common.Exceptions.KeyNotFoundException.html#ArmoniK_Core_Common_Exceptions_KeyNotFoundException__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Exceptions.KeyNotFoundException.#ctor
-  isSpec: "True"
-  name.vb: New
-  fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.KeyNotFoundException
-  fullName.vb: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.New
-  nameWithType: KeyNotFoundException.KeyNotFoundException
-  nameWithType.vb: KeyNotFoundException.New
 - uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException
   name: ObjectDataNotFoundException
   href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html
@@ -7803,15 +7638,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.New()
   nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException()
   nameWithType.vb: ObjectDataNotFoundException.New()
-- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: ObjectDataNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType.vb: ObjectDataNotFoundException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.String,System.Exception)
   name: ObjectDataNotFoundException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor_System_String_System_Exception_
@@ -7855,15 +7681,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.New()
   nameWithType: PartitionNotFoundException.PartitionNotFoundException()
   nameWithType.vb: PartitionNotFoundException.New()
-- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: PartitionNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.PartitionNotFoundException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: PartitionNotFoundException.PartitionNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType.vb: PartitionNotFoundException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.String,System.Exception)
   name: PartitionNotFoundException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor_System_String_System_Exception_
@@ -7907,15 +7724,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.ResultNotFoundException.New()
   nameWithType: ResultNotFoundException.ResultNotFoundException()
   nameWithType.vb: ResultNotFoundException.New()
-- uid: ArmoniK.Core.Common.Exceptions.ResultNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: ResultNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.ResultNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultNotFoundException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ResultNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.ResultNotFoundException.ResultNotFoundException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.ResultNotFoundException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: ResultNotFoundException.ResultNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType.vb: ResultNotFoundException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.ResultNotFoundException.#ctor(System.String,System.Exception)
   name: ResultNotFoundException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.ResultNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultNotFoundException__ctor_System_String_System_Exception_
@@ -7959,15 +7767,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.SessionNotFoundException.New()
   nameWithType: SessionNotFoundException.SessionNotFoundException()
   nameWithType.vb: SessionNotFoundException.New()
-- uid: ArmoniK.Core.Common.Exceptions.SessionNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: SessionNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.SessionNotFoundException.html#ArmoniK_Core_Common_Exceptions_SessionNotFoundException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.SessionNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.SessionNotFoundException.SessionNotFoundException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.SessionNotFoundException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: SessionNotFoundException.SessionNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType.vb: SessionNotFoundException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.SessionNotFoundException.#ctor(System.String,System.Exception)
   name: SessionNotFoundException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.SessionNotFoundException.html#ArmoniK_Core_Common_Exceptions_SessionNotFoundException__ctor_System_String_System_Exception_
@@ -8011,15 +7810,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.TaskCanceledException.New()
   nameWithType: TaskCanceledException.TaskCanceledException()
   nameWithType.vb: TaskCanceledException.New()
-- uid: ArmoniK.Core.Common.Exceptions.TaskCanceledException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: TaskCanceledException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.TaskCanceledException.html#ArmoniK_Core_Common_Exceptions_TaskCanceledException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.TaskCanceledException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.TaskCanceledException.TaskCanceledException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.TaskCanceledException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: TaskCanceledException.TaskCanceledException(SerializationInfo, StreamingContext)
-  nameWithType.vb: TaskCanceledException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.TaskCanceledException.#ctor(System.String,System.Exception)
   name: TaskCanceledException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.TaskCanceledException.html#ArmoniK_Core_Common_Exceptions_TaskCanceledException__ctor_System_String_System_Exception_
@@ -8063,15 +7853,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.TaskNotFoundException.New()
   nameWithType: TaskNotFoundException.TaskNotFoundException()
   nameWithType.vb: TaskNotFoundException.New()
-- uid: ArmoniK.Core.Common.Exceptions.TaskNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: TaskNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.TaskNotFoundException.html#ArmoniK_Core_Common_Exceptions_TaskNotFoundException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.TaskNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.TaskNotFoundException.TaskNotFoundException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.TaskNotFoundException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: TaskNotFoundException.TaskNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType.vb: TaskNotFoundException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.TaskNotFoundException.#ctor(System.String,System.Exception)
   name: TaskNotFoundException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.TaskNotFoundException.html#ArmoniK_Core_Common_Exceptions_TaskNotFoundException__ctor_System_String_System_Exception_
@@ -8115,15 +7896,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Exceptions.TimeoutException.New()
   nameWithType: TimeoutException.TimeoutException()
   nameWithType.vb: TimeoutException.New()
-- uid: ArmoniK.Core.Common.Exceptions.TimeoutException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name: TimeoutException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.TimeoutException.html#ArmoniK_Core_Common_Exceptions_TimeoutException__ctor_System_Runtime_Serialization_SerializationInfo_System_Runtime_Serialization_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.TimeoutException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)
-  name.vb: New(SerializationInfo, StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.TimeoutException.TimeoutException(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  fullName.vb: ArmoniK.Core.Common.Exceptions.TimeoutException.New(System.Runtime.Serialization.SerializationInfo, System.Runtime.Serialization.StreamingContext)
-  nameWithType: TimeoutException.TimeoutException(SerializationInfo, StreamingContext)
-  nameWithType.vb: TimeoutException.New(SerializationInfo, StreamingContext)
 - uid: ArmoniK.Core.Common.Exceptions.TimeoutException.#ctor(System.String,System.Exception)
   name: TimeoutException(string, Exception)
   href: api/ArmoniK.Core.Common.Exceptions.TimeoutException.html#ArmoniK_Core_Common_Exceptions_TimeoutException__ctor_System_String_System_Exception_
