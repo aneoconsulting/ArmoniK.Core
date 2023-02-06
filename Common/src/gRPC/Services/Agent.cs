@@ -91,10 +91,6 @@ public class Agent : IAgent
     using var _ = logger_.BeginNamedScope(nameof(FinalizeTaskCreation),
                                           ("taskId", taskData_.TaskId)!,
                                           ("sessionId", sessionData_.SessionId)!);
-    if (createdTasks_ == null)
-    {
-      throw new ArmoniKException("Created tasks should not be null");
-    }
 
     logger_.LogDebug("Finalize child task creation");
 
@@ -389,11 +385,36 @@ public class Agent : IAgent
       return;
     }
 
-    IAsyncEnumerable<byte[]> bytes;
     try
     {
-      bytes = resourcesStorage_.GetValuesAsync(request.Key,
-                                               cancellationToken);
+      await foreach (var data in resourcesStorage_.GetValuesAsync(request.Key,
+                                                                  cancellationToken)
+                                                  .ConfigureAwait(false))
+      {
+        await responseStream.WriteAsync(new DataReply
+                                        {
+                                          Init = new DataReply.Types.Init
+                                                 {
+                                                   Key = request.Key,
+                                                   Data = new DataChunk
+                                                          {
+                                                            Data = UnsafeByteOperations.UnsafeWrap(data),
+                                                          },
+                                                 },
+                                        },
+                                        cancellationToken)
+                            .ConfigureAwait(false);
+      }
+
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        Data = new DataChunk
+                                               {
+                                                 DataComplete = true,
+                                               },
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
     }
     catch (ObjectDataNotFoundException)
     {
@@ -407,51 +428,7 @@ public class Agent : IAgent
                                       },
                                       cancellationToken)
                           .ConfigureAwait(false);
-      return;
     }
-
-    await responseStream.WriteAsync(new DataReply
-                                    {
-                                      Init = new DataReply.Types.Init
-                                             {
-                                               Key = request.Key,
-                                               Data = new DataChunk
-                                                      {
-                                                        Data = UnsafeByteOperations.UnsafeWrap(await bytes.FirstAsync(cancellationToken)
-                                                                                                          .ConfigureAwait(false)),
-                                                      },
-                                             },
-                                    },
-                                    cancellationToken)
-                        .ConfigureAwait(false);
-
-    await foreach (var data in bytes.Skip(1)
-                                    .ConfigureAwait(false))
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        Init = new DataReply.Types.Init
-                                               {
-                                                 Key = request.Key,
-                                                 Data = new DataChunk
-                                                        {
-                                                          Data = UnsafeByteOperations.UnsafeWrap(data),
-                                                        },
-                                               },
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
-    await responseStream.WriteAsync(new DataReply
-                                    {
-                                      Data = new DataChunk
-                                             {
-                                               DataComplete = true,
-                                             },
-                                    },
-                                    cancellationToken)
-                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
