@@ -22300,6 +22300,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed
   nameWithType: AgentTest.CreateTasksShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.GetResourceDataShouldSucceed
+  name: GetResourceDataShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_GetResourceDataShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.GetResourceDataShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.GetResourceDataShouldSucceed()
+  nameWithType: AgentTest.GetResourceDataShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.GetResourceDataShouldSucceed*
+  name: GetResourceDataShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_GetResourceDataShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.GetResourceDataShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.GetResourceDataShouldSucceed
+  nameWithType: AgentTest.GetResourceDataShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData
   name: MissingResourceData()
   href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MissingResourceData

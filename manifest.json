@@ -3405,7 +3405,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html",
-          "hash": "u17bcWNpiVDxleRJEq9TsQQ1B/0YOUaS6ZQkl6U+IJo="
+          "hash": "LpIkZPwZ6AfIVvplOvy9rVIQ7juCDFyYkl9jovu3S3g="
         }
       },
       "is_incremental": false,
@@ -4065,7 +4065,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.Agent.html",
-          "hash": "i9AUaLNA1Gmz/h8G71YxRcozbFB0nV/Tw7MoTWF4p6k="
+          "hash": "2IP01eiTj6Nh0eHb283b7eYcf9TXSUOFtbSOEPz4Q8o="
         }
       },
       "is_incremental": false,
