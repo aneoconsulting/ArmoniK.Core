@@ -476,7 +476,7 @@ jobs:
           sleep 10
 
       - name: Run Stream Test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
@@ -559,7 +559,7 @@ jobs:
           sleep 10
 
       - name: Run HtcMock test 100 tasks 1 level
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
@@ -572,7 +572,7 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Run HtcMock test 100 tasks 4 levels
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
@@ -585,7 +585,7 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Run HtcMock test 1000 tasks 1 level
-        timeout-minutes: 10
+        timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
           docker run --net armonik_network --rm \
@@ -599,7 +599,7 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Run HtcMock test 1000 tasks 4 levels
-        timeout-minutes: 10
+        timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
           docker run --net armonik_network --rm \
@@ -668,7 +668,7 @@ jobs:
           ls -la terraform/logs/*.json
 
       - name: Run Bench test tasks - many tasks (200)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=200 \
@@ -676,7 +676,7 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test tasks - many tasks (200) with events
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=200 \
@@ -685,7 +685,7 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test time - long tasks (10s)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=2 \
@@ -693,7 +693,7 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test time - large payloads (10MB)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
@@ -703,7 +703,7 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test time - large results (10MB)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
@@ -767,7 +767,7 @@ jobs:
           ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
@@ -835,7 +835,7 @@ jobs:
           ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
@@ -857,7 +857,7 @@ jobs:
           just healthChecks
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
@@ -879,7 +879,7 @@ jobs:
           just healthChecks
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
@@ -901,7 +901,7 @@ jobs:
           just healthChecks
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
