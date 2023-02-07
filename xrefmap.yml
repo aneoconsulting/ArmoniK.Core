@@ -19604,6 +19604,60 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing
   nameWithType: SimpleWorkerStreamHandler.StartTaskProcessing
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider
+  name: TestDatabaseProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider
+  nameWithType: TestDatabaseProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.#ctor(System.Action{IServiceCollection})
+  name: TestDatabaseProvider(Action<IServiceCollection>?)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestDatabaseProvider__ctor_System_Action_IServiceCollection__
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.#ctor(System.Action{IServiceCollection})
+  name.vb: New(Action(Of IServiceCollection))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.TestDatabaseProvider(System.Action<IServiceCollection>?)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.New(System.Action(Of IServiceCollection))
+  nameWithType: TestDatabaseProvider.TestDatabaseProvider(Action<IServiceCollection>?)
+  nameWithType.vb: TestDatabaseProvider.New(Action(Of IServiceCollection))
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.#ctor*
+  name: TestDatabaseProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestDatabaseProvider__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.TestDatabaseProvider
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.New
+  nameWithType: TestDatabaseProvider.TestDatabaseProvider
+  nameWithType.vb: TestDatabaseProvider.New
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestDatabaseProvider_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.Dispose()
+  nameWithType: TestDatabaseProvider.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestDatabaseProvider_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.Dispose
+  nameWithType: TestDatabaseProvider.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService*
+  name: GetRequiredService
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestDatabaseProvider_GetRequiredService_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService
+  nameWithType: TestDatabaseProvider.GetRequiredService
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService``1
+  name: GetRequiredService<T>()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestDatabaseProvider_GetRequiredService__1
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService``1
+  name.vb: GetRequiredService(Of T)()
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService<T>()
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.TestDatabaseProvider.GetRequiredService(Of T)()
+  nameWithType: TestDatabaseProvider.GetRequiredService<T>()
+  nameWithType.vb: TestDatabaseProvider.GetRequiredService(Of T)()
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider
   name: TestPollingAgentProvider
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html
@@ -22227,6 +22281,173 @@ references:
   commentId: N:ArmoniK.Core.Common.Tests.Pollster
   fullName: ArmoniK.Core.Common.Tests.Pollster
   nameWithType: ArmoniK.Core.Common.Tests.Pollster
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest
+  name: AgentTest
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.AgentTest
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest
+  nameWithType: AgentTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed
+  name: CreateTasksShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_CreateTasksShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed()
+  nameWithType: AgentTest.CreateTasksShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed*
+  name: CreateTasksShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_CreateTasksShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.CreateTasksShouldSucceed
+  nameWithType: AgentTest.CreateTasksShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData
+  name: MissingResourceData()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MissingResourceData
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData()
+  nameWithType: AgentTest.MissingResourceData()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData*
+  name: MissingResourceData
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MissingResourceData_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MissingResourceData
+  nameWithType: AgentTest.MissingResourceData
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage
+  name: AgentTest.MyPushQueueStorage
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage
+  nameWithType: AgentTest.MyPushQueueStorage
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: AgentTest.MyPushQueueStorage.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Check
+  nameWithType: AgentTest.MyPushQueueStorage.Check
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Init(System.Threading.CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_Init_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Init(System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Init(System.Threading.CancellationToken)
+  nameWithType: AgentTest.MyPushQueueStorage.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Init
+  nameWithType: AgentTest.MyPushQueueStorage.Init
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.MaxPriority
+  name: MaxPriority
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_MaxPriority
+  commentId: P:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.MaxPriority
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.MaxPriority
+  nameWithType: AgentTest.MyPushQueueStorage.MaxPriority
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.MaxPriority*
+  name: MaxPriority
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_MaxPriority_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.MaxPriority
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.MaxPriority
+  nameWithType: AgentTest.MyPushQueueStorage.MaxPriority
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Messages
+  name: Messages
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_Messages
+  commentId: F:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Messages
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.Messages
+  nameWithType: AgentTest.MyPushQueueStorage.Messages
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Threading.CancellationToken)
+  name: PushMessagesAsync(IEnumerable<string>, string, int, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_PushMessagesAsync_System_Collections_Generic_IEnumerable_System_String__System_String_System_Int32_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Int32,System.Threading.CancellationToken)
+  name.vb: PushMessagesAsync(IEnumerable(Of String), String, Integer, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable<string>, string, int, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync(System.Collections.Generic.IEnumerable(Of String), String, Integer, System.Threading.CancellationToken)
+  nameWithType: AgentTest.MyPushQueueStorage.PushMessagesAsync(IEnumerable<string>, string, int, CancellationToken)
+  nameWithType.vb: AgentTest.MyPushQueueStorage.PushMessagesAsync(IEnumerable(Of String), String, Integer, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync*
+  name: PushMessagesAsync
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_MyPushQueueStorage_PushMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.MyPushQueueStorage.PushMessagesAsync
+  nameWithType: AgentTest.MyPushQueueStorage.PushMessagesAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SendResultShouldSucceed
+  name: SendResultShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_SendResultShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.SendResultShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SendResultShouldSucceed()
+  nameWithType: AgentTest.SendResultShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SendResultShouldSucceed*
+  name: SendResultShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_SendResultShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.SendResultShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SendResultShouldSucceed
+  nameWithType: AgentTest.SendResultShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.SetUp
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SetUp()
+  nameWithType: AgentTest.SetUp()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.SetUp
+  nameWithType: AgentTest.SetUp
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.TearDown
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.TearDown()
+  nameWithType: AgentTest.TearDown()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.TearDown
+  nameWithType: AgentTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.UnImplementedData
+  name: UnImplementedData()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_UnImplementedData
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.UnImplementedData
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.UnImplementedData()
+  nameWithType: AgentTest.UnImplementedData()
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.UnImplementedData*
+  name: UnImplementedData
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_UnImplementedData_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.UnImplementedData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.UnImplementedData
+  nameWithType: AgentTest.UnImplementedData
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens(System.String)
+  name: WrongTokens(string)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_WrongTokens_System_String_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens(System.String)
+  name.vb: WrongTokens(String)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens(string)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens(String)
+  nameWithType: AgentTest.WrongTokens(string)
+  nameWithType.vb: AgentTest.WrongTokens(String)
+- uid: ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens*
+  name: WrongTokens
+  href: api/ArmoniK.Core.Common.Tests.Pollster.AgentTest.html#ArmoniK_Core_Common_Tests_Pollster_AgentTest_WrongTokens_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.AgentTest.WrongTokens
+  nameWithType: AgentTest.WrongTokens
 - uid: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest
   name: DataPrefetcherTest
   href: api/ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.html
