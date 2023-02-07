@@ -125,6 +125,7 @@ public class AgentTest
     public readonly  Agent                Agent;
     private readonly TestDatabaseProvider prov_;
     public readonly  MyPushQueueStorage   QueueStorage;
+    public readonly  IObjectStorage       ResourceStorage;
     public readonly  IResultTable         ResultTable;
     public readonly  string               Session;
     public readonly  TaskData             TaskData;
@@ -145,6 +146,7 @@ public class AgentTest
       var submitter            = prov_.GetRequiredService<ISubmitter>();
       var objectStorageFactory = prov_.GetRequiredService<IObjectStorageFactory>();
 
+      ResourceStorage = objectStorageFactory.CreateResourcesStorage();
 
       Session = sessionTable.SetSessionDataAsync(new[]
                                                  {
@@ -640,5 +642,47 @@ public class AgentTest
 
     Assert.AreEqual(TaskStatus.Submitted,
                     taskData3.Status);
+  }
+
+  [Test]
+  public async Task GetResourceDataShouldSucceed()
+  {
+    using var holder       = new AgentHolder();
+    var       resourceData = new TestHelperServerStreamWriter<DataReply>();
+
+    await holder.ResourceStorage.AddOrUpdateAsync("ResourceData",
+                                                  new List<byte[]>
+                                                    {
+                                                      Encoding.ASCII.GetBytes("Data1"),
+                                                      Encoding.ASCII.GetBytes("Data2"),
+                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                     .ToAsyncEnumerable(),
+                                                  CancellationToken.None)
+                .ConfigureAwait(false);
+
+    await holder.Agent.GetResourceData(new DataRequest
+                                       {
+                                         CommunicationToken = holder.Token,
+                                         Key                = "ResourceData",
+                                       },
+                                       resourceData,
+                                       CancellationToken.None)
+                .ConfigureAwait(false);
+
+    foreach (var message in resourceData.Messages)
+    {
+      Console.WriteLine(message);
+    }
+
+    Assert.AreEqual(3,
+                    resourceData.Messages.Count);
+    Assert.AreEqual("Data1",
+                    resourceData.Messages[0]
+                                .Data.Data);
+    Assert.AreEqual("Data2",
+                    resourceData.Messages[1]
+                                .Data.Data);
+    Assert.IsTrue(resourceData.Messages[2]
+                              .Data.DataComplete);
   }
 }
