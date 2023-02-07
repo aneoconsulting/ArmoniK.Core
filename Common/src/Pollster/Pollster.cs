@@ -67,6 +67,7 @@ public class Pollster : IInitializable
   private readonly IWorkerStreamHandler       workerStreamHandler_;
   private          bool                       endLoopReached_;
   private          HealthCheckResult?         healthCheckFailedResult_;
+  public           Func<Task>?                StopCancelledTask;
   public           string                     TaskProcessing;
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
@@ -295,6 +296,8 @@ public class Pollster : IInitializable
                                                             pollsterOptions_,
                                                             cts);
 
+              StopCancelledTask = taskHandler.StopCancelledTask;
+
               var precondition = await taskHandler.AcquireTask()
                                                   .ConfigureAwait(false);
 
@@ -310,6 +313,8 @@ public class Pollster : IInitializable
 
                 await taskHandler.PostProcessing()
                                  .ConfigureAwait(false);
+
+                StopCancelledTask = null;
 
                 logger_.LogDebug("Task returned");
 
@@ -331,7 +336,8 @@ public class Pollster : IInitializable
             }
             finally
             {
-              TaskProcessing = string.Empty;
+              StopCancelledTask = null;
+              TaskProcessing    = string.Empty;
             }
           }
         }

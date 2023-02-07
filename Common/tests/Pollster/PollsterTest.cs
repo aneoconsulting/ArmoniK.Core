@@ -501,6 +501,79 @@ public class PollsterTest
                    testServiceProvider.Pollster.TaskProcessing);
   }
 
+  [Test]
+  public async Task CancelLongTaskShouldSucceed()
+  {
+    var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
+    var waitWorkerStreamHandler = new ExceptionWorkerStreamHandler<Exception>(15000);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage.Object);
+
+    var tuple = await InitSubmitter(testServiceProvider.Submitter,
+                                    testServiceProvider.PartitionTable,
+                                    CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+                                                                    It.IsAny<CancellationToken>()))
+                        .Returns(() => new List<IQueueMessageHandler>
+                                       {
+                                         new SimpleQueueMessageHandler
+                                         {
+                                           CancellationToken = CancellationToken.None,
+                                           Status            = QueueMessageStatus.Waiting,
+                                           MessageId = Guid.NewGuid()
+                                                           .ToString(),
+                                           TaskId = tuple.taskSubmitted,
+                                         },
+                                       }.ToAsyncEnumerable());
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+    var mainLoopTask = testServiceProvider.Pollster.MainLoop(source.Token);
+
+    await Task.Delay(TimeSpan.FromMilliseconds(200),
+                     CancellationToken.None)
+              .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.CancelTaskAsync(new List<string>
+                                                        {
+                                                          tuple.taskSubmitted,
+                                                        },
+                                                        CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    await Task.Delay(TimeSpan.FromMilliseconds(200),
+                     CancellationToken.None)
+              .ConfigureAwait(false);
+
+    await testServiceProvider.Pollster.StopCancelledTask!.Invoke()
+                             .ConfigureAwait(false);
+
+    Assert.DoesNotThrowAsync(() => mainLoopTask);
+    Assert.False(testServiceProvider.Pollster.Failed);
+    Assert.True(source.Token.IsCancellationRequested);
+
+    Assert.AreEqual(TaskStatus.Cancelled,
+                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                                       {
+                                                                         tuple.taskSubmitted,
+                                                                       },
+                                                                       CancellationToken.None)
+                                              .ConfigureAwait(false)).Single()
+                                                                     .Status);
+    Assert.AreEqual(string.Empty,
+                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.AreSame(string.Empty,
+                   testServiceProvider.Pollster.TaskProcessing);
+  }
+
   public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
   {
     get

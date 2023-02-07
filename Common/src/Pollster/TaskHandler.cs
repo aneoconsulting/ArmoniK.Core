@@ -87,33 +87,35 @@ public class TaskHandler : IAsyncDisposable
                      Injection.Options.Pollster pollsterOptions,
                      CancellationTokenSource    cancellationTokenSource)
   {
-    sessionTable_            = sessionTable;
-    taskTable_               = taskTable;
-    resultTable_             = resultTable;
-    messageHandler_          = messageHandler;
-    taskProcessingChecker_   = taskProcessingChecker;
-    submitter_               = submitter;
-    dataPrefetcher_          = dataPrefetcher;
-    workerStreamHandler_     = workerStreamHandler;
-    activitySource_          = activitySource;
-    agentHandler_            = agentHandler;
-    logger_                  = logger;
-    cancellationTokenSource_ = cancellationTokenSource;
-    ownerPodId_              = ownerPodId;
-    ownerPodName_            = ownerPodName;
-    taskData_                = null;
-    sessionData_             = null;
+    sessionTable_          = sessionTable;
+    taskTable_             = taskTable;
+    resultTable_           = resultTable;
+    messageHandler_        = messageHandler;
+    taskProcessingChecker_ = taskProcessingChecker;
+    submitter_             = submitter;
+    dataPrefetcher_        = dataPrefetcher;
+    workerStreamHandler_   = workerStreamHandler;
+    activitySource_        = activitySource;
+    agentHandler_          = agentHandler;
+    logger_                = logger;
+    ownerPodId_            = ownerPodId;
+    ownerPodName_          = ownerPodName;
+    taskData_              = null;
+    sessionData_           = null;
     token_ = Guid.NewGuid()
                  .ToString();
 
-    workerConnectionCts_ = new CancellationTokenSource();
+    workerConnectionCts_     = new CancellationTokenSource();
+    cancellationTokenSource_ = new CancellationTokenSource();
 
-    reg1_ = cancellationTokenSource_.Token.Register(() =>
-                                                    {
-                                                      logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
-                                                                         pollsterOptions.GraceDelay);
-                                                      workerConnectionCts_.CancelAfter(pollsterOptions.GraceDelay);
-                                                    });
+    reg1_ = cancellationTokenSource.Token.Register(() => cancellationTokenSource_.Cancel());
+
+    cancellationTokenSource_.Token.Register(() =>
+                                            {
+                                              logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
+                                                                 pollsterOptions.GraceDelay);
+                                              workerConnectionCts_.CancelAfter(pollsterOptions.GraceDelay);
+                                            });
     workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
   }
 
@@ -131,8 +133,30 @@ public class TaskHandler : IAsyncDisposable
     reg1_.Unregister();
     await reg1_.DisposeAsync()
                .ConfigureAwait(false);
+    cancellationTokenSource_.Dispose();
     workerConnectionCts_.Dispose();
     agent_?.Dispose();
+  }
+
+  /// <summary>
+  ///   Refresh task metadata and stop execution if current task should be cancelled
+  /// </summary>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public async Task StopCancelledTask()
+  {
+    if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
+    {
+      taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+      if (taskData_.Status is TaskStatus.Cancelling)
+      {
+        logger_.LogWarning("Task has been cancelled, trigger cancellation from exterior.");
+        cancellationTokenSource_.Cancel();
+      }
+    }
   }
 
   /// <summary>
@@ -618,6 +642,12 @@ public class TaskHandler : IAsyncDisposable
                                               bool              requeueIfUnavailable,
                                               CancellationToken cancellationToken)
   {
+    if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
+    {
+      messageHandler_.Status = QueueMessageStatus.Processed;
+      return;
+    }
+
     if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && e is RpcException
                                                                                    {
                                                                                      StatusCode: StatusCode.Unavailable,
