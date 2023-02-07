@@ -393,13 +393,9 @@ public class Agent : IAgent
       {
         await responseStream.WriteAsync(new DataReply
                                         {
-                                          Init = new DataReply.Types.Init
+                                          Data = new DataChunk
                                                  {
-                                                   Key = request.Key,
-                                                   Data = new DataChunk
-                                                          {
-                                                            Data = UnsafeByteOperations.UnsafeWrap(data),
-                                                          },
+                                                   Data = UnsafeByteOperations.UnsafeWrap(data),
                                                  },
                                         },
                                         cancellationToken)
