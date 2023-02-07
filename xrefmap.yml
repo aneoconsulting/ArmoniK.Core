@@ -11127,6 +11127,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.Pollster.MainLoop
   nameWithType: Pollster.MainLoop
+- uid: ArmoniK.Core.Common.Pollster.Pollster.StopCancelledTask
+  name: StopCancelledTask
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_StopCancelledTask
+  commentId: F:ArmoniK.Core.Common.Pollster.Pollster.StopCancelledTask
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.StopCancelledTask
+  nameWithType: Pollster.StopCancelledTask
 - uid: ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
   name: TaskProcessing
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_TaskProcessing
@@ -11236,6 +11242,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing
   nameWithType: TaskHandler.PreProcessing
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.StopCancelledTask
+  name: StopCancelledTask()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_StopCancelledTask
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.StopCancelledTask
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.StopCancelledTask()
+  nameWithType: TaskHandler.StopCancelledTask()
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.StopCancelledTask*
+  name: StopCancelledTask
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_StopCancelledTask_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.StopCancelledTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.StopCancelledTask
+  nameWithType: TaskHandler.StopCancelledTask
 - uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
   name: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
   href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.html
@@ -17750,6 +17769,207 @@ references:
   fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
   nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync
   nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1
+  name: ExceptionAsyncPipe<T>
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1
+  name.vb: ExceptionAsyncPipe(Of T)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T)
+  nameWithType: ExceptionAsyncPipe<T>
+  nameWithType.vb: ExceptionAsyncPipe(Of T)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.#ctor(System.Int32)
+  name: ExceptionAsyncPipe(int)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1__ctor_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.#ctor(System.Int32)
+  name.vb: New(Integer)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.ExceptionAsyncPipe(int)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).New(Integer)
+  nameWithType: ExceptionAsyncPipe<T>.ExceptionAsyncPipe(int)
+  nameWithType.vb: ExceptionAsyncPipe(Of T).New(Integer)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.#ctor*
+  name: ExceptionAsyncPipe
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.ExceptionAsyncPipe
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).New
+  nameWithType: ExceptionAsyncPipe<T>.ExceptionAsyncPipe
+  nameWithType.vb: ExceptionAsyncPipe(Of T).New
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.CompleteAsync
+  name: CompleteAsync()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_CompleteAsync
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.CompleteAsync
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.CompleteAsync()
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).CompleteAsync()
+  nameWithType: ExceptionAsyncPipe<T>.CompleteAsync()
+  nameWithType.vb: ExceptionAsyncPipe(Of T).CompleteAsync()
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.CompleteAsync*
+  name: CompleteAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_CompleteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.CompleteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.CompleteAsync
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).CompleteAsync
+  nameWithType: ExceptionAsyncPipe<T>.CompleteAsync
+  nameWithType.vb: ExceptionAsyncPipe(Of T).CompleteAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.ReadAsync(System.Threading.CancellationToken)
+  name: ReadAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_ReadAsync_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.ReadAsync(System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.ReadAsync(System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).ReadAsync(System.Threading.CancellationToken)
+  nameWithType: ExceptionAsyncPipe<T>.ReadAsync(CancellationToken)
+  nameWithType.vb: ExceptionAsyncPipe(Of T).ReadAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.ReadAsync*
+  name: ReadAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_ReadAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.ReadAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.ReadAsync
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).ReadAsync
+  nameWithType: ExceptionAsyncPipe<T>.ReadAsync
+  nameWithType.vb: ExceptionAsyncPipe(Of T).ReadAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.WriteAsync(ProcessRequest)
+  name: WriteAsync(ProcessRequest)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_WriteAsync_ProcessRequest_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.WriteAsync(ProcessRequest)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.WriteAsync(ProcessRequest)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).WriteAsync(ProcessRequest)
+  nameWithType: ExceptionAsyncPipe<T>.WriteAsync(ProcessRequest)
+  nameWithType.vb: ExceptionAsyncPipe(Of T).WriteAsync(ProcessRequest)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.WriteAsync(System.Collections.Generic.IEnumerable{ProcessRequest})
+  name: WriteAsync(IEnumerable<ProcessRequest>)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_WriteAsync_System_Collections_Generic_IEnumerable_ProcessRequest__
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.WriteAsync(System.Collections.Generic.IEnumerable{ProcessRequest})
+  name.vb: WriteAsync(IEnumerable(Of ProcessRequest))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.WriteAsync(System.Collections.Generic.IEnumerable<ProcessRequest>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).WriteAsync(System.Collections.Generic.IEnumerable(Of ProcessRequest))
+  nameWithType: ExceptionAsyncPipe<T>.WriteAsync(IEnumerable<ProcessRequest>)
+  nameWithType.vb: ExceptionAsyncPipe(Of T).WriteAsync(IEnumerable(Of ProcessRequest))
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.WriteAsync*
+  name: WriteAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionAsyncPipe_1_WriteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe`1.WriteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe<T>.WriteAsync
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionAsyncPipe(Of T).WriteAsync
+  nameWithType: ExceptionAsyncPipe<T>.WriteAsync
+  nameWithType.vb: ExceptionAsyncPipe(Of T).WriteAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1
+  name: ExceptionWorkerStreamHandler<T>
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1
+  name.vb: ExceptionWorkerStreamHandler(Of T)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T)
+  nameWithType: ExceptionWorkerStreamHandler<T>
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.#ctor(System.Int32)
+  name: ExceptionWorkerStreamHandler(int)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1__ctor_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.#ctor(System.Int32)
+  name.vb: New(Integer)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler(int)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).New(Integer)
+  nameWithType: ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler(int)
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).New(Integer)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.#ctor*
+  name: ExceptionWorkerStreamHandler
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).New
+  nameWithType: ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).New
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: ExceptionWorkerStreamHandler<T>.Check(HealthCheckTag)
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Check
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Check
+  nameWithType: ExceptionWorkerStreamHandler<T>.Check
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Check
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Dispose()
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Dispose()
+  nameWithType: ExceptionWorkerStreamHandler<T>.Dispose()
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Dispose
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Dispose
+  nameWithType: ExceptionWorkerStreamHandler<T>.Dispose
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Init(System.Threading.CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Init_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Init(System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Init(System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Init(System.Threading.CancellationToken)
+  nameWithType: ExceptionWorkerStreamHandler<T>.Init(CancellationToken)
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Init
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Init
+  nameWithType: ExceptionWorkerStreamHandler<T>.Init
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Init
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Pipe
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Pipe
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Pipe
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Pipe
+  nameWithType: ExceptionWorkerStreamHandler<T>.Pipe
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Pipe
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.Pipe
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).Pipe
+  nameWithType: ExceptionWorkerStreamHandler<T>.Pipe
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).Pipe
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,System.Threading.CancellationToken)
+  name: StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,System.Threading.CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, System.Threading.CancellationToken)
+  nameWithType: ExceptionWorkerStreamHandler<T>.StartTaskProcessing(TaskData, CancellationToken)
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).StartTaskProcessing(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.StartTaskProcessing*
+  name: StartTaskProcessing
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler_1_StartTaskProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler`1.StartTaskProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<T>.StartTaskProcessing
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing
+  nameWithType: ExceptionWorkerStreamHandler<T>.StartTaskProcessing
+  nameWithType.vb: ExceptionWorkerStreamHandler(Of T).StartTaskProcessing
 - uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper
   name: GrpcSubmitterServiceHelper
   href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html
@@ -22590,6 +22810,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Pollster.PollsterTest
   fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest
   nameWithType: PollsterTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.CancelLongTaskShouldSucceed
+  name: CancelLongTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_CancelLongTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.CancelLongTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.CancelLongTaskShouldSucceed()
+  nameWithType: PollsterTest.CancelLongTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.CancelLongTaskShouldSucceed*
+  name: CancelLongTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_CancelLongTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.PollsterTest.CancelLongTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.CancelLongTaskShouldSucceed
+  nameWithType: PollsterTest.CancelLongTaskShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.PollsterTest.ExecuteTaskShouldSucceed(System.Double)
   name: ExecuteTaskShouldSucceed(double)
   href: api/ArmoniK.Core.Common.Tests.Pollster.PollsterTest.html#ArmoniK_Core_Common_Tests_Pollster_PollsterTest_ExecuteTaskShouldSucceed_System_Double_
@@ -23002,6 +23235,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
   nameWithType: TaskHandlerTest.AcquireTaskWithCancellationWaitTaskTableShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.CancelLongTaskShouldSucceed
+  name: CancelLongTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_CancelLongTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.CancelLongTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.CancelLongTaskShouldSucceed()
+  nameWithType: TaskHandlerTest.CancelLongTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.CancelLongTaskShouldSucceed*
+  name: CancelLongTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_CancelLongTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.CancelLongTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.CancelLongTaskShouldSucceed
+  nameWithType: TaskHandlerTest.CancelLongTaskShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler`1
   name: TaskHandlerTest.ExceptionStartWorkerStreamHandler<T>
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler-1.html
@@ -23096,119 +23342,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionStartWorkerStreamHandler(Of T).StartTaskProcessing
   nameWithType: TaskHandlerTest.ExceptionStartWorkerStreamHandler<T>.StartTaskProcessing
   nameWithType.vb: TaskHandlerTest.ExceptionStartWorkerStreamHandler(Of T).StartTaskProcessing
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1
-  name: TaskHandlerTest.ExceptionWorkerStreamHandler<T>
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html
-  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1
-  name.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T)
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T)
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor(System.Int32)
-  name: ExceptionWorkerStreamHandler(int)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1__ctor_System_Int32_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor(System.Int32)
-  name.vb: New(Integer)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler(int)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).New(Integer)
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler(int)
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).New(Integer)
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor*
-  name: ExceptionWorkerStreamHandler
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.#ctor
-  isSpec: "True"
-  name.vb: New
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).New
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.ExceptionWorkerStreamHandler
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).New
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check(ArmoniK.Core.Common.HealthCheckTag)
-  name: Check(HealthCheckTag)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Check_ArmoniK_Core_Common_HealthCheckTag_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check(ArmoniK.Core.Common.HealthCheckTag)
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check(HealthCheckTag)
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check(HealthCheckTag)
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check*
-  name: Check
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Check_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Check
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Check
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Check
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose
-  name: Dispose()
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Dispose
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose()
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose()
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose()
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose()
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose*
-  name: Dispose
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Dispose_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Dispose
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Dispose
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Dispose
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init(System.Threading.CancellationToken)
-  name: Init(CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Init_System_Threading_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init(System.Threading.CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init(System.Threading.CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init(System.Threading.CancellationToken)
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init(CancellationToken)
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init(CancellationToken)
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init*
-  name: Init
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Init_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Init
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Init
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Init
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe
-  name: Pipe
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Pipe
-  commentId: P:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe*
-  name: Pipe
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_Pipe_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.Pipe
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.Pipe
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).Pipe
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,System.Threading.CancellationToken)
-  name: StartTaskProcessing(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_System_Threading_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,System.Threading.CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, System.Threading.CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, System.Threading.CancellationToken)
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing(TaskData, CancellationToken)
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing(TaskData, CancellationToken)
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing*
-  name: StartTaskProcessing
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler-1.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler_1_StartTaskProcessing_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler`1.StartTaskProcessing
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing
-  nameWithType: TaskHandlerTest.ExceptionWorkerStreamHandler<T>.StartTaskProcessing
-  nameWithType.vb: TaskHandlerTest.ExceptionWorkerStreamHandler(Of T).StartTaskProcessing
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
   name: ExecuteTaskShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskShouldSucceed
@@ -23229,15 +23362,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
   nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler{``0})
   name: ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(ExceptionWorkerStreamHandler<TEx>)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow__1_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler___0__
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow__1_ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler___0__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow``1(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler{``0})
   name.vb: ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(ExceptionWorkerStreamHandler(Of TEx))
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
-  nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
-  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<TEx>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of TEx))
+  nameWithType: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(ExceptionWorkerStreamHandler<TEx>)
+  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow(Of TEx)(ExceptionWorkerStreamHandler(Of TEx))
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow*
   name: ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow_
@@ -23261,15 +23394,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
   nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed
-- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler{``0})
   name: ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(ExceptionWorkerStreamHandler<TEx>)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed__1_ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExceptionWorkerStreamHandler___0__
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler{``0})
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithExceptionDuringCancellationShouldSucceed__1_ArmoniK_Core_Common_Tests_Helpers_ExceptionWorkerStreamHandler___0__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed``1(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler{``0})
   name.vb: ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(ExceptionWorkerStreamHandler(Of TEx))
-  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
-  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(TaskHandlerTest.ExceptionWorkerStreamHandler<TEx>)
-  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(TaskHandlerTest.ExceptionWorkerStreamHandler(Of TEx))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler<TEx>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(ArmoniK.Core.Common.Tests.Helpers.ExceptionWorkerStreamHandler(Of TEx))
+  nameWithType: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(ExceptionWorkerStreamHandler<TEx>)
+  nameWithType.vb: TaskHandlerTest.ExecuteTaskWithExceptionDuringCancellationShouldSucceed(Of TEx)(ExceptionWorkerStreamHandler(Of TEx))
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
   name: ExecuteTaskWithResultsShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithResultsShouldSucceed
