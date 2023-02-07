@@ -839,56 +839,6 @@ public class TaskHandlerTest
     Assert.IsFalse(acquired);
   }
 
-  private class ExceptionAsyncPipe<T> : IAsyncPipe<ProcessReply, ProcessRequest>
-    where T : Exception, new()
-  {
-    private readonly int delay_;
-
-    public ExceptionAsyncPipe(int delay)
-      => delay_ = delay;
-
-    public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(delay_))
-                .ConfigureAwait(false);
-      throw new T();
-    }
-
-    public Task WriteAsync(ProcessRequest message)
-      => Task.CompletedTask;
-
-    public Task WriteAsync(IEnumerable<ProcessRequest> message)
-      => Task.CompletedTask;
-
-    public Task CompleteAsync()
-      => Task.CompletedTask;
-  }
-
-  public class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
-    where T : Exception, new()
-  {
-    private readonly int delay_;
-
-    public ExceptionWorkerStreamHandler(int delay)
-      => delay_ = delay;
-
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => Task.FromResult(HealthCheckResult.Healthy());
-
-    public Task Init(CancellationToken cancellationToken)
-      => Task.CompletedTask;
-
-    public void Dispose()
-    {
-    }
-
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
-      => Pipe = new ExceptionAsyncPipe<T>(delay_);
-  }
-
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
     where T : Exception, new()
   {
@@ -1259,5 +1209,80 @@ public class TaskHandlerTest
                                                                        })
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
+  }
+
+  [Test]
+  public async Task CancelLongTaskShouldSucceed()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new ExceptionWorkerStreamHandler<Exception>(15000);
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                new CancellationTokenSource());
+
+    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                              .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.IsTrue(acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    await testServiceProvider.TaskHandler.ExecuteTask()
+                             .ConfigureAwait(false);
+
+    // Cancel task for test
+
+    await Task.Delay(TimeSpan.FromMilliseconds(200))
+              .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.CancelTaskAsync(new List<string>
+                                                        {
+                                                          taskId,
+                                                        },
+                                                        CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    await Task.Delay(TimeSpan.FromMilliseconds(200))
+              .ConfigureAwait(false);
+
+    // Make several calls to ensure that it still works
+    await testServiceProvider.TaskHandler.StopCancelledTask()
+                             .ConfigureAwait(false);
+    await testServiceProvider.TaskHandler.StopCancelledTask()
+                             .ConfigureAwait(false);
+    await testServiceProvider.TaskHandler.StopCancelledTask()
+                             .ConfigureAwait(false);
+    await testServiceProvider.TaskHandler.StopCancelledTask()
+                             .ConfigureAwait(false);
+
+    await testServiceProvider.TaskHandler.PostProcessing()
+                             .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Cancelling,
+                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                                       {
+                                                                         taskId,
+                                                                       })
+                                              .ConfigureAwait(false)).Single()
+                                                                     .Status);
+
+    Assert.AreEqual(QueueMessageStatus.Processed,
+                    sqmh.Status);
   }
 }
