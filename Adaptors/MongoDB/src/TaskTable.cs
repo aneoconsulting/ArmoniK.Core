@@ -324,6 +324,26 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                                  CancellationToken                cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
+
+    var sessionHandle  = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get();
+
+    var res = await taskCollection.AsQueryable(sessionHandle)
+                                  .Where(filter)
+                                  .GroupBy(model => model.Status)
+                                  .Select(models => new TaskStatusCount(models.Key,
+                                                                        models.Count()))
+                                  .ToListAsync(cancellationToken)
+                                  .ConfigureAwait(false);
+
+    return res;
+  }
+
+  /// <inheritdoc />
   public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountPartitionTasksAsync)}");

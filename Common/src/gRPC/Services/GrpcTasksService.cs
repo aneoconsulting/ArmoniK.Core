@@ -27,6 +27,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
@@ -204,6 +205,43 @@ public class GrpcTasksService : Task.TasksBase
     {
       logger_.LogWarning(e,
                          "Error while cancelling tasks");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(CountTasksByStatus))]
+  public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
+                                                                            ServerCallContext         context)
+  {
+    try
+    {
+      return new CountTasksByStatusResponse
+             {
+               Status =
+               {
+                 (await taskTable_.CountTasksAsync(_ => true,
+                                                   context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(count => new StatusCount
+                                                                          {
+                                                                            Status = count.Status,
+                                                                            Count  = count.Count,
+                                                                          }),
+               },
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while counting tasks");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while counting tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

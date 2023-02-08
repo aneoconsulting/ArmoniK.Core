@@ -888,6 +888,10 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                               CancellationToken cancellationToken = default)
       => throw new T();
 
+    public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                              CancellationToken                cancellationToken = default)
+      => throw new T();
+
     public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
       => throw new T();
 

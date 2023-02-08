@@ -404,5 +404,7 @@ public static class ServiceCollectionExt
                .AddValidator<ListResultsRequestValidator>()
                .AddValidator<ListApplicationsRequestValidator>()
                .AddValidator<ListPartitionsRequestValidator>()
+               .AddValidator<SessionsCountTasksByStatusRequestValidator>()
+               .AddValidator<ApplicationsCountTasksByStatusRequestValidator>()
                .AddGrpcValidation();
 }

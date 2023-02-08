@@ -26,6 +26,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
@@ -44,12 +45,15 @@ public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
   private readonly ISessionTable                sessionTable_;
+  private readonly ITaskTable                   taskTable_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
+                             ITaskTable                   taskTable,
                              ILogger<GrpcSessionsService> logger)
   {
     logger_       = logger;
     sessionTable_ = sessionTable;
+    taskTable_    = taskTable;
   }
 
   [RequiresPermission(typeof(GrpcSessionsService),
@@ -163,6 +167,43 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       logger_.LogWarning(e,
                          "Error while listing sessions");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(CountTasksByStatus))]
+  public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
+                                                                            ServerCallContext         context)
+  {
+    try
+    {
+      return new CountTasksByStatusResponse
+             {
+               Status =
+               {
+                 (await taskTable_.CountTasksAsync(data => data.SessionId == request.SessionId,
+                                                   context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(count => new StatusCount
+                                                                          {
+                                                                            Status = count.Status,
+                                                                            Count  = count.Count,
+                                                                          }),
+               },
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while counting tasks in session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while counting tasks in session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

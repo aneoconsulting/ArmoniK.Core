@@ -651,6 +651,17 @@ public class TaskTableTestBase
         Assert.AreEqual(1,
                         taskStatusCount.Count);
       }
+
+      result = await TaskTable.CountTasksAsync(data => data.SessionId == "SessionId" && (data.Status == TaskStatus.Completed || data.Status == TaskStatus.Creating),
+                                               CancellationToken.None)
+                              .ConfigureAwait(false);
+
+      foreach (var taskStatusCount in result)
+      {
+        Console.WriteLine(taskStatusCount);
+        Assert.AreEqual(1,
+                        taskStatusCount.Count);
+      }
     }
   }
 
