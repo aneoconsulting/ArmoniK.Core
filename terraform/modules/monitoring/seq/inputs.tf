@@ -12,7 +12,7 @@ variable "exposed_ports" {
     ingestion = number,
   })
   default = {
-    api       = 80
+    api       = 4080
     ingestion = 5341
   }
 }
