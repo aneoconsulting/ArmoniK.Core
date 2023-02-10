@@ -76,7 +76,7 @@ jobs:
         dev-branch: main
 
     - name: Print version
-      run: echo VERSION ${{ steps.version.outputs.version }} >> $GITHUB_STEP_SUMMARY
+      run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
   format:
     runs-on: ubuntu-latest
