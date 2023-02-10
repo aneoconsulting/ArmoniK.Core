@@ -24,7 +24,6 @@ jobs:
     - name: Remove tag locally
     # This is done so that codacy/git-version can compute the version of the images deployed on docker hub
       run: |
-        git checkout $(git rev-parse HEAD)
         git tag -d ${{ github.ref_name }}
 
     - name: Compute branch for codacy
