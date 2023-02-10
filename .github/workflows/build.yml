@@ -69,18 +69,14 @@ jobs:
 
     - name: Generate Version
       id: genver
-      run: |
-        if [[ "${{ github.ref_name }}" == "releases/"* ]]
-        then
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=${{ github.ref_name }})
-        else
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=main)
-        fi
+      uses: codacy/git-version@2.7.1
+      with:
+        minor-identifier: "feat:"
+        release-branch: release
+        dev-branch: main
 
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Version :" >> $GITHUB_STEP_SUMMARY
-        echo "$VERSION" >> $GITHUB_STEP_SUMMARY
-        echo $VERSION
+    - name: Print version
+      run: echo VERSION ${{ steps.version.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
   format:
     runs-on: ubuntu-latest
