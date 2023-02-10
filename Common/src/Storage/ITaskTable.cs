@@ -167,6 +167,17 @@ public interface ITaskTable : IInitializable
                                                      CancellationToken cancellationToken = default);
 
   /// <summary>
+  ///   Count tasks matching a given filter
+  /// </summary>
+  /// <param name="filter">Filter expression describing the tasks to be counted</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of tasks that matched the filter
+  /// </returns>
+  Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                     CancellationToken                cancellationToken = default);
+
+  /// <summary>
   ///   Count tasks matching a given filter and group by partition and status
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>

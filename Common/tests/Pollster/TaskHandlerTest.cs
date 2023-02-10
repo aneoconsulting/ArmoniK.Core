@@ -506,6 +506,10 @@ public class TaskHandlerTest
                                                               CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                              CancellationToken                cancellationToken = default)
+      => throw new NotImplementedException();
+
     public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 

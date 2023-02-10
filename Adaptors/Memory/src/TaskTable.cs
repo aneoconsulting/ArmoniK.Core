@@ -230,6 +230,17 @@ public class TaskTable : ITaskTable
              .ConfigureAwait(false);
 
   /// <inheritdoc />
+  public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                            CancellationToken                cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.AsQueryable()
+                                       .Select(pair => pair.Value)
+                                       .Where(filter)
+                                       .GroupBy(taskData => taskData.Status)
+                                       .Select(grouping => new TaskStatusCount(grouping.Key,
+                                                                               grouping.Count()))
+                                       .AsEnumerable());
+
+  /// <inheritdoc />
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
   {
     var res = taskId2TaskData_.Values.AsQueryable()

@@ -142,6 +142,14 @@ public class SimpleTaskTable : ITaskTable
                                                            42),
                                                      });
 
+  public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                            CancellationToken                cancellationToken = default)
+    => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
+                                                     {
+                                                       new(TaskStatus.Completed,
+                                                           42),
+                                                     });
+
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
     => Task.FromResult<IEnumerable<PartitionTaskStatusCount>>(new List<PartitionTaskStatusCount>
                                                               {
