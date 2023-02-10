@@ -10,8 +10,8 @@ jobs:
   versionning:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.genver.outputs.version }}
-      release: ${{ steps.genver.outputs.release }}
+      version: ${{ steps.pre-rel.outputs.version }}
+      release: ${{ steps.release.outputs.version }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -19,15 +19,27 @@ jobs:
         ref: ${{ github.ref }}
         fetch-depth: 0
 
-    - name: Generate Version
-      id: genver
+    - name: Generate Pre-Release Version
+      id: pre-rel
+      uses: codacy/git-version@2.7.1
+      with:
+        minor-identifier: "feat:"
+        release-branch: ${{ github.ref_name }}-pre
+        dev-branch: ${{ github.ref_name }}
+
+    - name: Generate Release Version
+      id: release
+      uses: codacy/git-version@2.7.1
+      with:
+        minor-identifier: "feat:"
+        release-branch: ${{ github.ref_name }}
+        dev-branch: main
+
+    - name: Print version
       run: |
-        VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }}-pre --dev-branch=${{ github.ref_name }})
-        echo "::set-output name=version::$VERSION"
-        echo "VERSION : $VERSION"
-        RELEASE=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }} --dev-branch=main)
-        echo "::set-output name=release::$RELEASE"
-        echo "RELEASE : $RELEASE"
+        echo PREREL ${{ steps.pre-rel.outputs.version }} >> $GITHUB_STEP_SUMMARY
+        echo RELASE ${{ steps.release.outputs.version }} >> $GITHUB_STEP_SUMMARY
+
 
   tagImagesRelease:
     runs-on: ubuntu-latest
