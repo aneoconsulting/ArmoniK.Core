@@ -1392,6 +1392,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync
   nameWithType: TaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name: CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name.vb: CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression<System.Func<ArmoniK.Core.Common.Storage.TaskData, bool>>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression(Of System.Func(Of ArmoniK.Core.Common.Storage.TaskData, Boolean)), System.Threading.CancellationToken)
+  nameWithType: TaskTable.CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  nameWithType.vb: TaskTable.CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync(TaskFilter,System.Threading.CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CountTasksAsync_TaskFilter_System_Threading_CancellationToken_
@@ -4434,6 +4443,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync
   nameWithType: TaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name: CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name.vb: CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression<System.Func<ArmoniK.Core.Common.Storage.TaskData, bool>>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync(System.Linq.Expressions.Expression(Of System.Func(Of ArmoniK.Core.Common.Storage.TaskData, Boolean)), System.Threading.CancellationToken)
+  nameWithType: TaskTable.CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  nameWithType.vb: TaskTable.CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync(TaskFilter,System.Threading.CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CountTasksAsync_TaskFilter_System_Threading_CancellationToken_
@@ -8584,6 +8602,19 @@ references:
   fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.New
   nameWithType: GrpcApplicationsService.GrpcApplicationsService
   nameWithType.vb: GrpcApplicationsService.New
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.CountTasksByStatus(CountTasksByStatusRequest,ServerCallContext)
+  name: CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcApplicationsService_CountTasksByStatus_CountTasksByStatusRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.CountTasksByStatus(CountTasksByStatusRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+  nameWithType: GrpcApplicationsService.CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.CountTasksByStatus*
+  name: CountTasksByStatus
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcApplicationsService_CountTasksByStatus_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.CountTasksByStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.CountTasksByStatus
+  nameWithType: GrpcApplicationsService.CountTasksByStatus
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.ListApplications(ListApplicationsRequest,ServerCallContext)
   name: ListApplications(ListApplicationsRequest, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcApplicationsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcApplicationsService_ListApplications_ListApplicationsRequest_ServerCallContext_
@@ -8784,15 +8815,15 @@ references:
   commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService
   nameWithType: GrpcSessionsService
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService})
-  name: GrpcSessionsService(ISessionTable, ILogger<GrpcSessionsService>)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService})
-  name.vb: New(ISessionTable, ILogger(Of GrpcSessionsService))
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GrpcSessionsService(ArmoniK.Core.Common.Storage.ISessionTable, ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService>)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.New(ArmoniK.Core.Common.Storage.ISessionTable, ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService))
-  nameWithType: GrpcSessionsService.GrpcSessionsService(ISessionTable, ILogger<GrpcSessionsService>)
-  nameWithType.vb: GrpcSessionsService.New(ISessionTable, ILogger(Of GrpcSessionsService))
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService})
+  name: GrpcSessionsService(ISessionTable, ITaskTable, ILogger<GrpcSessionsService>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService})
+  name.vb: New(ISessionTable, ITaskTable, ILogger(Of GrpcSessionsService))
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GrpcSessionsService(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.New(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService))
+  nameWithType: GrpcSessionsService.GrpcSessionsService(ISessionTable, ITaskTable, ILogger<GrpcSessionsService>)
+  nameWithType.vb: GrpcSessionsService.New(ISessionTable, ITaskTable, ILogger(Of GrpcSessionsService))
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor*
   name: GrpcSessionsService
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__ctor_
@@ -8816,6 +8847,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession
   nameWithType: GrpcSessionsService.CancelSession
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CountTasksByStatus(CountTasksByStatusRequest,ServerCallContext)
+  name: CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_CountTasksByStatus_CountTasksByStatusRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CountTasksByStatus(CountTasksByStatusRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+  nameWithType: GrpcSessionsService.CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CountTasksByStatus*
+  name: CountTasksByStatus
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_CountTasksByStatus_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CountTasksByStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CountTasksByStatus
+  nameWithType: GrpcSessionsService.CountTasksByStatus
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession(GetSessionRequest,ServerCallContext)
   name: GetSession(GetSessionRequest, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_GetSession_GetSessionRequest_ServerCallContext_
@@ -9128,6 +9172,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CancelTasks
   nameWithType: GrpcTasksService.CancelTasks
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CountTasksByStatus(CountTasksByStatusRequest,ServerCallContext)
+  name: CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_CountTasksByStatus_CountTasksByStatusRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CountTasksByStatus(CountTasksByStatusRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+  nameWithType: GrpcTasksService.CountTasksByStatus(CountTasksByStatusRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CountTasksByStatus*
+  name: CountTasksByStatus
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_CountTasksByStatus_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CountTasksByStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.CountTasksByStatus
+  nameWithType: GrpcTasksService.CountTasksByStatus
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetResultIds(GetResultIdsRequest,ServerCallContext)
   name: GetResultIds(GetResultIdsRequest, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_GetResultIds_GetResultIdsRequest_ServerCallContext_
@@ -9710,6 +9767,31 @@ references:
   commentId: N:ArmoniK.Core.Common.gRPC.Validators
   fullName: ArmoniK.Core.Common.gRPC.Validators
   nameWithType: ArmoniK.Core.Common.gRPC.Validators
+- uid: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator
+  name: ApplicationsCountTasksByStatusRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator
+  nameWithType: ApplicationsCountTasksByStatusRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.#ctor
+  name: ApplicationsCountTasksByStatusRequestValidator()
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_ApplicationsCountTasksByStatusRequestValidator__ctor
+  commentId: M:ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.#ctor
+  name.vb: New()
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.ApplicationsCountTasksByStatusRequestValidator()
+  fullName.vb: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.New()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidator.ApplicationsCountTasksByStatusRequestValidator()
+  nameWithType.vb: ApplicationsCountTasksByStatusRequestValidator.New()
+- uid: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.#ctor*
+  name: ApplicationsCountTasksByStatusRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_ApplicationsCountTasksByStatusRequestValidator__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.ApplicationsCountTasksByStatusRequestValidator
+  fullName.vb: ArmoniK.Core.Common.gRPC.Validators.ApplicationsCountTasksByStatusRequestValidator.New
+  nameWithType: ApplicationsCountTasksByStatusRequestValidator.ApplicationsCountTasksByStatusRequestValidator
+  nameWithType.vb: ApplicationsCountTasksByStatusRequestValidator.New
 - uid: ArmoniK.Core.Common.gRPC.Validators.CancelTasksRequestValidator
   name: CancelTasksRequestValidator
   href: api/ArmoniK.Core.Common.gRPC.Validators.CancelTasksRequestValidator.html
@@ -9985,6 +10067,31 @@ references:
   fullName.vb: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.New
   nameWithType: SessionFilterValidator.SessionFilterValidator
   nameWithType.vb: SessionFilterValidator.New
+- uid: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator
+  name: SessionsCountTasksByStatusRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator
+  fullName: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator
+  nameWithType: SessionsCountTasksByStatusRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.#ctor
+  name: SessionsCountTasksByStatusRequestValidator()
+  href: api/ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_SessionsCountTasksByStatusRequestValidator__ctor
+  commentId: M:ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.#ctor
+  name.vb: New()
+  fullName: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.SessionsCountTasksByStatusRequestValidator()
+  fullName.vb: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.New()
+  nameWithType: SessionsCountTasksByStatusRequestValidator.SessionsCountTasksByStatusRequestValidator()
+  nameWithType.vb: SessionsCountTasksByStatusRequestValidator.New()
+- uid: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.#ctor*
+  name: SessionsCountTasksByStatusRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_SessionsCountTasksByStatusRequestValidator__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.SessionsCountTasksByStatusRequestValidator
+  fullName.vb: ArmoniK.Core.Common.gRPC.Validators.SessionsCountTasksByStatusRequestValidator.New
+  nameWithType: SessionsCountTasksByStatusRequestValidator.SessionsCountTasksByStatusRequestValidator
+  nameWithType.vb: SessionsCountTasksByStatusRequestValidator.New
 - uid: ArmoniK.Core.Common.gRPC.Validators.TaskFilterValidator
   name: TaskFilterValidator
   href: api/ArmoniK.Core.Common.gRPC.Validators.TaskFilterValidator.html
@@ -13502,6 +13609,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync
   nameWithType: ITaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name: CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name.vb: CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(System.Linq.Expressions.Expression<System.Func<ArmoniK.Core.Common.Storage.TaskData, bool>>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(System.Linq.Expressions.Expression(Of System.Func(Of ArmoniK.Core.Common.Storage.TaskData, Boolean)), System.Threading.CancellationToken)
+  nameWithType: ITaskTable.CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  nameWithType.vb: ITaskTable.CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(TaskFilter,System.Threading.CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CountTasksAsync_TaskFilter_System_Threading_CancellationToken_
@@ -19336,6 +19452,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountPartitionTasksAsync
   nameWithType: SimpleTaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name: CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name.vb: CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(System.Linq.Expressions.Expression<System.Func<ArmoniK.Core.Common.Storage.TaskData, bool>>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(System.Linq.Expressions.Expression(Of System.Func(Of ArmoniK.Core.Common.Storage.TaskData, Boolean)), System.Threading.CancellationToken)
+  nameWithType: SimpleTaskTable.CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  nameWithType.vb: SimpleTaskTable.CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.CountTasksAsync(TaskFilter,System.Threading.CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleTaskTable.html#ArmoniK_Core_Common_Tests_Helpers_SimpleTaskTable_CountTasksAsync_TaskFilter_System_Threading_CancellationToken_
@@ -23840,6 +23965,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync
   nameWithType: TaskHandlerTest.WaitTaskTable.CountPartitionTasksAsync
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name: CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)
+  name.vb: CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(System.Linq.Expressions.Expression<System.Func<ArmoniK.Core.Common.Storage.TaskData, bool>>, System.Threading.CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(System.Linq.Expressions.Expression(Of System.Func(Of ArmoniK.Core.Common.Storage.TaskData, Boolean)), System.Threading.CancellationToken)
+  nameWithType: TaskHandlerTest.WaitTaskTable.CountTasksAsync(Expression<Func<TaskData, bool>>, CancellationToken)
+  nameWithType.vb: TaskHandlerTest.WaitTaskTable.CountTasksAsync(Expression(Of Func(Of TaskData, Boolean)), CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.CountTasksAsync(TaskFilter,System.Threading.CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.WaitTaskTable.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_WaitTaskTable_CountTasksAsync_TaskFilter_System_Threading_CancellationToken_
@@ -27882,6 +28016,154 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown
   nameWithType: ExecutionSingleizerTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Validators
+  name: ArmoniK.Core.Common.Tests.Validators
+  href: api/ArmoniK.Core.Common.Tests.Validators.html
+  commentId: N:ArmoniK.Core.Common.Tests.Validators
+  fullName: ArmoniK.Core.Common.Tests.Validators
+  nameWithType: ArmoniK.Core.Common.Tests.Validators
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest
+  name: ApplicationsCountTasksByStatusRequestValidatorTest
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail
+  name: BothEmptyShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_BothEmptyShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail*
+  name: BothEmptyShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_BothEmptyShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.BothEmptyShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  name: DefaultShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_DefaultShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail*
+  name: DefaultShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_DefaultShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail
+  name: EmptyNameShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_EmptyNameShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail*
+  name: EmptyNameShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_EmptyNameShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.EmptyNameShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail
+  name: EmptyVersionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_EmptyVersionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail*
+  name: EmptyVersionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_EmptyVersionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.EmptyVersionShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail
+  name: OnlyNameShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_OnlyNameShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail*
+  name: OnlyNameShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_OnlyNameShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.OnlyNameShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail
+  name: OnlyVersionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_OnlyVersionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail*
+  name: OnlyVersionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_OnlyVersionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.OnlyVersionShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  name: ShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_ShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed()
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed*
+  name: ShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_ApplicationsCountTasksByStatusRequestValidatorTest_ShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  nameWithType: ApplicationsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest
+  name: SessionsCountTasksByStatusRequestValidatorTest
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  name: DefaultShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_SessionsCountTasksByStatusRequestValidatorTest_DefaultShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail()
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail*
+  name: DefaultShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_SessionsCountTasksByStatusRequestValidatorTest_DefaultShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest.DefaultShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail
+  name: EmptySessionIdShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_SessionsCountTasksByStatusRequestValidatorTest_EmptySessionIdShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail()
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail*
+  name: EmptySessionIdShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_SessionsCountTasksByStatusRequestValidatorTest_EmptySessionIdShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest.EmptySessionIdShouldFail
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  name: ShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_SessionsCountTasksByStatusRequestValidatorTest_ShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed()
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed*
+  name: ShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.html#ArmoniK_Core_Common_Tests_Validators_SessionsCountTasksByStatusRequestValidatorTest_ShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Validators.SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed
+  nameWithType: SessionsCountTasksByStatusRequestValidatorTest.ShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.WatchToGrpcTests
   name: WatchToGrpcTests
   href: api/ArmoniK.Core.Common.Tests.WatchToGrpcTests.html

@@ -197,7 +197,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_AcquireTask_System_String_System_String_System_String_System_DateTime_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String%2CSystem.String%2CSystem.String%2CSystem.DateTime%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L307">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L318">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_AcquireTask_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_AcquireTask_System_String_System_String_System_String_System_DateTime_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String,System.String,System.String,System.DateTime,System.Threading.CancellationToken)">AcquireTask(string, string, string, DateTime, CancellationToken)</h4>
@@ -383,7 +383,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_CountAllTasksAsync_ArmoniK_Api_gRPC_V1_TaskStatus_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L186">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L197">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_CountAllTasksAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.CountAllTasksAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_CountAllTasksAsync_ArmoniK_Api_gRPC_V1_TaskStatus_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.CountAllTasksAsync(ArmoniK.Api.gRPC.V1.TaskStatus,System.Threading.CancellationToken)">CountAllTasksAsync(TaskStatus, CancellationToken)</h4>
@@ -439,7 +439,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_CountPartitionTasksAsync_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync(System.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L176">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L187">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_CountPartitionTasksAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_CountPartitionTasksAsync_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync(System.Threading.CancellationToken)">CountPartitionTasksAsync(CancellationToken)</h4>
@@ -480,6 +480,62 @@ status to change</p>
       <tr>
         <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html">PartitionTaskStatusCount</a>&gt;&gt;</td>
         <td><p>The number of tasks that matched the filter grouped by partition and status</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(System.Linq.Expressions.Expression%7BSystem.Func%7BArmoniK.Core.Common.Storage.TaskData%2CSystem.Boolean%7D%7D%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L177">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ITaskTable_CountTasksAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_CountTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Threading.CancellationToken)">CountTasksAsync(Expression&lt;Func&lt;TaskData, bool&gt;&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Count tasks matching a given filter</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;TaskStatusCount&gt;&gt; CountTasksAsync(Expression&lt;Func&lt;TaskData, bool&gt;&gt; filter, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Linq.Expressions.Expression&lt;TDelegate&gt;</span>&lt;<span class="xref">System.Func&lt;T, TResult&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a>, <span class="xref">bool</span>&gt;&gt;</td>
+        <td><span class="parametername">filter</span></td>
+        <td><p>Filter expression describing the tasks to be counted</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Threading.CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td><p>Token used to cancel the execution of the method</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Threading.Tasks.Task&lt;TResult&gt;</span>&lt;<span class="xref">System.Collections.Generic.IEnumerable&lt;T&gt;</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskStatusCount.html">TaskStatusCount</a>&gt;&gt;</td>
+        <td><p>The number of tasks that matched the filter</p>
 </td>
       </tr>
     </tbody>
@@ -601,7 +657,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_DeleteTaskAsync_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.DeleteTaskAsync(System.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L197">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L208">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_DeleteTaskAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.DeleteTaskAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_DeleteTaskAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.DeleteTaskAsync(System.String,System.Threading.CancellationToken)">DeleteTaskAsync(string, CancellationToken)</h4>
@@ -657,7 +713,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_FinalizeTaskCreation_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.FinalizeTaskCreation(System.Collections.Generic.IEnumerable%7BSystem.String%7D%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L406">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L417">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_FinalizeTaskCreation_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.FinalizeTaskCreation*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_FinalizeTaskCreation_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.FinalizeTaskCreation(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">FinalizeTaskCreation(IEnumerable&lt;string&gt;, CancellationToken)</h4>
@@ -713,7 +769,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_GetParentTaskIds_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.GetParentTaskIds(System.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L384">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L395">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_GetParentTaskIds_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetParentTaskIds*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_GetParentTaskIds_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetParentTaskIds(System.String,System.Threading.CancellationToken)">GetParentTaskIds(string, CancellationToken)</h4>
@@ -769,7 +825,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_GetTaskExpectedOutputKeys_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.GetTaskExpectedOutputKeys(System.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L356">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L367">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_GetTaskExpectedOutputKeys_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTaskExpectedOutputKeys*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_GetTaskExpectedOutputKeys_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTaskExpectedOutputKeys(System.String,System.Threading.CancellationToken)">GetTaskExpectedOutputKeys(string, CancellationToken)</h4>
@@ -825,7 +881,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_GetTaskOutput_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.GetTaskOutput(System.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L293">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L304">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_GetTaskOutput_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTaskOutput*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_GetTaskOutput_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTaskOutput(System.String,System.Threading.CancellationToken)">GetTaskOutput(string, CancellationToken)</h4>
@@ -881,7 +937,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_GetTasksExpectedOutputKeys_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys(System.Collections.Generic.IEnumerable%7BSystem.String%7D%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L345">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L356">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_GetTasksExpectedOutputKeys_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_GetTasksExpectedOutputKeys_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTasksExpectedOutputKeys(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">GetTasksExpectedOutputKeys(IEnumerable&lt;string&gt;, CancellationToken)</h4>
@@ -937,7 +993,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(System.Collections.Generic.IEnumerable%7BSystem.String%7D%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L334">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L345">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">GetTaskStatus(IEnumerable&lt;string&gt;, CancellationToken)</h4>
@@ -1049,7 +1105,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_ListApplicationsAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_Application_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.ListApplicationsAsync(System.Linq.Expressions.Expression%7BSystem.Func%7BArmoniK.Core.Common.Storage.TaskData%2CSystem.Boolean%7D%7D%2CSystem.Linq.Expressions.Expression%7BSystem.Func%7BArmoniK.Core.Common.Storage.Application%2CSystem.Object%7D%7D%2CSystem.Boolean%2CSystem.Int32%2CSystem.Int32%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L242">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L253">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_ListApplicationsAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ListApplicationsAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_ListApplicationsAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_Application_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ListApplicationsAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.Application,System.Object}},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">ListApplicationsAsync(Expression&lt;Func&lt;TaskData, bool&gt;&gt;, Expression&lt;Func&lt;Application, object?&gt;&gt;, bool, int, int, CancellationToken)</h4>
@@ -1129,7 +1185,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(System.Linq.Expressions.Expression%7BSystem.Func%7BArmoniK.Core.Common.Storage.TaskData%2CSystem.Boolean%7D%7D%2CSystem.Linq.Expressions.Expression%7BSystem.Func%7BArmoniK.Core.Common.Storage.TaskData%2CSystem.Object%7D%7D%2CSystem.Boolean%2CSystem.Int32%2CSystem.Int32%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L223">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L234">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Boolean___System_Linq_Expressions_Expression_System_Func_ArmoniK_Core_Common_Storage_TaskData_System_Object___System_Boolean_System_Int32_System_Int32_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Boolean}},System.Linq.Expressions.Expression{System.Func{ArmoniK.Core.Common.Storage.TaskData,System.Object}},System.Boolean,System.Int32,System.Int32,System.Threading.CancellationToken)">ListTasksAsync(Expression&lt;Func&lt;TaskData, bool&gt;&gt;, Expression&lt;Func&lt;TaskData, object?&gt;&gt;, bool, int, int, CancellationToken)</h4>
@@ -1209,7 +1265,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_TaskFilter_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(TaskFilter%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L208">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L219">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_TaskFilter_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(TaskFilter,System.Threading.CancellationToken)">ListTasksAsync(TaskFilter, CancellationToken)</h4>
@@ -1321,7 +1377,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_ReleaseTask_System_String_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask(System.String%2CSystem.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L322">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L333">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_ReleaseTask_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_ReleaseTask_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask(System.String,System.String,System.Threading.CancellationToken)">ReleaseTask(string, string, CancellationToken)</h4>
@@ -1383,7 +1439,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L395">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L406">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_RetryTask_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.RetryTask*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,System.Threading.CancellationToken)">RetryTask(TaskData, CancellationToken)</h4>
@@ -1439,7 +1495,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_SetTaskCanceledAsync_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync(System.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L268">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L279">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_SetTaskCanceledAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_SetTaskCanceledAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync(System.String,System.Threading.CancellationToken)">SetTaskCanceledAsync(string, CancellationToken)</h4>
@@ -1495,7 +1551,7 @@ status to change</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_SetTaskErrorAsync_System_String_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.SetTaskErrorAsync(System.String%2CSystem.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L281">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L292">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_SetTaskErrorAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.SetTaskErrorAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_SetTaskErrorAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.SetTaskErrorAsync(System.String,System.String,System.Threading.CancellationToken)">SetTaskErrorAsync(string, string, CancellationToken)</h4>
@@ -1558,7 +1614,7 @@ error message</p>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ITaskTable_SetTaskSuccessAsync_System_String_System_Threading_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ITaskTable.SetTaskSuccessAsync(System.String%2CSystem.Threading.CancellationToken)%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L257">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/ITaskTable.cs/#L268">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_ITaskTable_SetTaskSuccessAsync_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.SetTaskSuccessAsync*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_ITaskTable_SetTaskSuccessAsync_System_String_System_Threading_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ITaskTable.SetTaskSuccessAsync(System.String,System.Threading.CancellationToken)">SetTaskSuccessAsync(string, CancellationToken)</h4>
