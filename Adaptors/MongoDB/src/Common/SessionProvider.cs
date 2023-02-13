@@ -69,12 +69,14 @@ public class SessionProvider : IInitializable
 
   public Task Init(CancellationToken cancellationToken)
   {
-    if (clientSessionHandle_ is null)
+    if (clientSessionHandle_ is not null)
     {
-      lock (lockObj_)
-      {
-        clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
-      }
+      return Task.CompletedTask;
+    }
+
+    lock (lockObj_)
+    {
+      clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
     }
 
     return Task.CompletedTask;
