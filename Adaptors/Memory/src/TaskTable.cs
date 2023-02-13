@@ -1,13 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
-//   W. Kirschenmann   <wkirschenmann@aneo.fr>
-//   J. Gurhem         <jgurhem@aneo.fr>
-//   D. Dubuc          <ddubuc@aneo.fr>
-//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
-//   F. Lemaitre       <flemaitre@aneo.fr>
-//   S. Djebbar        <sdjebbar@aneo.fr>
-//   J. Fonseca        <jfonseca@aneo.fr>
+// Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -228,6 +221,17 @@ public class TaskTable : ITaskTable
                                                                               .ConfigureAwait(false)))
              .ToListAsync(cancellationToken)
              .ConfigureAwait(false);
+
+  /// <inheritdoc />
+  public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                            CancellationToken                cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.AsQueryable()
+                                       .Select(pair => pair.Value)
+                                       .Where(filter)
+                                       .GroupBy(taskData => taskData.Status)
+                                       .Select(grouping => new TaskStatusCount(grouping.Key,
+                                                                               grouping.Count()))
+                                       .AsEnumerable());
 
   /// <inheritdoc />
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)

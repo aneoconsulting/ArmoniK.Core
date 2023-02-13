@@ -1,14 +1,7 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
-//   W. Kirschenmann   <wkirschenmann@aneo.fr>
-//   J. Gurhem         <jgurhem@aneo.fr>
-//   D. Dubuc          <ddubuc@aneo.fr>
-//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
-//   F. Lemaitre       <flemaitre@aneo.fr>
-//   S. Djebbar        <sdjebbar@aneo.fr>
-//   J. Fonseca        <jfonseca@aneo.fr>
-//   D. Brasseur       <dbrasseur@aneo.fr>
+// Copyright (C) ANEO, 2021-2023. All rights reserved.
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
@@ -136,6 +129,14 @@ public class SimpleTaskTable : ITaskTable
 
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                             CancellationToken cancellationToken = default)
+    => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
+                                                     {
+                                                       new(TaskStatus.Completed,
+                                                           42),
+                                                     });
+
+  public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                            CancellationToken                cancellationToken = default)
     => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
                                                      {
                                                        new(TaskStatus.Completed,

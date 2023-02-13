@@ -1,14 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
-//   W. Kirschenmann   <wkirschenmann@aneo.fr>
-//   J. Gurhem         <jgurhem@aneo.fr>
-//   D. Dubuc          <ddubuc@aneo.fr>
-//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
-//   F. Lemaitre       <flemaitre@aneo.fr>
-//   S. Djebbar        <sdjebbar@aneo.fr>
-//   J. Fonseca        <jfonseca@aneo.fr>
-//   D. Brasseur       <dbrasseur@aneo.fr>
+// Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -62,6 +54,7 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
+using CountTasksByStatusRequest = ArmoniK.Api.gRPC.V1.Applications.CountTasksByStatusRequest;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
@@ -110,40 +103,43 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
-  private const           string                   SessionId   = "MySession";
-  private const           string                   TaskId      = "MyTask";
-  private const           string                   ResultKey   = "ResultKey";
-  private const           string                   PartitionId = "PartitionId";
-  private static readonly TaskFilter               TaskFilter;
-  private static readonly CreateSmallTaskRequest   CreateSmallTasksRequest;
-  private static readonly CreateSessionRequest     CreateSessionRequest;
-  private static readonly Session                  SessionRequest;
-  private static readonly GetResultStatusRequest   GetResultStatusRequest;
-  private static readonly GetTaskStatusRequest     GetTaskStatusRequest;
-  private static readonly Empty                    Empty;
-  private static readonly SessionFilter            SessionFilter;
-  private static readonly ResultRequest            ResultRequest;
-  private static readonly TaskOutputRequest        TaskOutputRequest;
-  private static readonly WaitRequest              WaitRequest;
-  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestInit;
-  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestInitTask;
-  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestPayload;
-  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestPayloadComplete;
-  private static readonly CreateLargeTaskRequest   CreateLargeTaskRequestLastTask;
-  private static readonly CancelSessionRequest     CancelSessionRequest;
-  private static readonly GetSessionRequest        GetSessionRequest;
-  private static readonly ListSessionsRequest      ListSessionsRequest;
-  private static readonly GetResultIdsRequest      GetResultIdsRequest;
-  private static readonly GetTaskRequest           GetTaskRequest;
-  private static readonly ListTasksRequest         ListTasksRequest;
-  private static readonly GetOwnerTaskIdRequest    GetOwnerTaskIdRequest;
-  private static readonly ListApplicationsRequest  ListApplicationsRequest;
-  private static readonly CancelTasksRequest       CancelTasksRequest;
-  private static readonly ListResultsRequest       ListResultsRequest;
-  private static readonly GetCurrentUserRequest    GetCurrentUserRequest;
-  private static readonly EventSubscriptionRequest EventSubscriptionRequest;
-  private static readonly ListPartitionsRequest    ListPartitionsRequest;
-  private static readonly GetPartitionRequest      GetPartitionRequest;
+  private const           string                                         SessionId   = "MySession";
+  private const           string                                         TaskId      = "MyTask";
+  private const           string                                         ResultKey   = "ResultKey";
+  private const           string                                         PartitionId = "PartitionId";
+  private static readonly TaskFilter                                     TaskFilter;
+  private static readonly CreateSmallTaskRequest                         CreateSmallTasksRequest;
+  private static readonly CreateSessionRequest                           CreateSessionRequest;
+  private static readonly Session                                        SessionRequest;
+  private static readonly GetResultStatusRequest                         GetResultStatusRequest;
+  private static readonly GetTaskStatusRequest                           GetTaskStatusRequest;
+  private static readonly Empty                                          Empty;
+  private static readonly SessionFilter                                  SessionFilter;
+  private static readonly ResultRequest                                  ResultRequest;
+  private static readonly TaskOutputRequest                              TaskOutputRequest;
+  private static readonly WaitRequest                                    WaitRequest;
+  private static readonly CreateLargeTaskRequest                         CreateLargeTaskRequestInit;
+  private static readonly CreateLargeTaskRequest                         CreateLargeTaskRequestInitTask;
+  private static readonly CreateLargeTaskRequest                         CreateLargeTaskRequestPayload;
+  private static readonly CreateLargeTaskRequest                         CreateLargeTaskRequestPayloadComplete;
+  private static readonly CreateLargeTaskRequest                         CreateLargeTaskRequestLastTask;
+  private static readonly CancelSessionRequest                           CancelSessionRequest;
+  private static readonly GetSessionRequest                              GetSessionRequest;
+  private static readonly ListSessionsRequest                            ListSessionsRequest;
+  private static readonly GetResultIdsRequest                            GetResultIdsRequest;
+  private static readonly GetTaskRequest                                 GetTaskRequest;
+  private static readonly ListTasksRequest                               ListTasksRequest;
+  private static readonly GetOwnerTaskIdRequest                          GetOwnerTaskIdRequest;
+  private static readonly ListApplicationsRequest                        ListApplicationsRequest;
+  private static readonly CancelTasksRequest                             CancelTasksRequest;
+  private static readonly ListResultsRequest                             ListResultsRequest;
+  private static readonly GetCurrentUserRequest                          GetCurrentUserRequest;
+  private static readonly EventSubscriptionRequest                       EventSubscriptionRequest;
+  private static readonly ListPartitionsRequest                          ListPartitionsRequest;
+  private static readonly GetPartitionRequest                            GetPartitionRequest;
+  private static readonly CountTasksByStatusRequest                      CountTasksByStatusRequestApplications;
+  private static readonly Api.gRPC.V1.Sessions.CountTasksByStatusRequest CountTasksByStatusRequestSessions;
+  private static readonly Api.gRPC.V1.Tasks.CountTasksByStatusRequest    CountTasksByStatusRequestTasks;
 
   static AuthenticationIntegrationTest()
   {
@@ -360,6 +356,19 @@ public class AuthenticationIntegrationTest
                           {
                             Id = "PartitionId",
                           };
+
+    CountTasksByStatusRequestApplications = new CountTasksByStatusRequest
+                                            {
+                                              Name    = "Name",
+                                              Version = "Version",
+                                            };
+
+    CountTasksByStatusRequestSessions = new Api.gRPC.V1.Sessions.CountTasksByStatusRequest
+                                        {
+                                          SessionId = "SessionId",
+                                        };
+
+    CountTasksByStatusRequestTasks = new Api.gRPC.V1.Tasks.CountTasksByStatusRequest();
   }
 
   public enum AuthenticationType
@@ -802,12 +811,17 @@ public class AuthenticationIntegrationTest
                                                        (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.CancelSession), CancelSessionRequest),
                                                        (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.GetSession), GetSessionRequest),
                                                        (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.ListSessions), ListSessionsRequest),
+                                                       (typeof(Sessions.SessionsClient), nameof(Sessions.SessionsClient.CountTasksByStatus),
+                                                        CountTasksByStatusRequestSessions),
                                                        (typeof(Applications.ApplicationsClient), nameof(Applications.ApplicationsClient.ListApplications),
                                                         ListApplicationsRequest),
+                                                       (typeof(Applications.ApplicationsClient), nameof(Applications.ApplicationsClient.CountTasksByStatus),
+                                                        CountTasksByStatusRequestApplications),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.GetResultIds), GetResultIdsRequest),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.GetTask), GetTaskRequest),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.ListTasks), ListTasksRequest),
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.CancelTasks), CancelTasksRequest),
+                                                       (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.CountTasksByStatus), CountTasksByStatusRequestTasks),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.GetOwnerTaskId), GetOwnerTaskIdRequest),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.ListResults), ListResultsRequest),
                                                        (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.GetPartition), GetPartitionRequest),
