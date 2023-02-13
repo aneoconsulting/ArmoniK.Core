@@ -23,7 +23,7 @@ using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.Validators;
 
 [TestFixture(TestOf = typeof(ListPartitionsRequestValidator))]
 public class ListPartitionsRequestValidatorTest

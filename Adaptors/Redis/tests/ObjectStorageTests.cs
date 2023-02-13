@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests;
+using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

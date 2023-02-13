@@ -26,7 +26,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.TestBase;
 
 [TestFixture]
 public class PartitionTableTestBase

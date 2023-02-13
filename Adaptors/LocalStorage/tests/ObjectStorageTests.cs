@@ -18,7 +18,7 @@
 using System;
 using System.IO;
 
-using ArmoniK.Core.Common.Tests;
+using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
