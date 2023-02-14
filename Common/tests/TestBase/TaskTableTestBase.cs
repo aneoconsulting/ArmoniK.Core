@@ -36,7 +36,7 @@ using NUnit.Framework;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.TestBase;
 
 [TestFixture]
 public class TaskTableTestBase

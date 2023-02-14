@@ -33,7 +33,7 @@ using NUnit.Framework;
 
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.TestBase;
 
 [TestFixture]
 public class SessionTableTestBase

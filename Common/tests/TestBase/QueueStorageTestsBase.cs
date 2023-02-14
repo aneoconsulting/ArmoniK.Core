@@ -24,7 +24,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.TestBase;
 
 [TestFixture]
 public class QueueStorageTestsBase
@@ -54,8 +54,8 @@ public class QueueStorageTestsBase
    * an instance of this class */
   protected bool RunTests;
 
-/* Function be override so it returns the suitable instance
- * of QueueStorage to the corresponding interface implementation */
+  /* Function be override so it returns the suitable instance
+   * of QueueStorage to the corresponding interface implementation */
   protected virtual Task GetQueueStorageInstance()
     => Task.CompletedTask;
 
