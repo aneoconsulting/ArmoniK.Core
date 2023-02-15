@@ -52,7 +52,8 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
                                                                         ServerCallContext       context)
   {
     var tasks = await taskTable_.ListApplicationsAsync(request.Filter.ToApplicationFilter(),
-                                                       request.Sort.ToApplicationField(),
+                                                       request.Sort.Fields.Select(field => field.ToApplicationField())
+                                                              .ToList(),
                                                        request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
                                                        request.Page,
                                                        request.PageSize,

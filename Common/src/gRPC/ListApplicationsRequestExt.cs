@@ -27,9 +27,9 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListApplicationsRequestExt
 {
-  public static Expression<Func<Application, object?>> ToApplicationField(this ListApplicationsRequest.Types.Sort sort)
+  public static Expression<Func<Application, object?>> ToApplicationField(this ListApplicationsRequest.Types.OrderByField field)
   {
-    switch (sort.Field)
+    switch (field)
     {
       case ListApplicationsRequest.Types.OrderByField.Name:
         return taskData => taskData.Name;

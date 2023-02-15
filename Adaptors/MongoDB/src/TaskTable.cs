@@ -446,12 +446,12 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
-                                                                                                   Expression<Func<Application, object?>> orderField,
-                                                                                                   bool                                   ascOrder,
-                                                                                                   int                                    page,
-                                                                                                   int                                    pageSize,
-                                                                                                   CancellationToken                      cancellationToken = default)
+  public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
+                                                                                                   List<Expression<Func<Application, object?>>> orderFields,
+                                                                                                   bool ascOrder,
+                                                                                                   int page,
+                                                                                                   int pageSize,
+                                                                                                   CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListApplicationsAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
@@ -465,9 +465,8 @@ public class TaskTable : ITaskTable
                                                                    data.Options.ApplicationService))
                                   .Select(group => group.Key);
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+    var ordered = queryable.OrderByList(orderFields,
+                                        ascOrder);
 
     var taskResult = ordered.Skip(page * pageSize)
                             .Take(pageSize)

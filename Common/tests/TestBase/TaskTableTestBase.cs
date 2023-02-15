@@ -1220,7 +1220,10 @@ public class TaskTableTestBase
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
                            Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
-                           Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                           Fields =
+                           {
+                             ListApplicationsRequest.Types.OrderByField.Name,
+                           },
                          },
                 };
 
@@ -1229,7 +1232,8 @@ public class TaskTableTestBase
                              .IsValid);
 
       var listTasks = await TaskTable!.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
-                                                             req.Sort.ToApplicationField(),
+                                                             req.Sort.Fields.Select(sort => sort.ToApplicationField())
+                                                                .ToList(),
                                                              false,
                                                              req.Page,
                                                              req.PageSize,

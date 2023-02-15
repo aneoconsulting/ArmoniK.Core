@@ -19,34 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
-using MongoDB.Driver.Linq;
+namespace ArmoniK.Core.Common.Utils;
 
-namespace ArmoniK.Core.Adapters.MongoDB;
-
-internal static class IMongoQueryableExt
+public static class IQueryableExt
 {
-  public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this                     IMongoQueryable<T> queryable,
-                                                               [EnumeratorCancellation] CancellationToken  cancellationToken = default)
-  {
-    var cursor = await queryable.ToCursorAsync(cancellationToken)
-                                .ConfigureAwait(false);
-    while (await cursor.MoveNextAsync(cancellationToken)
-                       .ConfigureAwait(false))
-    {
-      foreach (var item in cursor.Current)
-      {
-        cancellationToken.ThrowIfCancellationRequested();
-        yield return item;
-      }
-    }
-  }
-
-  public static IOrderedMongoQueryable<T> OrderByList<T>(this IMongoQueryable<T>            queryable,
-                                                         List<Expression<Func<T, object?>>> orderFields,
-                                                         bool                               ascOrder = true)
+  public static IOrderedQueryable<T> OrderByList<T>(this IQueryable<T>                 queryable,
+                                                    List<Expression<Func<T, object?>>> orderFields,
+                                                    bool                               ascOrder = true)
   {
     if (ascOrder)
     {
