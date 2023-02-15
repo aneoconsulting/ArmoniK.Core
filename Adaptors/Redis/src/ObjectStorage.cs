@@ -27,6 +27,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
@@ -59,23 +60,15 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<byte[]> valueChunks,
                                      CancellationToken        cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var storageNameKey = objectStorageName_ + key;
+    using var _ = logger_.LogFunction(storageNameKey);
 
-    var idx      = 0;
     var taskList = new List<Task>();
     await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
-      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
-                                         chunk));
-      ++idx;
+      taskList.Add(redis_.StringAppendAsync(storageNameKey, chunk));
     }
-
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx)
-                .ConfigureAwait(false);
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -83,31 +76,25 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var storageNameKey = objectStorageName_ + key;
 
-    var idx      = 0;
+    using var _ = logger_.LogFunction(storageNameKey);
+
     var taskList = new List<Task>();
     await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
-      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
-                                         chunk));
-      ++idx;
+      await redis_.StringAppendAsync(storageNameKey, chunk);
     }
-
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx)
-                .ConfigureAwait(false);
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
+    var storageNameKey = objectStorageName_ + key;
+    using var _ = logger_.LogFunction(storageNameKey);
+    var value = await redis_.StringGetAsync(storageNameKey)
                             .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -117,46 +104,15 @@ public class ObjectStorage : IObjectStorage
 
     var valuesCount = int.Parse(value!);
 
-    if (valuesCount == 0)
-    {
-      yield break;
-    }
-
-    foreach (var chunkTask in Enumerable.Range(0,
-                                               valuesCount)
-                                        .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
-                                        .ToList())
-    {
-      yield return (await chunkTask.ConfigureAwait(false))!;
-    }
+    yield return await redis_.StringGetAsync(storageNameKey);
   }
 
   /// <inheritdoc />
   public async Task<bool> TryDeleteAsync(string            key,
                                          CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
-                            .ConfigureAwait(false);
-
-    if (!value.HasValue)
-    {
-      throw new ObjectDataNotFoundException("Key not found");
-    }
-
-    var valuesCount = int.Parse(value!);
-    var keyList = Enumerable.Range(0,
-                                   valuesCount)
-                            .Select(index => new RedisKey(objectStorageName_ + key + "_" + index))
-                            .Concat(new[]
-                                    {
-                                      new RedisKey(objectStorageName_ + key + "_count"),
-                                    })
-                            .ToArray();
-
-
-    return await redis_.KeyDeleteAsync(keyList)
-                       .ConfigureAwait(false) == valuesCount + 1;
+    return await redis_.KeyDeleteAsync(new RedisKey(objectStorageName_ + key))
+                       .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
