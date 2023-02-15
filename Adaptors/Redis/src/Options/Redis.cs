@@ -17,7 +17,7 @@
 
 namespace ArmoniK.Core.Adapters.Redis.Options;
 
-internal class Redis
+public class Redis
 {
   public const string SettingSection = nameof(Redis);
   public       string InstanceName    { get; set; } = "";
@@ -30,4 +30,6 @@ internal class Redis
   public       bool   Ssl             { get; set; }
   public       string CredentialsPath { get; set; } = "";
   public       string CaPath          { get; set; } = "";
+  public       int    MaxRetry        { get; set; } = 5;
+  public       int    MsAfterRetry    { get; set; } = 500;
 }
