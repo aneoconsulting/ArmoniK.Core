@@ -44,9 +44,9 @@ internal static class IMongoQueryableExt
     }
   }
 
-  public static IOrderedMongoQueryable<T> OrderByList<T>(this IMongoQueryable<T>            queryable,
-                                                         List<Expression<Func<T, object?>>> orderFields,
-                                                         bool                               ascOrder = true)
+  public static IOrderedMongoQueryable<T> OrderByList<T>(this IMongoQueryable<T>                   queryable,
+                                                         ICollection<Expression<Func<T, object?>>> orderFields,
+                                                         bool                                      ascOrder = true)
   {
     if (ascOrder)
     {

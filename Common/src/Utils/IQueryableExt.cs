@@ -24,9 +24,9 @@ namespace ArmoniK.Core.Common.Utils;
 
 public static class IQueryableExt
 {
-  public static IOrderedQueryable<T> OrderByList<T>(this IQueryable<T>                 queryable,
-                                                    List<Expression<Func<T, object?>>> orderFields,
-                                                    bool                               ascOrder = true)
+  public static IOrderedQueryable<T> OrderByList<T>(this IQueryable<T>                        queryable,
+                                                    ICollection<Expression<Func<T, object?>>> orderFields,
+                                                    bool                                      ascOrder = true)
   {
     if (ascOrder)
     {

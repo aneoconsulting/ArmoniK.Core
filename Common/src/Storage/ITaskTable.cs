@@ -243,12 +243,12 @@ public interface ITaskTable : IInitializable
   /// <returns>
   ///   Collection of applications metadata matching the request and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>             filter,
-                                                                                      List<Expression<Func<Application, object?>>> orderFields,
-                                                                                      bool                                         ascOrder,
-                                                                                      int                                          page,
-                                                                                      int                                          pageSize,
-                                                                                      CancellationToken                            cancellationToken = default);
+  Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>                    filter,
+                                                                                      ICollection<Expression<Func<Application, object?>>> orderFields,
+                                                                                      bool                                                ascOrder,
+                                                                                      int                                                 page,
+                                                                                      int                                                 pageSize,
+                                                                                      CancellationToken                                   cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to succeeded

@@ -447,7 +447,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
-                                                                                                   List<Expression<Func<Application, object?>>> orderFields,
+                                                                                                   ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                    bool ascOrder,
                                                                                                    int page,
                                                                                                    int pageSize,
