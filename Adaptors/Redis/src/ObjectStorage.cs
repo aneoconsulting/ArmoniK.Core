@@ -38,18 +38,22 @@ public class ObjectStorage : IObjectStorage
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
   private readonly IDatabaseAsync         redis_;
+  private readonly Options.Redis          redisOptions_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for Redis
   /// </summary>
   /// <param name="redis">Connection to redis database</param>
+  /// <param name="redisOptions">Redis object storage options</param>
   /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(IDatabaseAsync         redis,
+                       Options.Redis          redisOptions,
                        string                 objectStorageName,
                        ILogger<ObjectStorage> logger)
   {
     redis_             = redis;
+    redisOptions_      = redisOptions;
     objectStorageName_ = objectStorageName;
     logger_            = logger;
   }
@@ -59,21 +63,23 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<byte[]> valueChunks,
                                      CancellationToken        cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var       storageNameKey = objectStorageName_ + key;
+    using var _              = logger_.LogFunction(storageNameKey);
 
     var idx      = 0;
     var taskList = new List<Task>();
     await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
-      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
-                                         chunk));
+      var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
+      taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKeyWithIndex,
+                                                                      chunk)));
       ++idx;
     }
 
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx)
-                .ConfigureAwait(false);
+    await PerformActionWithRetry(() => redis_.StringSetAsync(objectStorageName_ + key + "_count",
+                                                             idx))
+      .ConfigureAwait(false);
     await taskList.WhenAll()
                   .ConfigureAwait(false);
   }
@@ -83,21 +89,22 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var       storageNameKey = objectStorageName_ + key;
+    using var _              = logger_.LogFunction(storageNameKey);
 
     var idx      = 0;
     var taskList = new List<Task>();
     await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
-      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
-                                         chunk));
+      var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
+      taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKeyWithIndex,
+                                                                      chunk)));
       ++idx;
     }
 
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx)
-                .ConfigureAwait(false);
+    taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKey + "_count",
+                                                                    idx)));
     await taskList.WhenAll()
                   .ConfigureAwait(false);
   }
@@ -107,8 +114,8 @@ public class ObjectStorage : IObjectStorage
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
-                            .ConfigureAwait(false);
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+                  .ConfigureAwait(false);
 
     if (!value.HasValue)
     {
@@ -124,7 +131,7 @@ public class ObjectStorage : IObjectStorage
 
     foreach (var chunkTask in Enumerable.Range(0,
                                                valuesCount)
-                                        .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
+                                        .Select(index => PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_" + index)))
                                         .ToList())
     {
       yield return (await chunkTask.ConfigureAwait(false))!;
@@ -136,8 +143,8 @@ public class ObjectStorage : IObjectStorage
                                          CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
-                            .ConfigureAwait(false);
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+                  .ConfigureAwait(false);
 
     if (!value.HasValue)
     {
@@ -155,11 +162,45 @@ public class ObjectStorage : IObjectStorage
                             .ToArray();
 
 
-    return await redis_.KeyDeleteAsync(keyList)
-                       .ConfigureAwait(false) == valuesCount + 1;
+    return await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList))
+             .ConfigureAwait(false) == valuesCount + 1;
   }
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
     => throw new NotImplementedException();
+
+  private async Task<T> PerformActionWithRetry<T>(Func<Task<T>> action)
+  {
+    for (var retryCount = 0; retryCount < redisOptions_.MaxRetry; retryCount++)
+    {
+      try
+      {
+        return await action()
+                 .ConfigureAwait(false);
+      }
+      catch (RedisTimeoutException ex)
+      {
+        if (retryCount + 1 >= redisOptions_.MaxRetry)
+        {
+          logger_.LogError(ex,
+                           "A RedisTimeoutException occurred {MaxRetryCount} times for the same action",
+                           redisOptions_.MaxRetry);
+          throw;
+        }
+
+        var retryDelay = (retryCount + 1) * (retryCount + 1) * redisOptions_.MsAfterRetry;
+        logger_.LogWarning(ex,
+                           "A RedisTimeoutException occurred {retryCount}/{redisOptions_.MaxRetry}, retry in {retryDelay} ms",
+                           retryCount,
+                           redisOptions_.MaxRetry,
+                           retryDelay);
+        await Task.Delay(retryDelay)
+                  .ConfigureAwait(false);
+      }
+    }
+
+    throw new RedisTimeoutException("A RedisTimeoutException occurred",
+                                    CommandStatus.Unknown);
+  }
 }
