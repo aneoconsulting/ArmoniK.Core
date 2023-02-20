@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
@@ -81,10 +82,14 @@ public class ToApplicationFieldTest
                  Filter = new ListApplicationsRequest.Types.Filter(),
                  Sort = new ListApplicationsRequest.Types.Sort
                         {
-                          Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                          Fields =
+                          {
+                            ListApplicationsRequest.Types.OrderByField.Name,
+                          },
                           Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
                         },
-               }.Sort.ToApplicationField()
+               }.Sort.Fields.Single()
+                .ToApplicationField()
                 .Compile();
 
     Assert.AreEqual(Options.ApplicationName,
@@ -99,10 +104,14 @@ public class ToApplicationFieldTest
                  Filter = new ListApplicationsRequest.Types.Filter(),
                  Sort = new ListApplicationsRequest.Types.Sort
                         {
-                          Field     = ListApplicationsRequest.Types.OrderByField.Namespace,
+                          Fields =
+                          {
+                            ListApplicationsRequest.Types.OrderByField.Namespace,
+                          },
                           Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
                         },
-               }.Sort.ToApplicationField()
+               }.Sort.Fields.Single()
+                .ToApplicationField()
                 .Compile();
 
     Assert.AreEqual(Options.ApplicationNamespace,
@@ -117,10 +126,14 @@ public class ToApplicationFieldTest
                  Filter = new ListApplicationsRequest.Types.Filter(),
                  Sort = new ListApplicationsRequest.Types.Sort
                         {
-                          Field     = ListApplicationsRequest.Types.OrderByField.Version,
+                          Fields =
+                          {
+                            ListApplicationsRequest.Types.OrderByField.Version,
+                          },
                           Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
                         },
-               }.Sort.ToApplicationField()
+               }.Sort.Fields.Single()
+                .ToApplicationField()
                 .Compile();
 
     Assert.AreEqual(Options.ApplicationVersion,
@@ -135,13 +148,50 @@ public class ToApplicationFieldTest
                  Filter = new ListApplicationsRequest.Types.Filter(),
                  Sort = new ListApplicationsRequest.Types.Sort
                         {
-                          Field     = ListApplicationsRequest.Types.OrderByField.Service,
+                          Fields =
+                          {
+                            ListApplicationsRequest.Types.OrderByField.Service,
+                          },
                           Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
                         },
-               }.Sort.ToApplicationField()
+               }.Sort.Fields.Single()
+                .ToApplicationField()
                 .Compile();
 
     Assert.AreEqual(Options.ApplicationService,
                     func.Invoke(taskData_));
+  }
+
+  [Test]
+  public void InvokeMultipleShouldSucceed()
+  {
+    var field = new ListApplicationsRequest
+                {
+                  Filter = new ListApplicationsRequest.Types.Filter(),
+                  Sort = new ListApplicationsRequest.Types.Sort
+                         {
+                           Fields =
+                           {
+                             ListApplicationsRequest.Types.OrderByField.Service,
+                             ListApplicationsRequest.Types.OrderByField.Name,
+                           },
+                           Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                         },
+                }.Sort.Fields;
+
+    Assert.AreEqual(2,
+                    field.Count);
+
+    Assert.AreEqual(Options.ApplicationService,
+                    field[0]
+                      .ToApplicationField()
+                      .Compile()
+                      .Invoke(taskData_));
+
+    Assert.AreEqual(Options.ApplicationName,
+                    field[1]
+                      .ToApplicationField()
+                      .Compile()
+                      .Invoke(taskData_));
   }
 }

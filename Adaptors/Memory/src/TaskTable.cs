@@ -29,6 +29,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -345,12 +346,12 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>       filter,
-                                                                                             Expression<Func<Application, object?>> orderField,
-                                                                                             bool                                   ascOrder,
-                                                                                             int                                    page,
-                                                                                             int                                    pageSize,
-                                                                                             CancellationToken                      cancellationToken = default)
+  public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
+                                                                                             ICollection<Expression<Func<Application, object?>>> orderFields,
+                                                                                             bool ascOrder,
+                                                                                             int page,
+                                                                                             int pageSize,
+                                                                                             CancellationToken cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
@@ -361,9 +362,8 @@ public class TaskTable : ITaskTable
                                                                      data.Options.ApplicationService))
                                     .Select(group => group.Key);
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+    var ordered = queryable.OrderByList(orderFields,
+                                        ascOrder);
 
     return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((ordered.Skip(page * pageSize)
                                                                                      .Take(pageSize), ordered.Count()));

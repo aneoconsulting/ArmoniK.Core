@@ -1220,7 +1220,10 @@ public class TaskTableTestBase
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
                            Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
-                           Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                           Fields =
+                           {
+                             ListApplicationsRequest.Types.OrderByField.Name,
+                           },
                          },
                 };
 
@@ -1229,7 +1232,8 @@ public class TaskTableTestBase
                              .IsValid);
 
       var listTasks = await TaskTable!.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
-                                                             req.Sort.ToApplicationField(),
+                                                             req.Sort.Fields.Select(sort => sort.ToApplicationField())
+                                                                .ToList(),
                                                              false,
                                                              req.Page,
                                                              req.PageSize,
@@ -1247,6 +1251,152 @@ public class TaskTableTestBase
                                       options_.ApplicationVersion,
                                       options_.ApplicationService),
                       listTasksResponseTaskData.Single());
+    }
+  }
+
+  [Test]
+  public async Task ListApplicationFromTasksSortShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var version1 = "version1";
+      var version2 = "version2";
+      var applicationName = Guid.NewGuid()
+                                .ToString();
+      var applicationNamespace = "ApplicationNamespace";
+      var applicationService1  = "ApplicationService1";
+      var applicationService2  = "ApplicationService2";
+
+      var app1 = new Application(applicationName,
+                                 applicationNamespace,
+                                 version1,
+                                 applicationService1);
+
+      var app2 = app1 with
+                 {
+                   Version = version2,
+                 };
+
+      var app3 = app1 with
+                 {
+                   Service = applicationService2,
+                 };
+
+      var taskOptions1 = new TaskOptions(new Dictionary<string, string>(),
+                                         TimeSpan.FromHours(1),
+                                         2,
+                                         1,
+                                         "Partition",
+                                         applicationName,
+                                         version1,
+                                         applicationNamespace,
+                                         applicationService1,
+                                         "EngineType");
+
+      var taskOptions2 = taskOptions1 with
+                         {
+                           ApplicationVersion = version2,
+                         };
+
+      var taskOptions3 = taskOptions1 with
+                         {
+                           ApplicationService = applicationService2,
+                         };
+
+      var taskData1 = new TaskData("SessionId",
+                                   Guid.NewGuid()
+                                       .ToString(),
+                                   "owner",
+                                   "ownerpodname",
+                                   "payload",
+                                   new List<string>(),
+                                   new List<string>(),
+                                   new List<string>(),
+                                   new List<string>(),
+                                   TaskStatus.Completed,
+                                   taskOptions1,
+                                   new Output(false,
+                                              ""));
+
+      await TaskTable!.CreateTasks(new List<TaskData>
+                                   {
+                                     taskData1,
+                                     taskData1 with
+                                     {
+                                       TaskId = Guid.NewGuid()
+                                                    .ToString(),
+                                       Options = taskOptions2,
+                                     },
+                                     taskData1 with
+                                     {
+                                       TaskId = Guid.NewGuid()
+                                                    .ToString(),
+                                       Options = taskOptions2,
+                                     },
+                                     taskData1 with
+                                     {
+                                       TaskId = Guid.NewGuid()
+                                                    .ToString(),
+                                       Options = taskOptions3,
+                                     },
+                                     taskData1 with
+                                     {
+                                       TaskId = Guid.NewGuid()
+                                                    .ToString(),
+                                       Options = taskOptions3,
+                                     },
+                                   },
+                                   CancellationToken.None)
+                      .ConfigureAwait(false);
+
+      var req = new ListApplicationsRequest
+                {
+                  Page     = 0,
+                  PageSize = 4,
+                  Filter = new ListApplicationsRequest.Types.Filter
+                           {
+                             Name = applicationName,
+                           },
+                  Sort = new ListApplicationsRequest.Types.Sort
+                         {
+                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Fields =
+                           {
+                             ListApplicationsRequest.Types.OrderByField.Version,
+                             ListApplicationsRequest.Types.OrderByField.Service,
+                           },
+                         },
+                };
+
+      var validator = new ListApplicationsRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
+                                                            req.Sort.Fields.Select(sort => sort.ToApplicationField())
+                                                               .ToList(),
+                                                            req.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                            req.Page,
+                                                            req.PageSize,
+                                                            CancellationToken.None)
+                                     .ConfigureAwait(false);
+
+      var listTasksResponseTaskData = listTasks.applications.ToList();
+      foreach (var task in listTasksResponseTaskData)
+      {
+        Console.WriteLine(task);
+      }
+
+
+      // First order by version => app2 then app3 or app1 because version2 is before version1 in desc order
+      // app3 before app1 because desc ordering by service (service2 before service1 in desc)
+      Assert.AreEqual(new List<Application>
+                      {
+                        app2,
+                        app3,
+                        app1,
+                      },
+                      listTasksResponseTaskData);
     }
   }
 

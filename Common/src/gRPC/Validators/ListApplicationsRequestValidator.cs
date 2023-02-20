@@ -53,10 +53,10 @@ public class ListApplicationsRequestValidator : AbstractValidator<ListApplicatio
                           .NotNull()
                           .NotEmpty()
                           .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.Sort)}.{nameof(ListApplicationsRequest.Sort.Direction)}");
-                        RuleFor(request => request.Sort.Field)
+                        RuleFor(request => request.Sort.Fields)
                           .NotNull()
                           .NotEmpty()
-                          .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.Sort)}.{nameof(ListApplicationsRequest.Sort.Field)}");
+                          .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.Sort)}.{nameof(ListApplicationsRequest.Sort.Fields)}");
                       });
   }
 }
