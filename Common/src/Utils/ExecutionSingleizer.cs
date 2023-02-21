@@ -52,7 +52,7 @@ public class ExecutionSingleizer<T> : IDisposable
 
     // If there is no waiters, the task is complete (success or failed), and no thread is currently running it.
     // We therefore need to call func again
-    if (currentHandle.Waiters == 0)
+    if (currentHandle.Waiters == 0 && DateTime.Now > currentHandle.ValidUntil)
     {
       // Prepare new handle, with new cancellation token source and new task
       var cts         = new CancellationTokenSource();
@@ -63,6 +63,7 @@ public class ExecutionSingleizer<T> : IDisposable
                         CancellationTokenSource = cts,
                         // Unwrap allows the handle to have a single level Task, instead of a Task<Task<...>>
                         InnerTask = delayedTask.Unwrap(),
+                        ValidUntil = DateTime.Now.AddSeconds(5),
                         // Current thread is implicitly waiting for the task
                         Waiters = 1,
                       };
@@ -183,6 +184,8 @@ public class ExecutionSingleizer<T> : IDisposable
     ///   Task that creates the result.
     /// </summary>
     public Task<T> InnerTask { get; init; }
+
+    public DateTime ValidUntil { get; set; }
 
     /// <inheritdoc />
     public void Dispose()
