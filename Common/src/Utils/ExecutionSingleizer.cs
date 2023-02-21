@@ -32,6 +32,11 @@ public class ExecutionSingleizer<T> : IDisposable
   private readonly long   tickValidity_;
   private          Handle handle_ = new();
 
+
+  /// <summary>
+  /// Allow initialization of <see cref="ExecutionSingleizer"/>
+  /// </summary>
+  /// <param name="timeValidity">Results from the execution will be in cache during timeValidity</param>
   public ExecutionSingleizer(TimeSpan timeValidity = default)
     => tickValidity_ = (long)Math.Ceiling(Stopwatch.Frequency * timeValidity.TotalSeconds);
 
@@ -126,7 +131,6 @@ public class ExecutionSingleizer<T> : IDisposable
     }
     finally
     {
-
       // Reset the validity of the result once the result is available.
       // This is done by all threads in order to avoid race condition with the Waiters decrement.
       if (!currentHandle.CancellationTokenSource.IsCancellationRequested)
