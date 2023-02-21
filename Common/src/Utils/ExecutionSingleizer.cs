@@ -90,7 +90,6 @@ public class ExecutionSingleizer<T> : IDisposable
         // We can now start the task, other threads will just wait on the result.
         delayedTask.Start();
         currentHandle                   = newHandle;
-        currentHandle.SetTimeValidityMs(timeValidityMs_);
 
         // There is no need increment number of waiters as it has been initialized to 1.
       }
@@ -140,6 +139,7 @@ public class ExecutionSingleizer<T> : IDisposable
         // If we enter here because the task has completed without errors,
         // cancelling is a no op, therefore, we do not need to check why we went here.
         currentHandle.CancellationTokenSource.Cancel();
+        currentHandle.SetTimeValidityMs(timeValidityMs_);
 
         // FIXME: There might be a race condition between the dispose and the cancel here.
         // ManyConcurrentExecutionShouldSucceed fails with:
@@ -200,7 +200,7 @@ public class ExecutionSingleizer<T> : IDisposable
     public void SetTimeValidityMs(int timeValidityMs)
     {
       timeValidityTicks_ = timeValidityMs / 1000 * Stopwatch.Frequency;
-      stopWatch_         = Stopwatch.StartNew();
+      stopWatch_.Restart();
     }
 
     public bool IsOutOfDate
