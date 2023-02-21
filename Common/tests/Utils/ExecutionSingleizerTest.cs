@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -211,6 +212,42 @@ public class ExecutionSingleizerTest
     Assert.ThrowsAsync<TaskCanceledException>(async () => await t2.ConfigureAwait(false));
 
     Assert.AreEqual(0,
+                    val_);
+  }
+
+
+  [Test]
+  public async Task CheckExpire()
+  {
+    var single = new ExecutionSingleizer<int>(TimeSpan.FromMilliseconds(100));
+    var i = await single.Call(ct => Set(1,
+                                        0,
+                                        ct))
+                        .ConfigureAwait(false);
+    Assert.AreEqual(1,
+                    i);
+    Assert.AreEqual(1,
+                    val_);
+
+    i = await single.Call(ct => Set(2,
+                                    0,
+                                    ct))
+                    .ConfigureAwait(false);
+    Assert.AreEqual(1,
+                    i);
+    Assert.AreEqual(1,
+                    val_);
+
+    await Task.Delay(150)
+              .ConfigureAwait(false);
+
+    i = await single.Call(ct => Set(3,
+                                    0,
+                                    ct))
+                    .ConfigureAwait(false);
+    Assert.AreEqual(3,
+                    i);
+    Assert.AreEqual(3,
                     val_);
   }
 
