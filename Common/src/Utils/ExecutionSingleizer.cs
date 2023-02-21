@@ -22,8 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using Google.Protobuf.WellKnownTypes;
-
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -38,17 +36,15 @@ namespace ArmoniK.Core.Common.Utils;
 /// <typeparam name="T">Type of the return object</typeparam>
 public class ExecutionSingleizer<T> : IDisposable
 {
-  private Handle handle_ = new();
+  private readonly long   tickValidity_;
+  private          Handle handle_ = new();
+
+  public ExecutionSingleizer(TimeSpan timeValidity = default)
+    => tickValidity_ = (long)Math.Ceiling(Stopwatch.Frequency * timeValidity.TotalSeconds);
 
   /// <inheritdoc />
   public void Dispose()
     => handle_.Dispose();
-
-  private readonly int timeValidityMs_;
-  public ExecutionSingleizer(int timeValidityMs = 5000)
-  {
-    timeValidityMs_ = timeValidityMs;
-  }
 
   /// <summary>
   ///   Call the asynchronous function func.
@@ -67,8 +63,8 @@ public class ExecutionSingleizer<T> : IDisposable
     var currentHandle = handle_;
 
     // If there is no waiters, the task is complete (success or failed), and no thread is currently running it.
-    // We therefore need to call func again
-    if (currentHandle.Waiters == 0 && currentHandle.IsOutOfDate)
+    // We therefore need to call func again if the data has expired.
+    if (currentHandle.Waiters == 0 && Stopwatch.GetTimestamp() > currentHandle.ValidUntil)
     {
       // Prepare new handle, with new cancellation token source and new task
       var cts         = new CancellationTokenSource();
@@ -96,7 +92,7 @@ public class ExecutionSingleizer<T> : IDisposable
         // Current thread has won, the others will see this new handle.
         // We can now start the task, other threads will just wait on the result.
         delayedTask.Start();
-        currentHandle                   = newHandle;
+        currentHandle = newHandle;
 
         // There is no need increment number of waiters as it has been initialized to 1.
       }
@@ -137,6 +133,14 @@ public class ExecutionSingleizer<T> : IDisposable
     }
     finally
     {
+
+      // Reset the validity of the result once the result is available.
+      // This is done by all threads in order to avoid race condition with the Waiters decrement.
+      if (!currentHandle.CancellationTokenSource.IsCancellationRequested)
+      {
+        currentHandle.ValidUntil = Stopwatch.GetTimestamp() + tickValidity_;
+      }
+
       // Remove the current thread from the list of waiters.
       var i = Interlocked.Decrement(ref currentHandle.Waiters);
 
@@ -146,7 +150,6 @@ public class ExecutionSingleizer<T> : IDisposable
         // If we enter here because the task has completed without errors,
         // cancelling is a no op, therefore, we do not need to check why we went here.
         currentHandle.CancellationTokenSource.Cancel();
-        currentHandle.SetTimeValidityMs(timeValidityMs_);
 
         // FIXME: There might be a race condition between the dispose and the cancel here.
         // ManyConcurrentExecutionShouldSucceed fails with:
@@ -172,12 +175,14 @@ public class ExecutionSingleizer<T> : IDisposable
   private sealed class Handle : IDisposable
   {
     /// <summary>
+    ///   Specify the timestamp until the data is valid
+    /// </summary>
+    public long ValidUntil = long.MinValue;
+
+    /// <summary>
     ///   Number of threads waiting for the result.
     /// </summary>
     public int Waiters;
-
-    private Stopwatch stopWatch_ = Stopwatch.StartNew();
-    private long      timeValidityTicks_ = 1;
 
     /// <summary>
     ///   Construct an handle that is cancelled.
@@ -204,21 +209,7 @@ public class ExecutionSingleizer<T> : IDisposable
     /// </summary>
     public Task<T> InnerTask { get; init; }
 
-    public void SetTimeValidityMs(int timeValidityMs)
-    {
-      timeValidityTicks_ = timeValidityMs / 1000 * Stopwatch.Frequency;
-      stopWatch_.Restart();
-    }
-
-    public bool IsOutOfDate
-    {
-      get
-      {
-        return stopWatch_.ElapsedTicks > timeValidityTicks_;
-      }
-    }
-
-  /// <inheritdoc />
+    /// <inheritdoc />
     public void Dispose()
     {
       CancellationTokenSource.Dispose();
