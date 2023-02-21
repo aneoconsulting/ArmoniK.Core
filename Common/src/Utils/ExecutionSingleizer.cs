@@ -22,7 +22,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using Google.Protobuf.WellKnownTypes;
+
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,6 +43,12 @@ public class ExecutionSingleizer<T> : IDisposable
   /// <inheritdoc />
   public void Dispose()
     => handle_.Dispose();
+
+  private readonly int timeValidityMs_;
+  public ExecutionSingleizer(int timeValidityMs = 5000)
+  {
+    timeValidityMs_ = timeValidityMs;
+  }
 
   /// <summary>
   ///   Call the asynchronous function func.
@@ -59,7 +68,7 @@ public class ExecutionSingleizer<T> : IDisposable
 
     // If there is no waiters, the task is complete (success or failed), and no thread is currently running it.
     // We therefore need to call func again
-    if (currentHandle.Waiters == 0)
+    if (currentHandle.Waiters == 0 && currentHandle.IsOutOfDate)
     {
       // Prepare new handle, with new cancellation token source and new task
       var cts         = new CancellationTokenSource();
@@ -87,7 +96,7 @@ public class ExecutionSingleizer<T> : IDisposable
         // Current thread has won, the others will see this new handle.
         // We can now start the task, other threads will just wait on the result.
         delayedTask.Start();
-        currentHandle = newHandle;
+        currentHandle                   = newHandle;
 
         // There is no need increment number of waiters as it has been initialized to 1.
       }
@@ -137,6 +146,7 @@ public class ExecutionSingleizer<T> : IDisposable
         // If we enter here because the task has completed without errors,
         // cancelling is a no op, therefore, we do not need to check why we went here.
         currentHandle.CancellationTokenSource.Cancel();
+        currentHandle.SetTimeValidityMs(timeValidityMs_);
 
         // FIXME: There might be a race condition between the dispose and the cancel here.
         // ManyConcurrentExecutionShouldSucceed fails with:
@@ -166,6 +176,9 @@ public class ExecutionSingleizer<T> : IDisposable
     /// </summary>
     public int Waiters;
 
+    private Stopwatch stopWatch_ = Stopwatch.StartNew();
+    private long      timeValidityTicks_ = 1;
+
     /// <summary>
     ///   Construct an handle that is cancelled.
     /// </summary>
@@ -191,7 +204,21 @@ public class ExecutionSingleizer<T> : IDisposable
     /// </summary>
     public Task<T> InnerTask { get; init; }
 
-    /// <inheritdoc />
+    public void SetTimeValidityMs(int timeValidityMs)
+    {
+      timeValidityTicks_ = timeValidityMs / 1000 * Stopwatch.Frequency;
+      stopWatch_.Restart();
+    }
+
+    public bool IsOutOfDate
+    {
+      get
+      {
+        return stopWatch_.ElapsedTicks > timeValidityTicks_;
+      }
+    }
+
+  /// <inheritdoc />
     public void Dispose()
     {
       CancellationTokenSource.Dispose();
