@@ -15,19 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common;
 
 /// <summary>
-/// Marks a type as requiring asynchronous initialization
-/// and provides the result of that initialization.
+///   Marks a type as requiring asynchronous initialization
+///   and provides the result of that initialization.
 /// </summary>
 public interface IAsyncInitialization<T>
 {
   /// <summary>
-  /// The result of the asynchronous initialization of this instance.
+  ///   The result of the asynchronous initialization of this instance.
   /// </summary>
   Task<T> Initialization { get; }
 }

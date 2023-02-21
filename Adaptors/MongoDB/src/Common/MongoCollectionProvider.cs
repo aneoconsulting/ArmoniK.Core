@@ -33,8 +33,9 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  private          IMongoCollection<TData>? mongoCollection_;
   private readonly object                   lockObj_ = new();
+  private          IMongoCollection<TData>? mongoCollection_;
+
   public MongoCollectionProvider(Options.MongoDB   options,
                                  SessionProvider   sessionProvider,
                                  IMongoDatabase    mongoDatabase,
@@ -50,7 +51,26 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                      sessionProvider,
                                      mongoDatabase,
                                      cancellationToken);
+  }
 
+  public Task<IMongoCollection<TData>> Initialization { get; private set; }
+
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => throw new NotImplementedException();
+
+  public Task Init(CancellationToken cancellationToken)
+  {
+    if (mongoCollection_ is not null)
+    {
+      return Task.CompletedTask;
+    }
+
+    lock (lockObj_)
+    {
+      mongoCollection_ = Initialization.Result;
+    }
+
+    return Task.CompletedTask;
   }
 
   private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB   options,
@@ -90,24 +110,6 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     return output;
   }
 
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => throw new NotImplementedException();
-
-  public Task Init(CancellationToken cancellationToken)
-  {
-    if (mongoCollection_ is not null)
-    {
-      return Task.CompletedTask;
-    }
-
-    lock (lockObj_)
-    {
-      mongoCollection_ = Initialization.Result;
-    }
-
-    return Task.CompletedTask;
-  }
-
   public IMongoCollection<TData> Get()
   {
     if (mongoCollection_ is not null)
@@ -122,6 +124,4 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
 
     return mongoCollection_;
   }
-
-  public Task<IMongoCollection<TData>> Initialization { get; private set; }
 }
