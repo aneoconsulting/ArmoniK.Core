@@ -115,20 +115,42 @@ public class Submitter : ISubmitter
                                          string                           parentTaskId,
                                          CancellationToken                cancellationToken)
   {
-    var taskIds = requests.Select(request => request.Id);
+    var taskRequests = requests.ToList();
+    var allTaskIds = taskRequests.Select(request => request.Id)
+                                 .ToList();
 
     await ChangeResultOwnership(sessionId,
                                 parentTaskId,
-                                requests,
-                                cancellationToken);
+                                taskRequests,
+                                cancellationToken)
+      .ConfigureAwait(false);
 
-    await pushQueueStorage_.PushMessagesAsync(taskIds,
-                                              partitionId,
-                                              priority,
-                                              cancellationToken)
-                           .ConfigureAwait(false);
+    var tasksWithDependencies = taskRequests.Where(request => request.DataDependencies.Any())
+                                            .Select(request => request.Id)
+                                            .ToList();
+    var tasksWithoutDependencies = taskRequests.Where(request => !request.DataDependencies.Any())
+                                               .Select(request => request.Id)
+                                               .ToList();
+    if (tasksWithoutDependencies.Any())
+    {
+      await pushQueueStorage_.PushMessagesAsync(tasksWithoutDependencies,
+                                                partitionId,
+                                                priority,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
+    }
 
-    await taskTable_.FinalizeTaskCreation(taskIds,
+    if (tasksWithDependencies.Any())
+    {
+      await pushQueueStorage_.PushMessagesAsync(tasksWithDependencies,
+                                                pushQueueStorage_.UnresolvedDependenciesQueue,
+                                                priority,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
+    }
+
+
+    await taskTable_.FinalizeTaskCreation(allTaskIds,
                                           cancellationToken)
                     .ConfigureAwait(false);
   }
