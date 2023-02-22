@@ -45,5 +45,6 @@ public interface IPushQueueStorage : IQueueStorage
   /// <summary>
   /// Name of the queue that holds tasks with unresolved data dependencies
   /// </summary>
-  public string UnresolvedDependenciesQueue { get; }
+  public string UnresolvedDependenciesQueue
+    => nameof(UnresolvedDependenciesQueue);
 }
