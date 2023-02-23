@@ -554,6 +554,12 @@ jobs:
           just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
           sleep 10
 
+      - name: Print And Time Metrics
+        run: |
+        set -x
+        time curl localhost:5002/metrics
+        time curl localhost:5003/metrics
+
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
         run: |
@@ -607,6 +613,12 @@ jobs:
             -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Print And Time Metrics
+        run: |
+        set -x
+        time curl localhost:5002/metrics
+        time curl localhost:5003/metrics
 
       - name: Show logs
         if: always()
