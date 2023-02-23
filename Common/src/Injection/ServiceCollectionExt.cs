@@ -380,24 +380,27 @@ public static class ServiceCollectionExt
   /// </returns>
   [PublicAPI]
   public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
-    => services.AddGrpc(options =>
-                        {
-                          options.EnableMessageValidation();
-                          options.MaxReceiveMessageSize = null;
-                        })
-               .Services.AddValidator<CreateLargeTaskRequestValidator>()
-               .AddValidator<CreateSmallTaskRequestValidator>()
-               .AddValidator<CreateSessionRequestValidator>()
-               .AddValidator<CancelTasksRequestValidator>()
-               .AddValidator<TaskOptionsValidator>()
-               .AddValidator<TaskFilterValidator>()
-               .AddValidator<SessionFilterValidator>()
-               .AddValidator<ListSessionsRequestValidator>()
-               .AddValidator<ListTasksRequestValidator>()
-               .AddValidator<ListResultsRequestValidator>()
-               .AddValidator<ListApplicationsRequestValidator>()
-               .AddValidator<ListPartitionsRequestValidator>()
-               .AddValidator<SessionsCountTasksByStatusRequestValidator>()
-               .AddValidator<ApplicationsCountTasksByStatusRequestValidator>()
-               .AddGrpcValidation();
+  {
+    services.AddGrpc(options =>
+                     {
+                       options.EnableMessageValidation();
+                       options.MaxReceiveMessageSize = null;
+                     })
+            .AddJsonTranscoding();
+    return services.AddValidator<CreateLargeTaskRequestValidator>()
+                   .AddValidator<CreateSmallTaskRequestValidator>()
+                   .AddValidator<CreateSessionRequestValidator>()
+                   .AddValidator<CancelTasksRequestValidator>()
+                   .AddValidator<TaskOptionsValidator>()
+                   .AddValidator<TaskFilterValidator>()
+                   .AddValidator<SessionFilterValidator>()
+                   .AddValidator<ListSessionsRequestValidator>()
+                   .AddValidator<ListTasksRequestValidator>()
+                   .AddValidator<ListResultsRequestValidator>()
+                   .AddValidator<ListApplicationsRequestValidator>()
+                   .AddValidator<ListPartitionsRequestValidator>()
+                   .AddValidator<SessionsCountTasksByStatusRequestValidator>()
+                   .AddValidator<ApplicationsCountTasksByStatusRequestValidator>()
+                   .AddGrpcValidation();
+  }
 }

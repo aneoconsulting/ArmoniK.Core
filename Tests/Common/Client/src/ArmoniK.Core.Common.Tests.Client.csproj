@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Company>ANEO</Company>
     <Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
@@ -25,10 +25,10 @@
   </PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="ArmoniK.Api.Client" Version="3.5.0-SNAPSHOT.16.822ea77" />
+	  <PackageReference Include="ArmoniK.Api.Client" Version="3.6.0-35231g39deef3.31.39deef3" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
 	</ItemGroup>

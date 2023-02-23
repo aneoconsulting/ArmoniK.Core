@@ -75,8 +75,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
                                                            });
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
            .AddAuthorization()
-           .ValidateGrpcRequests()
-           .AddGrpc();
+           .ValidateGrpcRequests();
 
     serviceConfigurator?.Invoke(builder.Services);
 

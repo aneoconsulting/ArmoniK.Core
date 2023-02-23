@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Company>ANEO</Company>
 		<Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
@@ -26,13 +26,14 @@
 
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Core" Version="3.5.0-SNAPSHOT.16.822ea77" />
+    <PackageReference Include="ArmoniK.Api.Core" Version="3.6.0-35231g39deef3.31.39deef3" />
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="6.2.0" />
-    <PackageReference Include="Grpc.HealthCheck" Version="2.50.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.51.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="7.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" Version="7.0.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
-    <PackageReference Include="stateless" Version="5.12.0" />
+    <PackageReference Include="stateless" Version="5.13.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
