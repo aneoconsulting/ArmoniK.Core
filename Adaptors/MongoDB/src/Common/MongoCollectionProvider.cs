@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 
 using JetBrains.Annotations;
 
@@ -33,9 +34,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  private readonly object                   lockObj_ = new();
   private          IMongoCollection<TData>? mongoCollection_;
-
+  private          bool                     isInitialized_;
   public MongoCollectionProvider(Options.MongoDB   options,
                                  SessionProvider   sessionProvider,
                                  IMongoDatabase    mongoDatabase,
@@ -56,21 +56,33 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   public Task<IMongoCollection<TData>> Initialization { get; private set; }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => throw new NotImplementedException();
-
-  public Task Init(CancellationToken cancellationToken)
   {
-    if (mongoCollection_ is not null)
+    switch (tag)
     {
-      return Task.CompletedTask;
+      case HealthCheckTag.Startup:
+      case HealthCheckTag.Readiness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet."));
+      case HealthCheckTag.Liveness:
+        return Task.FromResult(isInitialized_ && mongoCollection_ is null
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet."));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(tag),
+                                              tag,
+                                              null);
+    }
+  }
+
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      mongoCollection_ = await Initialization.ConfigureAwait(false);
     }
 
-    lock (lockObj_)
-    {
-      mongoCollection_ = Initialization.Result;
-    }
-
-    return Task.CompletedTask;
+    isInitialized_ = true;
   }
 
   private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB   options,
@@ -112,16 +124,13 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
 
   public IMongoCollection<TData> Get()
   {
-    if (mongoCollection_ is not null)
+    if (!isInitialized_)
     {
-      return mongoCollection_;
+      throw new ArmoniKException($"Mongo Collection has not been initialized; call Init method first");
     }
-
-    lock (lockObj_)
+    else
     {
-      mongoCollection_ = Initialization.Result;
+      return mongoCollection_!;
     }
-
-    return mongoCollection_;
   }
 }

@@ -267,6 +267,8 @@ public class SessionTable : ISessionTable
     {
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
+      await sessionCollectionProvider_.Init(cancellationToken)
+                                      .ConfigureAwait(false);
       sessionCollectionProvider_.Get();
       sessionProvider_.Get();
     }

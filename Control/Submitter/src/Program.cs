@@ -25,6 +25,7 @@ using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
@@ -196,14 +197,27 @@ public static class Program
         app.MapGrpcReflectionService();
       }
 
-      var sessionProvider      = app.Services.GetRequiredService<SessionProvider>();
-      var objectFactory        = app.Services.GetRequiredService<IObjectStorageFactory>();
-      var pushQueueStorage     = app.Services.GetRequiredService<IPushQueueStorage>();
-      var taskObjectFactory    = objectFactory.Init(CancellationToken.None);
-      var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
+      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
+      var objectFactory               = app.Services.GetRequiredService<IObjectStorageFactory>();
+      var pushQueueStorage            = app.Services.GetRequiredService<IPushQueueStorage>();
+      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
+      var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+      var sessionCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<SessionData, SessionDataModelMapping>>();
+      var resultCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
+      var taskObjectFactory           = objectFactory.Init(CancellationToken.None);
+      var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
+      await partitionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
+      await taskCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
+      await sessionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
+      await resultCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
+
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
 

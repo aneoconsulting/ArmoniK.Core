@@ -161,6 +161,10 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _                = logger_.LogFunction();
+    await sessionProvider_.Init(cancellationToken)
+                          .ConfigureAwait(false);
+    await objectCollectionProvider_.Init(cancellationToken)
+                                   .ConfigureAwait(false);
     var       sessionHandle    = sessionProvider_.Get();
     var       objectCollection = objectCollectionProvider_.Get();
 

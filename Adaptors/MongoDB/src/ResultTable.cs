@@ -64,9 +64,9 @@ public class ResultTable : IResultTable
   public async Task Create(IEnumerable<Result> results,
                            CancellationToken   cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(Create)}");
+    using var activity         = activitySource_.StartActivity($"{nameof(Create)}");
 
-    var resultCollection = resultCollectionProvider_.Get();
+    var       resultCollection = resultCollectionProvider_.Get();
 
     try
     {
@@ -366,6 +366,8 @@ public class ResultTable : IResultTable
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+      await resultCollectionProvider_.Init(cancellationToken)
+                                     .ConfigureAwait(false);
       resultCollectionProvider_.Get();
       isInitialized_ = true;
     }
