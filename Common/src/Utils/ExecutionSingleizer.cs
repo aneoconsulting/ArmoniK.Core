@@ -34,7 +34,7 @@ public class ExecutionSingleizer<T> : IDisposable
 
 
   /// <summary>
-  /// Allow initialization of <see cref="ExecutionSingleizer"/>
+  ///   Allow initialization of <see cref="ExecutionSingleizer" />
   /// </summary>
   /// <param name="timeValidity">Results from the execution will be in cache during timeValidity</param>
   public ExecutionSingleizer(TimeSpan timeValidity = default)
