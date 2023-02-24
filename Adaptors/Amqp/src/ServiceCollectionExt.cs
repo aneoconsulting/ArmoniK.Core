@@ -49,8 +49,12 @@ public static class ServiceCollectionExt
                                   Common.Injection.Options.Amqp.SettingSection,
                                   out amqpOptions);
       using var _ = logger.BeginNamedScope("AMQP configuration",
-                                           ("host", amqpOptions.Host),
-                                           ("port", amqpOptions.Port));
+                                           ("Host", amqpOptions.Host),
+                                           ("Port", amqpOptions.Port),
+                                           ("MaxRetries", amqpOptions.MaxRetries),
+                                           ("LinkCredit", amqpOptions.LinkCredit),
+                                           ("UnresolvedDependenciesQueue", amqpOptions.UnresolvedDependenciesQueue),
+                                           ("PartitionId", amqpOptions.PartitionId));
 
       if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
       {
