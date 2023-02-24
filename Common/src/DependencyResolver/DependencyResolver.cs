@@ -69,27 +69,53 @@ public class DependencyResolver : BackgroundService, IInitializable
                                                            ("taskId", message.TaskId));
 
           var taskData = await taskTable_.ReadTaskAsync(message.TaskId,
-                                                        CancellationToken.None)
+                                                        stoppingToken)
                                          .ConfigureAwait(false);
 
-          var areDependenciesOk = await TaskLifeCycleHelper.CheckTaskDependencies(taskData,
-                                                                                  resultTable_,
-                                                                                  logger_,
-                                                                                  stoppingToken)
-                                                           .ConfigureAwait(false);
-          if (areDependenciesOk)
+          var dependenciesStatus = await TaskLifeCycleHelper.CheckTaskDependencies(taskData,
+                                                                                   resultTable_,
+                                                                                   logger_,
+                                                                                   stoppingToken)
+                                                            .ConfigureAwait(false);
+          logger_.LogInformation("task dependencies : {resolved}",
+                                 dependenciesStatus);
+
+          switch (dependenciesStatus)
           {
-            await pushQueueStorage_.PushMessagesAsync(new[]
-                                                      {
-                                                        taskData.TaskId,
-                                                      },
-                                                      taskData.Options.PartitionId,
-                                                      taskData.Options.Priority,
-                                                      stoppingToken)
-                                   .ConfigureAwait(false);
+            case TaskLifeCycleHelper.DependenciesStatus.Aborted:
+              // not done means that another pod put this task in error so we do not need to do it a second time
+              // so nothing to do
+              if (await taskTable_.SetTaskErrorAsync(taskData.TaskId,
+                                                     "One of the input data is aborted.",
+                                                     stoppingToken)
+                                  .ConfigureAwait(false))
+              {
+                await resultTable_.AbortTaskResults(taskData.SessionId,
+                                                    taskData.TaskId,
+                                                    stoppingToken)
+                                  .ConfigureAwait(false);
+              }
+
+              message.Status = QueueMessageStatus.Cancelled;
+              break;
+            case TaskLifeCycleHelper.DependenciesStatus.Available:
+              await pushQueueStorage_.PushMessagesAsync(new[]
+                                                        {
+                                                          taskData.TaskId,
+                                                        },
+                                                        taskData.Options.PartitionId,
+                                                        taskData.Options.Priority,
+                                                        stoppingToken)
+                                     .ConfigureAwait(false);
+              message.Status = QueueMessageStatus.Processed;
+              break;
+            case TaskLifeCycleHelper.DependenciesStatus.Processing:
+              message.Status = QueueMessageStatus.Processed;
+              break;
+            default:
+              throw new ArgumentOutOfRangeException();
           }
 
-          message.Status = QueueMessageStatus.Processed;
           await message.DisposeAsync()
                        .ConfigureAwait(false);
         }

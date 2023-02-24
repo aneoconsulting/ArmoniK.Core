@@ -66,6 +66,7 @@ export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + 
 export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
 export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
 export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
+export ARMONIK_DEPENDENCYCHECKER  := "dockerhubaneo/armonik_control_dependency_checker:" + tag
 
 # Environment variables used to build client images of htcmock, stream and bench
 export HTCMOCK_CLIENT_IMAGE := "dockerhubaneo/armonik_core_htcmock_test_client:" + tag
@@ -189,8 +190,11 @@ buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile
 # Build Bench Client
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
+# Build Dependency Checker
+buildDependencyChecker: (build ARMONIK_DEPENDENCYCHECKER "./Control/DependencyChecker/src/Dockerfile")
+
 # Build all images necessary for the deployment
-build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent
+build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent buildDependencyChecker
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
