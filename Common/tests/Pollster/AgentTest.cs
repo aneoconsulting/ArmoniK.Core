@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -59,6 +60,7 @@ public class AgentTest
 
   private const string Partition       = "PartitionId";
   private const string ExpectedOutput1 = "ExpectedOutput1";
+  private const string ExpectedOutput2 = "ExpectedOutput2";
 
 
   private static readonly TaskOptions Options = new(new Dictionary<string, string>
@@ -88,7 +90,7 @@ public class AgentTest
 
   public class MyPushQueueStorage : IPushQueueStorage
   {
-    public List<string> Messages = new();
+    public ConcurrentDictionary<string, ConcurrentBag<string>> Messages = new();
 
     public Task<HealthCheckResult> Check(HealthCheckTag tag)
       => throw new NotImplementedException();
@@ -99,14 +101,19 @@ public class AgentTest
     public int MaxPriority
       => 10;
 
+    public string UnresolvedDependenciesQueue
+      => nameof(MyPushQueueStorage) + nameof(UnresolvedDependenciesQueue);
+
     public Task PushMessagesAsync(IEnumerable<string> messages,
                                   string              partitionId,
                                   int                 priority          = 1,
                                   CancellationToken   cancellationToken = default)
     {
+      var partitionMessages = Messages.GetOrAdd(partitionId,
+                                                _ => new ConcurrentBag<string>());
       foreach (var message in messages)
       {
-        Messages.Add(message);
+        partitionMessages.Add(message);
       }
 
       return Task.CompletedTask;
@@ -124,6 +131,8 @@ public class AgentTest
     public readonly  TaskData             TaskData;
     public readonly  ITaskTable           TaskTable;
     public readonly  string               Token;
+    public readonly  string               TaskWithDependencies1;
+    public readonly  string               TaskWithDependencies2;
 
     public AgentHolder()
     {
@@ -196,6 +205,45 @@ public class AgentTest
                                                      .Id,
                                          CancellationToken.None)
                           .Result;
+
+      var createdTasks2 = submitter.CreateTasks(Session,
+                                                Session,
+                                                Options,
+                                                new[]
+                                                {
+                                                  new TaskRequest(new List<string>
+                                                                  {
+                                                                    ExpectedOutput2,
+                                                                  },
+                                                                  new List<string>
+                                                                  {
+                                                                    ExpectedOutput1,
+                                                                  },
+                                                                  new List<byte[]>
+                                                                    {
+                                                                      Encoding.ASCII.GetBytes("Payload1"),
+                                                                      Encoding.ASCII.GetBytes("Payload2"),
+                                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                     .ToAsyncEnumerable()),
+                                                  new TaskRequest(new List<string>(),
+                                                                  new List<string>
+                                                                  {
+                                                                    ExpectedOutput1,
+                                                                  },
+                                                                  new List<byte[]>
+                                                                    {
+                                                                      Encoding.ASCII.GetBytes("Payload1"),
+                                                                      Encoding.ASCII.GetBytes("Payload2"),
+                                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                     .ToAsyncEnumerable()),
+                                                }.ToAsyncEnumerable(),
+                                                CancellationToken.None)
+                                   .Result;
+
+      TaskWithDependencies1 = createdTasks2.requests.First()
+                                           .Id;
+      TaskWithDependencies2 = createdTasks2.requests.Last()
+                                           .Id;
 
       Token = Guid.NewGuid()
                   .ToString();
@@ -359,6 +407,11 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
+    Assert.IsFalse(holder.QueueStorage.Messages.Keys.Contains(holder.QueueStorage.UnresolvedDependenciesQueue));
+    Assert.AreEqual(0,
+                    holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
+                          .Count());
+
     var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Result>(new[]
                                                                                             {
                                                                                               new Result
@@ -422,6 +475,13 @@ public class AgentTest
                     resultData.Status);
     Assert.AreEqual(holder.TaskData.TaskId,
                     resultData.OwnerTaskId);
+    Assert.Contains(holder.TaskWithDependencies1,
+                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]);
+    Assert.Contains(holder.TaskWithDependencies2,
+                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]);
+    Assert.AreEqual(2,
+                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]
+                          .Count);
   }
 
   [Test]
@@ -637,8 +697,10 @@ public class AgentTest
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
+    // First insertion is always in UnresolvedDependenciesQueue when task has dependencies
     Assert.AreEqual(3,
-                    holder.QueueStorage.Messages.Count);
+                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]
+                          .Count);
 
     taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
                                                      CancellationToken.None)
