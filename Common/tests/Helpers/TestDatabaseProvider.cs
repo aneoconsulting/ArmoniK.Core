@@ -99,10 +99,15 @@ public class TestDatabaseProvider : IDisposable
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
     builder.Logging.ClearProviders();
-    builder.Logging.AddProvider(new ConsoleForwardingLoggerProvider());
+
+    var loggerProvider = new ConsoleForwardingLoggerProvider();
+
+    builder.Logging.AddProvider(loggerProvider);
 
     builder.Services.AddMongoStorages(builder.Configuration,
                                       NullLogger.Instance)
+           .AddLogging()
+           .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);
     configurator?.Invoke(builder.Services);

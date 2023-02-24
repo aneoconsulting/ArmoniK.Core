@@ -128,9 +128,9 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                             IEnumerable<string> keys,
-                                                                             CancellationToken   cancellationToken = default)
+  public async Task<IList<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                       IEnumerable<string> keys,
+                                                                       CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
     activity?.SetTag($"{nameof(AreResultsAvailableAsync)}_sessionId",

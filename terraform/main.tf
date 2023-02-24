@@ -74,15 +74,29 @@ module "queue_artemis" {
 }
 
 module "submitter" {
-  source             = "./modules/submitter"
-  container_name     = local.submitter.name
-  core_tag           = local.submitter.tag
-  use_local_image    = var.use_local_image
-  docker_image       = local.submitter.image
-  network            = docker_network.armonik.name
-  generated_env_vars = local.environment
-  zipkin_uri         = module.zipkin.zipkin_uri
-  log_driver         = module.fluenbit.log_driver
+  source                        = "./modules/submitter"
+  container_name                = local.submitter.name
+  core_tag                      = local.submitter.tag
+  use_local_image               = var.use_local_image
+  docker_image                  = local.submitter.image
+  network                       = docker_network.armonik.name
+  generated_env_vars            = local.environment
+  zipkin_uri                    = module.zipkin.zipkin_uri
+  log_driver                    = module.fluenbit.log_driver
+  unresolved_dependencies_queue = var.unresolved_dependencies_queue
+}
+
+module "dependency_checker" {
+  source                        = "./modules/dependency_checker"
+  container_name                = local.dependency_checker.name
+  core_tag                      = local.dependency_checker.tag
+  use_local_image               = var.use_local_image
+  docker_image                  = local.dependency_checker.image
+  network                       = docker_network.armonik.name
+  generated_env_vars            = local.environment
+  zipkin_uri                    = module.zipkin.zipkin_uri
+  log_driver                    = module.fluenbit.log_driver
+  unresolved_dependencies_queue = var.unresolved_dependencies_queue
 }
 
 module "compute_plane" {

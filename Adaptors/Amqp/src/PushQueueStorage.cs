@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,7 +46,18 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                           ILogger<PushQueueStorage>     logger)
     : base(options,
            connectionAmqp)
-    => logger_ = logger;
+  {
+    if (string.IsNullOrEmpty(options.UnresolvedDependenciesQueue))
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.UnresolvedDependenciesQueue)} is not defined.");
+    }
+
+    logger_                     = logger;
+    UnresolvedDependenciesQueue = options.UnresolvedDependenciesQueue;
+  }
+
+  public string UnresolvedDependenciesQueue { get; }
 
   /// <inheritdoc />
   public async Task PushMessagesAsync(IEnumerable<string> messages,

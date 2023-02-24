@@ -18,6 +18,11 @@ variable "num_partitions" {
   default = "3"
 }
 
+variable "unresolved_dependencies_queue" {
+  type    = string
+  default = "UnresolvedDependenciesQueueDefault"
+}
+
 variable "mongodb_params" {
   type = object({
     max_connection_pool_size = optional(string, "500")
@@ -52,6 +57,15 @@ variable "submitter" {
   })
   default = {}
 }
+
+variable "dependency_checker" {
+  type = object({
+    name  = optional(string, "armonik.control.dependency_checker")
+    image = optional(string, "dockerhubaneo/armonik_control_dependency_checker")
+  })
+  default = {}
+}
+
 
 variable "object_storage" {
   type = object({

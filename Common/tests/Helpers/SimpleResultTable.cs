@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -48,14 +49,14 @@ public class SimpleResultTable : IResultTable
 
   public ILogger Logger { get; } = new Logger<SimpleResultTable>(new LoggerFactory());
 
-  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                       IEnumerable<string> keys,
-                                                                       CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<ResultStatusCount>>(new ResultStatusCount[]
-                                                       {
-                                                         new(ResultStatus.Completed,
-                                                             1),
-                                                       });
+  public Task<IList<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                 IEnumerable<string> keys,
+                                                                 CancellationToken   cancellationToken = default)
+    => Task.FromResult(new List<ResultStatusCount>()
+                       {
+                         new(ResultStatus.Completed,
+                             1),
+                       }.ToIList());
 
   public Task ChangeResultOwnership(string                                                 sessionId,
                                     string                                                 oldTaskId,

@@ -41,7 +41,18 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                           ILogger<PushQueueStorage> logger)
     : base(options,
            connectionRabbit)
-    => logger_ = logger;
+  {
+    if (string.IsNullOrEmpty(options.UnresolvedDependenciesQueue))
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.UnresolvedDependenciesQueue)} is not defined.");
+    }
+
+    logger_                     = logger;
+    UnresolvedDependenciesQueue = options.UnresolvedDependenciesQueue;
+  }
+
+  public string UnresolvedDependenciesQueue { get; }
 
   /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<string> messages,
