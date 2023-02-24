@@ -1541,4 +1541,43 @@ public class TaskTableTestBase
                       cancelledTasks.Count);
     }
   }
+
+  [Test]
+  [TestCase(TaskStatus.Completed,
+            1)]
+  [TestCase(TaskStatus.Processing,
+            2)]
+  public async Task FindTasksAsyncStatusShouldSucceed(TaskStatus status,
+                                                      int        expectedCount)
+  {
+    if (RunTests)
+    {
+      var cancelledTasks = await TaskTable!.FindTasksAsync(data => data.Status == status,
+                                                           data => data.TaskId,
+                                                           CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.AreEqual(expectedCount,
+                      cancelledTasks.Count());
+    }
+  }
+
+  [Test]
+  public async Task FindTasksAsyncContainsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var cancelledTasks = await TaskTable!.FindTasksAsync(data => data.DataDependencies.Contains("dependency1"),
+                                                           data => data.DataDependencies,
+                                                           CancellationToken.None)
+                                           .ToListAsync()
+                                           .ConfigureAwait(false);
+
+      Assert.AreEqual(6,
+                      cancelledTasks.Count());
+      Assert.AreEqual(6,
+                      cancelledTasks.SelectMany(list => list)
+                                    .Count(s => s == "dependency1"));
+    }
+  }
 }
