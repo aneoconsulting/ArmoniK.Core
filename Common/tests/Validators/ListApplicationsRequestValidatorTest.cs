@@ -22,7 +22,7 @@ using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.Validators;
 
 [TestFixture(TestOf = typeof(ListApplicationsRequestValidator))]
 public class ListApplicationsRequestValidatorTest
@@ -35,7 +35,10 @@ public class ListApplicationsRequestValidatorTest
                                          Sort = new ListApplicationsRequest.Types.Sort
                                                 {
                                                   Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                                                  Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                                                  Fields =
+                                                  {
+                                                    ListApplicationsRequest.Types.OrderByField.Name,
+                                                  },
                                                 },
                                          Page     = 0,
                                          PageSize = 1,
@@ -94,7 +97,10 @@ public class ListApplicationsRequestValidatorTest
   {
     validListApplicationsRequest_!.Sort = new ListApplicationsRequest.Types.Sort
                                           {
-                                            Field = ListApplicationsRequest.Types.OrderByField.Name,
+                                            Fields =
+                                            {
+                                              ListApplicationsRequest.Types.OrderByField.Name,
+                                            },
                                           };
     foreach (var error in validator_.Validate(validListApplicationsRequest_)
                                     .Errors)

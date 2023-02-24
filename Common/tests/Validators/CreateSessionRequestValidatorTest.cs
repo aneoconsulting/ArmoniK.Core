@@ -25,7 +25,7 @@ using Google.Protobuf.WellKnownTypes;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests;
+namespace ArmoniK.Core.Common.Tests.Validators;
 
 [TestFixture(TestOf = typeof(CreateSessionRequestValidator))]
 public class CreateSessionRequestValidatorTest

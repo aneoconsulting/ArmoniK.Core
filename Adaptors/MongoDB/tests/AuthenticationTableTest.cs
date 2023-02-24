@@ -19,7 +19,7 @@ using System;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Tests.Auth;
+using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.DependencyInjection;
 

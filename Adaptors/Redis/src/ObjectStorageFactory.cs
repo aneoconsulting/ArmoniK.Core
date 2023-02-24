@@ -33,14 +33,17 @@ public class ObjectStorageFactory : IObjectStorageFactory
 {
   private readonly ILoggerFactory loggerFactory_;
   private readonly IDatabaseAsync redis_;
+  private readonly Options.Redis  redisOptions_;
 
 
   private bool isInitialized_;
 
   public ObjectStorageFactory(IDatabaseAsync redis,
+                              Options.Redis  redisOptions,
                               ILoggerFactory loggerFactory)
   {
     redis_         = redis;
+    redisOptions_  = redisOptions;
     loggerFactory_ = loggerFactory;
   }
 
@@ -79,6 +82,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
     => new ObjectStorage(redis_,
+                         redisOptions_,
                          objectStorageName,
                          loggerFactory_.CreateLogger<ObjectStorage>());
 }

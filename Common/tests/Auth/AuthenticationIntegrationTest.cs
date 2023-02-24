@@ -309,7 +309,10 @@ public class AuthenticationIntegrationTest
                                 Sort = new ListApplicationsRequest.Types.Sort
                                        {
                                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                                         Field     = ListApplicationsRequest.Types.OrderByField.Name,
+                                         Fields =
+                                         {
+                                           ListApplicationsRequest.Types.OrderByField.Name,
+                                         },
                                        },
                               };
 

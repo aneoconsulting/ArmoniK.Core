@@ -57,7 +57,7 @@ public class ArmoniKMeter : Meter, IHostedService
     partitionTable_ = partitionTable;
     logger_         = logger;
     gauges_         = new Dictionary<string, ObservableGauge<long>>();
-    measurements_   = new ExecutionSingleizer<IDictionary<string, long>>();
+    measurements_   = new ExecutionSingleizer<IDictionary<string, long>>(TimeSpan.FromSeconds(5));
 
     CreateObservableCounter("test",
                             () => i_++);

@@ -19,8 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests;
+using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +56,9 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                  {
                                                    "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
                                                  },
+                                                 {
+                                                   "Redis:MaxRetry", "5"
+                                                 },
                                                };
 
     var configuration = new ConfigurationManager();
@@ -77,6 +81,10 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                                              TextWriter.Null)
                                                                     .GetDatabase());
     services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+
+    services.AddOption(configuration,
+                       Options.Redis.SettingSection,
+                       out Options.Redis redisOptions);
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {
