@@ -34,8 +34,9 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  private          IMongoCollection<TData>? mongoCollection_;
-  private          bool                     isInitialized_;
+  private bool                     isInitialized_;
+  private IMongoCollection<TData>? mongoCollection_;
+
   public MongoCollectionProvider(Options.MongoDB   options,
                                  SessionProvider   sessionProvider,
                                  IMongoDatabase    mongoDatabase,
@@ -126,11 +127,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   {
     if (!isInitialized_)
     {
-      throw new ArmoniKException($"Mongo Collection has not been initialized; call Init method first");
+      throw new ArmoniKException("Mongo Collection has not been initialized; call Init method first");
     }
-    else
-    {
-      return mongoCollection_!;
-    }
+
+    return mongoCollection_!;
   }
 }

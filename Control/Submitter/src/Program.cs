@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -203,7 +203,7 @@ public static class Program
       var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
       var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
       var sessionCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<SessionData, SessionDataModelMapping>>();
-      var resultCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
+      var resultCollectionProvider    = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
       var taskObjectFactory           = objectFactory.Init(CancellationToken.None);
       var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
 
@@ -212,11 +212,11 @@ public static class Program
       await partitionCollectionProvider.Init(CancellationToken.None)
                                        .ConfigureAwait(false);
       await taskCollectionProvider.Init(CancellationToken.None)
-                                       .ConfigureAwait(false);
+                                  .ConfigureAwait(false);
       await sessionCollectionProvider.Init(CancellationToken.None)
-                                       .ConfigureAwait(false);
+                                     .ConfigureAwait(false);
       await resultCollectionProvider.Init(CancellationToken.None)
-                                       .ConfigureAwait(false);
+                                    .ConfigureAwait(false);
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);

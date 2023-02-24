@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -22,10 +22,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Control.PartitionMetrics.Options;
 
@@ -108,10 +106,13 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      var sessionProvider        = app.Services.GetRequiredService<SessionProvider>();
+      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
+
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
-
+      await partitionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
       await app.RunAsync()
                .ConfigureAwait(false);
 
