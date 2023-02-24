@@ -202,6 +202,8 @@ public class AgentTest
 
       Agent = new Agent(submitter,
                         objectStorageFactory,
+                        QueueStorage,
+                        TaskTable,
                         sessionData,
                         TaskData,
                         Token,

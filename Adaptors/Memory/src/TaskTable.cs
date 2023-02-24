@@ -346,6 +346,16 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                                Expression<Func<TaskData, T>>    selector,
+                                                CancellationToken                cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.AsQueryable()
+                                       .Select(pair => pair.Value)
+                                       .Where(filter)
+                                       .Select(selector)
+                                       .AsEnumerable());
+
+  /// <inheritdoc />
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                              ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                              bool ascOrder,
