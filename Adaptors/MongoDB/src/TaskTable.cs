@@ -446,6 +446,22 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                                      Expression<Func<TaskData, T>>    selector,
+                                                      CancellationToken                cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .Where(filter)
+                               .Select(selector)
+                               .ToListAsync(cancellationToken)
+                               .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                    ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                    bool ascOrder,

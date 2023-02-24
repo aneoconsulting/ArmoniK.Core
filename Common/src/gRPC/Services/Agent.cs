@@ -44,37 +44,53 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public class Agent : IAgent
 {
+  private sealed record TaskIdPriority
+  {
+    public string TaskId   { get; init; } = string.Empty;
+    public int    Priority { get; init; }
+  }
+
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
   private readonly ILogger                                                                             logger_;
   private readonly IObjectStorage                                                                      resourcesStorage_;
   private readonly SessionData                                                                         sessionData_;
   private readonly ISubmitter                                                                          submitter_;
+  private readonly IPushQueueStorage                                                                   pushQueueStorage_;
+  private readonly ITaskTable                                                                          taskTable_;
   private readonly TaskData                                                                            taskData_;
   private readonly string                                                                              token_;
+  private readonly List<TaskIdPriority>                                                                toDependencyResolveTasks_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
+  /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
+  /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
+               IPushQueueStorage     pushQueueStorage,
+               ITaskTable            taskTable,
                SessionData           sessionData,
                TaskData              taskData,
                string                token,
                ILogger               logger)
   {
-    submitter_        = submitter;
-    logger_           = logger;
-    resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
-    sessionData_      = sessionData;
-    taskData_         = taskData;
-    token_            = token;
+    submitter_                = submitter;
+    pushQueueStorage_         = pushQueueStorage;
+    taskTable_                = taskTable;
+    logger_                   = logger;
+    resourcesStorage_         = objectStorageFactory.CreateResourcesStorage();
+    createdTasks_             = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
+    toDependencyResolveTasks_ = new List<TaskIdPriority>();
+    sessionData_              = sessionData;
+    taskData_                 = taskData;
+    token_                    = token;
   }
 
   /// <inheritdoc />
@@ -96,6 +112,17 @@ public class Agent : IAgent
                                             taskData_.TaskId,
                                             cancellationToken)
                       .ConfigureAwait(false);
+    }
+
+    logger_.LogDebug("Send tasks which new data are available in the dependency checker queue");
+
+    foreach (var tasksByPriority in toDependencyResolveTasks_.GroupBy(idPriority => idPriority.Priority))
+    {
+      await pushQueueStorage_.PushMessagesAsync(tasksByPriority.Select(idPriority => idPriority.TaskId),
+                                                pushQueueStorage_.UnresolvedDependenciesQueue,
+                                                tasksByPriority.Key,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
     }
   }
 
@@ -428,8 +455,9 @@ public class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    Task? completionTask = null;
-    var   fsmResult      = new ProcessReplyResultStateMachine(logger_);
+    Task? completionTask       = null;
+    Task? findDependenciesTask = null;
+    var   fsmResult            = new ProcessReplyResultStateMachine(logger_);
     var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                       {
                                                                         SingleWriter = true,
@@ -474,6 +502,19 @@ public class Agent : IAgent
                                                           .ConfigureAwait(false);
                                         },
                                         cancellationToken);
+              findDependenciesTask = Task.Run(async () =>
+                                              {
+                                                var taskFound = await taskTable_.FindTasksAsync(data => data.DataDependencies.Contains(request.Init.Key),
+                                                                                                data => new TaskIdPriority
+                                                                                                        {
+                                                                                                          TaskId   = data.TaskId,
+                                                                                                          Priority = data.Options.Priority,
+                                                                                                        },
+                                                                                                cancellationToken)
+                                                                                .ConfigureAwait(false);
+                                                toDependencyResolveTasks_.AddRange(taskFound);
+                                              },
+                                              cancellationToken);
               break;
             case InitKeyedDataStream.TypeOneofCase.LastResult:
               fsmResult.CompleteRequest();
@@ -482,6 +523,8 @@ public class Agent : IAgent
               {
                 await completionTask!.WaitAsync(cancellationToken)
                                      .ConfigureAwait(false);
+                await findDependenciesTask!.WaitAsync(cancellationToken)
+                                           .ConfigureAwait(false);
                 return new ResultReply
                        {
                          Ok = new Empty(),

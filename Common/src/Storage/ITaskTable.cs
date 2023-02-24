@@ -232,6 +232,19 @@ public interface ITaskTable : IInitializable
                                                                      CancellationToken                   cancellationToken = default);
 
   /// <summary>
+  ///   Find all tasks matching the given filter and ordering
+  /// </summary>
+  /// <param name="filter">Filter to select tasks</param>
+  /// <param name="selector">Expression to select part of the returned task data</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of task metadata matching the request and total number of results without paging
+  /// </returns>
+  Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                         Expression<Func<TaskData, T>>    selector,
+                                         CancellationToken                cancellationToken = default);
+
+  /// <summary>
   ///   List all applications extracted from task metadata matching the given filter and ordering
   /// </summary>
   /// <param name="filter">Filter to select tasks</param>
