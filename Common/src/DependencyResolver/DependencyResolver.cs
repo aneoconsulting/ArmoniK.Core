@@ -26,6 +26,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+
 namespace ArmoniK.Core.Common.DependencyResolver;
 
 public class DependencyResolver : BackgroundService, IInitializable
@@ -79,49 +81,90 @@ public class DependencyResolver : BackgroundService, IInitializable
                                                         stoppingToken)
                                          .ConfigureAwait(false);
 
-          var dependenciesStatus = await TaskLifeCycleHelper.CheckTaskDependencies(taskData,
-                                                                                   resultTable_,
-                                                                                   logger_,
-                                                                                   stoppingToken)
-                                                            .ConfigureAwait(false);
-          logger_.LogInformation("task dependencies : {resolved}",
-                                 dependenciesStatus);
-
-          switch (dependenciesStatus)
+          switch (taskData.Status)
           {
-            case TaskLifeCycleHelper.DependenciesStatus.Aborted:
-              // not done means that another pod put this task in error so we do not need to do it a second time
-              // so nothing to do
-              if (await taskTable_.SetTaskErrorAsync(taskData.TaskId,
-                                                     "One of the input data is aborted.",
-                                                     stoppingToken)
-                                  .ConfigureAwait(false))
-              {
-                await resultTable_.AbortTaskResults(taskData.SessionId,
-                                                    taskData.TaskId,
-                                                    stoppingToken)
-                                  .ConfigureAwait(false);
-              }
+            case TaskStatus.Creating:
 
-              message.Status = QueueMessageStatus.Cancelled;
-              break;
-            case TaskLifeCycleHelper.DependenciesStatus.Available:
-              await pushQueueStorage_.PushMessagesAsync(new[]
+              var dependenciesStatus = await TaskLifeCycleHelper.CheckTaskDependencies(taskData,
+                                                                                       resultTable_,
+                                                                                       logger_,
+                                                                                       stoppingToken)
+                                                                .ConfigureAwait(false);
+              logger_.LogInformation("task dependencies : {resolved}",
+                                     dependenciesStatus);
+
+              switch (dependenciesStatus)
+              {
+                case TaskLifeCycleHelper.DependenciesStatus.Aborted:
+                  // not done means that another pod put this task in error so we do not need to do it a second time
+                  // so nothing to do
+                  if (await taskTable_.SetTaskErrorAsync(taskData.TaskId,
+                                                         "One of the input data is aborted.",
+                                                         stoppingToken)
+                                      .ConfigureAwait(false))
+                  {
+                    await resultTable_.AbortTaskResults(taskData.SessionId,
+                                                        taskData.TaskId,
+                                                        stoppingToken)
+                                      .ConfigureAwait(false);
+                  }
+
+                  message.Status = QueueMessageStatus.Cancelled;
+                  break;
+                case TaskLifeCycleHelper.DependenciesStatus.Available:
+                  await pushQueueStorage_.PushMessagesAsync(new[]
+                                                            {
+                                                              taskData.TaskId,
+                                                            },
+                                                            taskData.Options.PartitionId,
+                                                            taskData.Options.Priority,
+                                                            stoppingToken)
+                                         .ConfigureAwait(false);
+
+                  await taskTable_.FinalizeTaskCreation(new[]
                                                         {
                                                           taskData.TaskId,
                                                         },
-                                                        taskData.Options.PartitionId,
-                                                        taskData.Options.Priority,
                                                         stoppingToken)
-                                     .ConfigureAwait(false);
+                                  .ConfigureAwait(false);
+                  message.Status = QueueMessageStatus.Processed;
+                  break;
+                case TaskLifeCycleHelper.DependenciesStatus.Processing:
+                  message.Status = QueueMessageStatus.Processed;
+                  break;
+                default:
+                  throw new ArgumentOutOfRangeException();
+              }
+
+              break;
+            case TaskStatus.Cancelling:
+              logger_.LogInformation("Task is being cancelled");
+              message.Status = QueueMessageStatus.Cancelled;
+              await taskTable_.SetTaskCanceledAsync(taskData.TaskId,
+                                                    CancellationToken.None)
+                              .ConfigureAwait(false);
+              await resultTable_.AbortTaskResults(taskData.SessionId,
+                                                  taskData.TaskId,
+                                                  CancellationToken.None)
+                                .ConfigureAwait(false);
+              break;
+            case TaskStatus.Submitted:
+            case TaskStatus.Dispatched:
+            case TaskStatus.Completed:
+            case TaskStatus.Error:
+            case TaskStatus.Cancelled:
+            case TaskStatus.Timeout:
+            case TaskStatus.Processed:
+            case TaskStatus.Processing:
+              logger_.LogInformation("Task {status}, task will be removed from this queue",
+                                     taskData.Status);
               message.Status = QueueMessageStatus.Processed;
               break;
-            case TaskLifeCycleHelper.DependenciesStatus.Processing:
-              message.Status = QueueMessageStatus.Processed;
-              break;
+            case TaskStatus.Unspecified:
             default:
               throw new ArgumentOutOfRangeException();
           }
+
 
           await message.DisposeAsync()
                        .ConfigureAwait(false);

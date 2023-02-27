@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,14 +52,17 @@ public class DependencyResolverTest
   {
   }
 
-  private const string TaskSubmittedWithDependencies          = nameof(TaskSubmittedWithDependencies);
-  private const string TaskSubmittedWithAvailableDependencies = nameof(TaskSubmittedWithAvailableDependencies);
-  private const string TaskSubmittedWithAbortedDependencies   = nameof(TaskSubmittedWithAbortedDependencies);
-  private const string CreatedData1                           = nameof(CreatedData1);
-  private const string AbortedData1                           = nameof(AbortedData1);
-  private const string AvailableData1                         = nameof(AvailableData1);
-  private const string AvailableData2                         = nameof(AvailableData2);
-  private const string TaskSubmittedNoDependencies            = nameof(TaskSubmittedNoDependencies);
+  private const string TaskCreatingWithDependencies          = nameof(TaskCreatingWithDependencies);
+  private const string TaskCreatingWithAvailableDependencies = nameof(TaskCreatingWithAvailableDependencies);
+  private const string TaskCreatingWithAbortedDependencies   = nameof(TaskCreatingWithAbortedDependencies);
+  private const string CreatedData1                          = nameof(CreatedData1);
+  private const string AbortedData1                          = nameof(AbortedData1);
+  private const string AvailableData1                        = nameof(AvailableData1);
+  private const string AvailableData2                        = nameof(AvailableData2);
+  private const string TaskCreatingNoDependencies            = nameof(TaskCreatingNoDependencies);
+  private const string TaskSubmitted                         = nameof(TaskSubmitted);
+  private const string TaskCancelling                        = nameof(TaskCancelling);
+  private const string TaskCancelled                         = nameof(TaskCancelled);
 
   public class MyMessageHandler : IQueueMessageHandler
   {
@@ -187,25 +191,25 @@ public class DependencyResolverTest
                              {
                                new Result("SessionId",
                                           AvailableData1,
-                                          TaskSubmittedWithAvailableDependencies,
+                                          TaskCreatingWithAvailableDependencies,
                                           ResultStatus.Completed,
                                           DateTime.UtcNow,
                                           Array.Empty<byte>()),
                                new Result("SessionId",
                                           AvailableData2,
-                                          TaskSubmittedWithAvailableDependencies,
+                                          TaskCreatingWithAvailableDependencies,
                                           ResultStatus.Completed,
                                           DateTime.UtcNow,
                                           Array.Empty<byte>()),
                                new Result("SessionId",
                                           CreatedData1,
-                                          TaskSubmittedWithDependencies,
+                                          TaskCreatingWithDependencies,
                                           ResultStatus.Created,
                                           DateTime.UtcNow,
                                           Array.Empty<byte>()),
                                new Result("SessionId",
                                           AbortedData1,
-                                          TaskSubmittedWithAbortedDependencies,
+                                          TaskCreatingWithAbortedDependencies,
                                           ResultStatus.Aborted,
                                           DateTime.UtcNow,
                                           Array.Empty<byte>()),
@@ -238,7 +242,7 @@ public class DependencyResolverTest
                                                new Output(true,
                                                           "")),
                                   new TaskData("SessionId",
-                                               "TaskCreatingId",
+                                               TaskSubmitted,
                                                "OwnerPodId",
                                                "OwnerPodName",
                                                "PayloadId",
@@ -255,12 +259,12 @@ public class DependencyResolverTest
                                                  "output1",
                                                },
                                                Array.Empty<string>(),
-                                               TaskStatus.Creating,
+                                               TaskStatus.Submitted,
                                                options,
                                                new Output(false,
                                                           "")),
                                   new TaskData("SessionId",
-                                               TaskSubmittedWithAvailableDependencies,
+                                               TaskCreatingWithAvailableDependencies,
                                                "OwnerPodId",
                                                "OwnerPodName",
                                                "PayloadId",
@@ -278,12 +282,12 @@ public class DependencyResolverTest
                                                  "output1",
                                                },
                                                Array.Empty<string>(),
-                                               TaskStatus.Submitted,
+                                               TaskStatus.Creating,
                                                options,
                                                new Output(false,
                                                           "")),
                                   new TaskData("SessionId",
-                                               TaskSubmittedWithAbortedDependencies,
+                                               TaskCreatingWithAbortedDependencies,
                                                "OwnerPodId",
                                                "OwnerPodName",
                                                "PayloadId",
@@ -349,7 +353,7 @@ public class DependencyResolverTest
                                                new Output(false,
                                                           "")),
                                   new TaskData("SessionId",
-                                               TaskSubmittedNoDependencies,
+                                               TaskCreatingNoDependencies,
                                                "",
                                                "",
                                                "PayloadId",
@@ -363,7 +367,7 @@ public class DependencyResolverTest
                                                  "output1",
                                                },
                                                Array.Empty<string>(),
-                                               TaskStatus.Submitted,
+                                               TaskStatus.Creating,
                                                options with
                                                {
                                                  PartitionId = "part2",
@@ -371,7 +375,7 @@ public class DependencyResolverTest
                                                new Output(false,
                                                           "")),
                                   new TaskData("SessionId",
-                                               TaskSubmittedWithDependencies,
+                                               TaskCreatingWithDependencies,
                                                "",
                                                "",
                                                "PayloadId",
@@ -388,7 +392,51 @@ public class DependencyResolverTest
                                                  "output1",
                                                },
                                                Array.Empty<string>(),
-                                               TaskStatus.Submitted,
+                                               TaskStatus.Creating,
+                                               options with
+                                               {
+                                                 PartitionId = "part2",
+                                               },
+                                               new Output(false,
+                                                          "")),
+                                  new TaskData("SessionId",
+                                               TaskCancelled,
+                                               "",
+                                               "",
+                                               "PayloadId",
+                                               new[]
+                                               {
+                                                 "parent1",
+                                               },
+                                               Array.Empty<string>(),
+                                               new[]
+                                               {
+                                                 "output1",
+                                               },
+                                               Array.Empty<string>(),
+                                               TaskStatus.Cancelled,
+                                               options with
+                                               {
+                                                 PartitionId = "part2",
+                                               },
+                                               new Output(false,
+                                                          "")),
+                                  new TaskData("SessionId",
+                                               TaskCancelling,
+                                               "",
+                                               "",
+                                               "PayloadId",
+                                               new[]
+                                               {
+                                                 "parent1",
+                                               },
+                                               Array.Empty<string>(),
+                                               new[]
+                                               {
+                                                 "output1",
+                                               },
+                                               Array.Empty<string>(),
+                                               TaskStatus.Cancelling,
                                                options with
                                                {
                                                  PartitionId = "part2",
@@ -436,13 +484,13 @@ public class DependencyResolverTest
 
 
   [Test]
-  [TestCase(TaskSubmittedNoDependencies,
+  [TestCase(TaskCreatingNoDependencies,
             ExpectedResult = TaskLifeCycleHelper.DependenciesStatus.Available)]
-  [TestCase(TaskSubmittedWithAbortedDependencies,
+  [TestCase(TaskCreatingWithAbortedDependencies,
             ExpectedResult = TaskLifeCycleHelper.DependenciesStatus.Aborted)]
-  [TestCase(TaskSubmittedWithAvailableDependencies,
+  [TestCase(TaskCreatingWithAvailableDependencies,
             ExpectedResult = TaskLifeCycleHelper.DependenciesStatus.Available)]
-  [TestCase(TaskSubmittedWithDependencies,
+  [TestCase(TaskCreatingWithDependencies,
             ExpectedResult = TaskLifeCycleHelper.DependenciesStatus.Processing)]
   public async Task<TaskLifeCycleHelper.DependenciesStatus> ValidateDependenciesStatus(string taskId)
   {
@@ -475,10 +523,13 @@ public class DependencyResolverTest
             .ConfigureAwait(false);
 
     var pullQueueStorage = provider.GetRequiredService<MyPullQueueStorage>();
-    pullQueueStorage.Messages.Add(TaskSubmittedNoDependencies);
-    pullQueueStorage.Messages.Add(TaskSubmittedWithDependencies);
-    pullQueueStorage.Messages.Add(TaskSubmittedWithAbortedDependencies);
-    pullQueueStorage.Messages.Add(TaskSubmittedWithAvailableDependencies);
+    pullQueueStorage.Messages.Add(TaskCreatingNoDependencies);
+    pullQueueStorage.Messages.Add(TaskCreatingWithDependencies);
+    pullQueueStorage.Messages.Add(TaskCreatingWithAbortedDependencies);
+    pullQueueStorage.Messages.Add(TaskCreatingWithAvailableDependencies);
+    pullQueueStorage.Messages.Add(TaskSubmitted);
+    pullQueueStorage.Messages.Add(TaskCancelled);
+    pullQueueStorage.Messages.Add(TaskCancelling);
 
     var cts = new CancellationTokenSource();
     cts.CancelAfter(TimeSpan.FromSeconds(2));
@@ -495,26 +546,37 @@ public class DependencyResolverTest
     var pushQueueStorage = provider.GetRequiredService<MyPushQueueStorage>();
     Assert.AreEqual(2,
                     pushQueueStorage.Messages.Count);
-    Assert.Contains(TaskSubmittedWithAvailableDependencies,
+    Assert.Contains(TaskCreatingWithAvailableDependencies,
                     pushQueueStorage.Messages);
-    Assert.Contains(TaskSubmittedNoDependencies,
+    Assert.Contains(TaskCreatingNoDependencies,
                     pushQueueStorage.Messages);
+    Assert.IsFalse(pushQueueStorage.Messages.Contains(TaskSubmitted));
+    Assert.IsFalse(pushQueueStorage.Messages.Contains(TaskCancelled));
+    Assert.IsFalse(pushQueueStorage.Messages.Contains(TaskCancelling));
 
     var taskTable = provider.GetRequiredService<ITaskTable>();
     Assert.AreEqual(TaskStatus.Error,
-                    taskTable.ReadTaskAsync(TaskSubmittedWithAbortedDependencies,
+                    taskTable.ReadTaskAsync(TaskCreatingWithAbortedDependencies,
                                             CancellationToken.None)
                              .Result.Status);
     Assert.AreEqual(TaskStatus.Submitted,
-                    taskTable.ReadTaskAsync(TaskSubmittedNoDependencies,
+                    taskTable.ReadTaskAsync(TaskCreatingNoDependencies,
                                             CancellationToken.None)
                              .Result.Status);
     Assert.AreEqual(TaskStatus.Submitted,
-                    taskTable.ReadTaskAsync(TaskSubmittedWithAvailableDependencies,
+                    taskTable.ReadTaskAsync(TaskCreatingWithAvailableDependencies,
                                             CancellationToken.None)
                              .Result.Status);
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskTable.ReadTaskAsync(TaskSubmittedWithDependencies,
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskTable.ReadTaskAsync(TaskCreatingWithDependencies,
+                                            CancellationToken.None)
+                             .Result.Status);
+    Assert.AreEqual(TaskStatus.Cancelled,
+                    taskTable.ReadTaskAsync(TaskCancelled,
+                                            CancellationToken.None)
+                             .Result.Status);
+    Assert.AreEqual(TaskStatus.Cancelled,
+                    taskTable.ReadTaskAsync(TaskCancelling,
                                             CancellationToken.None)
                              .Result.Status);
   }
