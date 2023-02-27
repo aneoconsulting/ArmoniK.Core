@@ -453,9 +453,9 @@ public class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    Task? completionTask       = null;
-    Task? findDependenciesTask = null;
-    var   fsmResult            = new ProcessReplyResultStateMachine(logger_);
+    Task completionTask       = Task.CompletedTask;
+    Task findDependenciesTask = Task.CompletedTask;
+    var  fsmResult            = new ProcessReplyResultStateMachine(logger_);
     var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                       {
                                                                         SingleWriter = true,
@@ -519,10 +519,10 @@ public class Agent : IAgent
 
               try
               {
-                await completionTask!.WaitAsync(cancellationToken)
-                                     .ConfigureAwait(false);
-                await findDependenciesTask!.WaitAsync(cancellationToken)
-                                           .ConfigureAwait(false);
+                await completionTask.WaitAsync(cancellationToken)
+                                    .ConfigureAwait(false);
+                await findDependenciesTask.WaitAsync(cancellationToken)
+                                          .ConfigureAwait(false);
                 return new ResultReply
                        {
                          Ok = new Empty(),
