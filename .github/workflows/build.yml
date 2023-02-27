@@ -378,6 +378,8 @@ jobs:
            path: ./Control/PartitionMetrics/src/Dockerfile
         -  img : dockerhubaneo/armonik_control
            path: ./Control/Submitter/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_dependency_checker
+           path: ./Control/DependencyChecker/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
