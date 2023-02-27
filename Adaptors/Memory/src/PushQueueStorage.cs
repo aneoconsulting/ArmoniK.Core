@@ -77,6 +77,8 @@ public class PushQueueStorage : IPushQueueStorage
     return Task.CompletedTask;
   }
 
+  public string UnresolvedDependenciesQueue { get; init; } = nameof(UnresolvedDependenciesQueue);
+
   private class MessageHandler : IQueueMessageHandler
   {
     private static long _count;

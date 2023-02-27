@@ -109,6 +109,10 @@ public class TestTaskHandlerProvider : IDisposable
                                                  {
                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                  },
+                                                 {
+                                                   $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
+                                                   nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
+                                                 },
                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -131,6 +135,8 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
+           .AddOption<Injection.Options.DependencyResolver>(builder.Configuration,
+                                                            Injection.Options.DependencyResolver.SettingSection)
            .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")

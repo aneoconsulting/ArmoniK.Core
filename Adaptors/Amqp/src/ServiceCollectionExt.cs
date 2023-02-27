@@ -44,10 +44,9 @@ public static class ServiceCollectionExt
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
     {
-      Common.Injection.Options.Amqp amqpOptions;
       serviceCollection.AddOption(configuration,
                                   Common.Injection.Options.Amqp.SettingSection,
-                                  out amqpOptions);
+                                  out Common.Injection.Options.Amqp amqpOptions);
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("Host", amqpOptions.Host),
                                            ("Port", amqpOptions.Port),

@@ -43,39 +43,43 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
-  private readonly WebApplication        app_;
-  private readonly ComputePlane          computePlaneOptions_;
-  private readonly ILogger<AgentHandler> logger_;
-  private readonly IObjectStorageFactory objectStorageFactory_;
-  private readonly IPushQueueStorage     pushQueueStorage_;
-  private readonly ITaskTable            taskTable_;
-  private readonly GrpcAgentService      service_;
-  private readonly ISubmitter            submitter_;
+  private readonly WebApplication                       app_;
+  private readonly ComputePlane                         computePlaneOptions_;
+  private readonly Injection.Options.DependencyResolver dependencyResolverOptions_;
+  private readonly ILogger<AgentHandler>                logger_;
+  private readonly IObjectStorageFactory                objectStorageFactory_;
+  private readonly IPushQueueStorage                    pushQueueStorage_;
+  private readonly ITaskTable                           taskTable_;
+  private readonly GrpcAgentService                     service_;
+  private readonly ISubmitter                           submitter_;
 
   /// <summary>
   ///   Initializes a new instance
   /// </summary>
   /// <param name="loggerInit">Logger initializer used to configure the loggers needed by the worker</param>
   /// <param name="computePlaneOptions">Options needed for the creation of the servers</param>
+  /// <param name="dependencyResolverOptions">Configuration for DependencyResolver</param>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public AgentHandler(LoggerInit            loggerInit,
-                      ComputePlane          computePlaneOptions,
-                      ISubmitter            submitter,
-                      IObjectStorageFactory objectStorageFactory,
-                      IPushQueueStorage     pushQueueStorage,
-                      ITaskTable            taskTable,
-                      ILogger<AgentHandler> logger)
+  public AgentHandler(LoggerInit                           loggerInit,
+                      ComputePlane                         computePlaneOptions,
+                      Injection.Options.DependencyResolver dependencyResolverOptions,
+                      ISubmitter                           submitter,
+                      IObjectStorageFactory                objectStorageFactory,
+                      IPushQueueStorage                    pushQueueStorage,
+                      ITaskTable                           taskTable,
+                      ILogger<AgentHandler>                logger)
   {
-    computePlaneOptions_  = computePlaneOptions;
-    submitter_            = submitter;
-    objectStorageFactory_ = objectStorageFactory;
-    pushQueueStorage_     = pushQueueStorage;
-    taskTable_            = taskTable;
-    logger_               = logger;
+    computePlaneOptions_       = computePlaneOptions;
+    dependencyResolverOptions_ = dependencyResolverOptions;
+    submitter_                 = submitter;
+    objectStorageFactory_      = objectStorageFactory;
+    pushQueueStorage_          = pushQueueStorage;
+    taskTable_                 = taskTable;
+    logger_                    = logger;
 
     try
     {
@@ -135,6 +139,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
                             objectStorageFactory_,
                             pushQueueStorage_,
                             taskTable_,
+                            dependencyResolverOptions_,
                             sessionData,
                             taskData,
                             token,

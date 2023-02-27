@@ -100,18 +100,19 @@ module "dependency_checker" {
 }
 
 module "compute_plane" {
-  source             = "./modules/compute_plane"
-  for_each           = local.replicas
-  replica_counter    = each.key
-  num_partitions     = var.num_partitions
-  core_tag           = local.compute_plane.tag
-  use_local_image    = var.use_local_image
-  polling_agent      = local.compute_plane.polling_agent
-  worker             = local.compute_plane.worker
-  generated_env_vars = local.environment
-  network            = docker_network.armonik.name
-  zipkin_uri         = module.zipkin.zipkin_uri
-  log_driver         = module.fluenbit.log_driver
+  source                        = "./modules/compute_plane"
+  for_each                      = local.replicas
+  replica_counter               = each.key
+  num_partitions                = var.num_partitions
+  core_tag                      = local.compute_plane.tag
+  use_local_image               = var.use_local_image
+  polling_agent                 = local.compute_plane.polling_agent
+  worker                        = local.compute_plane.worker
+  generated_env_vars            = local.environment
+  network                       = docker_network.armonik.name
+  zipkin_uri                    = module.zipkin.zipkin_uri
+  log_driver                    = module.fluenbit.log_driver
+  unresolved_dependencies_queue = var.unresolved_dependencies_queue
 }
 
 module "metrics_exporter" {

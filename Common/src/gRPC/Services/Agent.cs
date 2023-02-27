@@ -57,6 +57,7 @@ public class Agent : IAgent
   private readonly ISubmitter                                                                          submitter_;
   private readonly IPushQueueStorage                                                                   pushQueueStorage_;
   private readonly ITaskTable                                                                          taskTable_;
+  private readonly Injection.Options.DependencyResolver                                                dependencyResolverOptions_;
   private readonly TaskData                                                                            taskData_;
   private readonly string                                                                              token_;
   private readonly List<TaskIdPriority>                                                                toDependencyResolveTasks_;
@@ -68,29 +69,32 @@ public class Agent : IAgent
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="dependencyResolverOptions">Configuration for the Dependency Resolver</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public Agent(ISubmitter            submitter,
-               IObjectStorageFactory objectStorageFactory,
-               IPushQueueStorage     pushQueueStorage,
-               ITaskTable            taskTable,
-               SessionData           sessionData,
-               TaskData              taskData,
-               string                token,
-               ILogger               logger)
+  public Agent(ISubmitter                           submitter,
+               IObjectStorageFactory                objectStorageFactory,
+               IPushQueueStorage                    pushQueueStorage,
+               ITaskTable                           taskTable,
+               Injection.Options.DependencyResolver dependencyResolverOptions,
+               SessionData                          sessionData,
+               TaskData                             taskData,
+               string                               token,
+               ILogger                              logger)
   {
-    submitter_                = submitter;
-    pushQueueStorage_         = pushQueueStorage;
-    taskTable_                = taskTable;
-    logger_                   = logger;
-    resourcesStorage_         = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_             = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
-    toDependencyResolveTasks_ = new List<TaskIdPriority>();
-    sessionData_              = sessionData;
-    taskData_                 = taskData;
-    token_                    = token;
+    submitter_                 = submitter;
+    pushQueueStorage_          = pushQueueStorage;
+    taskTable_                 = taskTable;
+    dependencyResolverOptions_ = dependencyResolverOptions;
+    logger_                    = logger;
+    resourcesStorage_          = objectStorageFactory.CreateResourcesStorage();
+    createdTasks_              = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
+    toDependencyResolveTasks_  = new List<TaskIdPriority>();
+    sessionData_               = sessionData;
+    taskData_                  = taskData;
+    token_                     = token;
   }
 
   /// <inheritdoc />
@@ -119,7 +123,7 @@ public class Agent : IAgent
     foreach (var tasksByPriority in toDependencyResolveTasks_.GroupBy(idPriority => idPriority.Priority))
     {
       await pushQueueStorage_.PushMessagesAsync(tasksByPriority.Select(idPriority => idPriority.TaskId),
-                                                pushQueueStorage_.UnresolvedDependenciesQueue,
+                                                dependencyResolverOptions_.UnresolvedDependenciesQueue,
                                                 tasksByPriority.Key,
                                                 cancellationToken)
                              .ConfigureAwait(false);
