@@ -133,9 +133,9 @@ public class AgentTest
     public readonly  string               Session;
     public readonly  TaskData             TaskData;
     public readonly  ITaskTable           TaskTable;
-    public readonly  string               Token;
     public readonly  string               TaskWithDependencies1;
     public readonly  string               TaskWithDependencies2;
+    public readonly  string               Token;
 
     public AgentHolder()
     {

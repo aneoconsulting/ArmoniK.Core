@@ -52,7 +52,7 @@ public class SimpleResultTable : IResultTable
   public Task<IList<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
                                                                  IEnumerable<string> keys,
                                                                  CancellationToken   cancellationToken = default)
-    => Task.FromResult(new List<ResultStatusCount>()
+    => Task.FromResult(new List<ResultStatusCount>
                        {
                          new(ResultStatus.Completed,
                              1),

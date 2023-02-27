@@ -46,6 +46,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class Submitter : ISubmitter
 {
   private readonly ActivitySource                       activitySource_;
+  private readonly Injection.Options.DependencyResolver dependencyResolverOptions_;
   private readonly ILogger<Submitter>                   logger_;
   private readonly IObjectStorageFactory                objectStorageFactory_;
   private readonly IPartitionTable                      partitionTable_;
@@ -53,7 +54,6 @@ public class Submitter : ISubmitter
   private readonly IResultTable                         resultTable_;
   private readonly ISessionTable                        sessionTable_;
   private readonly Injection.Options.Submitter          submitterOptions_;
-  private readonly Injection.Options.DependencyResolver dependencyResolverOptions_;
   private readonly ITaskTable                           taskTable_;
 
   [UsedImplicitly]

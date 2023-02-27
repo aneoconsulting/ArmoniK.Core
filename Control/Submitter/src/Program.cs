@@ -33,6 +33,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -90,8 +91,8 @@ public static class Program
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
                                                             Common.Injection.Options.Submitter.SettingSection)
-             .AddOption<Common.Injection.Options.DependencyResolver>(builder.Configuration,
-                                                                     Common.Injection.Options.DependencyResolver.SettingSection)
+             .AddOption<DependencyResolver>(builder.Configuration,
+                                            DependencyResolver.SettingSection)
              .AddGrpcReflection()
              .ValidateGrpcRequests();
 

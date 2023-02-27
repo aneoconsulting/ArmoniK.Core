@@ -35,6 +35,8 @@ public class PushQueueStorage : IPushQueueStorage
 
   private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
 
+  public string UnresolvedDependenciesQueue { get; init; } = nameof(UnresolvedDependenciesQueue);
+
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
@@ -76,8 +78,6 @@ public class PushQueueStorage : IPushQueueStorage
 
     return Task.CompletedTask;
   }
-
-  public string UnresolvedDependenciesQueue { get; init; } = nameof(UnresolvedDependenciesQueue);
 
   private class MessageHandler : IQueueMessageHandler
   {

@@ -41,15 +41,6 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class DependencyResolverTest
 {
-  private const string TaskSubmittedWithDependencies          = nameof(TaskSubmittedWithDependencies);
-  private const string TaskSubmittedWithAvailableDependencies = nameof(TaskSubmittedWithAvailableDependencies);
-  private const string TaskSubmittedWithAbortedDependencies   = nameof(TaskSubmittedWithAbortedDependencies);
-  private const string CreatedData1                           = nameof(CreatedData1);
-  private const string AbortedData1                           = nameof(AbortedData1);
-  private const string AvailableData1                         = nameof(AvailableData1);
-  private const string AvailableData2                         = nameof(AvailableData2);
-  private const string TaskSubmittedNoDependencies            = nameof(TaskSubmittedNoDependencies);
-
   [SetUp]
   public void SetUp()
   {
@@ -59,6 +50,15 @@ public class DependencyResolverTest
   public void TearDown()
   {
   }
+
+  private const string TaskSubmittedWithDependencies          = nameof(TaskSubmittedWithDependencies);
+  private const string TaskSubmittedWithAvailableDependencies = nameof(TaskSubmittedWithAvailableDependencies);
+  private const string TaskSubmittedWithAbortedDependencies   = nameof(TaskSubmittedWithAbortedDependencies);
+  private const string CreatedData1                           = nameof(CreatedData1);
+  private const string AbortedData1                           = nameof(AbortedData1);
+  private const string AvailableData1                         = nameof(AvailableData1);
+  private const string AvailableData2                         = nameof(AvailableData2);
+  private const string TaskSubmittedNoDependencies            = nameof(TaskSubmittedNoDependencies);
 
   public class MyMessageHandler : IQueueMessageHandler
   {
@@ -90,22 +90,20 @@ public class DependencyResolverTest
     public readonly ConcurrentBag<string> Messages;
 
     public MyPullQueueStorage()
-    {
-      Messages = new ConcurrentBag<string>();
-    }
+      => Messages = new ConcurrentBag<string>();
 
     public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => throw new System.NotImplementedException();
+      => throw new NotImplementedException();
 
     public Task Init(CancellationToken cancellationToken)
-      => throw new System.NotImplementedException();
+      => throw new NotImplementedException();
 
     public int MaxPriority { get; } = 10;
 
     public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-      int i = 0;
+      var i = 0;
       while (i < nbMessages && Messages.TryTake(out var m))
       {
         i++;
@@ -125,15 +123,13 @@ public class DependencyResolverTest
     public readonly ConcurrentBag<string> Messages;
 
     public MyPushQueueStorage()
-    {
-      Messages = new ConcurrentBag<string>();
-    }
+      => Messages = new ConcurrentBag<string>();
 
     public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => throw new System.NotImplementedException();
+      => throw new NotImplementedException();
 
     public Task Init(CancellationToken cancellationToken)
-      => throw new System.NotImplementedException();
+      => throw new NotImplementedException();
 
     public int MaxPriority { get; } = 10;
 
