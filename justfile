@@ -17,7 +17,7 @@ partitions   := "2"
 # Export them as terraform environment variables
 export TF_VAR_core_tag        := tag
 export TF_VAR_use_local_image := local_images
-export TF_VAR_serilog_level   := log_level
+export TF_VAR_serilog         := '{ loggin_level = "' + log_level + '" }'
 export TF_VAR_num_replicas    := replicas
 export TF_VAR_num_partitions  := partitions
 
@@ -114,6 +114,9 @@ _usage:
     IMPORTANT: In order to properly destroy the resources created you should call the recipe destroy with the
     same parameters used for deploy
   EOF
+
+env:
+  env
 
 # Call terraform init
 init:
