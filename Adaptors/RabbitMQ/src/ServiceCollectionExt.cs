@@ -52,7 +52,6 @@ public static class ServiceCollectionExt
                                            ("Port", amqpOptions.Port),
                                            ("MaxRetries", amqpOptions.MaxRetries),
                                            ("LinkCredit", amqpOptions.LinkCredit),
-                                           ("UnresolvedDependenciesQueue", amqpOptions.UnresolvedDependenciesQueue),
                                            ("PartitionId", amqpOptions.PartitionId));
 
       if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))

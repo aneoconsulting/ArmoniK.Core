@@ -105,6 +105,10 @@ public class TestPollsterProvider : IDisposable
                                                  {
                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                  },
+                                                 {
+                                                   $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
+                                                   nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
+                                                 },
                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -123,6 +127,8 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
+           .AddOption<Injection.Options.DependencyResolver>(builder.Configuration,
+                                                            Injection.Options.DependencyResolver.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<DataPrefetcher>()

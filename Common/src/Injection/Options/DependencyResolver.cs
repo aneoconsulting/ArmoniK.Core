@@ -15,25 +15,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.Injection.Options;
 
-[PublicAPI]
-public class Amqp
+/// <summary>
+///   Configuration for <see cref="Common.DependencyResolver.DependencyResolver" />.
+/// </summary>
+public class DependencyResolver
 {
-  public const string SettingSection = nameof(Amqp);
+  /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
+  public const string SettingSection = nameof(DependencyResolver);
 
-  public string Host              { get; set; } = "";
-  public string CredentialsPath   { get; set; } = "";
-  public string User              { get; set; } = "";
-  public string Password          { get; set; } = "";
-  public string Scheme            { get; set; } = "";
-  public string CaPath            { get; set; } = "";
-  public string PartitionId       { get; set; } = "";
-  public int    Port              { get; set; }
-  public int    MaxPriority       { get; set; }
-  public bool   AllowHostMismatch { get; set; }
-  public int    MaxRetries        { get; set; }
-  public int    LinkCredit        { get; set; }
+  /// <summary>
+  ///   Name of the queue that holds tasks with unresolved data dependencies
+  /// </summary>
+  public string UnresolvedDependenciesQueue { get; set; } = string.Empty;
 }

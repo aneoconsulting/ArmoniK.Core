@@ -18,7 +18,6 @@
 using Microsoft.Extensions.Hosting;
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,8 +51,10 @@ public class DependencyResolver : BackgroundService, IInitializable
     logger_           = logger;
   }
 
+  /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    using var logFunction = logger_.LogFunction();
     while (!stoppingToken.IsCancellationRequested)
     {
       try
@@ -129,9 +130,11 @@ public class DependencyResolver : BackgroundService, IInitializable
     }
   }
 
+  /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
 
+  /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 }

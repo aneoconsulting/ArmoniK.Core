@@ -88,6 +88,12 @@ public class AgentTest
                                                                            MaxErrorAllowed  = -1,
                                                                          };
 
+  private static readonly Injection.Options.DependencyResolver DependencyResolverOptions = new()
+                                                                                           {
+                                                                                             UnresolvedDependenciesQueue =
+                                                                                               nameof(DependencyResolverOptions.UnresolvedDependenciesQueue),
+                                                                                           };
+
   public class MyPushQueueStorage : IPushQueueStorage
   {
     public ConcurrentDictionary<string, ConcurrentBag<string>> Messages = new();
@@ -100,9 +106,6 @@ public class AgentTest
 
     public int MaxPriority
       => 10;
-
-    public string UnresolvedDependenciesQueue
-      => nameof(MyPushQueueStorage) + nameof(UnresolvedDependenciesQueue);
 
     public Task PushMessagesAsync(IEnumerable<string> messages,
                                   string              partitionId,
@@ -139,6 +142,7 @@ public class AgentTest
       QueueStorage = new MyPushQueueStorage();
       prov_ = new TestDatabaseProvider(collection => collection.AddSingleton<ISubmitter, gRPC.Services.Submitter>()
                                                                .AddSingleton(SubmitterOptions)
+                                                               .AddSingleton(DependencyResolverOptions)
                                                                .AddSingleton<IPushQueueStorage>(QueueStorage));
 
       ResultTable = prov_.GetRequiredService<IResultTable>();
@@ -252,6 +256,7 @@ public class AgentTest
                         objectStorageFactory,
                         QueueStorage,
                         TaskTable,
+                        DependencyResolverOptions,
                         sessionData,
                         TaskData,
                         Token,
@@ -407,7 +412,7 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.IsFalse(holder.QueueStorage.Messages.Keys.Contains(holder.QueueStorage.UnresolvedDependenciesQueue));
+    Assert.IsFalse(holder.QueueStorage.Messages.Keys.Contains(DependencyResolverOptions.UnresolvedDependenciesQueue));
     Assert.AreEqual(0,
                     holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
                           .Count());
@@ -476,11 +481,11 @@ public class AgentTest
     Assert.AreEqual(holder.TaskData.TaskId,
                     resultData.OwnerTaskId);
     Assert.Contains(holder.TaskWithDependencies1,
-                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]);
+                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]);
     Assert.Contains(holder.TaskWithDependencies2,
-                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]);
+                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]);
     Assert.AreEqual(2,
-                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]
+                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]
                           .Count);
   }
 
@@ -699,7 +704,7 @@ public class AgentTest
 
     // First insertion is always in UnresolvedDependenciesQueue when task has dependencies
     Assert.AreEqual(3,
-                    holder.QueueStorage.Messages[holder.QueueStorage.UnresolvedDependenciesQueue]
+                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]
                           .Count);
 
     taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,

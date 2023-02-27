@@ -90,6 +90,8 @@ public static class Program
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
                                                             Common.Injection.Options.Submitter.SettingSection)
+             .AddOption<Common.Injection.Options.DependencyResolver>(builder.Configuration,
+                                                                     Common.Injection.Options.DependencyResolver.SettingSection)
              .AddGrpcReflection()
              .ValidateGrpcRequests();
 
