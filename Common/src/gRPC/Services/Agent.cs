@@ -453,9 +453,9 @@ public class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    Task completionTask       = Task.CompletedTask;
-    Task findDependenciesTask = Task.CompletedTask;
-    var  fsmResult            = new ProcessReplyResultStateMachine(logger_);
+    var completionTask       = Task.CompletedTask;
+    var findDependenciesTask = Task.CompletedTask;
+    var fsmResult            = new ProcessReplyResultStateMachine(logger_);
     var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                       {
                                                                         SingleWriter = true,
