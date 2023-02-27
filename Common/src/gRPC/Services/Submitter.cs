@@ -141,6 +141,9 @@ public class Submitter : ISubmitter
                                                 priority,
                                                 cancellationToken)
                              .ConfigureAwait(false);
+      await taskTable_.FinalizeTaskCreation(tasksWithoutDependencies,
+                                            cancellationToken)
+                      .ConfigureAwait(false);
     }
 
     if (tasksWithDependencies.Any())
@@ -151,11 +154,6 @@ public class Submitter : ISubmitter
                                                 cancellationToken)
                              .ConfigureAwait(false);
     }
-
-
-    await taskTable_.FinalizeTaskCreation(allTaskIds,
-                                          cancellationToken)
-                    .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
