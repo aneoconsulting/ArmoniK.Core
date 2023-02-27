@@ -201,7 +201,7 @@ build-deploy: build-all deploy
 
 
 # Custom command to restore a deployment after restarting a given service
-restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter")
+restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter") (restart "armonik.control.dependency_checker")
   #!/usr/bin/env bash
   set -euo pipefail
   for (( i=0; i<{{replicas}}; i++ )); do
@@ -226,3 +226,7 @@ healthChecks:
   echo -e "\nHealth Checking Submitter"
   echo -n "  startup: " && curl -sSL localhost:5011/startup
   echo -n "  liveness: " && curl -sSL localhost:5011/liveness
+
+  echo -e "\nHealth Checking DependencyChecker"
+  echo -n "  startup: " && curl -sSL localhost:5012/startup
+  echo -n "  liveness: " && curl -sSL localhost:5012/liveness
