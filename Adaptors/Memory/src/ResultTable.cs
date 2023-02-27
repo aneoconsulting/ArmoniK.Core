@@ -29,7 +29,6 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -50,15 +49,14 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<IList<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                 IEnumerable<string> keys,
-                                                                 CancellationToken   cancellationToken = default)
+  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                       IEnumerable<string> keys,
+                                                                       CancellationToken   cancellationToken = default)
     => Task.FromResult(results_[sessionId]
                        .Where(model => keys.Contains(model.Value.Name))
                        .GroupBy(model => model.Value.Status)
                        .Select(models => new ResultStatusCount(models.Key,
-                                                               models.Count()))
-                       .ToIList());
+                                                               models.Count())));
 
   /// <inheritdoc />
   public Task ChangeResultOwnership(string                                                 sessionId,

@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,18 +50,18 @@ public static class TaskLifeCycleHelper
                                                                   cancellationToken)
                                         .ConfigureAwait(false);
 
-    if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
-                                     new ResultStatusCount(ResultStatus.Completed,
-                                                           0))
-                    .Count == taskData.DataDependencies.Count)
+    var dictionary = dependencies.GroupBy(resultStatusCount => resultStatusCount.Status)
+                                 .ToDictionary(counts => counts.Key,
+                                               counts => counts.Sum(count => count.Count));
+
+    if (dictionary.GetValueOrDefault(ResultStatus.Completed,
+                                     0) == taskData.DataDependencies.Count)
     {
       return DependenciesStatus.Available;
     }
 
-    return dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
-                                        new ResultStatusCount(ResultStatus.Aborted,
-                                                              0))
-                       .Count > 0
+    return dictionary.GetValueOrDefault(ResultStatus.Aborted,
+                                        0) > 0
              ? DependenciesStatus.Aborted
              : DependenciesStatus.Processing;
   }
