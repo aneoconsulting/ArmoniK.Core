@@ -47,7 +47,7 @@ jobs:
           path: .docs/.output/public
 
   deploy:
-    needs: [setup, build-docs]
+    needs: build-docs
     name: Deploy to GitHub Pages
     environment:
       name: github-pages
