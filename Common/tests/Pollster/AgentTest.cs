@@ -711,7 +711,9 @@ public class AgentTest
                                                      CancellationToken.None)
                             .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
+    // tasks with dependencies are put in the UnresolvedDependenciesQueue
+    // they are put in the regular queue as submitted when their dependencies are available
+    Assert.AreEqual(TaskStatus.Creating,
                     taskData3.Status);
   }
 
