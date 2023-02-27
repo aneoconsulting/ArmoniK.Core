@@ -15,28 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Extensions.Hosting;
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
-using ArmoniK.Api.Common.Utils;
 
 namespace ArmoniK.Core.Common.DependencyResolver;
 
 public class DependencyResolver : BackgroundService, IInitializable
 {
+  private readonly ILogger<DependencyResolver> logger_;
   private readonly IPullQueueStorage           pullQueueStorage_;
   private readonly IPushQueueStorage           pushQueueStorage_;
-  private readonly ITaskTable                  taskTable_;
   private readonly IResultTable                resultTable_;
-  private readonly ILogger<DependencyResolver> logger_;
+  private readonly ITaskTable                  taskTable_;
 
   public DependencyResolver(IPullQueueStorage           pullQueueStorage,
                             IPushQueueStorage           pushQueueStorage,
@@ -50,6 +48,14 @@ public class DependencyResolver : BackgroundService, IInitializable
     resultTable_      = resultTable;
     logger_           = logger;
   }
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+    => Task.CompletedTask;
 
   /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -129,12 +135,4 @@ public class DependencyResolver : BackgroundService, IInitializable
       }
     }
   }
-
-  /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
-
-  /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
 }

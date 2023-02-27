@@ -44,23 +44,17 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public class Agent : IAgent
 {
-  private sealed record TaskIdPriority
-  {
-    public string TaskId   { get; init; } = string.Empty;
-    public int    Priority { get; init; }
-  }
-
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
+  private readonly Injection.Options.DependencyResolver                                                dependencyResolverOptions_;
   private readonly ILogger                                                                             logger_;
+  private readonly IPushQueueStorage                                                                   pushQueueStorage_;
   private readonly IObjectStorage                                                                      resourcesStorage_;
   private readonly SessionData                                                                         sessionData_;
   private readonly ISubmitter                                                                          submitter_;
-  private readonly IPushQueueStorage                                                                   pushQueueStorage_;
-  private readonly ITaskTable                                                                          taskTable_;
-  private readonly Injection.Options.DependencyResolver                                                dependencyResolverOptions_;
   private readonly TaskData                                                                            taskData_;
-  private readonly string                                                                              token_;
+  private readonly ITaskTable                                                                          taskTable_;
   private readonly List<TaskIdPriority>                                                                toDependencyResolveTasks_;
+  private readonly string                                                                              token_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -582,5 +576,11 @@ public class Agent : IAgent
   /// <inheritdoc />
   public void Dispose()
   {
+  }
+
+  private sealed record TaskIdPriority
+  {
+    public string TaskId   { get; init; } = string.Empty;
+    public int    Priority { get; init; }
   }
 }
