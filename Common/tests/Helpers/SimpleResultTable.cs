@@ -49,14 +49,14 @@ public class SimpleResultTable : IResultTable
 
   public ILogger Logger { get; } = new Logger<SimpleResultTable>(new LoggerFactory());
 
-  public Task<IList<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                 IEnumerable<string> keys,
-                                                                 CancellationToken   cancellationToken = default)
+  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                       IEnumerable<string> keys,
+                                                                       CancellationToken   cancellationToken = default)
     => Task.FromResult(new List<ResultStatusCount>
                        {
                          new(ResultStatus.Completed,
                              1),
-                       }.ToIList());
+                       }.AsEnumerable());
 
   public Task ChangeResultOwnership(string                                                 sessionId,
                                     string                                                 oldTaskId,

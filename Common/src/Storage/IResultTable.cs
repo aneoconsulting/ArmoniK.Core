@@ -48,9 +48,9 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   The number of results in each kind of status
   /// </returns>
-  Task<IList<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                          IEnumerable<string> keys,
-                                                          CancellationToken   cancellationToken = default);
+  Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                IEnumerable<string> keys,
+                                                                CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Change ownership (in batch) of the results in the given request
