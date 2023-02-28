@@ -122,7 +122,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       {
         logger.LogInformation(ex,
                               "Retrying to create Collection");
-        await Task.Delay(1000 * retry,
+        await Task.Delay(1000 * collectionRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
@@ -152,7 +152,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       {
         logger.LogInformation(ex,
                                "Retrying to Initialize indexes");
-        await Task.Delay(1000 * retry,
+        await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
