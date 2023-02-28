@@ -25,8 +25,11 @@ using ArmoniK.Core.Common.Exceptions;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
+
+using TimeoutException = System.TimeoutException;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
@@ -34,12 +37,13 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  private bool                     isInitialized_;
-  private IMongoCollection<TData>? mongoCollection_;
-
+  private bool                             isInitialized_;
+  private IMongoCollection<TData>?         mongoCollection_;
+  private ILogger<IMongoCollection<TData>> logger_;
   public MongoCollectionProvider(Options.MongoDB   options,
                                  SessionProvider   sessionProvider,
                                  IMongoDatabase    mongoDatabase,
+                                 ILogger<IMongoCollection<TData>> logger,
                                  CancellationToken cancellationToken = default)
   {
     if (options.DataRetention == TimeSpan.Zero)
@@ -48,9 +52,12 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                             $"{nameof(Options.MongoDB.DataRetention)} is not defined.");
     }
 
+    logger_ = logger;
+
     Initialization = InitializeAsync(options,
                                      sessionProvider,
                                      mongoDatabase,
+                                     logger,
                                      cancellationToken);
   }
 
@@ -89,35 +96,71 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB   options,
                                                                      SessionProvider   sessionProvider,
                                                                      IMongoDatabase    mongoDatabase,
+                                                                     ILogger<IMongoCollection<TData>> logger,
                                                                      CancellationToken cancellationToken = default)
   {
-    var model = new TModelMapping();
-    try
+    var model  = new TModelMapping();
+
+    var       collectionRetry      = 0;
+    for (; collectionRetry < options.maxRetries; collectionRetry++)
     {
-      await mongoDatabase.CreateCollectionAsync(model.CollectionName,
-                                                new CreateCollectionOptions<TData>
-                                                {
-                                                  ExpireAfter = options.DataRetention,
-                                                },
-                                                cancellationToken)
-                         .ConfigureAwait(false);
+      try
+      {
+        await mongoDatabase.CreateCollectionAsync(model.CollectionName, null,
+                                                  cancellationToken)
+                           .ConfigureAwait(false);
+        break;
+      }
+      catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
+      {
+        logger.LogInformation(ex,
+                              "Use already existing instance of Collection {CollectionName}",
+                              model.CollectionName);
+        break;
+      }
+      catch (Exception ex)
+      {
+        logger.LogInformation(ex,
+                              "Retrying to create Collection");
+        await Task.Delay(1000 * retry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
     }
-    catch (MongoCommandException)
+
+    if (collectionRetry == options.maxRetries)
     {
+      throw new TimeoutException(" Max retries reached");
     }
 
     var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
     await sessionProvider.Init(cancellationToken)
                          .ConfigureAwait(false);
     var session = sessionProvider.Get();
-    try
+
+    var indexRetry = 0;
+    for (; indexRetry < options.maxRetries; indexRetry++)
     {
-      await model.InitializeIndexesAsync(session,
-                                         output)
-                 .ConfigureAwait(false);
+      try
+      {
+        await model.InitializeIndexesAsync(session,
+                                           output)
+                   .ConfigureAwait(false);
+        break;
+      }
+      catch (Exception ex)
+      {
+        logger.LogInformation(ex,
+                               "Retrying to Initialize indexes");
+        await Task.Delay(1000 * retry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
     }
-    catch (MongoCommandException)
+
+    if (indexRetry == options.maxRetries)
     {
+      throw new TimeoutException(" Max retries reached");
     }
 
     return output;
@@ -127,7 +170,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   {
     if (!isInitialized_)
     {
-      throw new ArmoniKException("Mongo Collection has not been initialized; call Init method first");
+      throw new InvalidOperationException("Mongo Collection has not been initialized; call Init method first");
     }
 
     return mongoCollection_!;
