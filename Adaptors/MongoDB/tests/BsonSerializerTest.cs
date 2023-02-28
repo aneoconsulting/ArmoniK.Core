@@ -81,6 +81,11 @@ internal class BsonSerializerTest
                          "Key",
                          "OwnerTaskId",
                          ResultStatus.Completed,
+                         new List<string>
+                         {
+                           "Task1",
+                           "Task2",
+                         },
                          DateTime.Parse("2022-02-15 8:55:05.954")
                                  .ToUniversalTime(),
                          new[]
@@ -104,6 +109,12 @@ internal class BsonSerializerTest
                     deserialized.OwnerTaskId);
     Assert.AreEqual(rdm.Status,
                     deserialized.Status);
+    Assert.AreEqual(new List<string>
+                    {
+                      "Task1",
+                      "Task2",
+                    },
+                    deserialized.DependentTasks);
     Assert.AreEqual(rdm.CreationDate,
                     deserialized.CreationDate);
     Assert.IsTrue(rdm.Data.SequenceEqual(deserialized.Data));

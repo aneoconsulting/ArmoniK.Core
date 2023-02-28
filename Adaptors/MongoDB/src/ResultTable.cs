@@ -88,6 +88,49 @@ public class ResultTable : IResultTable
     }
   }
 
+  public async Task AddTaskDependency(string              sessionId,
+                                      ICollection<string> resultIds,
+                                      ICollection<string> taskIds,
+                                      CancellationToken   cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(AddTaskDependency)}");
+
+    var resultCollection = resultCollectionProvider_.Get();
+
+    var ids = resultIds.Select(id => Result.GenerateId(sessionId,
+                                                       id))
+                       .ToList();
+    await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => ids.Contains(model.Id)),
+                                           Builders<Result>.Update.AddToSetEach(model => model.DependentTasks,
+                                                                                taskIds),
+                                           cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
+  }
+
+  public async Task<IEnumerable<string>> GetDependents(string            sessionId,
+                                                       string            resultId,
+                                                       CancellationToken cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(GetResults)}");
+    activity?.SetTag($"{nameof(GetResults)}_sessionId",
+                     sessionId);
+    var resultCollection = resultCollectionProvider_.Get();
+
+    try
+    {
+      return await resultCollection.AsQueryable()
+                                   .Where(result => result.Id == Result.GenerateId(sessionId,
+                                                                                   resultId))
+                                   .Select(result => result.DependentTasks)
+                                   .SingleAsync(cancellationToken)
+                                   .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new ResultNotFoundException($"Key '{resultId}' not found");
+    }
+  }
+
   async Task<Result> IResultTable.GetResult(string            sessionId,
                                             string            key,
                                             CancellationToken cancellationToken)

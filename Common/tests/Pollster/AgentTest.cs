@@ -28,6 +28,7 @@ using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf;
 
@@ -148,19 +149,10 @@ public class AgentTest
       ResultTable = prov_.GetRequiredService<IResultTable>();
       TaskTable   = prov_.GetRequiredService<ITaskTable>();
 
-      ResultTable.Init(CancellationToken.None)
-                 .ConfigureAwait(false);
-      TaskTable.Init(CancellationToken.None)
-               .Wait();
-
       var sessionTable         = prov_.GetRequiredService<ISessionTable>();
       var submitter            = prov_.GetRequiredService<ISubmitter>();
       var objectStorageFactory = prov_.GetRequiredService<IObjectStorageFactory>();
 
-      sessionTable.Init(CancellationToken.None)
-                  .Wait();
-      objectStorageFactory.Init(CancellationToken.None)
-                          .Wait();
       ResourceStorage = objectStorageFactory.CreateResourcesStorage();
 
       Session = sessionTable.SetSessionDataAsync(new[]
@@ -249,6 +241,14 @@ public class AgentTest
       TaskWithDependencies2 = createdTasks2.requests.Last()
                                            .Id;
 
+      submitter.FinalizeTaskCreation(createdTasks2.requests,
+                                     createdTasks2.priority,
+                                     createdTasks2.partitionId,
+                                     Session,
+                                     Session,
+                                     CancellationToken.None)
+               .Wait();
+
       Token = Guid.NewGuid()
                   .ToString();
 
@@ -256,6 +256,7 @@ public class AgentTest
                         objectStorageFactory,
                         QueueStorage,
                         TaskTable,
+                        ResultTable,
                         DependencyResolverOptions,
                         sessionData,
                         TaskData,
@@ -480,6 +481,18 @@ public class AgentTest
                     resultData.Status);
     Assert.AreEqual(holder.TaskData.TaskId,
                     resultData.OwnerTaskId);
+
+    var dependents = await holder.ResultTable.GetDependents(holder.Session,
+                                                            ExpectedOutput1,
+                                                            CancellationToken.None)
+                                 .ToListAsync()
+                                 .ConfigureAwait(false);
+
+    Assert.Contains(holder.TaskWithDependencies1,
+                    dependents);
+    Assert.Contains(holder.TaskWithDependencies2,
+                    dependents);
+
     Assert.Contains(holder.TaskWithDependencies1,
                     holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]);
     Assert.Contains(holder.TaskWithDependencies2,
@@ -702,18 +715,15 @@ public class AgentTest
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
-    // First insertion is always in UnresolvedDependenciesQueue when task has dependencies
     Assert.AreEqual(3,
-                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]
+                    holder.QueueStorage.Messages[Partition]
                           .Count);
 
     taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
                                                      CancellationToken.None)
                             .ConfigureAwait(false);
 
-    // tasks with dependencies are put in the UnresolvedDependenciesQueue
-    // they are put in the regular queue as submitted when their dependencies are available
-    Assert.AreEqual(TaskStatus.Creating,
+    Assert.AreEqual(TaskStatus.Submitted,
                     taskData3.Status);
   }
 

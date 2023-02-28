@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -42,6 +43,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Status))
                                                 .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.DependentTasks))
+                                                .SetIsRequired(true)
+                                                .SetDefaultValue(new List<string>());
                                               cm.MapProperty(nameof(Result.CreationDate))
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Data))
@@ -51,6 +55,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                                 model.Name,
                                                                                 model.OwnerTaskId,
                                                                                 model.Status,
+                                                                                model.DependentTasks,
                                                                                 model.CreationDate,
                                                                                 model.Data));
                                             });

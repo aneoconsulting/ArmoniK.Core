@@ -101,6 +101,17 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
+  public Task AddTaskDependency(string              sessionId,
+                                ICollection<string> resultIds,
+                                ICollection<string> taskIds,
+                                CancellationToken   cancellationToken)
+    => Task.CompletedTask;
+
+  public Task<IEnumerable<string>> GetDependents(string            sessionId,
+                                                 string            resultId,
+                                                 CancellationToken cancellationToken)
+    => Task.FromResult(Enumerable.Empty<string>());
+
   /// <inheritdoc />
   public Task DeleteResult(string            session,
                            string            key,

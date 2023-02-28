@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -119,8 +119,6 @@ public class Submitter : ISubmitter
                                          CancellationToken                cancellationToken)
   {
     var taskRequests = requests.ToList();
-    var allTaskIds = taskRequests.Select(request => request.Id)
-                                 .ToList();
 
     await ChangeResultOwnership(sessionId,
                                 parentTaskId,
@@ -128,31 +126,58 @@ public class Submitter : ISubmitter
                                 cancellationToken)
       .ConfigureAwait(false);
 
-    var tasksWithDependencies = taskRequests.Where(request => request.DataDependencies.Any())
-                                            .Select(request => request.Id)
-                                            .ToList();
-    var tasksWithoutDependencies = taskRequests.Where(request => !request.DataDependencies.Any())
-                                               .Select(request => request.Id)
-                                               .ToList();
-    if (tasksWithoutDependencies.Any())
+    var readyTasks              = new List<string>();
+
+    foreach (var request in taskRequests)
     {
-      await pushQueueStorage_.PushMessagesAsync(tasksWithoutDependencies,
+      var dependencies = request.DataDependencies.ToList();
+      if (dependencies.Any())
+      {
+        dependencies = await resultTable_.GetResults(sessionId,
+                                                     dependencies,
+                                                     cancellationToken)
+                                         .Where(result => result.Status != ResultStatus.Completed)
+                                         .Select(result => result.Name)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+      }
+
+      if (dependencies.Any())
+      {
+        await resultTable_.AddTaskDependency(sessionId,
+                                             dependencies,
+                                             new List<string>
+                                             {
+                                               request.Id,
+                                             },
+                                             cancellationToken)
+                          .ConfigureAwait(false);
+        dependencies = await resultTable_.GetResults(sessionId,
+                                                     dependencies,
+                                                     cancellationToken)
+                                         .Where(result => result.Status != ResultStatus.Completed)
+                                         .Select(result => result.Name)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+      }
+
+      if (!dependencies.Any())
+      {
+        readyTasks.Add(request.Id);
+      }
+    }
+
+    if (readyTasks.Any())
+    {
+
+      await pushQueueStorage_.PushMessagesAsync(readyTasks,
                                                 partitionId,
                                                 priority,
                                                 cancellationToken)
                              .ConfigureAwait(false);
-      await taskTable_.FinalizeTaskCreation(tasksWithoutDependencies,
+      await taskTable_.FinalizeTaskCreation(readyTasks,
                                             cancellationToken)
                       .ConfigureAwait(false);
-    }
-
-    if (tasksWithDependencies.Any())
-    {
-      await pushQueueStorage_.PushMessagesAsync(tasksWithDependencies,
-                                                dependencyResolverOptions_.UnresolvedDependenciesQueue,
-                                                priority,
-                                                cancellationToken)
-                             .ConfigureAwait(false);
     }
   }
 
@@ -680,6 +705,7 @@ public class Submitter : ISubmitter
                                                                                               key,
                                                                                               request.Id,
                                                                                               ResultStatus.Created,
+                                                                                              new List<string>(),
                                                                                               DateTime.UtcNow,
                                                                                               Array.Empty<byte>()));
 

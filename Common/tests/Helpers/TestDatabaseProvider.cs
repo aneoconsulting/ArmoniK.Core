@@ -23,6 +23,7 @@ using System.Threading;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Storage;
 
 using EphemeralMongo;
 
@@ -117,6 +118,26 @@ public class TestDatabaseProvider : IDisposable
     var sessionProvider = app_.Services.GetRequiredService<SessionProvider>();
     sessionProvider.Init(CancellationToken.None)
                    .Wait();
+
+    app_.Services.GetRequiredService<IResultTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<ITaskTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<ISessionTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<IPartitionTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<IObjectStorageFactory>()
+        .Init(CancellationToken.None)
+        .Wait();
   }
 
   public void Dispose()

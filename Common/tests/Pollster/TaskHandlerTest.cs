@@ -838,7 +838,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.IsFalse(acquired);
+    Assert.IsTrue(acquired);
   }
 
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
