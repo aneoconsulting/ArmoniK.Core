@@ -1,7 +1,3 @@
-module "local_storage" {
-  source = "../storage/object/local"
-}
-
 resource "docker_image" "dependency_checker" {
   count        = var.use_local_image ? 0 : 1
   name         = "${var.docker_image}:${var.core_tag}"
