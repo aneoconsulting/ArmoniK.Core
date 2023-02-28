@@ -247,6 +247,7 @@ public class AgentTest
                         objectStorageFactory,
                         QueueStorage,
                         TaskTable,
+                        ResultTable,
                         DependencyResolverOptions,
                         sessionData,
                         TaskData,

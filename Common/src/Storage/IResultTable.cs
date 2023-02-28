@@ -78,6 +78,15 @@ public interface IResultTable : IInitializable
   Task Create(IEnumerable<Result> results,
               CancellationToken   cancellationToken = default);
 
+  Task AddTaskDependency(string              sessionId,
+                         ICollection<string> resultIds,
+                         ICollection<string> taskIds,
+                         CancellationToken   cancellationToken = default);
+
+  Task<IEnumerable<string>> GetDependents(string            sessionId,
+                                          string            resultId,
+                                          CancellationToken cancellationToken = default);
+
   /// <summary>
   ///   Delete the results from the database
   /// </summary>

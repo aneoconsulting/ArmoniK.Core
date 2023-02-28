@@ -49,6 +49,7 @@ public class ResultTableTestBase
                                        "ResultIsAvailable",
                                        "OwnerId",
                                        ResultStatus.Completed,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -58,6 +59,7 @@ public class ResultTableTestBase
                                        "ResultIsNotAvailable",
                                        "OwnerId",
                                        ResultStatus.Aborted,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -67,6 +69,7 @@ public class ResultTableTestBase
                                        "ResultIsCreated",
                                        "OwnerId",
                                        ResultStatus.Created,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -76,6 +79,7 @@ public class ResultTableTestBase
                                        "ResultIsCreated2",
                                        "OwnerId",
                                        ResultStatus.Created,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -227,6 +231,7 @@ public class ResultTableTestBase
                                            "Key",
                                            "OwnerId",
                                            ResultStatus.Completed,
+                                           new List<string>(),
                                            DateTime.Today,
                                            new[]
                                            {
@@ -258,6 +263,7 @@ public class ResultTableTestBase
                                                                                     "ResultIsAvailable",
                                                                                     "",
                                                                                     ResultStatus.Unspecified,
+                                                                                    new List<string>(),
                                                                                     DateTime.Today,
                                                                                     new[]
                                                                                     {
@@ -385,6 +391,7 @@ public class ResultTableTestBase
                                                             id,
                                                             "OwnerId",
                                                             ResultStatus.Completed,
+                                                            new List<string>(),
                                                             DateTime.Today,
                                                             Encoding.ASCII.GetBytes(id))))
                         .ConfigureAwait(false);
@@ -418,6 +425,7 @@ public class ResultTableTestBase
                                                             id,
                                                             "OwnerId",
                                                             ResultStatus.Completed,
+                                                            new List<string>(),
                                                             DateTime.Today,
                                                             Encoding.ASCII.GetBytes(id))))
                         .ConfigureAwait(false);

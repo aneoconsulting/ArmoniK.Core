@@ -47,6 +47,7 @@ public class ResultWatcherTestBase
                                        "ResultIsAvailable",
                                        "OwnerId",
                                        ResultStatus.Completed,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -56,6 +57,7 @@ public class ResultWatcherTestBase
                                        "ResultIsNotAvailable",
                                        "OwnerId",
                                        ResultStatus.Aborted,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -65,6 +67,7 @@ public class ResultWatcherTestBase
                                        "ResultIsCreated",
                                        "OwnerId2",
                                        ResultStatus.Created,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -74,6 +77,7 @@ public class ResultWatcherTestBase
                                        "ResultIsCreated2",
                                        "OwnerId2",
                                        ResultStatus.Created,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -83,6 +87,7 @@ public class ResultWatcherTestBase
                                        "ResultIsCreated3",
                                        "OwnerId2",
                                        ResultStatus.Created,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -92,6 +97,7 @@ public class ResultWatcherTestBase
                                        "ResultIsCreated3",
                                        "OwnerId3",
                                        ResultStatus.Created,
+                                       new List<string>(),
                                        DateTime.Today,
                                        new[]
                                        {
@@ -172,6 +178,7 @@ public class ResultWatcherTestBase
                                           "NewResult",
                                           "OwnerId",
                                           ResultStatus.Created,
+                                          new List<string>(),
                                           DateTime.Today,
                                           new[]
                                           {
@@ -187,6 +194,7 @@ public class ResultWatcherTestBase
                                           "NewResult2",
                                           "OwnerId",
                                           ResultStatus.Created,
+                                          new List<string>(),
                                           DateTime.Today,
                                           new[]
                                           {
@@ -197,6 +205,7 @@ public class ResultWatcherTestBase
                                           "NewResult2",
                                           "OwnerId",
                                           ResultStatus.Created,
+                                          new List<string>(),
                                           DateTime.Today,
                                           new[]
                                           {

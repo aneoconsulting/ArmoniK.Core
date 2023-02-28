@@ -49,6 +49,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   private readonly ILogger<AgentHandler>                logger_;
   private readonly IObjectStorageFactory                objectStorageFactory_;
   private readonly IPushQueueStorage                    pushQueueStorage_;
+  private readonly IResultTable                         resultTable_;
   private readonly GrpcAgentService                     service_;
   private readonly ISubmitter                           submitter_;
   private readonly ITaskTable                           taskTable_;
@@ -63,6 +64,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit                           loggerInit,
                       ComputePlane                         computePlaneOptions,
@@ -71,6 +73,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
                       IObjectStorageFactory                objectStorageFactory,
                       IPushQueueStorage                    pushQueueStorage,
                       ITaskTable                           taskTable,
+                      IResultTable                         resultTable,
                       ILogger<AgentHandler>                logger)
   {
     computePlaneOptions_       = computePlaneOptions;
@@ -79,6 +82,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     objectStorageFactory_      = objectStorageFactory;
     pushQueueStorage_          = pushQueueStorage;
     taskTable_                 = taskTable;
+    resultTable_               = resultTable;
     logger_                    = logger;
 
     try
@@ -139,6 +143,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
                             objectStorageFactory_,
                             pushQueueStorage_,
                             taskTable_,
+                            resultTable_,
                             dependencyResolverOptions_,
                             sessionData,
                             taskData,
