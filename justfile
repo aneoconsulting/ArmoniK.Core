@@ -155,8 +155,23 @@ restart serviceName: (container "restart" serviceName)
 build $imageTag $dockerFile:
   docker build -t "$imageTag" -f "$dockerFile" ./
 
+# Build Worker
+buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" )
+
+# Build Metrics
+buildMetrics: (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")
+
+# Build Partition Metrics
+buildPartitionMetrics: (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile")
+
+# Build Submitter
+buildSubmimtter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
+
+# Build Polling Agent
+buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
+
 # Build all images necessary for the deployment
-build-all: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" ) (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile") (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile") (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile") (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
+build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
