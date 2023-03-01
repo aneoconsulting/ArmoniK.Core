@@ -108,7 +108,7 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      var sessionProvider        = app.Services.GetRequiredService<SessionProvider>();
+      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
       var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
 
       await sessionProvider.Init(CancellationToken.None)

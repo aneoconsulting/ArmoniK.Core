@@ -20,7 +20,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Exceptions;
 
 using JetBrains.Annotations;
 
@@ -29,8 +28,6 @@ using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 
-using TimeoutException = System.TimeoutException;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
 [PublicAPI]
@@ -38,13 +35,14 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
   private bool                             isInitialized_;
-  private IMongoCollection<TData>?         mongoCollection_;
   private ILogger<IMongoCollection<TData>> logger_;
-  public MongoCollectionProvider(Options.MongoDB   options,
-                                 SessionProvider   sessionProvider,
-                                 IMongoDatabase    mongoDatabase,
+  private IMongoCollection<TData>?         mongoCollection_;
+
+  public MongoCollectionProvider(Options.MongoDB                  options,
+                                 SessionProvider                  sessionProvider,
+                                 IMongoDatabase                   mongoDatabase,
                                  ILogger<IMongoCollection<TData>> logger,
-                                 CancellationToken cancellationToken = default)
+                                 CancellationToken                cancellationToken = default)
   {
     if (options.DataRetention == TimeSpan.Zero)
     {
@@ -93,20 +91,21 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     isInitialized_ = true;
   }
 
-  private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB   options,
-                                                                     SessionProvider   sessionProvider,
-                                                                     IMongoDatabase    mongoDatabase,
+  private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB                  options,
+                                                                     SessionProvider                  sessionProvider,
+                                                                     IMongoDatabase                   mongoDatabase,
                                                                      ILogger<IMongoCollection<TData>> logger,
-                                                                     CancellationToken cancellationToken = default)
+                                                                     CancellationToken                cancellationToken = default)
   {
-    var model  = new TModelMapping();
+    var model = new TModelMapping();
 
-    var       collectionRetry      = 1;
+    var collectionRetry = 1;
     for (; collectionRetry < options.maxRetries; collectionRetry++)
     {
       try
       {
-        await mongoDatabase.CreateCollectionAsync(model.CollectionName, null,
+        await mongoDatabase.CreateCollectionAsync(model.CollectionName,
+                                                  null,
                                                   cancellationToken)
                            .ConfigureAwait(false);
         break;
@@ -151,7 +150,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       catch (Exception ex)
       {
         logger.LogInformation(ex,
-                               "Retrying to Initialize indexes");
+                              "Retrying to Initialize indexes");
         await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
