@@ -131,7 +131,7 @@ public static class Program
                                    options.ListenAnyIP(1080,
                                                        listenOptions =>
                                                        {
-                                                         listenOptions.Protocols = HttpProtocols.Http2;
+                                                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                                          listenOptions.Use(async (context,
                                                                                   func) =>
                                                                            {
