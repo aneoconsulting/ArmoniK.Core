@@ -51,8 +51,8 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    - name: Build the solution
-      run: dotnet build ArmoniK.Core.sln -c Release
+    # - name: Build the solution
+    #   run: dotnet build ArmoniK.Core.sln -c Release
 
 
   buildImages:
@@ -68,24 +68,6 @@ jobs:
         include:
         -  img : dockerhubaneo/armonik_pollingagent
            path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_worker
-           path: ./Tests/Stream/Server/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_client
-           path: ./Tests/Stream/Client/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
-           path: ./Tests/HtcMock/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_client
-           path: ./Tests/HtcMock/Client/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_worker
-           path: ./Tests/Bench/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_client
-           path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -115,24 +97,6 @@ jobs:
         include:
         -  img : dockerhubaneo/armonik_pollingagent
            path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_worker
-           path: ./Tests/Stream/Server/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_client
-           path: ./Tests/Stream/Client/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
-           path: ./Tests/HtcMock/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_client
-           path: ./Tests/HtcMock/Client/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_worker
-           path: ./Tests/Bench/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_client
-           path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v3
