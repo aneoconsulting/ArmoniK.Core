@@ -129,7 +129,7 @@ variable "compute_plane" {
       port                 = optional(number, 9980)
       max_error_allowed    = optional(number, -1)
       worker_check_retries = optional(number, 10)
-      worker_check_delay   = optional(string, "00:00:10")
+      worker_check_delay   = optional(string, "00:00:01")
     })
   })
   default = {
