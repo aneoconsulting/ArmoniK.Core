@@ -87,7 +87,7 @@ public static class GrpcChannelExt
                                                          new ListTasksRequest.Types.Sort
                                                          {
                                                            Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                           Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
+                                                           Field     = ListTasksRequest.Types.OrderByField.TaskId,
                                                          })
                                          .ConfigureAwait(false))
     {
