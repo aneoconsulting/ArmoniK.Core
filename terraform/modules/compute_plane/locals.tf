@@ -8,7 +8,7 @@ locals {
   env = [
     "Pollster__MaxErrorAllowed=${var.polling_agent.max_error_allowed}",
     "InitWorker__WorkerCheckRetries=${var.polling_agent.worker_check_retries}",
-    "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_retries}",
+    "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_delay}",
     "Zipkin__Uri=${var.zipkin_uri}",
     "Amqp__PartitionId=TestPartition${local.partition_chooser}"
   ]
