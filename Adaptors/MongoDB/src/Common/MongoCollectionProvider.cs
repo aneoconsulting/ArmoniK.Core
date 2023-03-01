@@ -101,7 +101,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   {
     var model  = new TModelMapping();
 
-    var       collectionRetry      = 0;
+    var       collectionRetry      = 1;
     for (; collectionRetry < options.maxRetries; collectionRetry++)
     {
       try
@@ -138,7 +138,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                          .ConfigureAwait(false);
     var session = sessionProvider.Get();
 
-    var indexRetry = 0;
+    var indexRetry = 1;
     for (; indexRetry < options.maxRetries; indexRetry++)
     {
       try
