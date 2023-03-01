@@ -168,10 +168,7 @@ jobs:
       run: |
         docker build -t ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-windows -f ${{ matrix.path }} .
         docker push ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-windows
-
-    - name: Create multi-arch manifest
-      run: docker buildx imagetools create ${{ matrix.img }}:${VERSION} --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-arm --append ${{ matrix.img }}:${VERSION}-windows
-
+        
   MultiArchive:
     runs-on: ubuntu-latest
     needs:
