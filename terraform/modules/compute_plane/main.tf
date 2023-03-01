@@ -97,6 +97,9 @@ resource "docker_container" "polling_agent" {
     source = module.local_storage.object_volume
   }
 
+  wait = true
+  wait_timeout = 20
+
   healthcheck {
     test         = ["CMD", "bash", "-c", "exec 3<>\"/dev/tcp/localhost/1080\" && echo -en \"GET /liveness HTTP/1.1\r\nHost: localhost:1080\r\nConnection: close\r\n\r\n\">&3 && grep Healthy <&3 &>/dev/null || exit 1"]
     interval     = "5s"
