@@ -172,7 +172,7 @@ jobs:
 
     - name: Build and push
       run: |
-        docker build -t ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-windows -f ${{ matrix.path }} .
+        docker build --platform windows/amd64 -t ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-windows -f ${{ matrix.path }} .
         docker push ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-windows
 
   MultiArchive:
