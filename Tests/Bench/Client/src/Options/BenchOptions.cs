@@ -53,6 +53,11 @@ public class BenchOptions
   public int ResultSize { get; set; } = 1;
 
   /// <summary>
+  ///   Number of tasks per batch
+  /// </summary>
+  public int BatchSize { get; set; } = 100;
+
+  /// <summary>
   ///   Raise RpcException when task id ends by this string, ignored if empty string
   /// </summary>
   public string TaskRpcException { get; set; } = string.Empty;
