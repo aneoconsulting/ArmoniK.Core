@@ -103,7 +103,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     var model = new TModelMapping();
 
     var collectionRetry = 1;
-    for (; collectionRetry < options.maxRetries; collectionRetry++)
+    for (; collectionRetry < options.MaxRetries; collectionRetry++)
     {
       try
       {
@@ -131,7 +131,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
     }
 
-    if (collectionRetry == options.maxRetries)
+    if (collectionRetry == options.MaxRetries)
     {
       throw new TimeoutException($"Create {model.CollectionName}: Max retries reached");
     }
@@ -142,7 +142,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     var session = sessionProvider.Get();
 
     var indexRetry = 1;
-    for (; indexRetry < options.maxRetries; indexRetry++)
+    for (; indexRetry < options.MaxRetries; indexRetry++)
     {
       try
       {
@@ -162,7 +162,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
     }
 
-    if (indexRetry == options.maxRetries)
+    if (indexRetry == options.MaxRetries)
     {
       throw new TimeoutException($"Init Indexes for {model.CollectionName}: Max retries reached");
     }
