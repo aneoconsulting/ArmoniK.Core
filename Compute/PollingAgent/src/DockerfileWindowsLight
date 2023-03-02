@@ -1,6 +1,6 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/dotnet/sdk:7.0-windowsservercore-ltsc2019
 
 # Sets a command or process that will run each time a container is run from the new image.
-CMD [ "cmd" ]
+CMD [ "sleep 3600" ]
