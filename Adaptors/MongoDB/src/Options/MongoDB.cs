@@ -48,7 +48,7 @@ public class MongoDB
 
   public string Password { get; set; } = "";
 
-  public int maxRetries { get; set; } = 5;
+  public int MaxRetries { get; set; } = 5;
 
   public string DatabaseName { get; set; } = "ArmoniK";
 
