@@ -59,8 +59,10 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                      cancellationToken);
   }
 
+  /// <inheritdoc />
   public Task<IMongoCollection<TData>> Initialization { get; private set; }
 
+  /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     switch (tag)
@@ -81,6 +83,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     }
   }
 
+  /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
