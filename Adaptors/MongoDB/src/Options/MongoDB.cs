@@ -48,6 +48,8 @@ public class MongoDB
 
   public string Password { get; set; } = "";
 
+  public int MaxRetries { get; set; } = 5;
+
   public string DatabaseName { get; set; } = "ArmoniK";
 
   public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);

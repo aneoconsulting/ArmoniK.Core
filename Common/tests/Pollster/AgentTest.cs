@@ -135,10 +135,19 @@ public class AgentTest
       ResultTable = prov_.GetRequiredService<IResultTable>();
       TaskTable   = prov_.GetRequiredService<ITaskTable>();
 
+      ResultTable.Init(CancellationToken.None)
+                 .ConfigureAwait(false);
+      TaskTable.Init(CancellationToken.None)
+               .Wait();
+
       var sessionTable         = prov_.GetRequiredService<ISessionTable>();
       var submitter            = prov_.GetRequiredService<ISubmitter>();
       var objectStorageFactory = prov_.GetRequiredService<IObjectStorageFactory>();
 
+      sessionTable.Init(CancellationToken.None)
+                  .Wait();
+      objectStorageFactory.Init(CancellationToken.None)
+                          .Wait();
       ResourceStorage = objectStorageFactory.CreateResourcesStorage();
 
       Session = sessionTable.SetSessionDataAsync(new[]

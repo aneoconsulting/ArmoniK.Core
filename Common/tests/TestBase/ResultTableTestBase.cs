@@ -37,53 +37,58 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 public class ResultTableTestBase
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     GetResultTableInstance();
 
-    if (RunTests)
+    if (!RunTests || CheckForSkipSetup())
     {
-      ResultTable!.Create(new[]
-                          {
-                            new Result("SessionId",
-                                       "ResultIsAvailable",
-                                       "OwnerId",
-                                       ResultStatus.Completed,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsNotAvailable",
-                                       "OwnerId",
-                                       ResultStatus.Aborted,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsCreated",
-                                       "OwnerId",
-                                       ResultStatus.Created,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsCreated2",
-                                       "OwnerId",
-                                       ResultStatus.Created,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                          })
-                  .Wait();
+      return;
     }
+
+    await ResultTable!.Init(CancellationToken.None)
+                      .ConfigureAwait(false);
+
+    await ResultTable!.Create(new[]
+                              {
+                                new Result("SessionId",
+                                           "ResultIsAvailable",
+                                           "OwnerId",
+                                           ResultStatus.Completed,
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsNotAvailable",
+                                           "OwnerId",
+                                           ResultStatus.Aborted,
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsCreated",
+                                           "OwnerId",
+                                           ResultStatus.Created,
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsCreated2",
+                                           "OwnerId",
+                                           ResultStatus.Created,
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                              })
+                      .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -91,6 +96,12 @@ public class ResultTableTestBase
   {
     ResultTable = null;
     RunTests    = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */
@@ -107,6 +118,7 @@ public class ResultTableTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)

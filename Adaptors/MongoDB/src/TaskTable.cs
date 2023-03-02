@@ -860,6 +860,8 @@ public class TaskTable : ITaskTable
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+      await taskCollectionProvider_.Init(cancellationToken)
+                                   .ConfigureAwait(false);
       taskCollectionProvider_.Get();
       isInitialized_ = true;
     }

@@ -191,19 +191,18 @@ public static class ServiceCollectionExt
     settings.Scheme                 = ConnectionStringScheme.MongoDB;
     settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
+    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    settings.ClusterConfigurator = cb =>
+                                   {
+                                     //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
+                                     //                                                       e.CommandName,
+                                     //                                                       e.Command.ToJson()));
+                                     cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+                                   };
 
-    services.AddTransient<IMongoClient>(_ =>
-                                        {
-                                          settings.ClusterConfigurator = cb =>
-                                                                         {
-                                                                           //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
-                                                                           //                                                       e.CommandName,
-                                                                           //                                                       e.Command.ToJson()));
-                                                                           cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-                                                                         };
+    var client = new MongoClient(settings);
 
-                                          return new MongoClient(settings);
-                                        });
+    services.AddSingleton<IMongoClient>(client);
 
     logger.LogInformation("MongoDB configuration complete");
 

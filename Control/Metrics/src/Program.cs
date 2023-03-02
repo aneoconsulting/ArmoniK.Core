@@ -22,7 +22,9 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
@@ -101,10 +103,13 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      var sessionProvider        = app.Services.GetRequiredService<SessionProvider>();
+      var taskCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
-
+      await taskCollectionProvider.Init(CancellationToken.None)
+                                  .ConfigureAwait(false);
       await app.RunAsync()
                .ConfigureAwait(false);
 

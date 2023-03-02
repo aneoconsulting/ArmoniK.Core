@@ -76,6 +76,8 @@ public class ResultWatcher : IResultWatcher
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+      await resultCollectionProvider_.Init(cancellationToken)
+                                     .ConfigureAwait(false);
       resultCollectionProvider_.Get();
       isInitialized_ = true;
     }

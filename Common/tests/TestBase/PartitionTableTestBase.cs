@@ -32,41 +32,46 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 public class PartitionTableTestBase
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     GetPartitionTableInstance();
 
-    if (RunTests)
+    if (!RunTests || CheckForSkipSetup())
     {
-      PartitionTable!.CreatePartitionsAsync(new[]
-                                            {
-                                              new PartitionData("PartitionId0",
-                                                                new List<string>(),
-                                                                1,
-                                                                12,
-                                                                50,
-                                                                2,
-                                                                new PodConfiguration(new Dictionary<string, string>())),
-                                              new PartitionData("PartitionId1",
-                                                                new List<string>(),
-                                                                1,
-                                                                10,
-                                                                50,
-                                                                1,
-                                                                new PodConfiguration(new Dictionary<string, string>())),
-                                              new PartitionData("PartitionId2",
-                                                                new List<string>
-                                                                {
-                                                                  "ParentPartitionId",
-                                                                },
-                                                                1,
-                                                                13,
-                                                                50,
-                                                                1,
-                                                                new PodConfiguration(new Dictionary<string, string>())),
-                                            })
-                     .Wait();
+      return;
     }
+
+    await PartitionTable!.Init(CancellationToken.None)
+                         .ConfigureAwait(false);
+
+    await PartitionTable!.CreatePartitionsAsync(new[]
+                                                {
+                                                  new PartitionData("PartitionId0",
+                                                                    new List<string>(),
+                                                                    1,
+                                                                    12,
+                                                                    50,
+                                                                    2,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                  new PartitionData("PartitionId1",
+                                                                    new List<string>(),
+                                                                    1,
+                                                                    10,
+                                                                    50,
+                                                                    1,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                  new PartitionData("PartitionId2",
+                                                                    new List<string>
+                                                                    {
+                                                                      "ParentPartitionId",
+                                                                    },
+                                                                    1,
+                                                                    13,
+                                                                    50,
+                                                                    1,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                })
+                         .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -74,6 +79,12 @@ public class PartitionTableTestBase
   {
     PartitionTable = null;
     RunTests       = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */
@@ -90,6 +101,7 @@ public class PartitionTableTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)
@@ -120,6 +132,7 @@ public class PartitionTableTestBase
   }
 
   [Test]
+  [Category("DoSetup")]
   public async Task ReadPartitionAsyncShouldSucceed()
   {
     if (RunTests)

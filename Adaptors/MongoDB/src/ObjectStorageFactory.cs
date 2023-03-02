@@ -50,15 +50,20 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
       sessionProvider_.Get();
+
+      await objectCollectionProvider_.Init(cancellationToken)
+                                     .ConfigureAwait(false);
+      objectCollectionProvider_.Get();
     }
 
     isInitialized_ = true;
-    return Task.CompletedTask;
   }
 
   /// <inheritdoc />

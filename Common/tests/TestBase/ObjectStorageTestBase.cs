@@ -35,35 +35,46 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 public class ObjectStorageTestBase
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     GetObjectStorageInstance();
 
-    if (!RunTests)
+    if (!RunTests || CheckForSkipSetup())
     {
       return;
     }
 
-    var dataBytesList = new List<byte[]>();
-    dataBytesList.Add(Encoding.ASCII.GetBytes("AAAA"));
-    dataBytesList.Add(Encoding.ASCII.GetBytes("BBBB"));
-    dataBytesList.Add(Encoding.ASCII.GetBytes("CCCC"));
-    dataBytesList.Add(Encoding.ASCII.GetBytes("DDDD"));
-    ObjectStorage!.AddOrUpdateAsync("dataKey1",
-                                    dataBytesList.ToAsyncEnumerable())
-                  .Wait();
+    ObjectStorageFactory!.Init(CancellationToken.None)
+                         .Wait();
 
-    dataBytesList = new List<byte[]>();
-    dataBytesList.Add(Encoding.ASCII.GetBytes("AAAABBBB"));
-    ObjectStorage.AddOrUpdateAsync("dataKey2",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .Wait();
+    ObjectStorage = ObjectStorageFactory.CreateObjectStorage("storage");
 
-    dataBytesList = new List<byte[]>();
-    dataBytesList.Add(Array.Empty<byte>());
-    ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .Wait();
+    var dataBytesList = new List<byte[]>
+                        {
+                          Encoding.ASCII.GetBytes("AAAA"),
+                          Encoding.ASCII.GetBytes("BBBB"),
+                          Encoding.ASCII.GetBytes("CCCC"),
+                          Encoding.ASCII.GetBytes("DDDD"),
+                        };
+    await ObjectStorage!.AddOrUpdateAsync("dataKey1",
+                                          dataBytesList.ToAsyncEnumerable())
+                        .ConfigureAwait(false);
+
+    dataBytesList = new List<byte[]>
+                    {
+                      Encoding.ASCII.GetBytes("AAAABBBB"),
+                    };
+    await ObjectStorage.AddOrUpdateAsync("dataKey2",
+                                         dataBytesList.ToAsyncEnumerable())
+                       .ConfigureAwait(false);
+
+    dataBytesList = new List<byte[]>
+                    {
+                      Array.Empty<byte>(),
+                    };
+    await ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
+                                         dataBytesList.ToAsyncEnumerable())
+                       .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -72,6 +83,12 @@ public class ObjectStorageTestBase
     ObjectStorage        = null;
     ObjectStorageFactory = null;
     RunTests             = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */
@@ -89,6 +106,7 @@ public class ObjectStorageTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)

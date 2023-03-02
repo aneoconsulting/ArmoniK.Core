@@ -42,7 +42,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
     var provider = tableProvider_.GetServiceProvider();
 
     ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
-    RunTests             = true;
+
+    RunTests = true;
   }
 }

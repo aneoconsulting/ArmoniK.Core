@@ -70,6 +70,8 @@ public class PartitionTable : IPartitionTable
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+      await partitionCollectionProvider_.Init(cancellationToken)
+                                        .ConfigureAwait(false);
       partitionCollectionProvider_.Get();
       isInitialized_ = true;
     }

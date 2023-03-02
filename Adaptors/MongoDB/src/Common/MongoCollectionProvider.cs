@@ -17,61 +17,166 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common;
 
 using JetBrains.Annotations;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
 [PublicAPI]
-public class MongoCollectionProvider<TData, TModelMapping> : ProviderBase<IMongoCollection<TData>>
+public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  public MongoCollectionProvider(Options.MongoDB   options,
-                                 SessionProvider   sessionProvider,
-                                 IMongoDatabase    mongoDatabase,
-                                 CancellationToken cancellationToken = default)
-    : base(async () =>
-           {
-             var model = new TModelMapping();
-             try
-             {
-               await mongoDatabase.CreateCollectionAsync(model.CollectionName,
-                                                         new CreateCollectionOptions<TData>
-                                                         {
-                                                           ExpireAfter = options.DataRetention,
-                                                         },
-                                                         cancellationToken)
-                                  .ConfigureAwait(false);
-             }
-             catch (MongoCommandException)
-             {
-             }
+  private bool                             isInitialized_;
+  private ILogger<IMongoCollection<TData>> logger_;
+  private IMongoCollection<TData>?         mongoCollection_;
 
-             var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
-             await sessionProvider.Init(cancellationToken)
-                                  .ConfigureAwait(false);
-             var session = sessionProvider.Get();
-             try
-             {
-               await model.InitializeIndexesAsync(session,
-                                                  output)
-                          .ConfigureAwait(false);
-             }
-             catch (MongoCommandException)
-             {
-             }
-
-             return output;
-           })
+  public MongoCollectionProvider(Options.MongoDB                  options,
+                                 SessionProvider                  sessionProvider,
+                                 IMongoDatabase                   mongoDatabase,
+                                 ILogger<IMongoCollection<TData>> logger,
+                                 CancellationToken                cancellationToken = default)
   {
     if (options.DataRetention == TimeSpan.Zero)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.MongoDB.DataRetention)} is not defined.");
     }
+
+    logger_ = logger;
+
+    Initialization = InitializeAsync(options,
+                                     sessionProvider,
+                                     mongoDatabase,
+                                     logger,
+                                     cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public Task<IMongoCollection<TData>> Initialization { get; private set; }
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    switch (tag)
+    {
+      case HealthCheckTag.Startup:
+      case HealthCheckTag.Readiness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet."));
+      case HealthCheckTag.Liveness:
+        return Task.FromResult(isInitialized_ && mongoCollection_ is null
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet."));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(tag),
+                                              tag,
+                                              null);
+    }
+  }
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      mongoCollection_ = await Initialization.ConfigureAwait(false);
+    }
+
+    isInitialized_ = true;
+  }
+
+  private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB                  options,
+                                                                     SessionProvider                  sessionProvider,
+                                                                     IMongoDatabase                   mongoDatabase,
+                                                                     ILogger<IMongoCollection<TData>> logger,
+                                                                     CancellationToken                cancellationToken = default)
+  {
+    var model = new TModelMapping();
+
+    var collectionRetry = 1;
+    for (; collectionRetry < options.MaxRetries; collectionRetry++)
+    {
+      try
+      {
+        await mongoDatabase.CreateCollectionAsync(model.CollectionName,
+                                                  null,
+                                                  cancellationToken)
+                           .ConfigureAwait(false);
+        break;
+      }
+      catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
+      {
+        logger.LogInformation(ex,
+                              "Use already existing instance of Collection {CollectionName}",
+                              model.CollectionName);
+        break;
+      }
+      catch (Exception ex)
+      {
+        logger.LogInformation(ex,
+                              "Retrying to create Collection {CollectionName}",
+                              model.CollectionName);
+        await Task.Delay(1000 * collectionRetry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
+    }
+
+    if (collectionRetry == options.MaxRetries)
+    {
+      throw new TimeoutException($"Create {model.CollectionName}: Max retries reached");
+    }
+
+    var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
+    await sessionProvider.Init(cancellationToken)
+                         .ConfigureAwait(false);
+    var session = sessionProvider.Get();
+
+    var indexRetry = 1;
+    for (; indexRetry < options.MaxRetries; indexRetry++)
+    {
+      try
+      {
+        await model.InitializeIndexesAsync(session,
+                                           output)
+                   .ConfigureAwait(false);
+        break;
+      }
+      catch (Exception ex)
+      {
+        logger.LogInformation(ex,
+                              "Retrying to Initialize indexes for {CollectionName} collection",
+                              model.CollectionName);
+        await Task.Delay(1000 * indexRetry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
+    }
+
+    if (indexRetry == options.MaxRetries)
+    {
+      throw new TimeoutException($"Init Indexes for {model.CollectionName}: Max retries reached");
+    }
+
+    return output;
+  }
+
+  public IMongoCollection<TData> Get()
+  {
+    if (!isInitialized_)
+    {
+      throw new InvalidOperationException("Mongo Collection has not been initialized; call Init method first");
+    }
+
+    return mongoCollection_!;
   }
 }
