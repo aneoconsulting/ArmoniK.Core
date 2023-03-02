@@ -170,7 +170,7 @@ public class TestTaskHandlerProvider : IDisposable
     resultTable_.Init(CancellationToken.None)
                 .Wait();
     TaskTable.Init(CancellationToken.None)
-      .Wait();
+             .Wait();
     PartitionTable.Init(CancellationToken.None)
                   .Wait();
     SessionTable.Init(CancellationToken.None)

@@ -131,21 +131,21 @@ public class SubmitterTests
                                                    ValidateOnBuild = true,
                                                  });
 
-    submitter_      = provider.GetRequiredService<ISubmitter>();
+    submitter_ = provider.GetRequiredService<ISubmitter>();
 
     var objectFactory = provider.GetRequiredService<IObjectStorageFactory>();
     await objectFactory.Init(CancellationToken.None)
-                 .ConfigureAwait(false);
+                       .ConfigureAwait(false);
 
     var resultTable = provider.GetRequiredService<IResultTable>();
     await resultTable.Init(CancellationToken.None)
                      .ConfigureAwait(false);
 
-    sessionTable_   = provider.GetRequiredService<ISessionTable>();
+    sessionTable_ = provider.GetRequiredService<ISessionTable>();
     await sessionTable_.Init(CancellationToken.None)
                        .ConfigureAwait(false);
 
-    taskTable_      = provider.GetRequiredService<ITaskTable>();
+    taskTable_ = provider.GetRequiredService<ITaskTable>();
     await taskTable_.Init(CancellationToken.None)
                     .ConfigureAwait(false);
 
@@ -154,16 +154,16 @@ public class SubmitterTests
                          .ConfigureAwait(false);
 
     await partitionTable_.CreatePartitionsAsync(new[]
-                                          {
-                                            new PartitionData(DefaultPartition,
-                                                              new List<string>(),
-                                                              10,
-                                                              50,
-                                                              20,
-                                                              1,
-                                                              new PodConfiguration(new Dictionary<string, string>())),
-                                          })
-                   .ConfigureAwait(false);
+                                                {
+                                                  new PartitionData(DefaultPartition,
+                                                                    new List<string>(),
+                                                                    10,
+                                                                    50,
+                                                                    20,
+                                                                    1,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                })
+                         .ConfigureAwait(false);
   }
 
   [TearDown]

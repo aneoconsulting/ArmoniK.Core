@@ -51,12 +51,12 @@ public class TestPollsterProvider : IDisposable
   private readonly        IMongoClient             client_;
   private readonly        IObjectStorageFactory    objectStorageFactory_;
   public readonly         IPartitionTable          PartitionTable;
+  public readonly         Common.Pollster.Pollster Pollster;
   private readonly        IResultTable             resultTable_;
   private readonly        IMongoRunner             runner_;
   private readonly        ISessionTable            sessionTable_;
   public readonly         ISubmitter               Submitter;
   public readonly         ITaskTable               TaskTable;
-  public readonly         Common.Pollster.Pollster Pollster;
 
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
@@ -142,12 +142,12 @@ public class TestPollsterProvider : IDisposable
 
     app_ = builder.Build();
 
-    resultTable_   = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
-    Pollster       = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
+    resultTable_          = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable             = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable        = app_.Services.GetRequiredService<IPartitionTable>();
+    sessionTable_         = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter             = app_.Services.GetRequiredService<ISubmitter>();
+    Pollster              = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
     objectStorageFactory_ = app_.Services.GetRequiredService<IObjectStorageFactory>();
 
     resultTable_.Init(CancellationToken.None)
@@ -155,7 +155,7 @@ public class TestPollsterProvider : IDisposable
     TaskTable.Init(CancellationToken.None)
              .Wait();
     objectStorageFactory_.Init(CancellationToken.None)
-                 .Wait();
+                         .Wait();
     PartitionTable.Init(CancellationToken.None)
                   .Wait();
     sessionTable_.Init(CancellationToken.None)
