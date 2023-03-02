@@ -62,7 +62,7 @@ namespace ArmoniK.Core.Common.Tests.Submitter;
 public class SubmitterTests
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
@@ -132,11 +132,28 @@ public class SubmitterTests
                                                  });
 
     submitter_      = provider.GetRequiredService<ISubmitter>();
-    sessionTable_   = provider.GetRequiredService<ISessionTable>();
-    taskTable_      = provider.GetRequiredService<ITaskTable>();
-    partitionTable_ = provider.GetRequiredService<IPartitionTable>();
 
-    partitionTable_.CreatePartitionsAsync(new[]
+    var objectFactory = provider.GetRequiredService<IObjectStorageFactory>();
+    await objectFactory.Init(CancellationToken.None)
+                 .ConfigureAwait(false);
+
+    var resultTable = provider.GetRequiredService<IResultTable>();
+    await resultTable.Init(CancellationToken.None)
+                     .ConfigureAwait(false);
+
+    sessionTable_   = provider.GetRequiredService<ISessionTable>();
+    await sessionTable_.Init(CancellationToken.None)
+                       .ConfigureAwait(false);
+
+    taskTable_      = provider.GetRequiredService<ITaskTable>();
+    await taskTable_.Init(CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    partitionTable_ = provider.GetRequiredService<IPartitionTable>();
+    await partitionTable_.Init(CancellationToken.None)
+                         .ConfigureAwait(false);
+
+    await partitionTable_.CreatePartitionsAsync(new[]
                                           {
                                             new PartitionData(DefaultPartition,
                                                               new List<string>(),
@@ -146,7 +163,7 @@ public class SubmitterTests
                                                               1,
                                                               new PodConfiguration(new Dictionary<string, string>())),
                                           })
-                   .Wait();
+                   .ConfigureAwait(false);
   }
 
   [TearDown]
