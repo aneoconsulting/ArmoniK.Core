@@ -120,7 +120,8 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       catch (Exception ex)
       {
         logger.LogInformation(ex,
-                              "Retrying to create Collection");
+                              "Retrying to create Collection {CollectionName}",
+                              model.CollectionName);
         await Task.Delay(1000 * collectionRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
@@ -129,7 +130,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
 
     if (collectionRetry == options.maxRetries)
     {
-      throw new TimeoutException(" Max retries reached");
+      throw new TimeoutException($"Create {model.CollectionName}: Max retries reached");
     }
 
     var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
@@ -150,7 +151,8 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       catch (Exception ex)
       {
         logger.LogInformation(ex,
-                              "Retrying to Initialize indexes");
+                              "Retrying to Initialize indexes for {CollectionName} collection",
+                              model.CollectionName);
         await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
@@ -159,7 +161,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
 
     if (indexRetry == options.maxRetries)
     {
-      throw new TimeoutException(" Max retries reached");
+      throw new TimeoutException($"Init Indexes for {model.CollectionName}: Max retries reached");
     }
 
     return output;
