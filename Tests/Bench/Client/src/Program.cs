@@ -180,9 +180,12 @@ internal static class Program
                             .Select(i => Guid.NewGuid() + "root" + i)
                             .ToList();
     var rnd = new Random();
-    var createTaskReply = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
-                                                                 null,
-                                                                 results.Select(resultId =>
+
+    foreach (var chunk in results.Chunk(benchOptions.BatchSize))
+    {
+      var createTaskReply = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
+                                                                   null,
+                                                                   chunk.Select(resultId =>
                                                                                 {
                                                                                   var dataBytes = new byte[benchOptions.PayloadSize * 1024];
                                                                                   rnd.NextBytes(dataBytes);
@@ -195,14 +198,15 @@ internal static class Program
                                                                                            Payload = UnsafeByteOperations.UnsafeWrap(dataBytes),
                                                                                          };
                                                                                 }))
-                                               .ConfigureAwait(false);
+                                                 .ConfigureAwait(false);
 
-    if (logger.IsEnabled(LogLevel.Debug))
-    {
-      foreach (var status in createTaskReply.CreationStatusList.CreationStatuses)
+      if (logger.IsEnabled(LogLevel.Debug))
       {
-        logger.LogDebug("task created {taskId}",
-                        status.TaskInfo.TaskId);
+        foreach (var status in createTaskReply.CreationStatusList.CreationStatuses)
+        {
+          logger.LogDebug("task created {taskId}",
+                          status.TaskInfo.TaskId);
+        }
       }
     }
 
