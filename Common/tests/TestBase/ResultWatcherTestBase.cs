@@ -34,12 +34,6 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class ResultWatcherTestBase
 {
-  private static bool CheckForSkipSetup()
-  {
-    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
-    return category is "SkipSetUp";
-  }
-
   [SetUp]
   public async Task SetUp()
   {
@@ -119,6 +113,12 @@ public class ResultWatcherTestBase
     ResultTable   = null;
     ResultWatcher = null;
     RunTests      = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */

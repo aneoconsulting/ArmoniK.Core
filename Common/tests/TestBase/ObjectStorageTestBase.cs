@@ -34,13 +34,6 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class ObjectStorageTestBase
 {
-
-  private static bool CheckForSkipSetup()
-  {
-    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
-    return category is "SkipSetUp";
-  }
-
   [SetUp]
   public async Task SetUp()
   {
@@ -72,16 +65,16 @@ public class ObjectStorageTestBase
                       Encoding.ASCII.GetBytes("AAAABBBB"),
                     };
     await ObjectStorage.AddOrUpdateAsync("dataKey2",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .ConfigureAwait(false);
+                                         dataBytesList.ToAsyncEnumerable())
+                       .ConfigureAwait(false);
 
     dataBytesList = new List<byte[]>
                     {
                       Array.Empty<byte>(),
                     };
     await ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .ConfigureAwait(false);
+                                         dataBytesList.ToAsyncEnumerable())
+                       .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -90,6 +83,12 @@ public class ObjectStorageTestBase
     ObjectStorage        = null;
     ObjectStorageFactory = null;
     RunTests             = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */

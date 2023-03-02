@@ -43,6 +43,6 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
     ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
 
-    RunTests             = true;
+    RunTests = true;
   }
 }

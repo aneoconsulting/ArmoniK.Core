@@ -48,7 +48,7 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle                     sessionHandle,
-                                     IMongoCollection<ObjectDataModelMapping> collection)
+                                           IMongoCollection<ObjectDataModelMapping> collection)
   {
     var keyIndex      = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.Key);
     var chunkIdxIndex = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.ChunkIdx);
@@ -59,7 +59,7 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
                         new(iDIndex,
                             new CreateIndexOptions
                             {
-                              Name   = nameof(iDIndex),
+                              Name = nameof(iDIndex),
                             }),
                         new(keyIndex,
                             new CreateIndexOptions
@@ -69,12 +69,12 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
                         new(chunkIdxIndex,
                             new CreateIndexOptions
                             {
-                              Name   = nameof(chunkIdxIndex),
+                              Name = nameof(chunkIdxIndex),
                             }),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
-                                              indexModels)
+                                             indexModels)
                     .ConfigureAwait(false);
   }
 }

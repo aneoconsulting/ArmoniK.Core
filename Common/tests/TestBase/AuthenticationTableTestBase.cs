@@ -50,7 +50,7 @@ public class AuthenticationTableTestBase
     }
 
     await AuthenticationTable!.Init(CancellationToken.None)
-                       .ConfigureAwait(false);
+                              .ConfigureAwait(false);
 
     AuthenticationTable!.AddRoles(Roles);
     AuthenticationTable!.AddUsers(Users);

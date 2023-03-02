@@ -55,7 +55,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
     if (!isInitialized_)
     {
       await sessionProvider_.Init(cancellationToken)
-                      .ConfigureAwait(false);
+                            .ConfigureAwait(false);
       sessionProvider_.Get();
 
       await objectCollectionProvider_.Init(cancellationToken)

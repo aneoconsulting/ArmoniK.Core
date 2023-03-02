@@ -15,10 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,12 +31,6 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class PartitionTableTestBase
 {
-  private static bool CheckForSkipSetup()
-  {
-    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
-    return  category is "SkipSetUp";
-  }
-
   [SetUp]
   public async Task SetUp()
   {
@@ -51,36 +42,36 @@ public class PartitionTableTestBase
     }
 
     await PartitionTable!.Init(CancellationToken.None)
-                   .ConfigureAwait(false);
+                         .ConfigureAwait(false);
 
     await PartitionTable!.CreatePartitionsAsync(new[]
-                                          {
-                                            new PartitionData("PartitionId0",
-                                                              new List<string>(),
-                                                              1,
-                                                              12,
-                                                              50,
-                                                              2,
-                                                              new PodConfiguration(new Dictionary<string, string>())),
-                                            new PartitionData("PartitionId1",
-                                                              new List<string>(),
-                                                              1,
-                                                              10,
-                                                              50,
-                                                              1,
-                                                              new PodConfiguration(new Dictionary<string, string>())),
-                                            new PartitionData("PartitionId2",
-                                                              new List<string>
-                                                              {
-                                                                "ParentPartitionId",
-                                                              },
-                                                              1,
-                                                              13,
-                                                              50,
-                                                              1,
-                                                              new PodConfiguration(new Dictionary<string, string>())),
-                                          })
-                   .ConfigureAwait(false);
+                                                {
+                                                  new PartitionData("PartitionId0",
+                                                                    new List<string>(),
+                                                                    1,
+                                                                    12,
+                                                                    50,
+                                                                    2,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                  new PartitionData("PartitionId1",
+                                                                    new List<string>(),
+                                                                    1,
+                                                                    10,
+                                                                    50,
+                                                                    1,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                  new PartitionData("PartitionId2",
+                                                                    new List<string>
+                                                                    {
+                                                                      "ParentPartitionId",
+                                                                    },
+                                                                    1,
+                                                                    13,
+                                                                    50,
+                                                                    1,
+                                                                    new PodConfiguration(new Dictionary<string, string>())),
+                                                })
+                         .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -88,6 +79,12 @@ public class PartitionTableTestBase
   {
     PartitionTable = null;
     RunTests       = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */
