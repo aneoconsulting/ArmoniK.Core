@@ -47,15 +47,12 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
   public string CollectionName { get; } = Collection;
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle                     sessionHandle,
+  public async Task InitializeIndexesAsync(IClientSessionHandle                     sessionHandle,
                                      IMongoCollection<ObjectDataModelMapping> collection)
   {
-    var keyIndex      = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.Key);
-    var chunkIdxIndex = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.ChunkIdx);
-    var iDIndex       = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.Id);
-    var combinedIndex = Builders<ObjectDataModelMapping>.IndexKeys.Combine(keyIndex,
-                                                                           chunkIdxIndex);
-
+    var keyIndex      = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.Key);
+    var chunkIdxIndex = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.ChunkIdx);
+    var iDIndex       = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.Id);
 
     var indexModels = new CreateIndexModel<ObjectDataModelMapping>[]
                       {
@@ -63,22 +60,21 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
                             new CreateIndexOptions
                             {
                               Name   = nameof(iDIndex),
-                              Unique = true,
                             }),
                         new(keyIndex,
                             new CreateIndexOptions
                             {
                               Name = nameof(keyIndex),
                             }),
-                        new(combinedIndex,
+                        new(chunkIdxIndex,
                             new CreateIndexOptions
                             {
-                              Name   = nameof(combinedIndex),
-                              Unique = true,
+                              Name   = nameof(chunkIdxIndex),
                             }),
                       };
 
-    return collection.Indexes.CreateManyAsync(sessionHandle,
-                                              indexModels);
+    await collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels)
+                    .ConfigureAwait(false);
   }
 }
