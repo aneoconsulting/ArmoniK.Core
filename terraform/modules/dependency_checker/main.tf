@@ -33,4 +33,12 @@ resource "docker_container" "dependency_checker" {
     internal = 1081
     external = 5012
   }
+
+  healthcheck {
+    test         = ["CMD", "bash", "-c", "exec 3<>\"/dev/tcp/localhost/1081\" && echo -en \"GET /liveness HTTP/1.1\r\nHost: localhost:1081\r\nConnection: close\r\n\r\n\">&3 && grep Healthy <&3 &>/dev/null || exit 1"]
+    interval     = "5s"
+    timeout      = "3s"
+    start_period = "20s"
+    retries      = 5
+  }
 }
