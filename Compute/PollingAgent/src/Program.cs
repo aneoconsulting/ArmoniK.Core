@@ -57,6 +57,7 @@ public static class Program
 
   public static async Task<int> Main(string[] args)
   {
+    Console.WriteLine("ArmoniK.Core.Compute.PollingAgent (Main)");
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
