@@ -64,7 +64,8 @@ public static class Program
 
     try
     {
-      builder.Host.UseSerilog(logger.GetSerilogConf());
+      builder.Host.UseSerilog(logger.GetSerilogConf())
+             .ConfigureHostOptions(options => options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore);
 
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
