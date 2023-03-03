@@ -139,13 +139,17 @@ public static class Program
       {
         app.UseDeveloperExceptionPage();
       }
-
+      Console.WriteLine("HealthCheck Init :");
       app.UseEndpoints(endpoints =>
                        {
                          endpoints.MapHealthChecks("/startup",
                                                    new HealthCheckOptions
                                                    {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                                     Predicate = check =>
+                                                     {
+                                                       Console.WriteLine("HealthCheck check :");
+                                                       return check.Tags.Contains(nameof(HealthCheckTag.Startup));
+                                                     },
                                                    });
 
                          endpoints.MapHealthChecks("/liveness",
