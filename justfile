@@ -130,6 +130,10 @@ validate:
 console:
   terraform -chdir=./terraform console
 
+# Plan ArmoniK Core deployment
+plan: (init)
+  terraform -chdir=./terraform plan -out=/dev/null
+
 # Deploy ArmoniK Core
 deploy: (init)
   terraform -chdir=./terraform apply -auto-approve
