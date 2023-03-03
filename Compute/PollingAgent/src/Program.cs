@@ -59,6 +59,7 @@ public static class Program
   {
     Console.WriteLine("ArmoniK.Core.Compute.PollingAgent (Main)");
     var builder = WebApplication.CreateBuilder(args);
+    Console.WriteLine("ArmoniK.Core.Compute.PollingAgent (Main2)");
 
     builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
            .AddJsonFile("appsettings.json",
@@ -66,42 +67,55 @@ public static class Program
                         false)
            .AddEnvironmentVariables()
            .AddCommandLine(args);
+    Console.WriteLine("ArmoniK.Core.Compute.PollingAgent (Main3)");
 
     var logger = new LoggerInit(builder.Configuration);
+    Console.WriteLine("ArmoniK.Core.Compute.PollingAgent (Main4)");
 
     try
     {
       var pollsterOptions = builder.Configuration.GetSection(Pollster.SettingSection)
                                    .Get<Pollster>() ?? new Pollster();
+      Console.WriteLine("1");
+      builder.Host.UseSerilog(logger.GetSerilogConf()).ConfigureHostOptions(options => options.ShutdownTimeout = pollsterOptions.ShutdownTimeout);
+      Console.WriteLine("2");
 
-      builder.Host.UseSerilog(logger.GetSerilogConf())
-             .ConfigureHostOptions(options => options.ShutdownTimeout = pollsterOptions.ShutdownTimeout);
-
-      builder.Services.AddLogging(logger.Configure)
-             .AddArmoniKWorkerConnection(builder.Configuration)
-             .AddMongoComponents(builder.Configuration,
-                                 logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
-             .AddRabbit(builder.Configuration,
-                        logger.GetLogger())
-             .AddRedis(builder.Configuration,
-                       logger.GetLogger())
-             .AddS3(builder.Configuration,
-                    logger.GetLogger())
-             .AddLocalStorage(builder.Configuration,
-                              logger.GetLogger())
-             .AddHostedService<Worker>()
-             .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
-             .AddSingleton(logger)
-             .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
-             .AddInitializedOption<Submitter>(builder.Configuration,
-                                              Submitter.SettingSection)
-             .AddSingleton(pollsterOptions)
-             .AddSingleton<IAgentHandler, AgentHandler>()
-             .AddSingleton<DataPrefetcher>()
-             .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
-             .AddHttpClient();
+      builder.Services.AddLogging(logger.Configure);
+      Console.WriteLine("3");
+      builder.Services.AddArmoniKWorkerConnection(builder.Configuration);
+      Console.WriteLine("4");
+      builder.Services.AddMongoComponents(builder.Configuration, logger.GetLogger());
+      Console.WriteLine("5");
+      builder.Services.AddAmqp(builder.Configuration, logger.GetLogger());
+      Console.WriteLine("6");
+      builder.Services.AddRabbit(builder.Configuration, logger.GetLogger());
+      Console.WriteLine("7");
+      builder.Services.AddRedis(builder.Configuration, logger.GetLogger());
+      Console.WriteLine("8");
+      builder.Services.AddS3(builder.Configuration, logger.GetLogger());
+      Console.WriteLine("9");
+      builder.Services.AddLocalStorage(builder.Configuration, logger.GetLogger());
+      Console.WriteLine("10");
+      builder.Services.AddHostedService<Worker>();
+      Console.WriteLine("11");
+      builder.Services.AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster));
+      Console.WriteLine("12");
+      builder.Services.AddSingleton(logger);
+      Console.WriteLine("13");
+      builder.Services.AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>();
+      Console.WriteLine("14");
+      builder.Services.AddInitializedOption<Submitter>(builder.Configuration, Submitter.SettingSection);
+      Console.WriteLine("15");
+      builder.Services.AddSingleton(pollsterOptions);
+      Console.WriteLine("16");
+      builder.Services.AddSingleton<IAgentHandler, AgentHandler>();
+      Console.WriteLine("17");
+      builder.Services.AddSingleton<DataPrefetcher>();
+      Console.WriteLine("18");
+      builder.Services.AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>();
+      Console.WriteLine("19");
+      builder.Services.AddHttpClient();
+      Console.WriteLine("20");
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
