@@ -10,6 +10,6 @@ output "generated_env_vars" {
 }
 
 output "volumes" {
-  description = "Volumes that agents must mount to access the object storage"
+  description = "Volumes that agents and submitters must mount to access the object storage"
   value       = {}
 }
