@@ -34,4 +34,5 @@ EXPOSE 1080
 
 
 # Sets a command or process that will run each time a container is run from the new image.
-CMD [ "ping", "-t",  "localhost" ]
+#CMD [ "ping", "-t",  "localhost" ]
+ENTRYPOINT ["dotnet", "ArmoniK.Core.Compute.PollingAgent.dll"]
