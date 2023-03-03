@@ -171,7 +171,7 @@ public static class ServiceCollectionExt
     {
       Console.WriteLine("AddMongoClient 9");
 
-      var localTrustStore       = new X509Store(StoreName.Root);
+      var localTrustStore       = new X509Store(StoreLocation.CurrentUser);
       var certificateCollection = new X509Certificate2Collection();
       try
       {
@@ -181,17 +181,28 @@ public static class ServiceCollectionExt
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
           mongoOptions.CAFile = @"c:\temp\mongodb\chain.pem";
-          Console.WriteLine(@"ok we are on windows, I hack this to : {mongoOptions.CAFile}");
+          Console.WriteLine($"ok we are on windows, I hack this to : {mongoOptions.CAFile}");
         }
 
+        X509Certificate2 cert = new X509Certificate2(mongoOptions.CAFile);
+        string resultsTrue = cert.ToString(true);
+        Console.WriteLine($"Load Cert Result : {resultsTrue}");
 
-        certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
+
+
+        certificateCollection.Add(cert);
+
+        foreach(X509Certificate2 certificate in certificateCollection)
+        {
+          Console.WriteLine($"{certificate.Subject} {certificate.Issuer} {certificate.Version}");
+        }
+
         Console.WriteLine("AddMongoClient 11");
 
         localTrustStore.Open(OpenFlags.ReadWrite);
         Console.WriteLine("AddMongoClient 12");
 
-        localTrustStore.AddRange(certificateCollection);
+        localTrustStore.Add(cert);
         Console.WriteLine("AddMongoClient 13");
 
         logger.LogTrace("Imported mongodb certificate from file {path}",
