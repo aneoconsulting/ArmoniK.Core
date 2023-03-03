@@ -192,6 +192,11 @@ public static class Program
     }
     catch (Exception ex)
     {
+      Console.WriteLine(ex);
+      Console.WriteLine(ex.Message);
+      Console.WriteLine(ex.InnerException);
+      Console.WriteLine(ex.StackTrace);
+
       logger.GetLogger()
             .LogCritical(ex,
                          "Host terminated unexpectedly");
