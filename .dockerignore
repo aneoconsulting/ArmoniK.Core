@@ -18,8 +18,8 @@
 **/bin
 **/charts
 **/docker-compose*
-docker-compose/
-tools/
+docker-compose
+tools
 **/node_modules
 **/npm-debug.log
 **/obj
