@@ -4,3 +4,7 @@ output "generated_env_vars" {
     "Redis__EndpointUrl"        = "object:${var.exposed_port}"
   })
 }
+output "volumes" {
+  description = "Volumes that agents must mount to access the object storage"
+  value       = {}
+}

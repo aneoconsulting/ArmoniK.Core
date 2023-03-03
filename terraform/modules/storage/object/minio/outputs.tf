@@ -8,3 +8,8 @@ output "generated_env_vars" {
     "S3__MustForcePathStyle"    = true
   })
 }
+
+output "volumes" {
+  description = "Volumes that agents must mount to access the object storage"
+  value       = {}
+}
