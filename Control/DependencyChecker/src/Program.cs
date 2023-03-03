@@ -132,11 +132,17 @@ public static class Program
       var sessionProvider      = app.Services.GetRequiredService<SessionProvider>();
       var pushQueueStorage     = app.Services.GetRequiredService<IPushQueueStorage>();
       var pullQueueStorage     = app.Services.GetRequiredService<IPullQueueStorage>();
+      var taskTable            = app.Services.GetRequiredService<ITaskTable>();
+      var resultTable          = app.Services.GetRequiredService<IResultTable>();
       var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
       var taskPullQueueStorage = pullQueueStorage.Init(CancellationToken.None);
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
+      await taskTable.Init(CancellationToken.None)
+                     .ConfigureAwait(false);
+      await resultTable.Init(CancellationToken.None)
+                       .ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
       await taskPullQueueStorage.ConfigureAwait(false);
 
