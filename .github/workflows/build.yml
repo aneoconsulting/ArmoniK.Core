@@ -150,7 +150,7 @@ jobs:
       matrix:
         include:
         -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/DockerfileWindowsLight
+           path: ./Compute/PollingAgent/src/DockerfileWindows
         -  img : dockerhubaneo/armonik_core_htcmock_test_worker
            path: ./Tests/HtcMock/Server/src/DockerfileWindows
     steps:
