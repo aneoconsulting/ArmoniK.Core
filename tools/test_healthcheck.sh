@@ -8,58 +8,8 @@ fi
 
 SERVICE=$1
 
-curl -fsSL localhost:5011/liveness
-curl -fsSL localhost:5011/startup
-
-curl -fsSL localhost:9980/liveness
-curl -fsSL localhost:9980/startup
-curl -fsSL localhost:9980/readiness
-echo
-
-docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml stop $SERVICE
-
-for i in $(seq 0 2);
-do
-  curl -sSL localhost:5011/liveness || true
-  curl -sSL localhost:9980/liveness || true
-  echo
-  sleep 1
-done
-
-docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart $SERVICE
-
-
-for i in $(seq 0 2);
-do
-  curl -sSL localhost:5011/liveness || true
-  curl -sSL localhost:5011/startup || true
-  curl -sSL localhost:9980/liveness || true
-  curl -sSL localhost:9980/startup || true
-  curl -sSL localhost:9980/readiness || true
-  echo
-  sleep 2
-done
-
-docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart armonik.control.submitter
-docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart armonik.compute.pollingagent0
-docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart armonik.compute.pollingagent1
-docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml restart armonik.compute.pollingagent2
-
-for i in $(seq 0 2);
-do
-  sleep 2
-  curl -sSL localhost:5011/liveness || true
-  curl -sSL localhost:5011/startup || true
-  curl -sSL localhost:9980/liveness || true
-  curl -sSL localhost:9980/startup || true
-  curl -sSL localhost:9980/readiness || true
-  echo
-done
-
-curl -fsSL localhost:5011/liveness
-curl -fsSL localhost:5011/startup
-
-curl -fsSL localhost:9980/liveness
-curl -fsSL localhost:9980/startup
-curl -fsSL localhost:9980/readiness
-echo
+just stop $SERVICE
+just healthChecks
+just restoreDeployment $SERVICE
+sleep 10
+just healthChecks
