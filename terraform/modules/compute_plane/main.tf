@@ -103,4 +103,6 @@ resource "docker_container" "polling_agent" {
     start_period = "20s"
     retries      = 5
   }
+
+  depends_on = [ docker_container.worker ]
 }
