@@ -17,15 +17,16 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -74,6 +75,13 @@ public static class ServiceCollectionExt
         var certificateCollection = new X509Certificate2Collection();
         try
         {
+
+          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+          {
+            redisOptions.CaPath = @"c:\temp\redis\chain.pem";
+            Console.WriteLine($"AMQP : ok we are on windows, I hack this to : {redisOptions.CaPath}");
+          }
+
           certificateCollection.ImportFromPemFile(redisOptions.CaPath);
           localTrustStore.Open(OpenFlags.ReadWrite);
           localTrustStore.AddRange(certificateCollection);

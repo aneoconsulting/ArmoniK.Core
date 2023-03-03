@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -75,6 +76,12 @@ public static class ServiceCollectionExt
         var certificateCollection = new X509Certificate2Collection();
         try
         {
+          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+          {
+            amqpOptions.CaPath = @"c:\temp\amqp\chain.pem";
+            Console.WriteLine($"AMQP : ok we are on windows, I hack this to : {amqpOptions.CaPath}");
+          }
+
           certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
           localTrustStore.Open(OpenFlags.ReadWrite);
           localTrustStore.AddRange(certificateCollection);
