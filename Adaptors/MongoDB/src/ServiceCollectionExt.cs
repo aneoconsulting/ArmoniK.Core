@@ -49,10 +49,15 @@ public static class ServiceCollectionExt
                                                       ConfigurationManager    configuration,
                                                       ILogger                 logger)
   {
+    Console.WriteLine("mongo 1");
+
     services.AddMongoClient(configuration,
                             logger);
+    Console.WriteLine("mongo 2");
     services.AddMongoStorages(configuration,
                               logger);
+    Console.WriteLine("mongo 3");
+
     return services;
   }
 
@@ -61,12 +66,17 @@ public static class ServiceCollectionExt
                                                     ConfigurationManager    configuration,
                                                     ILogger                 logger)
   {
+    Console.WriteLine("AddMongoStorages 1");
+
     logger.LogInformation("Configure MongoDB Components");
 
     var components = configuration.GetSection(Components.SettingSection);
+    Console.WriteLine("AddMongoStorages 2");
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
+      Console.WriteLine("AddMongoStorages 3");
+
       services.AddOption<TableStorage>(configuration,
                                        TableStorage.SettingSection)
               .AddTransient<ITaskTable, TaskTable>()
@@ -79,20 +89,25 @@ public static class ServiceCollectionExt
 
     if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
     {
+      Console.WriteLine("AddMongoStorages 4");
+
       services.AddOption<Options.ObjectStorage>(configuration,
                                                 Options.ObjectStorage.SettingSection)
               .AddTransient<ObjectStorageFactory>()
               .AddTransient<IObjectStorageFactory, ObjectStorageFactory>();
     }
+    Console.WriteLine("AddMongoStorages 5");
 
     services.AddOption<Options.MongoDB>(configuration,
                                         Options.MongoDB.SettingSection,
                                         out var mongoOptions);
+    Console.WriteLine("AddMongoStorages 6");
 
     services.AddTransient(provider => provider.GetRequiredService<IMongoClient>()
                                               .GetDatabase(mongoOptions.DatabaseName))
             .AddSingleton(typeof(MongoCollectionProvider<,>))
             .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
+    Console.WriteLine("AddMongoStorages 7");
 
     return services;
   }
@@ -101,36 +116,47 @@ public static class ServiceCollectionExt
                                                   ConfigurationManager    configuration,
                                                   ILogger                 logger)
   {
+    Console.WriteLine("AddMongoClient 1");
+
     Options.MongoDB mongoOptions;
     services.AddOption(configuration,
                        Options.MongoDB.SettingSection,
                        out mongoOptions);
+    Console.WriteLine("AddMongoClient 2");
 
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),
                                          ("port", mongoOptions.Port));
+    Console.WriteLine("AddMongoClient 3");
 
     if (string.IsNullOrEmpty(mongoOptions.Host))
     {
+      Console.WriteLine("AddMongoClient 4");
       throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
                                             $"{nameof(Options.MongoDB.Host)} is not defined.");
     }
 
     if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
     {
+      Console.WriteLine("AddMongoClient 5");
+
       throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
                                             $"{nameof(Options.MongoDB.DatabaseName)} is not defined.");
     }
 
     if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
     {
+      Console.WriteLine("AddMongoClient 6");
+
       configuration.AddJsonFile(mongoOptions.CredentialsPath,
                                 false,
                                 false);
+      Console.WriteLine("AddMongoClient 7");
 
       services.AddOption(configuration,
                          Options.MongoDB.SettingSection,
                          out mongoOptions);
+      Console.WriteLine("AddMongoClient 8");
 
       logger.LogTrace("Loaded mongodb credentials from file {path}",
                       mongoOptions.CredentialsPath);
@@ -142,18 +168,32 @@ public static class ServiceCollectionExt
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
+      Console.WriteLine("AddMongoClient 9");
+
       var localTrustStore       = new X509Store(StoreName.Root);
       var certificateCollection = new X509Certificate2Collection();
       try
       {
+        Console.WriteLine("AddMongoClient 10");
+
         certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
+        Console.WriteLine("AddMongoClient 11");
+
         localTrustStore.Open(OpenFlags.ReadWrite);
+        Console.WriteLine("AddMongoClient 12");
+
         localTrustStore.AddRange(certificateCollection);
+        Console.WriteLine("AddMongoClient 13");
+
         logger.LogTrace("Imported mongodb certificate from file {path}",
                         mongoOptions.CAFile);
+        Console.WriteLine("AddMongoClient 14");
+
       }
       catch (Exception ex)
       {
+        Console.WriteLine("AddMongoClient 15");
+
         logger.LogError("Root certificate import failed: {error}",
                         ex.Message);
         throw;
