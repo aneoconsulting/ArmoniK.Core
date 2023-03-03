@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -175,6 +176,14 @@ public static class ServiceCollectionExt
       try
       {
         Console.WriteLine("AddMongoClient 10");
+        Console.WriteLine($"Try to mount Mongo ca file from : {mongoOptions.CAFile}");
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+          mongoOptions.CAFile = @"c:\temp\mongodb\chain.pem";
+          Console.WriteLine(@"ok we are on windows, I hack this to : {mongoOptions.CAFile}");
+        }
+
 
         certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
         Console.WriteLine("AddMongoClient 11");
