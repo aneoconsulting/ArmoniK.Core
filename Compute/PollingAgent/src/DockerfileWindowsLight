@@ -3,4 +3,4 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0-windowsservercore-ltsc2019
 
 # Sets a command or process that will run each time a container is run from the new image.
-CMD [ "sleep 3600" ]
+CMD [ "cmd" ]
