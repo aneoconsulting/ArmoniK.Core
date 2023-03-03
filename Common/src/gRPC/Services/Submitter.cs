@@ -319,6 +319,7 @@ public class Submitter : ISubmitter
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<Count> WaitForCompletion(WaitRequest       request,
                                              CancellationToken cancellationToken)
   {

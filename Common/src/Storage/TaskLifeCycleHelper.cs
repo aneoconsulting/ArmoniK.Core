@@ -26,15 +26,42 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Helper to manage Tasks lifecycle
+/// </summary>
 public static class TaskLifeCycleHelper
 {
+  /// <summary>
+  ///   Represents the status of the dependencies of a task
+  /// </summary>
   public enum DependenciesStatus
   {
+    /// <summary>
+    ///   One of the dependency is aborted
+    /// </summary>
     Aborted,
+
+    /// <summary>
+    ///   All the dependencies are available
+    /// </summary>
     Available,
+
+    /// <summary>
+    ///   Some of the dependencies are still being created
+    /// </summary>
     Processing,
   }
 
+  /// <summary>
+  ///   Check the status of the dependencies from a task
+  /// </summary>
+  /// <param name="taskData">The metadata of the task for which to check dependencies</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The status of the dependencies
+  /// </returns>
   public static async Task<DependenciesStatus> CheckTaskDependencies(TaskData          taskData,
                                                                      IResultTable      resultTable,
                                                                      ILogger           logger,

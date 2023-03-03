@@ -30,6 +30,9 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.DependencyResolver;
 
+/// <summary>
+///   Service for checking the status of the dependencies from the tasks in the queue
+/// </summary>
 public class DependencyResolver : BackgroundService, IInitializable
 {
   private readonly ILogger<DependencyResolver> logger_;
@@ -38,6 +41,14 @@ public class DependencyResolver : BackgroundService, IInitializable
   private readonly IResultTable                resultTable_;
   private readonly ITaskTable                  taskTable_;
 
+  /// <summary>
+  ///   Initializes the <see cref="DependencyResolver" />
+  /// </summary>
+  /// <param name="pullQueueStorage">Interface to get tasks from the queue</param>
+  /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public DependencyResolver(IPullQueueStorage           pullQueueStorage,
                             IPushQueueStorage           pushQueueStorage,
                             ITaskTable                  taskTable,
