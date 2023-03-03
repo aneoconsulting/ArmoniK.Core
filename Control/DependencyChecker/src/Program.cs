@@ -28,7 +28,6 @@ using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.DependencyResolver;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
