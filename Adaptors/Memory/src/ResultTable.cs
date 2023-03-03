@@ -145,7 +145,6 @@ public class ResultTable : IResultTable
     }
 
     return Task.FromResult(result.DependentTasks.AsEnumerable());
-
   }
 
   /// <inheritdoc />
