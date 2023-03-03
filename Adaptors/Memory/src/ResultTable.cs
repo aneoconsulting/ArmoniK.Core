@@ -101,16 +101,52 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
+  /// <inheritdoc />
   public Task AddTaskDependency(string              sessionId,
                                 ICollection<string> resultIds,
                                 ICollection<string> taskIds,
                                 CancellationToken   cancellationToken)
-    => Task.CompletedTask;
+  {
+    if (!results_.TryGetValue(sessionId,
+                              out var session))
+    {
+      throw new SessionNotFoundException($"Session '{session}' not found");
+    }
 
+    foreach (var resultId in resultIds)
+    {
+      if (!session.TryGetValue(resultId,
+                               out var result))
+      {
+        throw new ResultNotFoundException($"Key '{resultId}' not found");
+      }
+
+      result.DependentTasks.AddRange(taskIds);
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
   public Task<IEnumerable<string>> GetDependents(string            sessionId,
                                                  string            resultId,
                                                  CancellationToken cancellationToken)
-    => Task.FromResult(Enumerable.Empty<string>());
+  {
+    if (!results_.TryGetValue(sessionId,
+                              out var session))
+    {
+      throw new SessionNotFoundException($"Session '{session}' not found");
+    }
+
+    if (!session.TryGetValue(resultId,
+                             out var result))
+    {
+      throw new ResultNotFoundException($"Key '{resultId}' not found");
+    }
+
+    return Task.FromResult(result.DependentTasks.AsEnumerable());
+
+  }
 
   /// <inheritdoc />
   public Task DeleteResult(string            session,

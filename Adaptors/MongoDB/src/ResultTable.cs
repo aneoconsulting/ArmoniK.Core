@@ -88,6 +88,7 @@ public class ResultTable : IResultTable
     }
   }
 
+  /// <inheritdoc />
   public async Task AddTaskDependency(string              sessionId,
                                       ICollection<string> resultIds,
                                       ICollection<string> taskIds,
@@ -107,6 +108,7 @@ public class ResultTable : IResultTable
                           .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<IEnumerable<string>> GetDependents(string            sessionId,
                                                        string            resultId,
                                                        CancellationToken cancellationToken)
