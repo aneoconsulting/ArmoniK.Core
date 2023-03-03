@@ -1,5 +1,5 @@
 output "generated_env_vars" {
-  value = ({
+  value = {
     "Components__TableStorage"               = "ArmoniK.Adapters.MongoDB.TableStorage"
     "MongoDB__Host"                          = docker_container.database.name
     "MongoDB__Port"                          = "${var.mongodb_params.exposed_port}"
@@ -9,5 +9,7 @@ output "generated_env_vars" {
     "MongoDB__TableStorage__PollingDelayMax" = "${var.mongodb_params.max_polling_delay}"
     "MongoDB__DirectConnection"              = "${var.mongodb_params.use_direct_connection}"
     "MongoDB__ReplicaSet"                    = "${var.mongodb_params.replica_set_name}"
-  })
+  }
+
+  depends_on = [ null_resource.partitions_in_db ]
 }
