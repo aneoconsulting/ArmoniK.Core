@@ -126,7 +126,7 @@ public class Submitter : ISubmitter
                                 cancellationToken)
       .ConfigureAwait(false);
 
-    var readyTasks              = new List<string>();
+    var readyTasks = new List<string>();
 
     foreach (var request in taskRequests)
     {
@@ -169,7 +169,6 @@ public class Submitter : ISubmitter
 
     if (readyTasks.Any())
     {
-
       await pushQueueStorage_.PushMessagesAsync(readyTasks,
                                                 partitionId,
                                                 priority,
