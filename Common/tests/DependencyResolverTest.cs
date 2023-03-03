@@ -100,7 +100,7 @@ public class DependencyResolverTest
       => throw new NotImplementedException();
 
     public Task Init(CancellationToken cancellationToken)
-      => throw new NotImplementedException();
+      => Task.CompletedTask;
 
     public int MaxPriority { get; } = 10;
 
@@ -133,7 +133,7 @@ public class DependencyResolverTest
       => throw new NotImplementedException();
 
     public Task Init(CancellationToken cancellationToken)
-      => throw new NotImplementedException();
+      => Task.CompletedTask;
 
     public int MaxPriority { get; } = 10;
 
@@ -538,14 +538,11 @@ public class DependencyResolverTest
     var cts = new CancellationTokenSource();
     cts.CancelAfter(TimeSpan.FromSeconds(2));
 
-    await dp.StartAsync(cts.Token)
+    await dp.ExecuteAsync(cts.Token)
             .ConfigureAwait(false);
 
     await Task.Delay(TimeSpan.FromSeconds(1))
               .ConfigureAwait(false);
-
-    await dp.StopAsync(cts.Token)
-            .ConfigureAwait(false);
 
     var pushQueueStorage = provider.GetRequiredService<MyPushQueueStorage>();
     Assert.AreEqual(2,

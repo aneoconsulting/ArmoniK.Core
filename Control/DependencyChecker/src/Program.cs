@@ -27,6 +27,7 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.DependencyResolver;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -73,7 +74,8 @@ public static class Program
                         logger.GetLogger())
              .AddAmqp(builder.Configuration,
                       logger.GetLogger())
-             .AddHostedService<DependencyResolver>();
+             .AddSingletonWithHealthCheck<DependencyResolver>(nameof(DependencyResolver))
+             .AddHostedService<Worker>();
 
       builder.Services.AddHealthChecks();
 
@@ -129,22 +131,13 @@ public static class Program
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
                           });
 
-      var sessionProvider      = app.Services.GetRequiredService<SessionProvider>();
-      var pushQueueStorage     = app.Services.GetRequiredService<IPushQueueStorage>();
-      var pullQueueStorage     = app.Services.GetRequiredService<IPullQueueStorage>();
-      var taskTable            = app.Services.GetRequiredService<ITaskTable>();
-      var resultTable          = app.Services.GetRequiredService<IResultTable>();
-      var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
-      var taskPullQueueStorage = pullQueueStorage.Init(CancellationToken.None);
+      var sessionProvider   = app.Services.GetRequiredService<SessionProvider>();
+      var dependencyChecker = app.Services.GetRequiredService<DependencyResolver>();
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
-      await taskTable.Init(CancellationToken.None)
-                     .ConfigureAwait(false);
-      await resultTable.Init(CancellationToken.None)
-                       .ConfigureAwait(false);
-      await taskPushQueueStorage.ConfigureAwait(false);
-      await taskPullQueueStorage.ConfigureAwait(false);
+      await dependencyChecker.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
 
       await app.RunAsync()
                .ConfigureAwait(false);

@@ -16,14 +16,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -33,7 +35,7 @@ namespace ArmoniK.Core.Common.DependencyResolver;
 /// <summary>
 ///   Service for checking the status of the dependencies from the tasks in the queue
 /// </summary>
-public class DependencyResolver : BackgroundService, IInitializable
+public class DependencyResolver : IInitializable
 {
   private readonly ILogger<DependencyResolver> logger_;
   private readonly IPullQueueStorage           pullQueueStorage_;
@@ -63,15 +65,77 @@ public class DependencyResolver : BackgroundService, IInitializable
   }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    var checks = new List<Task<HealthCheckResult>>
+                 {
+                   pullQueueStorage_.Check(tag),
+                   pushQueueStorage_.Check(tag),
+                   resultTable_.Check(tag),
+                   taskTable_.Check(tag),
+                 };
+
+    var exceptions  = new List<Exception>();
+    var data        = new Dictionary<string, object>();
+    var description = new StringBuilder();
+    var worstStatus = HealthStatus.Healthy;
+
+    foreach (var healthCheckResult in await checks.WhenAll()
+                                                  .ConfigureAwait(false))
+    {
+      if (healthCheckResult.Status == HealthStatus.Healthy)
+      {
+        continue;
+      }
+
+      if (healthCheckResult.Exception is not null)
+      {
+        exceptions.Add(healthCheckResult.Exception);
+      }
+
+      foreach (var (key, value) in healthCheckResult.Data)
+      {
+        data[key] = value;
+      }
+
+      if (healthCheckResult.Description is not null)
+      {
+        description.AppendLine(healthCheckResult.Description);
+      }
+
+      worstStatus = worstStatus < healthCheckResult.Status
+                      ? worstStatus
+                      : healthCheckResult.Status;
+    }
+
+    return new HealthCheckResult(worstStatus,
+                                 description.ToString(),
+                                 new AggregateException(exceptions),
+                                 data);
+  }
 
   /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    await pushQueueStorage_.Init(cancellationToken)
+                           .ConfigureAwait(false);
+    await pullQueueStorage_.Init(cancellationToken)
+                           .ConfigureAwait(false);
+    await resultTable_.Init(cancellationToken)
+                      .ConfigureAwait(false);
+    await taskTable_.Init(cancellationToken)
+                    .ConfigureAwait(false);
+  }
 
-  /// <inheritdoc />
-  protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+  /// <summary>
+  ///   Long running task that pulls message that represents tasks from queue, check their dependencies and if dependencies
+  ///   are available, put them in the appropriate queue
+  /// </summary>
+  /// <param name="stoppingToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     using var logFunction = logger_.LogFunction();
     while (!stoppingToken.IsCancellationRequested)
