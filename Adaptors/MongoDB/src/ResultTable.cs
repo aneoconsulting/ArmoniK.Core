@@ -95,6 +95,8 @@ public class ResultTable : IResultTable
                                       CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(AddTaskDependency)}");
+    activity?.SetTag($"{nameof(AddTaskDependency)}_sessionId",
+                     sessionId);
 
     var resultCollection = resultCollectionProvider_.Get();
 
@@ -113,9 +115,11 @@ public class ResultTable : IResultTable
                                                        string            resultId,
                                                        CancellationToken cancellationToken)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResults)}");
-    activity?.SetTag($"{nameof(GetResults)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(GetDependents)}");
+    activity?.SetTag($"{nameof(GetDependents)}_sessionId",
                      sessionId);
+    activity?.SetTag($"{nameof(GetDependents)}_resultId",
+                     resultId);
     var resultCollection = resultCollectionProvider_.Get();
 
     try
