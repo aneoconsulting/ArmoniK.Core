@@ -184,13 +184,8 @@ public static class ServiceCollectionExt
           Console.WriteLine($"ok we are on windows, I hack this to : {mongoOptions.CAFile}");
         }
 
-        X509Certificate2 cert = new X509Certificate2(mongoOptions.CAFile);
-        string resultsTrue = cert.ToString(true);
-        Console.WriteLine($"Load Cert Result : {resultsTrue}");
 
-
-
-        certificateCollection.Add(cert);
+        certificateCollection.ImportFromPemFile(@"c:\temp\mongodb\chain.pem");
 
         foreach(X509Certificate2 certificate in certificateCollection)
         {
@@ -202,7 +197,7 @@ public static class ServiceCollectionExt
         localTrustStore.Open(OpenFlags.ReadWrite);
         Console.WriteLine("AddMongoClient 12");
 
-        localTrustStore.Add(cert);
+        localTrustStore.AddRange(certificateCollection);
         Console.WriteLine("AddMongoClient 13");
 
         logger.LogTrace("Imported mongodb certificate from file {path}",
