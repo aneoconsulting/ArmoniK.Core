@@ -103,11 +103,16 @@ public class ResultTable : IResultTable
     var ids = resultIds.Select(id => Result.GenerateId(sessionId,
                                                        id))
                        .ToList();
-    await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => ids.Contains(model.Id)),
-                                           Builders<Result>.Update.AddToSetEach(model => model.DependentTasks,
-                                                                                taskIds),
-                                           cancellationToken: cancellationToken)
-                          .ConfigureAwait(false);
+    var result = await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => ids.Contains(model.Id)),
+                                                        Builders<Result>.Update.AddToSetEach(model => model.DependentTasks,
+                                                                                             taskIds),
+                                                        cancellationToken: cancellationToken)
+                                       .ConfigureAwait(false);
+
+    if (result.ModifiedCount != resultIds.Count)
+    {
+      throw new ResultNotFoundException("One of the input result was not found");
+    }
   }
 
   /// <inheritdoc />
