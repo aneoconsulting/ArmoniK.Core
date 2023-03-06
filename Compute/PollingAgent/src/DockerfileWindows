@@ -1,6 +1,6 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM pull mcr.microsoft.com/dotnet/runtime:6.0-nanoserver-ltsc2022 AS base
+FROM mcr.microsoft.com/dotnet/runtime:6.0-nanoserver-ltsc2022 AS base
 WORKDIR c:\\temp\\app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2019 AS build
