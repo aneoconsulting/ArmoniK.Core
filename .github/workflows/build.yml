@@ -204,4 +204,4 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Create multi-arch manifest
-      run: docker buildx imagetools create ${{ matrix.img }}:${VERSION} --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-arm --append ${{ matrix.img }}:${VERSION}-windows
+      run: docker buildx imagetools create --platform linux/amd64,linux/amd64,windows/amd64 --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-windows
