@@ -16,10 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +26,6 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
@@ -64,97 +61,10 @@ public class DependencyResolverTest
   private const string TaskCancelling                        = nameof(TaskCancelling);
   private const string TaskCancelled                         = nameof(TaskCancelled);
 
-  public class MyMessageHandler : IQueueMessageHandler
-  {
-    public MyMessageHandler(CancellationToken  cancellationToken,
-                            string             messageId,
-                            string             taskId,
-                            QueueMessageStatus status,
-                            DateTime           receptionDateTime)
-    {
-      CancellationToken = cancellationToken;
-      MessageId         = messageId;
-      TaskId            = taskId;
-      Status            = status;
-      ReceptionDateTime = receptionDateTime;
-    }
-
-    public ValueTask DisposeAsync()
-      => ValueTask.CompletedTask;
-
-    public CancellationToken  CancellationToken { get; set; }
-    public string             MessageId         { get; }
-    public string             TaskId            { get; }
-    public QueueMessageStatus Status            { get; set; }
-    public DateTime           ReceptionDateTime { get; init; }
-  }
-
-  public class MyPullQueueStorage : IPullQueueStorage
-  {
-    public readonly ConcurrentBag<string> Messages;
-
-    public MyPullQueueStorage()
-      => Messages = new ConcurrentBag<string>();
-
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => throw new NotImplementedException();
-
-    public Task Init(CancellationToken cancellationToken)
-      => Task.CompletedTask;
-
-    public int MaxPriority { get; } = 10;
-
-    public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
-                                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-      var i = 0;
-      while (i < nbMessages && Messages.TryTake(out var m))
-      {
-        i++;
-        cancellationToken.ThrowIfCancellationRequested();
-        yield return new MyMessageHandler(CancellationToken.None,
-                                          Guid.NewGuid()
-                                              .ToString(),
-                                          m,
-                                          QueueMessageStatus.Running,
-                                          DateTime.UtcNow);
-      }
-    }
-  }
-
-  public class MyPushQueueStorage : IPushQueueStorage
-  {
-    public readonly ConcurrentBag<string> Messages;
-
-    public MyPushQueueStorage()
-      => Messages = new ConcurrentBag<string>();
-
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => throw new NotImplementedException();
-
-    public Task Init(CancellationToken cancellationToken)
-      => Task.CompletedTask;
-
-    public int MaxPriority { get; } = 10;
-
-    public Task PushMessagesAsync(IEnumerable<string> messages,
-                                  string              partitionId,
-                                  int                 priority          = 1,
-                                  CancellationToken   cancellationToken = default)
-    {
-      foreach (var message in messages)
-      {
-        Messages.Add(message);
-      }
-
-      return Task.CompletedTask;
-    }
-  }
-
   private static async Task<TestDatabaseProvider> Populate()
   {
-    var pushQueueStorage = new MyPushQueueStorage();
-    var pullQueueStorage = new MyPullQueueStorage();
+    var pushQueueStorage = new SimplePushQueueStorage();
+    var pullQueueStorage = new SimplePullQueueStorage();
 
     var provider = new TestDatabaseProvider(collection =>
                                             {
@@ -526,7 +436,7 @@ public class DependencyResolverTest
     await dp.Init(CancellationToken.None)
             .ConfigureAwait(false);
 
-    var pullQueueStorage = provider.GetRequiredService<MyPullQueueStorage>();
+    var pullQueueStorage = provider.GetRequiredService<SimplePullQueueStorage>();
     pullQueueStorage.Messages.Add(TaskCreatingNoDependencies);
     pullQueueStorage.Messages.Add(TaskCreatingWithDependencies);
     pullQueueStorage.Messages.Add(TaskCreatingWithAbortedDependencies);
@@ -544,7 +454,7 @@ public class DependencyResolverTest
     await Task.Delay(TimeSpan.FromSeconds(1))
               .ConfigureAwait(false);
 
-    var pushQueueStorage = provider.GetRequiredService<MyPushQueueStorage>();
+    var pushQueueStorage = provider.GetRequiredService<SimplePushQueueStorage>();
     Assert.AreEqual(2,
                     pushQueueStorage.Messages.Count);
     Assert.Contains(TaskCreatingWithAvailableDependencies,
