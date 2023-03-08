@@ -116,16 +116,11 @@ public class DependencyResolver : IInitializable
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
-  {
-    await pushQueueStorage_.Init(cancellationToken)
-                           .ConfigureAwait(false);
-    await pullQueueStorage_.Init(cancellationToken)
-                           .ConfigureAwait(false);
-    await resultTable_.Init(cancellationToken)
-                      .ConfigureAwait(false);
-    await taskTable_.Init(cancellationToken)
-                    .ConfigureAwait(false);
-  }
+    => await Task.WhenAll(pushQueueStorage_.Init(cancellationToken),
+                          pullQueueStorage_.Init(cancellationToken),
+                          resultTable_.Init(cancellationToken),
+                          taskTable_.Init(cancellationToken))
+                 .ConfigureAwait(false);
 
   /// <summary>
   ///   Long running task that pulls message that represents tasks from queue, check their dependencies and if dependencies
