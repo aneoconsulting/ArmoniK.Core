@@ -11,11 +11,13 @@ resource "docker_container" "queue" {
     name = var.network
   }
 
-  env = ["ENABLE_JMX_EXPORTER=true",
-    "ARTEMIS_MIN_MEMORY=1512M",
-    "ARTEMIS_MAX_MEMORY=2000M",
-    "ARTEMIS_USERNAME=guest",
-  "ARTEMIS_PASSWORD=guest"]
+  env = [
+    "AMQ_EXTRA_ARGS=--relax-jolokia --http-host 0.0.0.0",
+    "AMQ_USER=${var.queue_envs.user}",
+    "AMQ_PASSWORD=${var.queue_envs.password}",
+    "AMQ_HOME=/opt/amq",
+    "AMQ_ROLE=admin"
+  ]
 
   ports {
     internal = 5672
