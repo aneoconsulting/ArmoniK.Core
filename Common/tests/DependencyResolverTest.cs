@@ -387,13 +387,12 @@ public class DependencyResolverTest
 
 
   [Test]
-  public async Task Init()
+  public async Task InitShouldSucceed()
   {
     using var provider = await Populate()
                            .ConfigureAwait(false);
     var dp = provider.GetRequiredService<DependencyResolver.DependencyResolver>();
-    await dp.Init(CancellationToken.None)
-            .ConfigureAwait(false);
+    Assert.DoesNotThrowAsync(() => dp.Init(CancellationToken.None));
   }
 
 
