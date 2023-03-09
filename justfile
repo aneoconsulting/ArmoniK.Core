@@ -27,7 +27,7 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 } else if queue == "rabbitmq091" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
 } else if queue == "artemis" {
-  '{ name = "artemis", image = "vromero/activemq-artemis:2.6.1" }'
+  '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
 } else {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 }
