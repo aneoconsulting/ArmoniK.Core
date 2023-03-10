@@ -152,6 +152,13 @@ public class Submitter : ISubmitter
                                              },
                                              cancellationToken)
                           .ConfigureAwait(false);
+        
+        // This Get is required to avoid race-condition with the dependency resolution.
+        // A result can be marked Completed after the submitter has checked the result status,
+        // but before the task has been added to the dependency list.
+        // This is a typical case of TOCTOU issues (Time Of Check, Time Of Use).
+        // The second check ensures that the result completion will be visible,
+        // even if it happens in parallel to the task submission.
         dependencies = await resultTable_.GetResults(sessionId,
                                                      dependencies,
                                                      cancellationToken)
