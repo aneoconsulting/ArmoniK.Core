@@ -11,12 +11,10 @@ resource "docker_container" "queue" {
     name = var.network
   }
 
-  env = [
-    "AMQ_EXTRA_ARGS=--relax-jolokia --http-host 0.0.0.0",
-    "AMQ_USER=${var.queue_envs.user}",
-    "AMQ_PASSWORD=${var.queue_envs.password}",
-    "AMQ_HOME=/opt/amq",
-    "AMQ_ROLE=admin"
+  command = [
+    "/bin/sh",
+    "-c",
+    "/opt/amq/bin/artemis create broker --user ${var.queue_envs.user} --password ${var.queue_envs.password} --role admin --name broker --relax-jolokia --http-host 0.0.0.0 --allow-anonymous && cp /armonik/broker.xml broker/etc && broker/bin/artemis run",
   ]
 
   ports {
@@ -27,5 +25,11 @@ resource "docker_container" "queue" {
   ports {
     internal = 8161
     external = var.exposed_ports.admin_interface
+  }
+
+    mounts {
+    type   = "bind"
+    target = "/armonik"
+    source = abspath("${path.root}/artemis")
   }
 }
