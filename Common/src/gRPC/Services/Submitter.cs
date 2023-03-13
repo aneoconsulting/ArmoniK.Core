@@ -152,7 +152,7 @@ public class Submitter : ISubmitter
                                              },
                                              cancellationToken)
                           .ConfigureAwait(false);
-        
+
         // This Get is required to avoid race-condition with the dependency resolution.
         // A result can be marked Completed after the submitter has checked the result status,
         // but before the task has been added to the dependency list.
