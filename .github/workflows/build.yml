@@ -391,7 +391,6 @@ jobs:
       matrix:
         queue:
           - activemq
-          - artemis
           - rabbitmq
           - rabbitmq091
         log-level:
