@@ -121,6 +121,7 @@ public class Pollster : IInitializable
                           sessionTable_.Init(cancellationToken),
                           taskTable_.Init(cancellationToken))
                  .ConfigureAwait(false);
+
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     if (healthCheckFailedResult_ is not null)
