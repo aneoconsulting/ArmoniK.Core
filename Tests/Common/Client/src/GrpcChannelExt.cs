@@ -151,6 +151,45 @@ public static class GrpcChannelExt
                             usageRatio.Average());
     }
 
+    var timeSpentList = taskDependencies.Values.Select(raw => (raw.SubmittedAt - raw.CreatedAt).ToTimeSpan()
+                                                                                               .TotalMilliseconds / 1000)
+                                        .ToList();
+    logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
+                          TaskStatus.Creating,
+                          TaskStatus.Submitted,
+                          timeSpentList.Min(),
+                          timeSpentList.Max(),
+                          timeSpentList.Average());
+
+    timeSpentList = taskDependencies.Values.Select(raw => (raw.StartedAt - raw.AcquiredAt).ToTimeSpan()
+                                                                                          .TotalMilliseconds / 1000)
+                                    .ToList();
+    logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
+                          TaskStatus.Dispatched,
+                          TaskStatus.Processing,
+                          timeSpentList.Min(),
+                          timeSpentList.Max(),
+                          timeSpentList.Average());
+
+    timeSpentList = taskDependencies.Values.Select(raw => (raw.EndedAt - raw.StartedAt).ToTimeSpan()
+                                                                                       .TotalMilliseconds / 1000)
+                                    .ToList();
+    logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
+                          TaskStatus.Processing,
+                          TaskStatus.Completed,
+                          timeSpentList.Min(),
+                          timeSpentList.Max(),
+                          timeSpentList.Average());
+
+    timeSpentList = taskDependencies.Values.Select(raw => (raw.EndedAt - raw.AcquiredAt).ToTimeSpan()
+                                                                                        .TotalMilliseconds / 1000)
+                                    .ToList();
+    logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
+                          TaskStatus.Dispatched,
+                          TaskStatus.Completed,
+                          timeSpentList.Min(),
+                          timeSpentList.Max(),
+                          timeSpentList.Average());
 
     var sessionStart    = taskDependencies.Values.Min(raw => raw.CreatedAt);
     var sessionEnd      = taskDependencies.Values.Max(raw => raw.EndedAt);
@@ -177,7 +216,7 @@ public static class GrpcChannelExt
                                                    new ListTasksRequest.Types.Sort
                                                    {
                                                      Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                     Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
+                                                     Field     = ListTasksRequest.Types.OrderByField.TaskId,
                                                    })
                                    .ConfigureAwait(false))
     {

@@ -81,6 +81,7 @@ module "submitter" {
   docker_image       = local.submitter.image
   network            = docker_network.armonik.name
   generated_env_vars = local.environment
+  volumes            = local.volumes
   zipkin_uri         = module.zipkin.zipkin_uri
   log_driver         = module.fluenbit.log_driver
 }
@@ -95,6 +96,7 @@ module "compute_plane" {
   polling_agent      = local.compute_plane.polling_agent
   worker             = local.compute_plane.worker
   generated_env_vars = local.environment
+  volumes            = local.volumes
   network            = docker_network.armonik.name
   zipkin_uri         = module.zipkin.zipkin_uri
   log_driver         = module.fluenbit.log_driver

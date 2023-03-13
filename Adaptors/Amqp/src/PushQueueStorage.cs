@@ -29,23 +29,50 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
-
-using TimeoutException = System.TimeoutException;
+using Microsoft.Extensions.ObjectPool;
 
 namespace ArmoniK.Core.Adapters.Amqp;
+
+/// <summary>
+///   Policy for creating a <see cref="Session" /> for the <see cref="ObjectPool{Session}" />
+/// </summary>
+internal sealed class SessionPooledObjectPolicy : IPooledObjectPolicy<Session>
+{
+  private readonly IConnectionAmqp connectionAmqp_;
+
+  /// <summary>
+  ///   Initializes a <see cref="SessionPooledObjectPolicy" />
+  /// </summary>
+  /// <param name="connectionAmqp">AMQP connection that will be used to create new sessions</param>
+  public SessionPooledObjectPolicy(IConnectionAmqp connectionAmqp)
+    => connectionAmqp_ = connectionAmqp;
+
+  /// <inheritdoc />
+  public Session Create()
+    => new(connectionAmqp_.Connection);
+
+  /// <inheritdoc />
+  public bool Return(Session obj)
+    => !obj.IsClosed;
+}
 
 public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
   private readonly ILogger<PushQueueStorage> logger_;
+  private readonly ObjectPool<Session>       sessionPool_;
+
 
   public PushQueueStorage(Common.Injection.Options.Amqp options,
                           IConnectionAmqp               connectionAmqp,
                           ILogger<PushQueueStorage>     logger)
     : base(options,
            connectionAmqp)
-    => logger_ = logger;
+  {
+    logger_      = logger;
+    sessionPool_ = new DefaultObjectPool<Session>(new SessionPooledObjectPolicy(ConnectionAmqp));
+  }
 
   /// <inheritdoc />
   public async Task PushMessagesAsync(IEnumerable<string> messages,
@@ -59,9 +86,6 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     {
       throw new ArmoniKException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
-
-    /* Create Session at each call of push */
-    var session = new Session(ConnectionAmqp.Connection);
 
     /* Priority is handled using multiple queues; there should be at least one queue which
      * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
@@ -80,33 +104,29 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                      whichQueue,
                      internalPriority);
 
-    var sender = new SenderLink(session,
-                                $"{partitionId}###SenderLink{whichQueue}",
-                                $"{partitionId}###q{whichQueue}");
-
-    await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
-                                                              {
-                                                                Header = new Header
-                                                                         {
-                                                                           Priority = (byte)internalPriority,
-                                                                         },
-                                                                Properties = new Properties(),
-                                                              })))
-              .ConfigureAwait(false);
-
-    await sender.CloseAsync()
-                .ConfigureAwait(false);
-
-    // todo : find a better solution for this timeout because it waste a lot of time to wait for it to timeout
+    var session = sessionPool_.Get();
     try
     {
-      await session.CloseAsync()
-                   .ConfigureAwait(false);
+      var sender = new SenderLink(session,
+                                  $"{partitionId}###SenderLink{whichQueue}",
+                                  $"{partitionId}###q{whichQueue}");
+
+      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
+                                                                {
+                                                                  Header = new Header
+                                                                           {
+                                                                             Priority = (byte)internalPriority,
+                                                                           },
+                                                                  Properties = new Properties(),
+                                                                })))
+                .ConfigureAwait(false);
+
+      await sender.CloseAsync()
+                  .ConfigureAwait(false);
     }
-    catch (TimeoutException e)
+    finally
     {
-      logger_.LogWarning(e,
-                         "Error while closing Amqp session");
+      sessionPool_.Return(session);
     }
   }
 }

@@ -113,22 +113,14 @@ public class Pollster : IInitializable
   public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
-  {
-    await pullQueueStorage_.Init(cancellationToken)
-                           .ConfigureAwait(false);
-    await dataPrefetcher_.Init(cancellationToken)
-                         .ConfigureAwait(false);
-    await workerStreamHandler_.Init(cancellationToken)
-                              .ConfigureAwait(false);
-    await objectStorageFactory_.Init(cancellationToken)
-                               .ConfigureAwait(false);
-    await resultTable_.Init(cancellationToken)
-                      .ConfigureAwait(false);
-    await sessionTable_.Init(cancellationToken)
-                       .ConfigureAwait(false);
-    await taskTable_.Init(cancellationToken)
-                    .ConfigureAwait(false);
-  }
+    => await Task.WhenAll(pullQueueStorage_.Init(cancellationToken),
+                          dataPrefetcher_.Init(cancellationToken),
+                          workerStreamHandler_.Init(cancellationToken),
+                          objectStorageFactory_.Init(cancellationToken),
+                          resultTable_.Init(cancellationToken),
+                          sessionTable_.Init(cancellationToken),
+                          taskTable_.Init(cancellationToken))
+                 .ConfigureAwait(false);
 
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
