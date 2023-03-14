@@ -1,0 +1,68 @@
+name: Code Formatting
+
+on:
+  pull_request:
+
+jobs:
+  format-csharp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.x
+
+    - name: Install ReSharper
+      run: |
+        dotnet tool install -g JetBrains.ReSharper.GlobalTools --version 2022.2.2
+
+    - name: Restore
+      run: |
+        dotnet restore ArmoniK.Core.sln
+
+    - name: Reformat
+      run: |
+        jb cleanupcode ArmoniK.Core.sln
+
+    - name: Check Diff
+      id: check-diff
+      run: |
+        DIFF="$(git diff --name-only)"
+
+        if [ -z "$DIFF" ]; then
+          echo "OK: Format is clean"
+        else
+          echo "Error: Format was not clean"
+          echo "List of files:"
+          echo "$DIFF"
+          git diff
+          exit 1
+        fi
+
+    - name: Generate patch
+      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
+      run: |
+        git diff > patch-csharp.diff
+
+    - uses: actions/upload-artifact@v3
+      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
+      with:
+        name: patch
+        path: ./patch-csharp.diff
+
+  format-terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Check Format
+        run: terraform fmt -check -recursive -diff
