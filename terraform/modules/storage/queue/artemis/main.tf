@@ -27,7 +27,7 @@ resource "docker_container" "queue" {
     external = var.exposed_ports.admin_interface
   }
 
-    mounts {
+  mounts {
     type   = "bind"
     target = "/armonik"
     source = abspath("${path.root}/artemis")
