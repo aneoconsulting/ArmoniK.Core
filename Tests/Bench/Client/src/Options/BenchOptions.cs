@@ -78,4 +78,14 @@ public class BenchOptions
   ///   default : false
   /// </summary>
   public bool ShowEvents { get; set; }
+
+  /// <summary>
+  ///   Maximum number of retries for failures
+  /// </summary>
+  public int MaxRetries { get; set; } = 1;
+
+  /// <summary>
+  ///   Number of parallel tasks for tasks executed in parallel
+  /// </summary>
+  public int DegreeOfParallelism { get; set; } = 1;
 }
