@@ -67,6 +67,12 @@ export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_me
 export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
 export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
 
+# Environment variables used to build client images of htcmock, stream and bench
+export HTCMOCK_CLIENT_IMAGE := "dockerhubaneo/armonik_core_htcmock_test_client:" + tag
+export STREAM_CLIENT_IMAGE := "dockerhubaneo/armonik_core_stream_test_client:" + tag
+export BENCH_CLIENT_IMAGE := "dockerhubaneo/armonik_core_bench_test_client:" + tag
+
+
 # List recipes and their usage
 @default:
   just --list
@@ -174,11 +180,21 @@ buildSubmimtter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
 # Build Polling Agent
 buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
 
+# Build Htcmock Client
+buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
+
+# Build Stream Client
+buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile")
+
+# Build Bench Client
+buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
+
 # Build all images necessary for the deployment
 build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
+
 
 # Custom command to restore a deployment after restarting a given service
 restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter")
