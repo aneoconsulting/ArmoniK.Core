@@ -85,7 +85,7 @@ public class BenchOptions
   public int MaxRetries { get; set; } = 1;
 
   /// <summary>
-  ///   Number of parallel tasks for tasks executed in parallel
+  ///   Number of tasks to be used in parallel execution
   /// </summary>
   public int DegreeOfParallelism { get; set; } = 1;
 }
