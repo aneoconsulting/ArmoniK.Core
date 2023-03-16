@@ -180,13 +180,13 @@ buildSubmimtter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
 # Build Polling Agent
 buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
 
-#Build Htcmock Client
+# Build Htcmock Client
 buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
 
-#Build Stream Client
+# Build Stream Client
 buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile")
 
-#Build Bench Client
+# Build Bench Client
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
