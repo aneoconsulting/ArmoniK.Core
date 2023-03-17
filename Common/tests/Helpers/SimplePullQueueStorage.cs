@@ -43,7 +43,9 @@ public class SimplePullQueueStorage : IPullQueueStorage
 
   public int MaxPriority { get; } = 10;
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+#pragma warning disable CS1998
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int nbMessages,
+#pragma warning restore CS1998
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var i = 0;
