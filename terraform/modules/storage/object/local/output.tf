@@ -8,6 +8,6 @@ output "generated_env_vars" {
 output "volumes" {
   description = "Volumes that agents and submitters must mount to access the object storage"
   value = {
-    (docker_volume.object.name): "/local_storage",
+    (docker_volume.object.name) : "/local_storage",
   }
 }
