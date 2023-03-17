@@ -54,7 +54,6 @@ public class Agent : IAgent
   private readonly SessionData                                                                         sessionData_;
   private readonly ISubmitter                                                                          submitter_;
   private readonly TaskData                                                                            taskData_;
-  private readonly ITaskTable                                                                          taskTable_;
   private readonly string                                                                              token_;
 
   /// <summary>
@@ -63,7 +62,6 @@ public class Agent : IAgent
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
-  /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="dependencyResolverOptions">Configuration for the Dependency Resolver</param>
   /// <param name="sessionData">Data of the session</param>
@@ -73,7 +71,6 @@ public class Agent : IAgent
   public Agent(ISubmitter                           submitter,
                IObjectStorageFactory                objectStorageFactory,
                IPushQueueStorage                    pushQueueStorage,
-               ITaskTable                           taskTable,
                IResultTable                         resultTable,
                Injection.Options.DependencyResolver dependencyResolverOptions,
                SessionData                          sessionData,
@@ -83,7 +80,6 @@ public class Agent : IAgent
   {
     submitter_                 = submitter;
     pushQueueStorage_          = pushQueueStorage;
-    taskTable_                 = taskTable;
     resultTable_               = resultTable;
     dependencyResolverOptions_ = dependencyResolverOptions;
     logger_                    = logger;

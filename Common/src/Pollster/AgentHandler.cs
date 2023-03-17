@@ -52,7 +52,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   private readonly IResultTable                         resultTable_;
   private readonly GrpcAgentService                     service_;
   private readonly ISubmitter                           submitter_;
-  private readonly ITaskTable                           taskTable_;
 
   /// <summary>
   ///   Initializes a new instance
@@ -63,7 +62,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
-  /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit                           loggerInit,
@@ -72,7 +70,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
                       ISubmitter                           submitter,
                       IObjectStorageFactory                objectStorageFactory,
                       IPushQueueStorage                    pushQueueStorage,
-                      ITaskTable                           taskTable,
                       IResultTable                         resultTable,
                       ILogger<AgentHandler>                logger)
   {
@@ -81,7 +78,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     submitter_                 = submitter;
     objectStorageFactory_      = objectStorageFactory;
     pushQueueStorage_          = pushQueueStorage;
-    taskTable_                 = taskTable;
     resultTable_               = resultTable;
     logger_                    = logger;
 
@@ -142,7 +138,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
       var agent = new Agent(submitter_,
                             objectStorageFactory_,
                             pushQueueStorage_,
-                            taskTable_,
                             resultTable_,
                             dependencyResolverOptions_,
                             sessionData,
