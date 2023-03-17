@@ -38,10 +38,10 @@ namespace ArmoniK.Core.Common.DependencyResolver;
 public class DependencyResolver : IInitializable
 {
   private readonly ILogger<DependencyResolver>          logger_;
+  private readonly Injection.Options.DependencyResolver options_;
   private readonly IPullQueueStorage                    pullQueueStorage_;
   private readonly IPushQueueStorage                    pushQueueStorage_;
   private readonly IResultTable                         resultTable_;
-  private readonly Injection.Options.DependencyResolver options_;
   private readonly ITaskTable                           taskTable_;
 
   /// <summary>
@@ -53,12 +53,12 @@ public class DependencyResolver : IInitializable
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="options">Dependency checker configurations</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public DependencyResolver(IPullQueueStorage                           pullQueueStorage,
-                            IPushQueueStorage                           pushQueueStorage,
-                            ITaskTable                                  taskTable,
-                            IResultTable                                resultTable,
-                            Common.Injection.Options.DependencyResolver options,
-                            ILogger<DependencyResolver>                 logger)
+  public DependencyResolver(IPullQueueStorage                    pullQueueStorage,
+                            IPushQueueStorage                    pushQueueStorage,
+                            ITaskTable                           taskTable,
+                            IResultTable                         resultTable,
+                            Injection.Options.DependencyResolver options,
+                            ILogger<DependencyResolver>          logger)
   {
     pullQueueStorage_ = pullQueueStorage;
     pushQueueStorage_ = pushQueueStorage;

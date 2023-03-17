@@ -33,7 +33,7 @@ public class DependencyResolver
   public string UnresolvedDependenciesQueue { get; set; } = string.Empty;
 
   /// <summary>
-  ///    Number of messages retrieved each time by the DependencyChecker from the queue
+  ///   Number of messages retrieved each time by the DependencyChecker from the queue
   /// </summary>
   public int MessagesBatchSize { get; set; } = 1;
 }
