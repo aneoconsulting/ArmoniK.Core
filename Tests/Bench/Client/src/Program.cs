@@ -289,6 +289,12 @@ internal static class Program
                                                             CancellationToken.None)
                                             .Result;
 
+                         // A good a way to process results would be to process them individually as soon as they are
+                         // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
+                         // be careful to not overload your memory. If you need to retrieve a lot of results to apply
+                         // post-processing on, consider doing so with sub-tasking so that the client-side application
+                         // has to do less work.
+
                          if (result.Length != benchOptions.ResultSize * 1024)
                          {
                            logger.LogInformation("Received length {received}, expected length {expected}",
