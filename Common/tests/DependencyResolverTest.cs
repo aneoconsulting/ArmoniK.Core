@@ -22,9 +22,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -68,6 +70,10 @@ public class DependencyResolverTest
 
     var provider = new TestDatabaseProvider(collection =>
                                             {
+                                              var configuration = new ConfigurationManager();
+
+                                              collection.AddInitializedOption<Injection.Options.DependencyResolver>(configuration,
+                                                                                                                    Injection.Options.DependencyResolver.SettingSection);
                                               collection.AddSingleton<DependencyResolver.DependencyResolver>();
                                               collection.AddSingleton<IPushQueueStorage>(pushQueueStorage);
                                               collection.AddSingleton<IPullQueueStorage>(pullQueueStorage);

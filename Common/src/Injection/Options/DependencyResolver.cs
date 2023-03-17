@@ -31,4 +31,9 @@ public class DependencyResolver
   ///   Name of the queue that holds tasks with unresolved data dependencies
   /// </summary>
   public string UnresolvedDependenciesQueue { get; set; } = string.Empty;
+
+  /// <summary>
+  ///    Number of messages retrieved each time by the DependencyChecker from the queue
+  /// </summary>
+  public int MessagesBatchSize { get; set; } = 1;
 }

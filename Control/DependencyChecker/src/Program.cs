@@ -74,6 +74,8 @@ public static class Program
                         logger.GetLogger())
              .AddAmqp(builder.Configuration,
                       logger.GetLogger())
+             .AddInitializedOption<Common.Injection.Options.DependencyResolver>(builder.Configuration,
+                                                                                Common.Injection.Options.DependencyResolver.SettingSection)
              .AddSingletonWithHealthCheck<DependencyResolver>(nameof(DependencyResolver))
              .AddHostedService<Worker>();
 

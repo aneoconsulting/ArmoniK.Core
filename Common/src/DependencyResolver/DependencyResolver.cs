@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -37,11 +37,12 @@ namespace ArmoniK.Core.Common.DependencyResolver;
 /// </summary>
 public class DependencyResolver : IInitializable
 {
-  private readonly ILogger<DependencyResolver> logger_;
-  private readonly IPullQueueStorage           pullQueueStorage_;
-  private readonly IPushQueueStorage           pushQueueStorage_;
-  private readonly IResultTable                resultTable_;
-  private readonly ITaskTable                  taskTable_;
+  private readonly ILogger<DependencyResolver>          logger_;
+  private readonly IPullQueueStorage                    pullQueueStorage_;
+  private readonly IPushQueueStorage                    pushQueueStorage_;
+  private readonly IResultTable                         resultTable_;
+  private readonly Injection.Options.DependencyResolver options_;
+  private readonly ITaskTable                           taskTable_;
 
   /// <summary>
   ///   Initializes the <see cref="DependencyResolver" />
@@ -50,17 +51,20 @@ public class DependencyResolver : IInitializable
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="options">Dependency checker configurations</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public DependencyResolver(IPullQueueStorage           pullQueueStorage,
-                            IPushQueueStorage           pushQueueStorage,
-                            ITaskTable                  taskTable,
-                            IResultTable                resultTable,
-                            ILogger<DependencyResolver> logger)
+  public DependencyResolver(IPullQueueStorage                           pullQueueStorage,
+                            IPushQueueStorage                           pushQueueStorage,
+                            ITaskTable                                  taskTable,
+                            IResultTable                                resultTable,
+                            Common.Injection.Options.DependencyResolver options,
+                            ILogger<DependencyResolver>                 logger)
   {
     pullQueueStorage_ = pullQueueStorage;
     pushQueueStorage_ = pushQueueStorage;
     taskTable_        = taskTable;
     resultTable_      = resultTable;
+    options_          = options;
     logger_           = logger;
   }
 
@@ -137,7 +141,7 @@ public class DependencyResolver : IInitializable
     {
       try
       {
-        var messages = pullQueueStorage_.PullMessagesAsync(1,
+        var messages = pullQueueStorage_.PullMessagesAsync(options_.MessagesBatchSize,
                                                            stoppingToken);
 
         await foreach (var message in messages.WithCancellation(stoppingToken)
