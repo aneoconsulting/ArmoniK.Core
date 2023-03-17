@@ -62,7 +62,7 @@ variable "object_storage" {
     port        = optional(number, 9000)
     login       = optional(string, "minioadmin")
     password    = optional(string, "minioadmin")
-    bucket_name = optional(string, "minioBucket")
+    bucket_name = optional(string, "miniobucket")
 
   })
   validation {
