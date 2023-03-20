@@ -92,9 +92,9 @@ jobs:
         os:
           - ubuntu-latest
         include:
-          - os: ubuntu-latest
-            queue: rabbitmq091
+          - queue: rabbitmq091
             projects: Adaptors/RabbitMQ/tests
+            os: ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
