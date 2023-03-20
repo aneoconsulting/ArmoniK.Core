@@ -56,10 +56,17 @@ jobs:
       with:
         dotnet-version: 6.x
 
+    - name: Setup just
+      run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt-get update
+          sudo apt-get install just
+
     - name: Minio Server UP
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/S3/docker-compose-minio.yml"
+      if: ${{matrix.projects}} == "Adaptors/S3/tests"
+      run: |
+          just object=minio deployTargetObject
 
     - name: Run tests
       run: |
@@ -82,11 +89,11 @@ jobs:
           - rabbitmq
         projects:
           - Adaptors/Amqp/tests
+        os:
+          - ubuntu-latest
         include:
           - queue: rabbitmq091
             projects: Adaptors/RabbitMQ/tests
-        os:
-          - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -112,14 +119,7 @@ jobs:
       run: |
           just queue=${{ matrix.queue }} deployTargetQueue
 
-    - name: Tests for AMQP 1.0.0 protcol
-      if: ${{ matrix.queue }} != "rabittmq091"
-      run: |
-        cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
-
-    - name: Tests for AMQP 0.9.1 protcol
-      if: ${{ matrix.queue }} == "rabittmq091"
+    - name: Run tests
       run: |
         cd ${{ matrix.projects }}
         dotnet test --logger "trx;LogFileName=test-results.trx"
@@ -816,8 +816,7 @@ jobs:
   canMerge:
     needs:
       - tests
-      - testsQueueProto091
-      - testsQueueProto100
+      - testsQueueProtos
       - testsWinOnly
       - testHtcMockDC
       - defaultPartitionMock
