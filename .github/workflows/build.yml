@@ -74,14 +74,17 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueueProto100:
+  testsQueueProtos:
     strategy:
       matrix:
-        projects:
-          - Adaptors/Amqp/tests
         queue:
           - activemq
           - rabbitmq
+        projects:
+          - Adaptors/Amqp/tests
+        include:
+          - queue: rabbitmq091
+            projects: Adaptors/RabbitMQ/tests
         os:
           - ubuntu-latest
       fail-fast: false
@@ -97,54 +100,26 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
+    
+    - name: Setup just
+      run: |
+          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
+          sudo apt-get update
+          sudo apt-get install just
 
-    - name: Setup queue
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
+    - name: Set up queue
+      run: |
+          just queue=${{ matrix.queue }} deployTargetQueue
 
-    - name: Run tests
+    - name: Tests for AMQP 1.0.0 protcol
+      if: ${{ matrix.queue }} != "rabittmq091"
       run: |
         cd ${{ matrix.projects }}
         dotnet test --logger "trx;LogFileName=test-results.trx"
 
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
-
-  testsQueueProto091:
-    strategy:
-      matrix:
-        projects:
-          - Adaptors/RabbitMQ/tests
-        queue:
-          - rabbitmq-0.9.1
-        os:
-          - ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
-    - name: Setup queue
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
-
-    - name: Run tests
+    - name: Tests for AMQP 0.9.1 protcol
+      if: ${{ matrix.queue }} == "rabittmq091"
       run: |
         cd ${{ matrix.projects }}
         dotnet test --logger "trx;LogFileName=test-results.trx"
