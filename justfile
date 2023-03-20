@@ -144,6 +144,32 @@ plan: (init)
 deploy: (init)
   terraform -chdir=./terraform apply -auto-approve
 
+# Deploy target: object standalone
+deployTargetObject: (init)
+  terraform -chdir=./terraform apply -target="module.object_{{object}}" -auto-approve
+
+# Destroy target: queue standalone
+destroyTargetObject:
+  terraform -chdir=./terraform destroy -target="module.object_{{object}}" -auto-approve
+
+# Deploy target: queue standalone
+deployTargetQueue: (init)
+  #!/usr/bin/env bash
+  which_module="module.queue_{{queue}}"
+  if [ {{queue}} = "rabbitmq091" ]; then
+    which_module="module.queue_rabbitmq"
+  fi
+  terraform -chdir=./terraform apply -target="${which_module}" -auto-approve
+
+# Destroy target: queue standalone
+destroyTargetQueue:
+  #!/usr/bin/env bash
+  which_module="module.queue_{{queue}}"
+  if [ {{queue}} = "rabbitmq091" ]; then
+    which_module="module.queue_rabbitmq"
+  fi
+  terraform -chdir=./terraform destroy -target="${which_module}" -auto-approve
+
 # Destroy ArmoniK Core
 destroy:
   terraform -chdir=./terraform destroy -auto-approve
