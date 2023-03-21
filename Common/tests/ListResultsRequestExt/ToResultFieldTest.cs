@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
@@ -33,6 +34,7 @@ public class ToResultFieldTest
                                         "Name",
                                         "OwnerTaskId",
                                         ResultStatus.Created,
+                                        new List<string>(),
                                         DateTime.UtcNow,
                                         Array.Empty<byte>());
 

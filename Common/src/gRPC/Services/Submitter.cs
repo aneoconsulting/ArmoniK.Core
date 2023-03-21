@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -45,36 +45,39 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Submitter : ISubmitter
 {
-  private readonly ActivitySource              activitySource_;
-  private readonly ILogger<Submitter>          logger_;
-  private readonly IObjectStorageFactory       objectStorageFactory_;
-  private readonly IPartitionTable             partitionTable_;
-  private readonly IPushQueueStorage           pushQueueStorage_;
-  private readonly IResultTable                resultTable_;
-  private readonly ISessionTable               sessionTable_;
-  private readonly Injection.Options.Submitter submitterOptions_;
-  private readonly ITaskTable                  taskTable_;
+  private readonly ActivitySource                       activitySource_;
+  private readonly Injection.Options.DependencyResolver dependencyResolverOptions_;
+  private readonly ILogger<Submitter>                   logger_;
+  private readonly IObjectStorageFactory                objectStorageFactory_;
+  private readonly IPartitionTable                      partitionTable_;
+  private readonly IPushQueueStorage                    pushQueueStorage_;
+  private readonly IResultTable                         resultTable_;
+  private readonly ISessionTable                        sessionTable_;
+  private readonly Injection.Options.Submitter          submitterOptions_;
+  private readonly ITaskTable                           taskTable_;
 
   [UsedImplicitly]
-  public Submitter(IPushQueueStorage           pushQueueStorage,
-                   IObjectStorageFactory       objectStorageFactory,
-                   ILogger<Submitter>          logger,
-                   ISessionTable               sessionTable,
-                   ITaskTable                  taskTable,
-                   IResultTable                resultTable,
-                   IPartitionTable             partitionTable,
-                   Injection.Options.Submitter submitterOptions,
-                   ActivitySource              activitySource)
+  public Submitter(IPushQueueStorage                    pushQueueStorage,
+                   IObjectStorageFactory                objectStorageFactory,
+                   ILogger<Submitter>                   logger,
+                   ISessionTable                        sessionTable,
+                   ITaskTable                           taskTable,
+                   IResultTable                         resultTable,
+                   IPartitionTable                      partitionTable,
+                   Injection.Options.Submitter          submitterOptions,
+                   Injection.Options.DependencyResolver dependencyResolverOptions,
+                   ActivitySource                       activitySource)
   {
-    objectStorageFactory_ = objectStorageFactory;
-    logger_               = logger;
-    sessionTable_         = sessionTable;
-    taskTable_            = taskTable;
-    resultTable_          = resultTable;
-    partitionTable_       = partitionTable;
-    submitterOptions_     = submitterOptions;
-    activitySource_       = activitySource;
-    pushQueueStorage_     = pushQueueStorage;
+    objectStorageFactory_      = objectStorageFactory;
+    logger_                    = logger;
+    sessionTable_              = sessionTable;
+    taskTable_                 = taskTable;
+    resultTable_               = resultTable;
+    partitionTable_            = partitionTable;
+    submitterOptions_          = submitterOptions;
+    dependencyResolverOptions_ = dependencyResolverOptions;
+    activitySource_            = activitySource;
+    pushQueueStorage_          = pushQueueStorage;
   }
 
   /// <inheritdoc />
@@ -115,22 +118,73 @@ public class Submitter : ISubmitter
                                          string                           parentTaskId,
                                          CancellationToken                cancellationToken)
   {
-    var taskIds = requests.Select(request => request.Id);
+    var taskRequests = requests.ToList();
 
     await ChangeResultOwnership(sessionId,
                                 parentTaskId,
-                                requests,
-                                cancellationToken);
+                                taskRequests,
+                                cancellationToken)
+      .ConfigureAwait(false);
 
-    await pushQueueStorage_.PushMessagesAsync(taskIds,
-                                              partitionId,
-                                              priority,
-                                              cancellationToken)
-                           .ConfigureAwait(false);
+    var readyTasks = new List<string>();
 
-    await taskTable_.FinalizeTaskCreation(taskIds,
-                                          cancellationToken)
-                    .ConfigureAwait(false);
+    foreach (var request in taskRequests)
+    {
+      var dependencies = request.DataDependencies.ToList();
+      if (dependencies.Any())
+      {
+        dependencies = await resultTable_.GetResults(sessionId,
+                                                     dependencies,
+                                                     cancellationToken)
+                                         .Where(result => result.Status != ResultStatus.Completed)
+                                         .Select(result => result.Name)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+      }
+
+      if (dependencies.Any())
+      {
+        await resultTable_.AddTaskDependency(sessionId,
+                                             dependencies,
+                                             new List<string>
+                                             {
+                                               request.Id,
+                                             },
+                                             cancellationToken)
+                          .ConfigureAwait(false);
+
+        // This Get is required to avoid race-condition with the dependency resolution.
+        // A result can be marked Completed after the submitter has checked the result status,
+        // but before the task has been added to the dependency list.
+        // This is a typical case of TOCTOU issues (Time Of Check, Time Of Use).
+        // The second check ensures that the result completion will be visible,
+        // even if it happens in parallel to the task submission.
+        dependencies = await resultTable_.GetResults(sessionId,
+                                                     dependencies,
+                                                     cancellationToken)
+                                         .Where(result => result.Status != ResultStatus.Completed)
+                                         .Select(result => result.Name)
+                                         .ToListAsync(cancellationToken)
+                                         .ConfigureAwait(false);
+      }
+
+      if (!dependencies.Any())
+      {
+        readyTasks.Add(request.Id);
+      }
+    }
+
+    if (readyTasks.Any())
+    {
+      await pushQueueStorage_.PushMessagesAsync(readyTasks,
+                                                partitionId,
+                                                priority,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
+      await taskTable_.FinalizeTaskCreation(readyTasks,
+                                            cancellationToken)
+                      .ConfigureAwait(false);
+    }
   }
 
   /// <inheritdoc />
@@ -272,6 +326,7 @@ public class Submitter : ISubmitter
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<Count> WaitForCompletion(WaitRequest       request,
                                              CancellationToken cancellationToken)
   {
@@ -657,6 +712,7 @@ public class Submitter : ISubmitter
                                                                                               key,
                                                                                               request.Id,
                                                                                               ResultStatus.Created,
+                                                                                              new List<string>(),
                                                                                               DateTime.UtcNow,
                                                                                               Array.Empty<byte>()));
 

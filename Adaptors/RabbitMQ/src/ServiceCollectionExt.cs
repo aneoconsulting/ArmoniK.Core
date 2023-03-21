@@ -47,9 +47,12 @@ public static class ServiceCollectionExt
       serviceCollection.AddOption(configuration,
                                   Amqp.SettingSection,
                                   out Amqp amqpOptions);
-      using var _ = logger.BeginNamedScope("AMQP configuration",
-                                           ("host", amqpOptions.Host),
-                                           ("port", amqpOptions.Port));
+      using var _ = logger.BeginNamedScope("RabbitMQ configuration",
+                                           ("Host", amqpOptions.Host),
+                                           ("Port", amqpOptions.Port),
+                                           ("MaxRetries", amqpOptions.MaxRetries),
+                                           ("LinkCredit", amqpOptions.LinkCredit),
+                                           ("PartitionId", amqpOptions.PartitionId));
 
       if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
       {
