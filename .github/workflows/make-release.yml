@@ -62,28 +62,36 @@ jobs:
       run : git push origin -d ${{ github.ref_name }}
 
 
-  tagImagesRelease:
+  buildImages:
     runs-on: ubuntu-latest
     needs:
       - versionning
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-      RELEASE: ${{ needs.versionning.outputs.release }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        image:
-        - dockerhubaneo/armonik_pollingagent
-        - dockerhubaneo/armonik_control_metrics
-        - dockerhubaneo/armonik_control_partition_metrics
-        - dockerhubaneo/armonik_control
-        - dockerhubaneo/armonik_control_dependency_checker
-        - dockerhubaneo/armonik_core_stream_test_worker
-        - dockerhubaneo/armonik_core_stream_test_client
-        - dockerhubaneo/armonik_core_htcmock_test_worker
-        - dockerhubaneo/armonik_core_htcmock_test_client
-        - dockerhubaneo/armonik_core_bench_test_worker
-        - dockerhubaneo/armonik_core_bench_test_client
+        include:
+        -  img : dockerhubaneo/armonik_pollingagent
+           path: ./Compute/PollingAgent/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_metrics
+           path: ./Control/Metrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_partition_metrics
+           path: ./Control/PartitionMetrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control
+           path: ./Control/Submitter/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_dependency_checker
+           path: ./Control/DependencyChecker/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_worker
+           path: ./Tests/Stream/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_client
+           path: ./Tests/Stream/Client/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
+           path: ./Tests/HtcMock/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_client
+           path: ./Tests/HtcMock/Client/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_worker
+           path: ./Tests/Bench/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_client
+           path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -91,14 +99,34 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v2
+
     - name: login
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    - name: ReTag release
-      run: docker buildx imagetools create ${{ matrix.image }}:${VERSION} --tag ${{ matrix.image }}:${RELEASE}
+    - name: platforms
+      run: echo ${{ steps.buildx.outputs.platforms }}
 
-    - name: ReTag latest
-      run: docker buildx imagetools create ${{ matrix.image }}:${VERSION} --tag ${{ matrix.image }}:latest
+    - name: Build and push
+      uses: docker/build-push-action@v3
+      with:
+        file: ${{ matrix.path }}
+        context: .
+        platforms: |
+          linux/arm64
+          linux/amd64
+        push: true
+        tags: |
+            ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
+            ${{ matrix.img }}:latest
 
 
   update-changelog:
