@@ -526,6 +526,11 @@ public class TaskHandlerTest
                                                                               CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                                  Expression<Func<TaskData, T>>    selector,
+                                                  CancellationToken                cancellationToken = default)
+      => throw new NotImplementedException();
+
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                bool ascOrder,
@@ -825,15 +830,15 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (_, taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (_, unresolvedDependenciesTask, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                                  .ConfigureAwait(false);
 
-    sqmh.TaskId = taskId;
+    sqmh.TaskId = unresolvedDependenciesTask;
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.IsFalse(acquired);
+    Assert.IsTrue(acquired);
   }
 
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler

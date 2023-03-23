@@ -37,3 +37,7 @@ variable "log_driver" {
     address = string,
   })
 }
+
+variable "unresolved_dependencies_queue" {
+  type = string
+}

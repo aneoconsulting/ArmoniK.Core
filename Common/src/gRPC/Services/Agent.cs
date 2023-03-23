@@ -45,8 +45,12 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class Agent : IAgent
 {
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
+  private readonly Injection.Options.DependencyResolver                                                dependencyResolverOptions_;
   private readonly ILogger                                                                             logger_;
+  private readonly IPushQueueStorage                                                                   pushQueueStorage_;
   private readonly IObjectStorage                                                                      resourcesStorage_;
+  private readonly IResultTable                                                                        resultTable_;
+  private readonly List<string>                                                                        sentResults_;
   private readonly SessionData                                                                         sessionData_;
   private readonly ISubmitter                                                                          submitter_;
   private readonly TaskData                                                                            taskData_;
@@ -57,24 +61,34 @@ public class Agent : IAgent
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
+  /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="dependencyResolverOptions">Configuration for the Dependency Resolver</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public Agent(ISubmitter            submitter,
-               IObjectStorageFactory objectStorageFactory,
-               SessionData           sessionData,
-               TaskData              taskData,
-               string                token,
-               ILogger               logger)
+  public Agent(ISubmitter                           submitter,
+               IObjectStorageFactory                objectStorageFactory,
+               IPushQueueStorage                    pushQueueStorage,
+               IResultTable                         resultTable,
+               Injection.Options.DependencyResolver dependencyResolverOptions,
+               SessionData                          sessionData,
+               TaskData                             taskData,
+               string                               token,
+               ILogger                              logger)
   {
-    submitter_        = submitter;
-    logger_           = logger;
-    resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
-    sessionData_      = sessionData;
-    taskData_         = taskData;
-    token_            = token;
+    submitter_                 = submitter;
+    pushQueueStorage_          = pushQueueStorage;
+    resultTable_               = resultTable;
+    dependencyResolverOptions_ = dependencyResolverOptions;
+    logger_                    = logger;
+    resourcesStorage_          = objectStorageFactory.CreateResourcesStorage();
+    createdTasks_              = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
+    sentResults_               = new List<string>();
+    sessionData_               = sessionData;
+    taskData_                  = taskData;
+    token_                     = token;
   }
 
   /// <inheritdoc />
@@ -97,6 +111,21 @@ public class Agent : IAgent
                                             cancellationToken)
                       .ConfigureAwait(false);
     }
+
+    logger_.LogDebug("Send tasks which new data are available in the dependency checker queue");
+
+    var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
+                                                       sentResults_,
+                                                       cancellationToken)
+                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
+                                           .ToHashSetAsync(cancellationToken)
+                                           .ConfigureAwait(false);
+
+    await pushQueueStorage_.PushMessagesAsync(dependentTasks,
+                                              dependencyResolverOptions_.UnresolvedDependenciesQueue,
+                                              taskData_.Options.Priority,
+                                              cancellationToken)
+                           .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -428,8 +457,8 @@ public class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    Task? completionTask = null;
-    var   fsmResult      = new ProcessReplyResultStateMachine(logger_);
+    var completionTask = Task.CompletedTask;
+    var fsmResult      = new ProcessReplyResultStateMachine(logger_);
     var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                       {
                                                                         SingleWriter = true,
@@ -474,14 +503,15 @@ public class Agent : IAgent
                                                           .ConfigureAwait(false);
                                         },
                                         cancellationToken);
+              sentResults_.Add(request.Init.Key);
               break;
             case InitKeyedDataStream.TypeOneofCase.LastResult:
               fsmResult.CompleteRequest();
 
               try
               {
-                await completionTask!.WaitAsync(cancellationToken)
-                                     .ConfigureAwait(false);
+                await completionTask.WaitAsync(cancellationToken)
+                                    .ConfigureAwait(false);
                 return new ResultReply
                        {
                          Ok = new Empty(),

@@ -26,6 +26,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -55,6 +56,7 @@ public class ResultTableTestBase
                                            "ResultIsAvailable",
                                            "OwnerId",
                                            ResultStatus.Completed,
+                                           new List<string>(),
                                            DateTime.Today,
                                            new[]
                                            {
@@ -64,6 +66,7 @@ public class ResultTableTestBase
                                            "ResultIsNotAvailable",
                                            "OwnerId",
                                            ResultStatus.Aborted,
+                                           new List<string>(),
                                            DateTime.Today,
                                            new[]
                                            {
@@ -73,6 +76,7 @@ public class ResultTableTestBase
                                            "ResultIsCreated",
                                            "OwnerId",
                                            ResultStatus.Created,
+                                           new List<string>(),
                                            DateTime.Today,
                                            new[]
                                            {
@@ -82,6 +86,21 @@ public class ResultTableTestBase
                                            "ResultIsCreated2",
                                            "OwnerId",
                                            ResultStatus.Created,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsCompletedWithDependents",
+                                           "OwnerId",
+                                           ResultStatus.Completed,
+                                           new List<string>
+                                           {
+                                             "Dependent1",
+                                             "Dependent2",
+                                           },
                                            DateTime.Today,
                                            new[]
                                            {
@@ -239,6 +258,7 @@ public class ResultTableTestBase
                                            "Key",
                                            "OwnerId",
                                            ResultStatus.Completed,
+                                           new List<string>(),
                                            DateTime.Today,
                                            new[]
                                            {
@@ -270,6 +290,7 @@ public class ResultTableTestBase
                                                                                     "ResultIsAvailable",
                                                                                     "",
                                                                                     ResultStatus.Unspecified,
+                                                                                    new List<string>(),
                                                                                     DateTime.Today,
                                                                                     new[]
                                                                                     {
@@ -397,6 +418,7 @@ public class ResultTableTestBase
                                                             id,
                                                             "OwnerId",
                                                             ResultStatus.Completed,
+                                                            new List<string>(),
                                                             DateTime.Today,
                                                             Encoding.ASCII.GetBytes(id))))
                         .ConfigureAwait(false);
@@ -430,6 +452,7 @@ public class ResultTableTestBase
                                                             id,
                                                             "OwnerId",
                                                             ResultStatus.Completed,
+                                                            new List<string>(),
                                                             DateTime.Today,
                                                             Encoding.ASCII.GetBytes(id))))
                         .ConfigureAwait(false);
@@ -616,6 +639,114 @@ public class ResultTableTestBase
 
       Assert.AreEqual(4,
                       res.Count);
+    }
+  }
+
+  [Test]
+  public async Task GetDependentsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var dependents = await ResultTable!.GetDependents("SessionId",
+                                                        "ResultIsCompletedWithDependents")
+                                         .ToListAsync()
+                                         .ConfigureAwait(false);
+      Assert.AreEqual(2,
+                      dependents.Count);
+      Assert.Contains("Dependent1",
+                      dependents);
+      Assert.Contains("Dependent2",
+                      dependents);
+    }
+  }
+
+  [Test]
+  public async Task GetEmptyDependentsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var dependents = await ResultTable!.GetDependents("SessionId",
+                                                        "ResultIsCreated")
+                                         .ToListAsync()
+                                         .ConfigureAwait(false);
+      Assert.AreEqual(0,
+                      dependents.Count);
+    }
+  }
+
+  [Test]
+  public void GetDependentsShouldThrow()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.GetDependents("SessionId",
+                                                                                               "ResultDoesNotExists")
+                                                                                .ConfigureAwait(false));
+    }
+  }
+
+  [Test]
+  public async Task AddDependentShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var resultId  = "ResultToAddDependents";
+      var sessionId = "SessionId";
+
+      await ResultTable!.Create(new[]
+                                {
+                                  new Result(sessionId,
+                                             resultId,
+                                             "OwnerTask",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.UtcNow,
+                                             Array.Empty<byte>()),
+                                })
+                        .ConfigureAwait(false);
+
+
+      await ResultTable.AddTaskDependency(sessionId,
+                                          new List<string>
+                                          {
+                                            resultId,
+                                          },
+                                          new List<string>
+                                          {
+                                            "Task1",
+                                            "Task2",
+                                          })
+                       .ConfigureAwait(false);
+
+      var dependents = await ResultTable.GetDependents(sessionId,
+                                                       resultId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+      Assert.AreEqual(2,
+                      dependents.Count);
+      Assert.Contains("Task1",
+                      dependents);
+      Assert.Contains("Task2",
+                      dependents);
+    }
+  }
+
+  [Test]
+  public void AddDependentNotExistingResultShouldThrow()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.AddTaskDependency("SessionId",
+                                                                                                   new List<string>
+                                                                                                   {
+                                                                                                     "resultDoesNotExist",
+                                                                                                   },
+                                                                                                   new List<string>
+                                                                                                   {
+                                                                                                     "Task1",
+                                                                                                     "Task2",
+                                                                                                   })
+                                                                                .ConfigureAwait(false));
     }
   }
 }

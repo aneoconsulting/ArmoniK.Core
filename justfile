@@ -66,6 +66,7 @@ export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + 
 export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
 export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
 export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
+export ARMONIK_DEPENDENCYCHECKER  := "dockerhubaneo/armonik_control_dependency_checker:" + tag
 
 # Environment variables used to build client images of htcmock, stream and bench
 export HTCMOCK_CLIENT_IMAGE := "dockerhubaneo/armonik_core_htcmock_test_client:" + tag
@@ -144,6 +145,32 @@ plan: (init)
 deploy: (init)
   terraform -chdir=./terraform apply -auto-approve
 
+# Deploy target: object standalone
+deployTargetObject: (init)
+  terraform -chdir=./terraform apply -target="module.object_{{object}}" -auto-approve
+
+# Destroy target: queue standalone
+destroyTargetObject:
+  terraform -chdir=./terraform destroy -target="module.object_{{object}}" -auto-approve
+
+# Deploy target: queue standalone
+deployTargetQueue: (init)
+  #!/usr/bin/env bash
+  which_module="module.queue_{{queue}}"
+  if [ {{queue}} = "rabbitmq091" ]; then
+    which_module="module.queue_rabbitmq"
+  fi
+  terraform -chdir=./terraform apply -target="${which_module}" -auto-approve
+
+# Destroy target: queue standalone
+destroyTargetQueue:
+  #!/usr/bin/env bash
+  which_module="module.queue_{{queue}}"
+  if [ {{queue}} = "rabbitmq091" ]; then
+    which_module="module.queue_rabbitmq"
+  fi
+  terraform -chdir=./terraform destroy -target="${which_module}" -auto-approve
+
 # Destroy ArmoniK Core
 destroy:
   terraform -chdir=./terraform destroy -auto-approve
@@ -189,15 +216,18 @@ buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile
 # Build Bench Client
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
+# Build Dependency Checker
+buildDependencyChecker: (build ARMONIK_DEPENDENCYCHECKER "./Control/DependencyChecker/src/Dockerfile")
+
 # Build all images necessary for the deployment
-build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent
+build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent buildDependencyChecker
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
 
 
 # Custom command to restore a deployment after restarting a given service
-restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter")
+restoreDeployment serviceName:  (restart serviceName) (restart "armonik.control.submitter") (restart "armonik.control.dependency_checker")
   #!/usr/bin/env bash
   set -euo pipefail
   for (( i=0; i<{{replicas}}; i++ )); do
@@ -222,3 +252,7 @@ healthChecks:
   echo -e "\nHealth Checking Submitter"
   echo -n "  startup: " && curl -sSL localhost:5011/startup
   echo -n "  liveness: " && curl -sSL localhost:5011/liveness
+
+  echo -e "\nHealth Checking DependencyChecker"
+  echo -n "  startup: " && curl -sSL localhost:5012/startup
+  echo -n "  liveness: " && curl -sSL localhost:5012/liveness

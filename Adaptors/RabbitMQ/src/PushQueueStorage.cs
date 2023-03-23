@@ -43,6 +43,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
            connectionRabbit)
     => logger_ = logger;
 
+
   /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<string> messages,
                                 string              partitionId,

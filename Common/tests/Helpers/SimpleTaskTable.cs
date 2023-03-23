@@ -27,6 +27,8 @@ using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
 
+using LinqKit;
+
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -191,6 +193,29 @@ public class SimpleTaskTable : ITaskTable
                                                                                       new Output(true,
                                                                                                  "")),
                                                                        }, 1));
+
+  public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                                Expression<Func<TaskData, T>>    selector,
+                                                CancellationToken                cancellationToken = default)
+    => Task.FromResult(new List<TaskData>
+                       {
+                         new(SessionId,
+                             TaskId,
+                             OwnerPodId,
+                             PodName,
+                             PayloadId,
+                             new List<string>(),
+                             new List<string>(),
+                             new List<string>
+                             {
+                               OutputId,
+                             },
+                             new List<string>(),
+                             TaskStatus.Completed,
+                             TaskOptions,
+                             new Output(true,
+                                        "")),
+                       }.Select(selector.Invoke));
 
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                              ICollection<Expression<Func<Application, object?>>> orderFields,

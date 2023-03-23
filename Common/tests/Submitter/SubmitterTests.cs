@@ -103,6 +103,10 @@ public class SubmitterTests
                                                    $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
                                                    DefaultPartition
                                                  },
+                                                 {
+                                                   $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
+                                                   nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
+                                                 },
                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -124,6 +128,8 @@ public class SubmitterTests
             .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
             .AddOption<Injection.Options.Submitter>(configuration,
                                                     Injection.Options.Submitter.SettingSection)
+            .AddOption<Injection.Options.DependencyResolver>(configuration,
+                                                             Injection.Options.DependencyResolver.SettingSection)
             .AddSingleton<IPushQueueStorage, PushQueueStorage>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions

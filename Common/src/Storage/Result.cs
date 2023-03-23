@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
@@ -30,12 +31,14 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Name">Name to reference and access this result</param>
 /// <param name="OwnerTaskId">Id of the task that is responsible of generating this result.</param>
 /// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
+/// <param name="DependentTasks">List of tasks that depend on this result.</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Data">Data for the current <paramref name="Name" /></param>
 public record Result(string       SessionId,
                      string       Name,
                      string       OwnerTaskId,
                      ResultStatus Status,
+                     List<string> DependentTasks,
                      DateTime     CreationDate,
                      byte[]       Data)
 {

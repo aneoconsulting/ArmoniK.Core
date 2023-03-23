@@ -51,11 +51,11 @@ public class SimpleResultTable : IResultTable
   public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
                                                                        IEnumerable<string> keys,
                                                                        CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<ResultStatusCount>>(new ResultStatusCount[]
-                                                       {
-                                                         new(ResultStatus.Completed,
-                                                             1),
-                                                       });
+    => Task.FromResult(new List<ResultStatusCount>
+                       {
+                         new(ResultStatus.Completed,
+                             1),
+                       }.AsEnumerable());
 
   public Task ChangeResultOwnership(string                                                 sessionId,
                                     string                                                 oldTaskId,
@@ -66,6 +66,17 @@ public class SimpleResultTable : IResultTable
   public Task Create(IEnumerable<Result> results,
                      CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
+
+  public Task AddTaskDependency(string              sessionId,
+                                ICollection<string> resultIds,
+                                ICollection<string> taskIds,
+                                CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
+
+  public Task<IEnumerable<string>> GetDependents(string            sessionId,
+                                                 string            resultId,
+                                                 CancellationToken cancellationToken = default)
+    => Task.FromResult(Enumerable.Empty<string>());
 
   public Task DeleteResult(string            session,
                            string            key,
@@ -85,6 +96,7 @@ public class SimpleResultTable : IResultTable
              OutputId,
              TaskId,
              ResultStatus.Completed,
+             new List<string>(),
              DateTime.Now.ToUniversalTime(),
              new byte[]
              {
@@ -111,6 +123,7 @@ public class SimpleResultTable : IResultTable
                               "ResultName",
                               TaskId,
                               ResultStatus.Completed,
+                              new List<string>(),
                               DateTime.UtcNow,
                               new byte[]
                               {
