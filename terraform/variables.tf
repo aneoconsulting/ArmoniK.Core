@@ -166,20 +166,20 @@ variable "armonik_partition_metrics_image" {
 
 variable "log_driver_image" {
   type    = string
-  default = "fluent/fluent-bit:latest"
+  default = "fluent/fluent-bit:2.0.9"
 }
 
 variable "seq_image" {
   type    = string
-  default = "datalust/seq:latest"
+  default = "datalust/seq:2023"
 }
 
 variable "zipkin_image" {
   type    = string
-  default = "openzipkin/zipkin:latest"
+  default = "openzipkin/zipkin:2"
 }
 
 variable "database_image" {
   type    = string
-  default = "mongo"
+  default = "mongo:6"
 }
