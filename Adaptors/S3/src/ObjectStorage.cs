@@ -24,7 +24,7 @@ using Amazon.S3.Model;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using CommunityToolkit.HighPerformance;
 

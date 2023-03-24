@@ -19,7 +19,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 

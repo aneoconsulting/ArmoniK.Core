@@ -17,7 +17,7 @@
 
 using System;
 
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 
 using RabbitMQ.Client;
 

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Base;
 
 /// <summary>
 ///   Interface to insert messages into the queue

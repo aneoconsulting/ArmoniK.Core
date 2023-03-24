@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.RabbitMQ;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;

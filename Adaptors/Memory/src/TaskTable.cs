@@ -26,10 +26,10 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;

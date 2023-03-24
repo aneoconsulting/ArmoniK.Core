@@ -15,25 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace ArmoniK.Core.Common.Injection.Options;
+namespace ArmoniK.Core.Utils;
 
-[PublicAPI]
-public class Amqp
+public static class EnumerableExt
 {
-  public const string SettingSection = nameof(Amqp);
-
-  public string Host              { get; set; } = "";
-  public string CredentialsPath   { get; set; } = "";
-  public string User              { get; set; } = "";
-  public string Password          { get; set; } = "";
-  public string Scheme            { get; set; } = "";
-  public string CaPath            { get; set; } = "";
-  public string PartitionId       { get; set; } = "";
-  public int    Port              { get; set; }
-  public int    MaxPriority       { get; set; }
-  public bool   AllowHostMismatch { get; set; }
-  public int    MaxRetries        { get; set; }
-  public int    LinkCredit        { get; set; }
+  public static IList<T> ToIList<T>(this IEnumerable<T> self)
+    => self as IList<T> ?? self.ToList();
 }

@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;

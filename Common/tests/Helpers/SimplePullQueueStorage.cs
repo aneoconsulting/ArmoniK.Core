@@ -22,7 +22,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

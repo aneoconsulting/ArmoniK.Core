@@ -25,10 +25,11 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Google.Protobuf;
 

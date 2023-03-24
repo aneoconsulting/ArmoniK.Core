@@ -15,31 +15,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
+using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Adapters.QueueCommon;
 
-public enum QueueMessageStatus
+[PublicAPI]
+public class Amqp
 {
-  Waiting,
-  Failed,
-  Running,
-  Postponed,
-  Processed,
-  Cancelled,
-  Poisonous,
-}
+  public const string SettingSection = nameof(Amqp);
 
-public interface IQueueMessageHandler : IAsyncDisposable
-{
-  CancellationToken CancellationToken { get; set; }
-
-  string MessageId { get; }
-
-  string TaskId { get; }
-
-  QueueMessageStatus Status { get; set; }
-
-  DateTime ReceptionDateTime { get; init; }
+  public string Host              { get; set; } = "";
+  public string CredentialsPath   { get; set; } = "";
+  public string User              { get; set; } = "";
+  public string Password          { get; set; } = "";
+  public string Scheme            { get; set; } = "";
+  public string CaPath            { get; set; } = "";
+  public string PartitionId       { get; set; } = "";
+  public int    Port              { get; set; }
+  public int    MaxPriority       { get; set; }
+  public bool   AllowHostMismatch { get; set; }
+  public int    MaxRetries        { get; set; }
+  public int    LinkCredit        { get; set; }
 }

@@ -49,7 +49,7 @@ public class QueueStorageTests : QueueStorageTestsBase
     return Task.CompletedTask;
   }
 
-  private Common.Injection.Options.Amqp? options_;
+  private QueueCommon.Amqp? options_;
 
   [Test]
   public void CreatePullQueueStorageShouldFail()

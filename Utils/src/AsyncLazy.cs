@@ -15,24 +15,44 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Threading;
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Utils;
 
-/// <summary>
-///   Interface to retrieve messages from the queue
-/// </summary>
-public interface IPullQueueStorage : IQueueStorage
+public class AsyncLazy<T> : Lazy<Task<T>>
 {
-  /// <summary>
-  ///   Gets messages from the queue
-  /// </summary>
-  /// <param name="nbMessages">Number of messages to retrieve</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Enumerator allowing async iteration over the message queue
-  /// </returns>
-  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
-                                                           CancellationToken cancellationToken = default);
+  public AsyncLazy(Func<T> valueFactory)
+    : base(() => Task.FromResult(valueFactory()))
+  {
+  }
+
+  public AsyncLazy(Func<Task<T>> taskFactory)
+    : base(taskFactory)
+  {
+  }
+
+  public TaskAwaiter<T> GetAwaiter()
+    => Value.GetAwaiter();
+}
+
+public class AsyncLazy : Lazy<Task>
+{
+  public AsyncLazy(Action valueFactory)
+    : base(() =>
+           {
+             valueFactory();
+             return Task.CompletedTask;
+           })
+  {
+  }
+
+  public AsyncLazy(Func<Task> taskFactory)
+    : base(taskFactory)
+  {
+  }
+
+  public TaskAwaiter GetAwaiter()
+    => Value.GetAwaiter();
 }

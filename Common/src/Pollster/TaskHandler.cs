@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;

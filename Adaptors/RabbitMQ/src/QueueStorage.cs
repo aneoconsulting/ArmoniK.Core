@@ -18,8 +18,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Adapters.QueueCommon;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 

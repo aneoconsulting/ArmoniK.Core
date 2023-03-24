@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Logging;
 

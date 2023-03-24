@@ -27,7 +27,7 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Object;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 

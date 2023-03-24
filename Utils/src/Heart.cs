@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -19,7 +19,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Utils;
+namespace ArmoniK.Core.Utils;
 
 public class Heart
 {

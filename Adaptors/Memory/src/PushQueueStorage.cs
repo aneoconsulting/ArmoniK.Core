@@ -22,8 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

@@ -18,7 +18,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -59,9 +59,9 @@ public class QueueStorageTestsBase
   protected virtual Task GetQueueStorageInstance()
     => Task.CompletedTask;
 
-  protected Injection.Options.Amqp? Options;
+  protected Adapters.QueueCommon.Amqp? Options;
 
-  protected static Injection.Options.Amqp CreateDefaultOptions()
+  protected static Adapters.QueueCommon.Amqp CreateDefaultOptions()
     => new()
        {
          Host              = "localhost",

@@ -21,9 +21,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Adapters.QueueCommon;
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 

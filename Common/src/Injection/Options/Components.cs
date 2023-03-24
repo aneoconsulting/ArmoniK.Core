@@ -38,7 +38,7 @@ public class Components
   /// <summary>
   ///   Represents which queue implementation is used to store messages
   /// </summary>
-  public string? QueueStorage { get; set; }
+  public AdapterSettings QueueStorage { get; set; } = new();
 
   /// <summary>
   ///   Represents which object storage is used to store data for tasks

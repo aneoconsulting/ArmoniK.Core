@@ -23,10 +23,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Adapters.QueueCommon;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -173,7 +171,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
     if (!IsInitialized)
     {
-      throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
+      throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
     cancellationToken.ThrowIfCancellationRequested();

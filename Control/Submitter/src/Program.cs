@@ -21,21 +21,20 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -77,10 +76,8 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddRabbit(builder.Configuration,
-                        logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
+             .AddQueue(builder.Configuration,
+                       logger.GetLogger())
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddLocalStorage(builder.Configuration,

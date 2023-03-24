@@ -15,13 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Linq;
+namespace ArmoniK.Core.Common.Injection.Options;
 
-namespace ArmoniK.Core.Common.Utils;
-
-public static class EnumerableExt
+public class AdapterSettings
 {
-  public static IList<T> ToIList<T>(this IEnumerable<T> self)
-    => self as IList<T> ?? self.ToList();
+  public string AdapterAbsolutePath { get; set; } = "";
+
+  public string ClassName { get; set; } = "";
 }
