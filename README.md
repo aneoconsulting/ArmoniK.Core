@@ -1,18 +1,18 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-green.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-# ArmoniK Core
+# ArmoniK.Core
 
-## What is ArmoniK Core?
+## What is ArmoniK.Core?
 
 This project is part of the [ArmoniK](https://github.com/aneoconsulting/ArmoniK) project. ArmoniK.Core is responsible for the implementation of the services needed for ArmoniK which are defined in [ArmoniK.Api](https://github.com/aneoconsulting/ArmoniK.Api).
 
-ArmoniK.Core provides services for submitting computational tasks, keeping track of the status of the tasks and retrieving the results of the computations. The tasks are processed by external workers which interfaces are also defined in ArmoniK.Api. ArmoniK.Core sends tasks to the workers, manages eventual errors during the execution of the tasks and and stores the results of the tasks.
+ArmoniK.Core provides services for submitting computational tasks, keeping track of the status of the tasks and retrieving the results of the computations. The tasks are processed by external workers whose interfaces are also defined in ArmoniK.Api. ArmoniK.Core sends tasks to the workers, manages eventual errors during the execution of the tasks and the storage of the task's results.
 
 More detailed information on the inner working of ArmoniK.Core is available [here](https://aneoconsulting.github.io/ArmoniK.Core/).
 
 ## Development Setup
 
-ArmoniK Core can be setup only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
+ArmoniK.Core can be setup only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
 
 ### Prerequisites
 
@@ -24,18 +24,22 @@ ArmoniK Core can be setup only on Linux machines. For Windows users, it is possi
 
 ### Local deployment
 
-To deploy ArmoniK Core locally, you need first to clone the repository [ArmoniK.Core](https://github.com/aneoconsulting/armonik.core). Then, to see all the available recipes for deployment, place yourself at the root of the repository ArmoniK.Core where the justfile is located, and type on your command line:
+To deploy ArmoniK.Core locally, you need first to clone the repository [ArmoniK.Core](https://github.com/aneoconsulting/armonik.core). Then, to see all the available recipes for deployment, place yourself at the root of the repository ArmoniK.Core where the justfile is located, and type on your command line:
 
 ```shell
 just
 ```
 
-More about local deployment, see [Local Deployment of ArmoniK Core](./.docs/content/1.concepts/1.local-deployment.md).
+More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/content/1.concepts/1.local-deployment.md).
 
 ### Tests
 
-There are a number of tests that help to verify the successful setup of ArmoniK Core. Some of them depend of ArmoniK.Core deployment, others do not.
+There are a number of tests that help to verify the successful setup of ArmoniK.Core. Some of them require a full deployment of ArmoniK.Core, for others a partial deployment is enough.
 
-More about tests, see [Tests of ArmoniK Core](./.docs/content//1.concepts/2.tests.md).
+More about tests, see [Tests of ArmoniK.Core](./.docs/content//1.concepts/2.tests.md).
 
 ## Contribution
+
+Contributions are always welcome!
+
+See [ArmoniK.Community](https://github.com/aneoconsulting/ArmoniK.Community) for ways to get started.
