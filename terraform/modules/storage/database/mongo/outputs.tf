@@ -11,5 +11,5 @@ output "generated_env_vars" {
     "MongoDB__ReplicaSet"                    = "${var.mongodb_params.replica_set_name}"
   }
 
-  depends_on = [ null_resource.partitions_in_db ]
+  depends_on = [null_resource.partitions_in_db]
 }

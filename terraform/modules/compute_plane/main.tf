@@ -107,5 +107,5 @@ resource "docker_container" "polling_agent" {
     retries      = 5
   }
 
-  depends_on = [ docker_container.worker ]
+  depends_on = [docker_container.worker]
 }

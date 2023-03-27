@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -269,56 +268,6 @@ public class TaskHandler : IAsyncDisposable
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Session running but execution cancellation requested");
         return false;
-      }
-
-      if (taskData_.DataDependencies.Any())
-      {
-        var dependencies = await resultTable_.AreResultsAvailableAsync(taskData_.SessionId,
-                                                                       taskData_.DataDependencies,
-                                                                       cancellationTokenSource_.Token)
-                                             .ConfigureAwait(false);
-
-        if (!dependencies.Any())
-        {
-          logger_.LogDebug("Dependencies are not ready yet.");
-          messageHandler_.Status = QueueMessageStatus.Postponed;
-          return false;
-        }
-
-        if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
-                                         new ResultStatusCount(ResultStatus.Completed,
-                                                               0))
-                        .Count != taskData_.DataDependencies.Count)
-        {
-          logger_.LogDebug("Dependencies are not complete yet. Checking the status of the results");
-          messageHandler_.Status = QueueMessageStatus.Postponed;
-
-          if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
-                                           new ResultStatusCount(ResultStatus.Aborted,
-                                                                 0))
-                          .Count == 0)
-          {
-            logger_.LogDebug("No results aborted. Waiting for the remaining uncompleted results.");
-            return false;
-          }
-
-          logger_.LogInformation("One of the input data is aborted. Removing task from the queue");
-
-          await submitter_.CompleteTaskAsync(taskData_,
-                                             false,
-                                             new Output
-                                             {
-                                               Error = new Output.Types.Error
-                                                       {
-                                                         Details = "One of the input data is aborted.",
-                                                       },
-                                             },
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
-          messageHandler_.Status = QueueMessageStatus.Cancelled;
-
-          return false;
-        }
       }
 
       if (cancellationTokenSource_.IsCancellationRequested)

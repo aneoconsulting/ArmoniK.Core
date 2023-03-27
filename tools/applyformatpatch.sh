@@ -1,13 +1,13 @@
 #!/bin/sh
 
-if test -e patch.diff ; then
-  rm -f patch.diff
-  echo patch.diff was removed
+if test -e patch-csharp.diff ; then
+  rm -f patch-csharp.diff
+  echo patch-csharp.diff was removed
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-RUNID=$(gh run list -b "$BRANCH" -w "Build and Test" --json databaseId -q .[0].databaseId)
+RUNID=$(gh run list -b "$BRANCH" -w "Code Formatting" --json databaseId -q .[0].databaseId)
 
-if gh run download -n patch $RUNID ; then
-  git apply patch.diff
+if gh run download -n patch-csharp $RUNID ; then
+  git apply patch-csharp.diff
 fi

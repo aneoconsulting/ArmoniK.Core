@@ -908,6 +908,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                               CancellationToken                   cancellationToken = default)
       => throw new T();
 
+    public Task<IEnumerable<TData>> FindTasksAsync<TData>(Expression<Func<TaskData, bool>>  filter,
+                                                          Expression<Func<TaskData, TData>> selector,
+                                                          CancellationToken                 cancellationToken = default)
+      => throw new T();
+
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                bool ascOrder,

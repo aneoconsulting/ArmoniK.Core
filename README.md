@@ -1,77 +1,45 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-green.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
+# ArmoniK.Core
 
-# Project components
+## What is ArmoniK.Core?
 
-This page intends to describe the different software projetcs and components used for ArmoniK 
-internals. To learn how to install or use ArmoniK, please see these repositories:
-  * install: 
-  * use: 
+This project is part of the [ArmoniK](https://github.com/aneoconsulting/ArmoniK) project. ArmoniK.Core is responsible for the implementation of the services needed for ArmoniK which are defined in [ArmoniK.Api](https://github.com/aneoconsulting/ArmoniK.Api).
 
+ArmoniK.Core provides services for submitting computational tasks, keeping track of the status of the tasks and retrieving the results of the computations. The tasks are processed by external workers whose interfaces are also defined in ArmoniK.Api. ArmoniK.Core sends tasks to the workers, manages eventual errors during the execution of the tasks and manages also the storage of the task's results.
 
-## Common Library
+More detailed information on the inner working of ArmoniK.Core is available [here](https://aneoconsulting.github.io/ArmoniK.Core/).
 
-**ArmoniK.Common** provides the components required by all the other compononents of ArmoniK.
+## Installation
 
-## Control
+ArmoniK.Core can be installed only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
 
-Different projects are available in the control plan:
+### Prerequisites
 
-* **ArmoniK.Control.Submitter** is a web server providing the gRPC services required by the 
-SubmitterService client from SDK. It provides the following services:
-  * Session creation
-  * Task submission
-  * Results retrieving
-  * Task cancellation
-  * Session cancellation
+- [Terraform](https://www.terraform.io/) version >= 1.4.2
+- [Just](https://github.com/casey/just) >= 1.8.0
+- [Dotnet](https://dotnet.microsoft.com/en-us/) >= 6.0
+- [Docker](https://www.docker.com/) >= 20.10.16
+- [GitHub CLI](https://cli.github.com/) >= 2.23.0 (optional)
 
-* **ArmoniK.Control.Monitor (not yet available)** is a web server providing the gRPC services 
-required by the MonitorService client from SDK. It provides the followin services:
-  * List all session and tasks
-  * Count the session and task per status
-  * Get the execution details for the tasks
+### Local deployment
 
-* **ArmoniK.Control.ResourceManager (not yet available)** is a web server providing gRPC 
-services required by the ResourceManager client from SDK. It provides the following services:
-  * Upload new resources
-  * Download new resources
-  * List all available resources
-  * Delete resources
+To deploy ArmoniK.Core locally, you need first to clone the repository [ArmoniK.Core](https://github.com/aneoconsulting/armonik.core). Then, to see all the available recipes for deployment, place yourself at the root of the repository ArmoniK.Core where the justfile is located, and type on your command line:
 
-* **ArmoniK.Control.Autoscaling (not yet available)** is a process that regularly computes 
-metrics used to determine the number of POD instances required on the grid. This will then 
-be used by Kubernetes to start/stop compute nodes (on elastic configurations such as managed 
-K8s service on cloud).
+```shell
+just
+```
 
-## Compute Plan Components
+More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/content/1.concepts/1.local-deployment.md).
 
-From a software enginnering point of view, the compute plan relies on three components:
+### Tests
 
-* **ArmoniK.Compute.PollingAgent** implements a ArmoniK.DevelopmentKit.Gridlib.GRPC client.
-It acts as a proxy between the gridlib agent container and the rest of the ArmoniK system. 
-Using such a proxy agent allows all the ArmoniK logic to be implemented independantly of 
-the Gridlib agent. Hence handling an new agent to handle new languages will be easier.
+There are a number of tests that help to verify the successful installation of ArmoniK.Core. Some of them require a full deployment of ArmoniK.Core, for others a partial deployment is enough.
 
-* Other companion containers for the gridlib agent container Such cantainers could provide 
-the following services : 
-  * setting up secrets for the POD
-  * forward the logs to a log cypher (ex: ELK or a cloud equivalent)
-  * host a cache on each node used (required a deamon set to be really efficient)
+More about tests, see [Tests of ArmoniK.Core](./.docs/content//1.concepts/2.tests.md).
 
-## Adaptors
+## Contribution
 
-The adaptors projects provide implementations of the interfaces relying on different kind of 
-services. We plan to provide an implementation for on-premises installation and each cloud provider.
+Contributions are always welcome!
 
-The following adaptors are currently available:
-  * ArmoniK.Adaptors.MongoDB provides all components to run ArmoniK. A queue implementation is even 
-    available although it is not as efficient and scalable as dedicated products.
-  * ArmoniK.Adaptors.Amqp provides an AMQP connector for ArmoniK. It allows using any AMQP server
-    such as ActiveMQ, ActiveMQ Artemis, RabbitMQ or IBM MQ
-
-The following adaptors will be available soon:
-  * ArmoniK.Adaptors.Redis to provide a RedisCache implementation for the internal storage.
-  * ArmoniK.Adaptors.S3 to provide a S3 implementation for the internal storage.
-  * ArmoniK.Adaptors.AmazonSQS to provide a SQS implementation for the internal queue.
-  * ArmoniK.Adaptors.DynamoDB to provide a DynamoDB implementation for the internal state database
-  
+See [ArmoniK.Community](https://github.com/aneoconsulting/ArmoniK.Community) for ways to get started.

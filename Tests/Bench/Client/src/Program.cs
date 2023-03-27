@@ -37,9 +37,11 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
+using Grpc.Net.Client;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -47,6 +49,29 @@ using Serilog.Formatting.Compact;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Samples.Bench.Client;
+
+/// <summary>
+///   Policy for creating a <see cref="GrpcChannel" /> for the <see cref="ObjectPool" />
+/// </summary>
+internal sealed class GrpcChannelObjectPolicy : IPooledObjectPolicy<GrpcChannel>
+{
+  private readonly GrpcClient options_;
+
+  /// <summary>
+  ///   Initializes a Policy for <see cref="GrpcChannel" />
+  /// </summary>
+  /// <param name="options">Options for creating a GrpcChannel</param>
+  public GrpcChannelObjectPolicy(GrpcClient options)
+    => options_ = options;
+
+  /// <inheritdoc />
+  public GrpcChannel Create()
+    => GrpcChannelFactory.CreateChannel(options_);
+
+  /// <inheritdoc />
+  public bool Return(GrpcChannel obj)
+    => true;
+}
 
 internal static class Program
 {
@@ -75,6 +100,8 @@ internal static class Program
 
     var channel          = GrpcChannelFactory.CreateChannel(options);
     var partitionsClient = new Partitions.PartitionsClient(channel);
+
+    var channelPool = new DefaultObjectPool<GrpcChannel>(new GrpcChannelObjectPolicy(options));
 
     var partitions = await partitionsClient.ListPartitionsAsync(new ListPartitionsRequest
                                                                 {
@@ -239,24 +266,68 @@ internal static class Program
 
     var resultsAvailable = Stopwatch.GetTimestamp();
 
-    foreach (var resultId in results)
+    var countRes = 0;
+
+    results.AsParallel()
+           .WithDegreeOfParallelism(benchOptions.DegreeOfParallelism)
+           .ForAll(resultId =>
+                   {
+                     for (var i = 0; i < benchOptions.MaxRetries; i++)
+                     {
+                       var localChannel = channelPool.Get();
+                       try
+                       {
+                         var resultRequest = new ResultRequest
+                                             {
+                                               ResultId = resultId,
+                                               Session  = createSessionReply.SessionId,
+                                             };
+
+                         var client = new Submitter.SubmitterClient(localChannel);
+
+                         var result = client.GetResultAsync(resultRequest,
+                                                            CancellationToken.None)
+                                            .Result;
+
+                         // A good a way to process results would be to process them individually as soon as they are
+                         // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
+                         // be careful to not overload your memory. If you need to retrieve a lot of results to apply
+                         // post-processing on, consider doing so with sub-tasking so that the client-side application
+                         // has to do less work.
+
+                         if (result.Length != benchOptions.ResultSize * 1024)
+                         {
+                           logger.LogInformation("Received length {received}, expected length {expected}",
+                                                 result.Length,
+                                                 benchOptions.ResultSize * 1024);
+                           throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
+                         }
+
+                         Interlocked.Increment(ref countRes);
+                         // If successful, return
+                         return;
+                       }
+                       catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+                       {
+                         logger.LogWarning(e,
+                                           "Error during result retrieving, retrying to get {resultId}",
+                                           resultId);
+                       }
+                       finally
+                       {
+                         channelPool.Return(localChannel);
+                       }
+                     }
+
+                     // in this case, retries are all made so we need to tell that it did not work
+                     throw new InvalidOperationException("Too many retries");
+                   });
+
+    logger.LogInformation("Results retrieved {number}",
+                          countRes);
+    if (countRes != results.Count)
     {
-      var resultRequest = new ResultRequest
-                          {
-                            ResultId = resultId,
-                            Session  = createSessionReply.SessionId,
-                          };
-
-      var result = await submitterClient.GetResultAsync(resultRequest)
-                                        .ConfigureAwait(false);
-
-      if (result.Length != benchOptions.ResultSize * 1024)
-      {
-        logger.LogInformation("Received length {received}, expected length {expected}",
-                              result.Length,
-                              benchOptions.ResultSize * 1024);
-        throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
-      }
+      throw new InvalidOperationException("All results were not retrieved");
     }
 
     var resultsReceived = Stopwatch.GetTimestamp();
