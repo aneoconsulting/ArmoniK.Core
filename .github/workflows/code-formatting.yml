@@ -53,7 +53,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
       with:
-        name: patch
+        name: patch-csharp
         path: ./patch-csharp.diff
 
   format-terraform:
