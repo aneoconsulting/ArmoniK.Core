@@ -91,6 +91,16 @@ public static class ServiceCollectionExt
     logger.LogDebug("{class}",
                     queueSettings.ClassName);
 
+    if (string.IsNullOrEmpty(queueSettings.AdapterAbsolutePath))
+    {
+      throw new InvalidOperationException($"{nameof(queueSettings.AdapterAbsolutePath)} should not be null or empty.");
+    }
+
+    if (string.IsNullOrEmpty(queueSettings.ClassName))
+    {
+      throw new InvalidOperationException($"{nameof(queueSettings.ClassName)} should not be null or empty.");
+    }
+
     var ctx      = new AdapterLoadContext(queueSettings.AdapterAbsolutePath);
     var assembly = ctx.LoadFromAssemblyName(AssemblyName.GetAssemblyName(queueSettings.AdapterAbsolutePath));
     logger.LogInformation("Loaded assembly {assemblyName}",

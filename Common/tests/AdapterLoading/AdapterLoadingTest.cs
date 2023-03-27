@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -57,36 +58,131 @@ public class AdapterLoadingTest
     }
   }
 
-  [Test]
-  [TestCaseSource(nameof(TestCasesQueueLocation))]
-  public void QueueShouldLoad(string path,
-                              string className)
+  public void Setup(Dictionary<string, string?> config)
   {
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var logger         = loggerProvider.CreateLogger("root");
 
-    Dictionary<string, string?> minimalConfig = new()
-                                                {
-                                                  {
-                                                    $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
-                                                    path
-                                                  },
-                                                  {
-                                                    $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}",
-                                                    className
-                                                  },
-                                                  {
-                                                    "Amqp:User", "User"
-                                                  },
-                                                };
-
     var configuration = new ConfigurationManager();
-    configuration.AddInMemoryCollection(minimalConfig);
+    configuration.AddInMemoryCollection(config);
 
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddQueue(configuration,
                                logger);
 
-    Assert.DoesNotThrow(() => serviceCollection.BuildServiceProvider());
+    serviceCollection.BuildServiceProvider();
   }
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesQueueLocation))]
+  public void QueueShouldLoad(string path,
+                              string className)
+  {
+    Dictionary<string, string?> config = new()
+                                         {
+                                           {
+                                             $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}", path
+                                           },
+                                           {
+                                             $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", className
+                                           },
+                                           {
+                                             "Amqp:User", "User"
+                                           },
+                                         };
+
+    Assert.DoesNotThrow(() => Setup(config));
+  }
+
+  public static IEnumerable ConfInvalidOperationException
+  {
+    get
+    {
+      yield return new TestCaseData(new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "Amqp:User", "User"
+                                      },
+                                    }).SetArgDisplayNames("No components");
+      yield return new TestCaseData(new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "Amqp:User", "User"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", ""
+                                      },
+                                    }).SetArgDisplayNames("Empty class");
+      yield return new TestCaseData(new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "Amqp:User", "User"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", ""
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}", "path"
+                                      },
+                                    }).SetArgDisplayNames("Empty path");
+      yield return new TestCaseData(new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "Amqp:User", "User"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", "invalid class"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
+                                        "invalid path"
+                                      },
+                                    }).SetArgDisplayNames("invalid path");
+
+      yield return new TestCaseData(new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "Amqp:User", "User"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}",
+                                        "ArmoniK.Core.Adapters.Amqp.ConnectionAmqp"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
+                                        $"{SolutionRoot}{AmqpPath}"
+                                      },
+                                    }).SetArgDisplayNames("Not implemented");
+    }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(ConfInvalidOperationException))]
+  public void InvalidConfShouldFail(Dictionary<string, string?> config)
+    => Assert.Throws<InvalidOperationException>(() => Setup(config));
+
+  public static IEnumerable ConfTypeLoadException
+  {
+    get
+    {
+      yield return new TestCaseData(new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "Amqp:User", "User"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", "invalid class"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
+                                        $"{SolutionRoot}{AmqpPath}"
+                                      },
+                                    }).SetArgDisplayNames("invalid class");
+    }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(ConfTypeLoadException))]
+  public void InvalidTypeConfShouldFail(Dictionary<string, string?> config)
+    => Assert.Throws<TypeLoadException>(() => Setup(config));
 }
