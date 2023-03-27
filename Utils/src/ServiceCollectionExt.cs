@@ -15,51 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArmoniK.Core.Utils;
-
-/// <summary>
-///   Extends the functionality of the <see cref="IConfiguration" />
-/// </summary>
-public static class ConfigurationExt
-{
-  /// <summary>
-  ///   Configure an object with the given configuration.
-  /// </summary>
-  /// <typeparam name="T">Type of the options class</typeparam>
-  /// <param name="configuration">Configurations used to populate the class</param>
-  /// <param name="key">Path to the Object in the configuration</param>
-  /// <returns>
-  ///   The initialized object
-  /// </returns>
-  /// <exception cref="InvalidOperationException">the <paramref name="key" /> is not found in the configurations.</exception>
-  public static T GetRequiredValue<T>(this IConfiguration configuration,
-                                      string              key)
-    => configuration.GetRequiredSection(key)
-                    .Get<T>() ?? throw new InvalidOperationException($"{key} not found");
-
-  /// <summary>
-  ///   Configure an object with the given configuration.
-  ///   If the object is not found in the configuration, a new object in returned.
-  /// </summary>
-  /// <typeparam name="T">Type of the options class</typeparam>
-  /// <param name="configuration">Configurations used to populate the class</param>
-  /// <param name="key">Path to the Object in the configuration</param>
-  /// <returns>
-  ///   The initialized object
-  /// </returns>
-  public static T GetInitializedValue<T>(this IConfiguration configuration,
-                                         string              key)
-    where T : new()
-    => configuration.GetSection(key)
-                    .Get<T>() ?? new T();
-}
 
 /// <summary>
 ///   Extends the functionality of the <see cref="IServiceCollection" />
