@@ -10,7 +10,7 @@ ArmoniK.Core provides services for submitting computational tasks, keeping track
 
 More detailed information on the inner working of ArmoniK.Core is available [here](https://aneoconsulting.github.io/ArmoniK.Core/).
 
-## Development Setup
+## Installation
 
 ArmoniK.Core can be installed only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
 
@@ -34,7 +34,7 @@ More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/cont
 
 ### Tests
 
-There are a number of tests that help to verify the successful setup of ArmoniK.Core. Some of them require a full deployment of ArmoniK.Core, for others a partial deployment is enough.
+There are a number of tests that help to verify the successful installation of ArmoniK.Core. Some of them require a full deployment of ArmoniK.Core, for others a partial deployment is enough.
 
 More about tests, see [Tests of ArmoniK.Core](./.docs/content//1.concepts/2.tests.md).
 
