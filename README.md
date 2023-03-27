@@ -12,7 +12,7 @@ More detailed information on the inner working of ArmoniK.Core is available [her
 
 ## Development Setup
 
-ArmoniK.Core can be setup only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
+ArmoniK.Core can be installed only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
 
 ### Prerequisites
 
