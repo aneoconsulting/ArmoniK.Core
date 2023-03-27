@@ -20,7 +20,7 @@ ArmoniK.Core can be setup only on Linux machines. For Windows users, it is possi
 - [Just](https://github.com/casey/just) >= 1.8.0
 - [Dotnet](https://dotnet.microsoft.com/en-us/) >= 6.0
 - [Docker](https://www.docker.com/) >= 20.10.16
-- [GitHub CLI](https://cli.github.com/) >= 2.23.0
+- [GitHub CLI](https://cli.github.com/) >= 2.23.0 (optional)
 
 ### Local deployment
 
