@@ -30,8 +30,13 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
+/// <summary>
+///   Class for building RabbitMQ object and Queue interfaces through Dependency Injection
+/// </summary>
+[PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
 {
+  /// <inheritdoc />
   [PublicAPI]
   public void Build(IServiceCollection   serviceCollection,
                     ConfigurationManager configuration,

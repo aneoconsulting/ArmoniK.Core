@@ -21,13 +21,21 @@ using System.Runtime.Loader;
 
 namespace ArmoniK.Core.Common.Injection;
 
+/// <summary>
+///   Class holding load context for Adapters
+/// </summary>
 public class AdapterLoadContext : AssemblyLoadContext
 {
   private readonly AssemblyDependencyResolver resolver_;
 
-  public AdapterLoadContext(string pluginPath)
-    => resolver_ = new AssemblyDependencyResolver(pluginPath);
+  /// <summary>
+  ///   Instantiate a <see cref="AdapterLoadContext" /> with the path to the assembly to be loaded.
+  /// </summary>
+  /// <param name="assemblyPath">Path to the assembly</param>
+  public AdapterLoadContext(string assemblyPath)
+    => resolver_ = new AssemblyDependencyResolver(assemblyPath);
 
+  /// <inheritdoc />
   protected override Assembly? Load(AssemblyName assemblyName)
   {
     var assemblyPath = resolver_.ResolveAssemblyToPath(assemblyName);
@@ -36,6 +44,7 @@ public class AdapterLoadContext : AssemblyLoadContext
              : null;
   }
 
+  /// <inheritdoc />
   protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
   {
     var libraryPath = resolver_.ResolveUnmanagedDllToPath(unmanagedDllName);

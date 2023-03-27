@@ -29,9 +29,14 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
+/// <summary>
+///   Class for building Amqp object and Queue interfaces through Dependency Injection
+/// </summary>
 [PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
 {
+  /// <inheritdoc />
+  [PublicAPI]
   public void Build(IServiceCollection   serviceCollection,
                     ConfigurationManager configuration,
                     ILogger              logger)

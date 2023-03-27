@@ -21,8 +21,17 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Base;
 
+/// <summary>
+///   Interface to build object for Adapters through Dependency Injection
+/// </summary>
 public interface IDependencyInjectionBuildable
 {
+  /// <summary>
+  ///   Initialize object through Dependency Injection
+  /// </summary>
+  /// <param name="serviceCollection">Collection of service descriptors</param>
+  /// <param name="configuration">Access to application configuration</param>
+  /// <param name="logger">Instance of logger to produce logs during object initialization</param>
   void Build(IServiceCollection   serviceCollection,
              ConfigurationManager configuration,
              ILogger              logger);
