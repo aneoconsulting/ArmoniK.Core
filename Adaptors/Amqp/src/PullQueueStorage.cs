@@ -94,8 +94,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                         $"{Options.PartitionId}###q{i}")))
                            .ToArray();
 
-      var senders   = Task.WhenAll((IEnumerable<Task>)senders_.Select(async lazy => await lazy));
-      var receivers = Task.WhenAll((IEnumerable<Task>)receivers_.Select(async lazy => await lazy));
+      var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
+      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
       await Task.WhenAll(senders,
                          receivers)
                 .ConfigureAwait(false);
