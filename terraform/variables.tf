@@ -204,7 +204,7 @@ variable "grafana_image" {
 }
 
 variable "prometheus_image" {
-  type = string
+  type    = string
   default = "prom/prometheus:latest"
 }
 
