@@ -10,6 +10,12 @@ resource "docker_container" "grafana" {
     name = var.network
   }
 
+  env = [
+    "GF_AUTH_ANONYMOUS_ENABLED=true",
+    "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin",
+    "GF_AUTH_DISABLE_LOGIN_FORM=true"
+  ]
+
   ports {
     internal = 3000
     external = var.exposed_port
