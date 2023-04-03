@@ -1,14 +1,14 @@
 variable "image" {
-  type        = string
+  type = string
 }
 
 variable "network" {
-  type        = string
+  type = string
 
 }
 
 variable "exposed_port" {
-  type = number
+  type    = number
   default = 3000
 
 }
