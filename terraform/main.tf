@@ -73,7 +73,6 @@ module "queue_rabbitmq" {
   image      = var.queue_storage.image
   protocol   = var.queue_storage.protocol
   network    = docker_network.armonik.name
-  log_driver = module.fluenbit.log_driver
 }
 
 module "queue_activemq" {
