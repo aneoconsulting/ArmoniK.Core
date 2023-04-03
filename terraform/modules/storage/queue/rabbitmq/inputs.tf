@@ -34,3 +34,10 @@ variable "exposed_ports" {
     amqp_connector  = 5672
   }
 }
+
+variable "log_driver" {
+  type = object({
+    name    = string,
+    address = string,
+  })
+}

@@ -16,6 +16,24 @@ module "zipkin" {
   network = docker_network.armonik.name
 }
 
+module "tempo" {
+  source  = "./modules/monitoring/tempo"
+  image   = var.tempo_image
+  network = docker_network.armonik.name
+}
+
+module "grafana" {
+  source  = "./modules/monitoring/grafana"
+  image   = var.grafana_image
+  network = docker_network.armonik.name
+}
+
+module "prometheus" {
+  source  = "./modules/monitoring/prometheus"
+  image   = var.prometheus_image
+  network = docker_network.armonik.name
+}
+
 module "database" {
   source         = "./modules/storage/database/mongo"
   image          = var.database_image
@@ -55,6 +73,7 @@ module "queue_rabbitmq" {
   image      = var.queue_storage.image
   protocol   = var.queue_storage.protocol
   network    = docker_network.armonik.name
+  log_driver = module.fluenbit.log_driver
 }
 
 module "queue_activemq" {

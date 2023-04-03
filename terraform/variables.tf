@@ -193,6 +193,21 @@ variable "zipkin_image" {
   default = "openzipkin/zipkin:latest"
 }
 
+variable "tempo_image" {
+  type    = string
+  default = "grafana/tempo:latest"
+}
+
+variable "grafana_image" {
+  type    = string
+  default = "grafana/grafana:latest"
+}
+
+variable "prometheus_image" {
+  type = string
+  default = "prom/prometheus:latest"
+}
+
 variable "database_image" {
   type    = string
   default = "mongo"
