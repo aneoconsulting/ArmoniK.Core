@@ -81,10 +81,12 @@ public class AdapterLoadingTest
     Dictionary<string, string?> config = new()
                                          {
                                            {
-                                             $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}", path
+                                             $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
+                                             path
                                            },
                                            {
-                                             $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", className
+                                             $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
+                                             className
                                            },
                                            {
                                              "Amqp:User", "User"
@@ -110,7 +112,7 @@ public class AdapterLoadingTest
                                         "Amqp:User", "User"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", ""
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}", ""
                                       },
                                     }).SetArgDisplayNames("Empty class");
       yield return new TestCaseData(new Dictionary<string, string?>
@@ -119,10 +121,11 @@ public class AdapterLoadingTest
                                         "Amqp:User", "User"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", ""
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}", ""
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}", "path"
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
+                                        "path"
                                       },
                                     }).SetArgDisplayNames("Empty path");
       yield return new TestCaseData(new Dictionary<string, string?>
@@ -131,10 +134,11 @@ public class AdapterLoadingTest
                                         "Amqp:User", "User"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", "invalid class"
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
+                                        "invalid class"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
                                         "invalid path"
                                       },
                                     }).SetArgDisplayNames("invalid path");
@@ -145,11 +149,11 @@ public class AdapterLoadingTest
                                         "Amqp:User", "User"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}",
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
                                         "ArmoniK.Core.Adapters.Amqp.ConnectionAmqp"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
                                         $"{SolutionRoot}{AmqpPath}"
                                       },
                                     }).SetArgDisplayNames("Not implemented");
@@ -171,10 +175,11 @@ public class AdapterLoadingTest
                                         "Amqp:User", "User"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.ClassName)}", "invalid class"
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
+                                        "invalid class"
                                       },
                                       {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueStorage)}:{nameof(Components.QueueStorage.AdapterAbsolutePath)}",
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
                                         $"{SolutionRoot}{AmqpPath}"
                                       },
                                     }).SetArgDisplayNames("invalid class");

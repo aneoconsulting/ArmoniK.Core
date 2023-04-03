@@ -55,7 +55,7 @@ public class QueueStorageTestsBase
   protected bool RunTests;
 
   /* Function be override so it returns the suitable instance
-   * of QueueStorage to the corresponding interface implementation */
+   * of QueueAdaptorSettings to the corresponding interface implementation */
   protected virtual Task GetQueueStorageInstance()
     => Task.CompletedTask;
 

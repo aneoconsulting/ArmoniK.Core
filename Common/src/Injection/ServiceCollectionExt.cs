@@ -82,7 +82,7 @@ public static class ServiceCollectionExt
                                             ConfigurationManager    configuration,
                                             ILogger                 logger)
   {
-    var queueSettings = configuration.GetRequiredValue<AdapterSettings>($"{Components.SettingSection}:{nameof(Components.QueueStorage)}");
+    var queueSettings = configuration.GetRequiredValue<AdapterSettings>($"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}");
 
     logger.LogInformation("Queue settings for loading adapter {@queueSettings}",
                           queueSettings);
