@@ -16,12 +16,6 @@ resource "docker_container" "queue" {
     name = var.network
   }
 
-  log_driver = var.log_driver.name
-
-  log_opts = {
-    fluentd-address = var.log_driver.address
-  }
-
   ports {
     internal = 5672
     external = var.exposed_ports.amqp_connector
