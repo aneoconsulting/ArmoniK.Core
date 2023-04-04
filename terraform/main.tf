@@ -16,12 +16,6 @@ module "zipkin" {
   network = docker_network.armonik.name
 }
 
-module "tempo" {
-  source  = "./modules/monitoring/tempo"
-  image   = var.tempo_image
-  network = docker_network.armonik.name
-}
-
 module "grafana" {
   source  = "./modules/monitoring/grafana"
   image   = var.grafana_image
