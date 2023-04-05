@@ -18,6 +18,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
+
 using Grpc.Core;
 using Grpc.Health.V1;
 

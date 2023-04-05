@@ -18,7 +18,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Adapters.QueueCommon;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
@@ -29,8 +29,8 @@ public class QueueStorage : QueueStorageBase
 
   protected readonly int NbLinks;
 
-  public QueueStorage(Common.Injection.Options.Amqp options,
-                      IConnectionAmqp               connectionAmqp)
+  public QueueStorage(QueueCommon.Amqp options,
+                      IConnectionAmqp  connectionAmqp)
     : base(options)
   {
     ConnectionAmqp = connectionAmqp;

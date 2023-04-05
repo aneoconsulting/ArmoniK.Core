@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace ArmoniK.Core.Common.Utils;
+namespace ArmoniK.Core.Utils;
 
 public static class IQueryableExt
 {

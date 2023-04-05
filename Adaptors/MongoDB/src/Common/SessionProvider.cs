@@ -19,7 +19,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 
 using JetBrains.Annotations;
 

@@ -21,10 +21,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Adapters.QueueCommon;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Logging;
 
@@ -61,11 +59,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                             string              partitionId,
                             int                 priority)
   {
-    using var _ = logger_.LogFunction();
-
     if (!IsInitialized)
     {
-      throw new ArmoniKException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
+      throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
     ConnectionRabbit.Channel!.ExchangeDeclare("ArmoniK.QueueExchange",

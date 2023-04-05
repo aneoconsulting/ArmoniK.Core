@@ -19,11 +19,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Adapters.QueueCommon;
 
 public class QueueStorageBase : IQueueStorage
 {

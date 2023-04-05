@@ -128,6 +128,29 @@ jobs:
             ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
             ${{ matrix.img }}:latest
 
+  publish-nuget:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+    env:
+      VERSION: ${{ needs.versionning.outputs.release }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Build the package
+      run: |
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+
+    - name: Pack the package
+      run: |
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+
+    - name: Push the package
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
 
   update-changelog:
     runs-on: ubuntu-latest

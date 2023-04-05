@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
 namespace ArmoniK.Core.Common.Storage;

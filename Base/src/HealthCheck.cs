@@ -23,7 +23,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core.Common;
+namespace ArmoniK.Core.Base;
 
 /// <summary>
 ///   Implementation of <see cref="IHealthCheck" /> that manages FailureStatus and simplifies the implementation of Health

@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;

@@ -7,6 +7,8 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj", "Control/PartitionMetrics/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
+COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
+COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj", "Adaptors/Amqp/src/"]
 COPY ["Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj", "Adaptors/RabbitMQ/src/"]

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
+
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>

@@ -15,22 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace ArmoniK.Core.Common;
+namespace ArmoniK.Core.Base;
 
 /// <summary>
-///   Represents a class initializable through the given method and exposes a health check.
+///   Interface representing a queue
 /// </summary>
-public interface IInitializable : IHealthCheckProvider
+public interface IQueueStorage : IInitializable
 {
   /// <summary>
-  ///   Executes an initialization process for the class
+  ///   Max priority supported by the queue
   /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task Init(CancellationToken cancellationToken);
+  public int MaxPriority { get; }
 }

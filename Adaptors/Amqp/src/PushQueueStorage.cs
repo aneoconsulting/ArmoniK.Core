@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,9 +25,7 @@ using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
 
-using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -64,9 +63,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   private readonly ObjectPool<Session>       sessionPool_;
 
 
-  public PushQueueStorage(Common.Injection.Options.Amqp options,
-                          IConnectionAmqp               connectionAmqp,
-                          ILogger<PushQueueStorage>     logger)
+  public PushQueueStorage(QueueCommon.Amqp          options,
+                          IConnectionAmqp           connectionAmqp,
+                          ILogger<PushQueueStorage> logger)
     : base(options,
            connectionAmqp)
   {
@@ -80,11 +79,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                       int                 priority          = 1,
                                       CancellationToken   cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
-
     if (!IsInitialized)
     {
-      throw new ArmoniKException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
+      throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
     /* Priority is handled using multiple queues; there should be at least one queue which

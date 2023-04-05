@@ -17,7 +17,7 @@
 
 using Amqp;
 
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 

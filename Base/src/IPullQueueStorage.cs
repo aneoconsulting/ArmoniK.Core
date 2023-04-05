@@ -15,26 +15,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
 
-using JetBrains.Annotations;
-
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-
-namespace ArmoniK.Core.Common;
+namespace ArmoniK.Core.Base;
 
 /// <summary>
-///   Represents a simpler health check than <see cref="IHealthCheck" />.
+///   Interface to retrieve messages from the queue
 /// </summary>
-[PublicAPI]
-public interface IHealthCheckProvider
+public interface IPullQueueStorage : IQueueStorage
 {
   /// <summary>
-  ///   Checks the status of a class for the given health check type.
+  ///   Gets messages from the queue
   /// </summary>
-  /// <param name="tag">Health check for which the class has to answer.</param>
+  /// <param name="nbMessages">Number of messages to retrieve</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   The result of the check containing the status of the class for the health check type.
+  ///   Enumerator allowing async iteration over the message queue
   /// </returns>
-  Task<HealthCheckResult> Check(HealthCheckTag tag);
+  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                           CancellationToken cancellationToken = default);
 }

@@ -15,15 +15,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Storage;
+using System;
+using System.Threading;
 
-/// <summary>
-///   Interface representing a queue
-/// </summary>
-public interface IQueueStorage : IInitializable
+namespace ArmoniK.Core.Base;
+
+public enum QueueMessageStatus
 {
-  /// <summary>
-  ///   Max priority supported by the queue
-  /// </summary>
-  public int MaxPriority { get; }
+  Waiting,
+  Failed,
+  Running,
+  Postponed,
+  Processed,
+  Cancelled,
+  Poisonous,
+}
+
+public interface IQueueMessageHandler : IAsyncDisposable
+{
+  CancellationToken CancellationToken { get; set; }
+
+  string MessageId { get; }
+
+  string TaskId { get; }
+
+  QueueMessageStatus Status { get; set; }
+
+  DateTime ReceptionDateTime { get; init; }
 }

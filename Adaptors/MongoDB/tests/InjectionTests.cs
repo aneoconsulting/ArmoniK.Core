@@ -20,8 +20,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Adapters.MongoDB.Options;
-using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

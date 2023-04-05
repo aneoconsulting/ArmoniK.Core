@@ -21,14 +21,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.RabbitMQ;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.DependencyResolver;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -70,10 +69,8 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddRabbit(builder.Configuration,
-                        logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
+             .AddQueue(builder.Configuration,
+                       logger.GetLogger())
              .AddInitializedOption<Common.Injection.Options.DependencyResolver>(builder.Configuration,
                                                                                 Common.Injection.Options.DependencyResolver.SettingSection)
              .AddSingletonWithHealthCheck<DependencyResolver>(nameof(DependencyResolver))

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -15,44 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Utils;
+using JetBrains.Annotations;
 
-public class AsyncLazy<T> : Lazy<Task<T>>
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+namespace ArmoniK.Core.Base;
+
+/// <summary>
+///   Represents a simpler health check than <see cref="IHealthCheck" />.
+/// </summary>
+[PublicAPI]
+public interface IHealthCheckProvider
 {
-  public AsyncLazy(Func<T> valueFactory)
-    : base(() => Task.FromResult(valueFactory()))
-  {
-  }
-
-  public AsyncLazy(Func<Task<T>> taskFactory)
-    : base(taskFactory)
-  {
-  }
-
-  public TaskAwaiter<T> GetAwaiter()
-    => Value.GetAwaiter();
-}
-
-public class AsyncLazy : Lazy<Task>
-{
-  public AsyncLazy(Action valueFactory)
-    : base(() =>
-           {
-             valueFactory();
-             return Task.CompletedTask;
-           })
-  {
-  }
-
-  public AsyncLazy(Func<Task> taskFactory)
-    : base(taskFactory)
-  {
-  }
-
-  public TaskAwaiter GetAwaiter()
-    => Value.GetAwaiter();
+  /// <summary>
+  ///   Checks the status of a class for the given health check type.
+  /// </summary>
+  /// <param name="tag">Health check for which the class has to answer.</param>
+  /// <returns>
+  ///   The result of the check containing the status of the class for the health check type.
+  /// </returns>
+  Task<HealthCheckResult> Check(HealthCheckTag tag);
 }

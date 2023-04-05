@@ -20,7 +20,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Utils;
+namespace ArmoniK.Core.Utils;
 
 /// <summary>
 ///   Limit the access to a function call to a single thread,

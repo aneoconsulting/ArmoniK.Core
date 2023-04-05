@@ -19,11 +19,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
-
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Base;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
@@ -59,8 +57,6 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    using var _ = logger_.LogFunction(MessageId,
-                                      functionName: $"{nameof(QueueMessageHandler)}.{nameof(DisposeAsync)}");
     await disposeFunc_(Status)
       .ConfigureAwait(false);
     GC.SuppressFinalize(this);

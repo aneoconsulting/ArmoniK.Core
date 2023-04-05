@@ -18,7 +18,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -55,13 +55,13 @@ public class QueueStorageTestsBase
   protected bool RunTests;
 
   /* Function be override so it returns the suitable instance
-   * of QueueStorage to the corresponding interface implementation */
+   * of QueueAdaptorSettings to the corresponding interface implementation */
   protected virtual Task GetQueueStorageInstance()
     => Task.CompletedTask;
 
-  protected Injection.Options.Amqp? Options;
+  protected Adapters.QueueCommon.Amqp? Options;
 
-  protected static Injection.Options.Amqp CreateDefaultOptions()
+  protected static Adapters.QueueCommon.Amqp CreateDefaultOptions()
     => new()
        {
          Host              = "localhost",

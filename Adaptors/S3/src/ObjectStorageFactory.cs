@@ -18,7 +18,7 @@
 using Amazon.S3;
 using Amazon.S3.Util;
 
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
