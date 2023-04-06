@@ -45,6 +45,11 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
+    - name: Get type of VM
+        run: |
+           lscpu
+           uname -a
+           grep MemTotal /proc/meminfo
     - name: Checkout
       uses: actions/checkout@v3
       with:
