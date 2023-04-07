@@ -166,6 +166,7 @@ public class AgentTest
                            new Result(sessionData.SessionId,
                                       DataDependency1,
                                       "",
+                                      "",
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
@@ -173,11 +174,29 @@ public class AgentTest
                            new Result(sessionData.SessionId,
                                       DataDependency2,
                                       "",
+                                      "",
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       Array.Empty<byte>()),
-                         })
+                           new Result(Session,
+                                      ExpectedOutput1,
+                                      "",
+                                      "",
+                                      ResultStatus.Created,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      Array.Empty<byte>()),
+                           new Result(Session,
+                                      ExpectedOutput2,
+                                      "",
+                                      "",
+                                      ResultStatus.Created,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      Array.Empty<byte>()),
+                         },
+                         CancellationToken.None)
                  .Wait();
 
       var createdTasks = submitter.CreateTasks(Session,
@@ -487,7 +506,7 @@ public class AgentTest
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(ExpectedOutput1,
-                    resultData.Name);
+                    resultData.ResultId);
     Assert.AreEqual(ResultStatus.Completed,
                     resultData.Status);
     Assert.AreEqual(holder.TaskData.TaskId,
@@ -538,6 +557,25 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
+    var results = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                           {
+                                                             CommunicationToken = holder.Token,
+                                                             SessionId          = holder.Session,
+                                                             Results =
+                                                             {
+                                                               new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                               {
+                                                                 Name = "Task1EOK",
+                                                               },
+                                                               new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                               {
+                                                                 Name = "Task2EOK",
+                                                               },
+                                                             },
+                                                           },
+                                                           CancellationToken.None)
+                              .ConfigureAwait(false);
+
     var requests = new[]
                    {
                      new CreateTaskRequest
@@ -561,7 +599,8 @@ public class AgentTest
                                                },
                                                ExpectedOutputKeys =
                                                {
-                                                 "Task1EOK",
+                                                 results.Results.First()
+                                                        .ResultId,
                                                },
                                              },
                                   },
@@ -603,7 +642,8 @@ public class AgentTest
                                                },
                                                ExpectedOutputKeys =
                                                {
-                                                 "Task2EOK",
+                                                 results.Results.Last()
+                                                        .ResultId,
                                                },
                                              },
                                   },
@@ -657,6 +697,21 @@ public class AgentTest
                     createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo));
 
 
+    var results2 = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                            {
+                                                              CommunicationToken = holder.Token,
+                                                              SessionId          = holder.Session,
+                                                              Results =
+                                                              {
+                                                                new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                {
+                                                                  Name = "Task3EOK",
+                                                                },
+                                                              },
+                                                            },
+                                                            CancellationToken.None)
+                               .ConfigureAwait(false);
+
     var requests2 = new[]
                     {
                       new CreateTaskRequest
@@ -680,7 +735,8 @@ public class AgentTest
                                                 },
                                                 ExpectedOutputKeys =
                                                 {
-                                                  "Task3EOK",
+                                                  results2.Results.Single()
+                                                          .ResultId,
                                                 },
                                               },
                                    },

@@ -95,6 +95,7 @@ public class SimpleResultTable : IResultTable
        {
          new(SessionId,
              OutputId,
+             "",
              TaskId,
              ResultStatus.Completed,
              new List<string>(),
@@ -122,6 +123,7 @@ public class SimpleResultTable : IResultTable
                         {
                           new(SessionId,
                               "ResultName",
+                              "",
                               TaskId,
                               ResultStatus.Completed,
                               new List<string>(),
@@ -156,6 +158,11 @@ public class SimpleResultTable : IResultTable
                                                                              Status   = ResultStatus.Completed,
                                                                            },
                                                                          });
+
+  public Task SetTaskOwnership(string                                        sessionId,
+                               ICollection<(string resultId, string taskId)> requests,
+                               CancellationToken                             cancellationToken = default)
+    => Task.CompletedTask;
 
   public Task AbortTaskResults(string            sessionId,
                                string            ownerTaskId,

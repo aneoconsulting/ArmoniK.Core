@@ -135,7 +135,7 @@ public class Submitter : ISubmitter
 
       if (dependencies.Any())
       {
-        // If there is dependencies, we need to register the current task as a dependant of its dependencies.
+        // If there is dependencies, we need to register the current task as a dependent of its dependencies.
         // This should be done *before* verifying if the dependencies are satisfied in order to avoid missing
         // any result completion.
         // If a result is completed at the same time, either the submitter will see the result has been completed,
@@ -154,7 +154,7 @@ public class Submitter : ISubmitter
                                                                   dependencies,
                                                                   cancellationToken)
                                                       .Where(result => result.Status == ResultStatus.Completed)
-                                                      .Select(result => result.Name)
+                                                      .Select(result => result.ResultId)
                                                       .ToListAsync(cancellationToken)
                                                       .ConfigureAwait(false);
 
@@ -679,6 +679,12 @@ public class Submitter : ISubmitter
                                  cancellationToken)
                     .ConfigureAwait(false);
 
+    await resultTable_.SetTaskOwnership(sessionId,
+                                        requests.SelectMany(r => r.ExpectedOutputKeys.Select(key => (key, r.Id)))
+                                                .ToIList(),
+                                        cancellationToken)
+                      .ConfigureAwait(false);
+
     return (requests, options.Priority, options.PartitionId);
   }
 
@@ -703,32 +709,12 @@ public class Submitter : ISubmitter
                                                         .ConfigureAwait(false));
     }
 
-    var taskDataModels = requests.Select(request =>
-                                         {
-                                           var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
-                                                                                   .ToList();
-
-                                           var resultModel = request.ExpectedOutputKeys.Except(intersect)
-                                                                    .Select(key => new Result(session,
-                                                                                              key,
-                                                                                              request.Id,
-                                                                                              ResultStatus.Created,
-                                                                                              new List<string>(),
-                                                                                              DateTime.UtcNow,
-                                                                                              Array.Empty<byte>()));
-
-                                           return (Result: resultModel, Req: new IResultTable.ChangeResultOwnershipRequest(intersect,
-                                                                                                                           request.Id));
-                                         });
-
+    var taskDataModels = requests.Select(request => new IResultTable.ChangeResultOwnershipRequest(parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys),
+                                                                                                  request.Id));
     await resultTable_.ChangeResultOwnership(session,
                                              parentTaskId,
-                                             taskDataModels.Select(tuple => tuple.Req),
+                                             taskDataModels,
                                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    await resultTable_.Create(taskDataModels.SelectMany(task => task.Result),
-                              cancellationToken)
                       .ConfigureAwait(false);
   }
 }

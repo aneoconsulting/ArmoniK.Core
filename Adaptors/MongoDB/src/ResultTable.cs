@@ -100,10 +100,7 @@ public class ResultTable : IResultTable
 
     var resultCollection = resultCollectionProvider_.Get();
 
-    var ids = resultIds.Select(id => Result.GenerateId(sessionId,
-                                                       id))
-                       .ToList();
-    var result = await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => ids.Contains(model.Id)),
+    var result = await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => resultIds.Contains(model.ResultId)),
                                                         Builders<Result>.Update.AddToSetEach(model => model.DependentTasks,
                                                                                              taskIds),
                                                         cancellationToken: cancellationToken)
@@ -130,8 +127,7 @@ public class ResultTable : IResultTable
     try
     {
       return await resultCollection.AsQueryable()
-                                   .Where(result => result.Id == Result.GenerateId(sessionId,
-                                                                                   resultId))
+                                   .Where(result => result.ResultId == resultId)
                                    .Select(result => result.DependentTasks)
                                    .SingleAsync(cancellationToken)
                                    .ConfigureAwait(false);
@@ -143,7 +139,7 @@ public class ResultTable : IResultTable
   }
 
   async Task<Result> IResultTable.GetResult(string            sessionId,
-                                            string            key,
+                                            string            resultId,
                                             CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
@@ -154,20 +150,19 @@ public class ResultTable : IResultTable
     try
     {
       return await resultCollection.AsQueryable(sessionHandle)
-                                   .Where(model => model.Id == Result.GenerateId(sessionId,
-                                                                                 key))
+                                   .Where(model => model.ResultId == resultId)
                                    .SingleAsync(cancellationToken)
                                    .ConfigureAwait(false);
     }
     catch (InvalidOperationException)
     {
-      throw new ResultNotFoundException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{resultId}' not found");
     }
   }
 
 
   public IAsyncEnumerable<Result> GetResults(string              sessionId,
-                                             IEnumerable<string> keys,
+                                             IEnumerable<string> resultIds,
                                              CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetResults)}");
@@ -176,17 +171,14 @@ public class ResultTable : IResultTable
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    var ids = keys.Select(id => Result.GenerateId(sessionId,
-                                                  id))
-                  .ToList();
     return resultCollection.AsQueryable(sessionHandle)
-                           .Where(model => ids.Contains(model.Id))
+                           .Where(model => resultIds.Contains(model.ResultId))
                            .ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />
   public async Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                             IEnumerable<string> keys,
+                                                                             IEnumerable<string> resultIds,
                                                                              CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
@@ -195,12 +187,8 @@ public class ResultTable : IResultTable
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    var ids = keys.Select(id => Result.GenerateId(sessionId,
-                                                  id))
-                  .ToList();
-
     return await resultCollection.AsQueryable(sessionHandle)
-                                 .Where(model => ids.Contains(model.Id))
+                                 .Where(model => resultIds.Contains(model.ResultId))
                                  .GroupBy(model => model.Status)
                                  .Select(models => new ResultStatusCount(models.Key,
                                                                          models.Count()))
@@ -239,7 +227,7 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task SetResult(string            sessionId,
                               string            ownerTaskId,
-                              string            key,
+                              string            resultId,
                               byte[]            smallPayload,
                               CancellationToken cancellationToken = default)
   {
@@ -249,14 +237,13 @@ public class ResultTable : IResultTable
     activity?.SetTag($"{nameof(SetResult)}_ownerTaskId",
                      ownerTaskId);
     activity?.SetTag($"{nameof(SetResult)}_key",
-                     key);
+                     resultId);
     var resultCollection = resultCollectionProvider_.Get();
 
     Logger.LogInformation("Update result {resultId} to completed",
-                          key);
+                          resultId);
 
-    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Id == Result.GenerateId(sessionId,
-                                                                                                                         key) && model.OwnerTaskId == ownerTaskId),
+    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.ResultId == resultId && model.OwnerTaskId == ownerTaskId),
                                                     Builders<Result>.Update.Set(model => model.Status,
                                                                                 ResultStatus.Completed)
                                                                     .Set(model => model.Data,
@@ -265,14 +252,14 @@ public class ResultTable : IResultTable
                                     .ConfigureAwait(false);
     if (res.ModifiedCount == 0)
     {
-      throw new ResultNotFoundException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{resultId}' not found");
     }
   }
 
   /// <inheritdoc />
   public async Task SetResult(string            sessionId,
                               string            ownerTaskId,
-                              string            key,
+                              string            resultId,
                               CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
@@ -281,22 +268,21 @@ public class ResultTable : IResultTable
     activity?.SetTag($"{nameof(SetResult)}_ownerTaskId",
                      ownerTaskId);
     activity?.SetTag($"{nameof(SetResult)}_key",
-                     key);
+                     resultId);
 
     var resultCollection = resultCollectionProvider_.Get();
 
     Logger.LogInformation("Update result {resultId} to completed",
-                          key);
+                          resultId);
 
-    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Id == Result.GenerateId(sessionId,
-                                                                                                                         key) && model.OwnerTaskId == ownerTaskId),
+    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.ResultId == resultId && model.OwnerTaskId == ownerTaskId),
                                                     Builders<Result>.Update.Set(model => model.Status,
                                                                                 ResultStatus.Completed),
                                                     cancellationToken: cancellationToken)
                                     .ConfigureAwait(false);
     if (res.MatchedCount == 0)
     {
-      throw new ResultNotFoundException($"Key '{key}' not found for '{ownerTaskId}'");
+      throw new ResultNotFoundException($"Key '{resultId}' not found for '{ownerTaskId}'");
     }
   }
 
@@ -310,21 +296,39 @@ public class ResultTable : IResultTable
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    var ids = keys.Select(id => Result.GenerateId(sessionId,
-                                                  id))
-                  .ToList();
-
     return await resultCollection.AsQueryable(sessionHandle)
-                                 .Where(model => ids.Contains(model.Id))
+                                 .Where(model => keys.Contains(model.ResultId))
                                  .Select(model => new GetResultStatusReply.Types.IdStatus
                                                   {
-                                                    ResultId = model.Name,
+                                                    ResultId = model.ResultId,
                                                     Status   = model.Status,
                                                   })
                                  .ToListAsync(cancellationToken)
                                  .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
+  public async Task SetTaskOwnership(string                                        sessionId,
+                                     ICollection<(string resultId, string taskId)> requests,
+                                     CancellationToken                             cancellationToken = default)
+  {
+    using var activity         = activitySource_.StartActivity($"{nameof(SetTaskOwnership)}");
+    var       resultCollection = resultCollectionProvider_.Get();
+
+    var res = await resultCollection.BulkWriteAsync(requests.Select(r => new UpdateOneModel<Result>(Builders<Result>.Filter.Eq(model => model.ResultId,
+                                                                                                                               r.resultId),
+                                                                                                    Builders<Result>.Update.Set(model => model.OwnerTaskId,
+                                                                                                                                r.taskId))),
+                                                    cancellationToken: cancellationToken)
+                                    .ConfigureAwait(false);
+
+    if (res.ModifiedCount != requests.Count())
+    {
+      throw new ResultNotFoundException("One of the requested result was not found");
+    }
+  }
+
+  /// <inheritdoc />
   public async Task AbortTaskResults(string            sessionId,
                                      string            ownerTaskId,
                                      CancellationToken cancellationToken = default)
@@ -354,11 +358,10 @@ public class ResultTable : IResultTable
 
     await resultCollection.BulkWriteAsync(requests.Select(r =>
                                                           {
-                                                            var ids = r.Keys.Select(id => Result.GenerateId(sessionId,
-                                                                                                            id))
-                                                                       .ToList();
-                                                            return new UpdateManyModel<Result>(Builders<Result>.Filter.And(Builders<Result>.Filter.In(model => model.Id,
-                                                                                                                                                      ids),
+                                                            return new UpdateManyModel<Result>(Builders<Result>.Filter.And(Builders<Result>.Filter.In(model
+                                                                                                                                                        => model
+                                                                                                                                                          .ResultId,
+                                                                                                                                                      r.Keys),
                                                                                                                            Builders<Result>.Filter
                                                                                                                                            .Eq(model
                                                                                                                                                  => model.OwnerTaskId,
@@ -386,8 +389,7 @@ public class ResultTable : IResultTable
                      key);
     var resultCollection = resultCollectionProvider_.Get();
 
-    var result = await resultCollection.DeleteOneAsync(model => model.Id == Result.GenerateId(session,
-                                                                                              key),
+    var result = await resultCollection.DeleteOneAsync(model => model.ResultId == key,
                                                        cancellationToken)
                                        .ConfigureAwait(false);
 
@@ -414,7 +416,7 @@ public class ResultTable : IResultTable
 
     await foreach (var result in resultCollection.AsQueryable(sessionHandle)
                                                  .Where(model => model.SessionId == sessionId)
-                                                 .Select(model => model.Id)
+                                                 .Select(model => model.ResultId)
                                                  .ToAsyncEnumerable()
                                                  .WithCancellation(cancellationToken)
                                                  .ConfigureAwait(false))
