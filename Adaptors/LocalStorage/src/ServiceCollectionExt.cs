@@ -26,7 +26,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ArmoniK.Core.Adapters.LocalStorage;
 
@@ -53,10 +52,10 @@ public static class ServiceCollectionExt
 
     logger.LogDebug("setup local storage");
 
-    serviceCollection.AddSingletonWithHealthCheck<IObjectStorageFactory>(nameof(IObjectStorageFactory),
-                                                                         sp => new ObjectStorageFactory(storageOptions.Path,
-                                                                                                        storageOptions.ChunkSize,
-                                                                                                        sp.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance));
+    serviceCollection.AddSingletonWithHealthCheck<IObjectStorage>(nameof(IObjectStorage),
+                                                                  sp => new ObjectStorage(storageOptions.Path,
+                                                                                          storageOptions.ChunkSize,
+                                                                                          sp.GetRequiredService<ILogger<ObjectStorage>>()));
 
     return serviceCollection;
   }

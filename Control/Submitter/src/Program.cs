@@ -198,13 +198,13 @@ public static class Program
       }
 
       var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
-      var objectFactory               = app.Services.GetRequiredService<IObjectStorageFactory>();
+      var objectStorage               = app.Services.GetRequiredService<IObjectStorage>();
       var pushQueueStorage            = app.Services.GetRequiredService<IPushQueueStorage>();
       var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
       var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
       var sessionCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<SessionData, SessionDataModelMapping>>();
       var resultCollectionProvider    = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
-      var taskObjectFactory           = objectFactory.Init(CancellationToken.None);
+      var taskObjectFactory           = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
 
       await sessionProvider.Init(CancellationToken.None)

@@ -48,7 +48,7 @@ public class Submitter : ISubmitter
 {
   private readonly ActivitySource              activitySource_;
   private readonly ILogger<Submitter>          logger_;
-  private readonly IObjectStorageFactory       objectStorageFactory_;
+  private readonly IObjectStorage              objectStorage_;
   private readonly IPartitionTable             partitionTable_;
   private readonly IPushQueueStorage           pushQueueStorage_;
   private readonly IResultTable                resultTable_;
@@ -58,7 +58,7 @@ public class Submitter : ISubmitter
 
   [UsedImplicitly]
   public Submitter(IPushQueueStorage           pushQueueStorage,
-                   IObjectStorageFactory       objectStorageFactory,
+                   IObjectStorage              objectStorage,
                    ILogger<Submitter>          logger,
                    ISessionTable               sessionTable,
                    ITaskTable                  taskTable,
@@ -67,15 +67,15 @@ public class Submitter : ISubmitter
                    Injection.Options.Submitter submitterOptions,
                    ActivitySource              activitySource)
   {
-    objectStorageFactory_ = objectStorageFactory;
-    logger_               = logger;
-    sessionTable_         = sessionTable;
-    taskTable_            = taskTable;
-    resultTable_          = resultTable;
-    partitionTable_       = partitionTable;
-    submitterOptions_     = submitterOptions;
-    activitySource_       = activitySource;
-    pushQueueStorage_     = pushQueueStorage;
+    objectStorage_    = objectStorage;
+    logger_           = logger;
+    sessionTable_     = sessionTable;
+    taskTable_        = taskTable;
+    resultTable_      = resultTable;
+    partitionTable_   = partitionTable;
+    submitterOptions_ = submitterOptions;
+    activitySource_   = activitySource;
+    pushQueueStorage_ = pushQueueStorage;
   }
 
   /// <inheritdoc />
@@ -244,7 +244,6 @@ public class Submitter : ISubmitter
                                  CancellationToken                cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
-    var       storage  = ResultStorage(request.Session);
 
     var result = await resultTable_.GetResult(request.Session,
                                               request.ResultId,
@@ -302,9 +301,9 @@ public class Submitter : ISubmitter
       }
     }
 
-    await foreach (var chunk in storage.GetValuesAsync(request.ResultId,
-                                                       cancellationToken)
-                                       .ConfigureAwait(false))
+    await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+                                                              cancellationToken)
+                                              .ConfigureAwait(false))
     {
       await responseStream.WriteAsync(new ResultReply
                                       {
@@ -446,10 +445,9 @@ public class Submitter : ISubmitter
                              taskData.TaskId);
 
       //Discard value is used to remove warnings CS4014 !!
-      _ = Task.Factory.StartNew(async () => await PayloadStorage(taskData.SessionId)
-                                                  .TryDeleteAsync(taskData.TaskId,
-                                                                  CancellationToken.None)
-                                                  .ConfigureAwait(false),
+      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(taskData.TaskId,
+                                                                                CancellationToken.None)
+                                                                .ConfigureAwait(false),
                                 cancellationToken);
     }
     else
@@ -569,12 +567,11 @@ public class Submitter : ISubmitter
                               CancellationToken                      cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
-    var       storage  = ResultStorage(sessionId);
 
-    await storage.AddOrUpdateAsync(key,
-                                   chunks,
-                                   cancellationToken)
-                 .ConfigureAwait(false);
+    await objectStorage_.AddOrUpdateAsync(key,
+                                          chunks,
+                                          cancellationToken)
+                        .ConfigureAwait(false);
 
     await resultTable_.SetResult(sessionId,
                                  ownerTaskId,
@@ -637,10 +634,9 @@ public class Submitter : ISubmitter
       requests.Add(new Storage.TaskRequest(taskId,
                                            taskRequest.ExpectedOutputKeys,
                                            taskRequest.DataDependencies));
-      payloadUploadTasks.Add(PayloadStorage(sessionData.SessionId)
-                               .AddOrUpdateAsync(taskId,
-                                                 taskRequest.PayloadChunks,
-                                                 cancellationToken));
+      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(taskId,
+                                                             taskRequest.PayloadChunks,
+                                                             cancellationToken));
     }
 
     var parentTaskIds = new List<string>();
@@ -676,13 +672,6 @@ public class Submitter : ISubmitter
 
     return (requests, options.Priority, options.PartitionId);
   }
-
-  private IObjectStorage ResultStorage(string session)
-    => objectStorageFactory_.CreateResultStorage(session);
-
-  private IObjectStorage PayloadStorage(string session)
-    => objectStorageFactory_.CreatePayloadStorage(session);
-
 
   private async Task ChangeResultOwnership(string                           session,
                                            string                           parentTaskId,

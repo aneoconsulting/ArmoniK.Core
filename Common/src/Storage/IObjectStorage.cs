@@ -26,65 +26,10 @@ using ArmoniK.Core.Common.Exceptions;
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-///   Factory to create Object Storage
-/// </summary>
-public interface IObjectStorageFactory : IInitializable
-{
-  /// <summary>
-  ///   Create an Object Storage with the given name
-  /// </summary>
-  /// <param name="objectStorageName">Name of the object storage to create</param>
-  /// <returns>
-  ///   An object implementing the <see cref="IObjectStorage" /> interface
-  /// </returns>
-  IObjectStorage CreateObjectStorage(string objectStorageName);
-}
-
-/// <summary>
-///   Factory extension to create specific Object Storage
-/// </summary>
-public static class ObjectStorageFactoryExt
-{
-  /// <summary>
-  ///   Creation of Object Storage to store payloads
-  /// </summary>
-  /// <param name="factory">Factory for creating Object Storage</param>
-  /// <param name="session">Session Id of the tasks that will use this Object Storage</param>
-  /// <returns>
-  ///   The created Object Storage
-  /// </returns>
-  public static IObjectStorage CreatePayloadStorage(this IObjectStorageFactory factory,
-                                                    string                     session)
-    => factory.CreateObjectStorage($"payloads/{session}");
-
-  /// <summary>
-  ///   Creation of Object Storage to store results
-  /// </summary>
-  /// <param name="factory">Factory for creating Object Storage</param>
-  /// <param name="session">Session Id of the tasks that will use this Object Storage</param>
-  /// <returns>
-  ///   The created Object Storage
-  /// </returns>
-  public static IObjectStorage CreateResultStorage(this IObjectStorageFactory factory,
-                                                   string                     session)
-    => factory.CreateObjectStorage($"results/{session}");
-
-  /// <summary>
-  ///   Creation of Object Storage to store resources
-  /// </summary>
-  /// <param name="factory">Factory for creating Object Storage</param>
-  /// <returns>
-  ///   The created Object Storage
-  /// </returns>
-  public static IObjectStorage CreateResourcesStorage(this IObjectStorageFactory factory)
-    => factory.CreateObjectStorage("resources/");
-}
-
-/// <summary>
 ///   Object Storage interface
 ///   It is used to store data in ArmoniK
 /// </summary>
-public interface IObjectStorage
+public interface IObjectStorage : IInitializable
 {
   /// <summary>
   ///   Add the given data in the storage at the given key

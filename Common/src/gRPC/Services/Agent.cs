@@ -48,8 +48,8 @@ public class Agent : IAgent
 {
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
   private readonly ILogger                                                                             logger_;
+  private readonly IObjectStorage                                                                      objectStorage_;
   private readonly IPushQueueStorage                                                                   pushQueueStorage_;
-  private readonly IObjectStorage                                                                      resourcesStorage_;
   private readonly IResultTable                                                                        resultTable_;
   private readonly List<string>                                                                        sentResults_;
   private readonly SessionData                                                                         sessionData_;
@@ -62,7 +62,7 @@ public class Agent : IAgent
   ///   Initializes a new instance of the <see cref="Agent" />
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
-  /// <param name="objectStorageFactory">Interface class to create object storage</param>
+  /// <param name="objectStorage">Interface class to manage tasks data</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskTable">Interface to manage task states</param>
@@ -70,22 +70,22 @@ public class Agent : IAgent
   /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public Agent(ISubmitter            submitter,
-               IObjectStorageFactory objectStorageFactory,
-               IPushQueueStorage     pushQueueStorage,
-               IResultTable          resultTable,
-               ITaskTable            taskTable,
-               SessionData           sessionData,
-               TaskData              taskData,
-               string                token,
-               ILogger               logger)
+  public Agent(ISubmitter        submitter,
+               IObjectStorage    objectStorage,
+               IPushQueueStorage pushQueueStorage,
+               IResultTable      resultTable,
+               ITaskTable        taskTable,
+               SessionData       sessionData,
+               TaskData          taskData,
+               string            token,
+               ILogger           logger)
   {
     submitter_        = submitter;
+    objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
     logger_           = logger;
-    resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
     createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
     sentResults_      = new List<string>();
     sessionData_      = sessionData;
@@ -468,9 +468,9 @@ public class Agent : IAgent
 
     try
     {
-      await foreach (var data in resourcesStorage_.GetValuesAsync(request.Key,
-                                                                  cancellationToken)
-                                                  .ConfigureAwait(false))
+      await foreach (var data in objectStorage_.GetValuesAsync(request.Key,
+                                                               cancellationToken)
+                                               .ConfigureAwait(false))
       {
         await responseStream.WriteAsync(new DataReply
                                         {
