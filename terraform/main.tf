@@ -16,6 +16,18 @@ module "zipkin" {
   network = docker_network.armonik.name
 }
 
+module "grafana" {
+  source  = "./modules/monitoring/grafana"
+  image   = var.grafana_image
+  network = docker_network.armonik.name
+}
+
+module "prometheus" {
+  source  = "./modules/monitoring/prometheus"
+  image   = var.prometheus_image
+  network = docker_network.armonik.name
+}
+
 module "database" {
   source         = "./modules/storage/database/mongo"
   image          = var.database_image
