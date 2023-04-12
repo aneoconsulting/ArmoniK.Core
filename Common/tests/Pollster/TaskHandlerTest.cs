@@ -47,7 +47,7 @@ using Moq;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
+using Result = ArmoniK.Core.Common.Storage.Result;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -171,6 +171,18 @@ public class TaskHandlerTest
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).SessionId;
+
+    await testServiceProvider.ResultTable.Create(new[]
+                                                 {
+                                                   new Result(sessionId,
+                                                              "DataDep",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                 })
+                             .ConfigureAwait(false);
 
     var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                                             sessionId,
@@ -354,6 +366,7 @@ public class TaskHandlerTest
                                 new List<string>(),
                                 new List<string>(),
                                 new List<string>(),
+                                new List<string>(),
                                 "init",
                                 new List<string>(),
                                 status,
@@ -442,6 +455,7 @@ public class TaskHandlerTest
                           "ownerpodid",
                           "ownerpodname",
                           "payload",
+                          new List<string>(),
                           new List<string>(),
                           new List<string>(),
                           new List<string>(),
@@ -544,6 +558,10 @@ public class TaskHandlerTest
                                     CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
+    public Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                     CancellationToken                                                      cancellationToken = default)
+      => Task.CompletedTask;
+
     public Task SetTaskCanceledAsync(string            taskId,
                                      CancellationToken cancellationToken)
       => throw new NotImplementedException();
@@ -574,6 +592,7 @@ public class TaskHandlerTest
                           ownerPodId,
                           ownerPodName,
                           "payload",
+                          new List<string>(),
                           new List<string>(),
                           new List<string>(),
                           new List<string>(),
@@ -610,6 +629,7 @@ public class TaskHandlerTest
                                       ownerPodId,
                                       ownerPodId,
                                       "payload",
+                                      new List<string>(),
                                       new List<string>(),
                                       new List<string>(),
                                       new List<string>(),
@@ -839,7 +859,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.IsTrue(acquired);
+    Assert.IsFalse(acquired);
   }
 
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
@@ -1194,10 +1214,10 @@ public class TaskHandlerTest
                       .ConfigureAwait(false);
 
 
-    var resultStreamReader = new TestHelperAsyncStreamReader<Result>(new[]
-                                                                     {
-                                                                       new Result(),
-                                                                     });
+    var resultStreamReader = new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
+                                                                                       {
+                                                                                         new Api.gRPC.V1.Agent.Result(),
+                                                                                       });
     await agentHandler.Agent.SendResult(resultStreamReader,
                                         CancellationToken.None)
                       .ConfigureAwait(false);

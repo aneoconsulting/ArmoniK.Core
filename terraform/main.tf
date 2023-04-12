@@ -86,47 +86,32 @@ module "queue_artemis" {
 }
 
 module "submitter" {
-  source                        = "./modules/submitter"
-  container_name                = local.submitter.name
-  core_tag                      = local.submitter.tag
-  use_local_image               = var.use_local_image
-  docker_image                  = local.submitter.image
-  network                       = docker_network.armonik.name
-  generated_env_vars            = local.environment
-  zipkin_uri                    = module.zipkin.zipkin_uri
-  log_driver                    = module.fluenbit.log_driver
-  volumes                       = local.volumes
-  unresolved_dependencies_queue = var.unresolved_dependencies_queue
-}
-
-module "dependency_checker" {
-  source                        = "./modules/dependency_checker"
-  container_name                = local.dependency_checker.name
-  core_tag                      = local.dependency_checker.tag
-  use_local_image               = var.use_local_image
-  docker_image                  = local.dependency_checker.image
-  network                       = docker_network.armonik.name
-  generated_env_vars            = local.environment
-  zipkin_uri                    = module.zipkin.zipkin_uri
-  log_driver                    = module.fluenbit.log_driver
-  unresolved_dependencies_queue = var.unresolved_dependencies_queue
+  source             = "./modules/submitter"
+  container_name     = local.submitter.name
+  core_tag           = local.submitter.tag
+  use_local_image    = var.use_local_image
+  docker_image       = local.submitter.image
+  network            = docker_network.armonik.name
+  generated_env_vars = local.environment
+  zipkin_uri         = module.zipkin.zipkin_uri
+  log_driver         = module.fluenbit.log_driver
+  volumes            = local.volumes
 }
 
 module "compute_plane" {
-  source                        = "./modules/compute_plane"
-  for_each                      = local.replicas
-  replica_counter               = each.key
-  num_partitions                = var.num_partitions
-  core_tag                      = local.compute_plane.tag
-  use_local_image               = var.use_local_image
-  polling_agent                 = local.compute_plane.polling_agent
-  worker                        = local.compute_plane.worker
-  generated_env_vars            = local.environment
-  volumes                       = local.volumes
-  network                       = docker_network.armonik.name
-  zipkin_uri                    = module.zipkin.zipkin_uri
-  log_driver                    = module.fluenbit.log_driver
-  unresolved_dependencies_queue = var.unresolved_dependencies_queue
+  source             = "./modules/compute_plane"
+  for_each           = local.replicas
+  replica_counter    = each.key
+  num_partitions     = var.num_partitions
+  core_tag           = local.compute_plane.tag
+  use_local_image    = var.use_local_image
+  polling_agent      = local.compute_plane.polling_agent
+  worker             = local.compute_plane.worker
+  generated_env_vars = local.environment
+  volumes            = local.volumes
+  network            = docker_network.armonik.name
+  zipkin_uri         = module.zipkin.zipkin_uri
+  log_driver         = module.fluenbit.log_driver
 }
 
 module "metrics_exporter" {

@@ -417,6 +417,35 @@ public class TaskTable : ITaskTable
     return Task.CompletedTask;
   }
 
+  public Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                   CancellationToken                                                      cancellationToken = default)
+  {
+    using var _ = Logger.LogFunction();
+
+    foreach (var (taskId, dependenciesToRemove) in dependencies)
+    {
+      taskId2TaskData_.AddOrUpdate(taskId,
+                                   _ => throw new InvalidOperationException("The task does not exist."),
+                                   (_,
+                                    data) =>
+                                   {
+                                     var remainingDep = data.RemainingDataDependencies.ToList();
+
+                                     foreach (var dep in dependenciesToRemove)
+                                     {
+                                       remainingDep.Remove(dep);
+                                     }
+
+                                     return data with
+                                            {
+                                              RemainingDataDependencies = remainingDep,
+                                            };
+                                   });
+    }
+
+    return Task.CompletedTask;
+  }
+
   /// <inheritdoc />
   public Task SetTaskCanceledAsync(string            taskId,
                                    CancellationToken cancellationToken = default)
@@ -437,7 +466,7 @@ public class TaskTable : ITaskTable
     }
 
     taskId2TaskData_.AddOrUpdate(taskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 _ => throw new TaskNotFoundException("The task does not exist."),
                                  (_,
                                   data) =>
                                  {
@@ -602,6 +631,7 @@ public class TaskTable : ITaskTable
                                    taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
+                                   taskData.RemainingDataDependencies,
                                    taskData.ExpectedOutputIds,
                                    taskData.InitialTaskId,
                                    newTaskRetryOfIds,

@@ -527,6 +527,26 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                         CancellationToken                                                      cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+    var       sessionHandle  = sessionProvider_.Get();
+
+
+    await taskCollection.BulkWriteAsync(sessionHandle,
+                                        dependencies.Select(tuple
+                                                              => new UpdateOneModel<TaskData>(new ExpressionFilterDefinition<TaskData>(data => data.TaskId == tuple
+                                                                                                                                                 .taskId),
+                                                                                              new UpdateDefinitionBuilder<TaskData>()
+                                                                                                .PullAll(data => data.RemainingDataDependencies,
+                                                                                                         tuple.dependenciesToRemove))),
+                                        cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task SetTaskCanceledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
@@ -580,10 +600,10 @@ public class TaskTable : ITaskTable
 
     var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId);
 
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
-                          TaskStatus.Error,
-                          taskOutput);
+    Logger.LogDebug("update task {taskId} to status {status} with {output}",
+                    taskId,
+                    TaskStatus.Error,
+                    taskOutput);
     var task = await taskCollection.FindOneAndUpdateAsync(filter,
                                                           updateDefinition,
                                                           new FindOneAndUpdateOptions<TaskData>
@@ -818,6 +838,7 @@ public class TaskTable : ITaskTable
                                    taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
+                                   taskData.RemainingDataDependencies,
                                    taskData.ExpectedOutputIds,
                                    taskData.InitialTaskId,
                                    newTaskRetryOfIds,

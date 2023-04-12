@@ -236,6 +236,10 @@ public class SimpleTaskTable : ITaskTable
                                   CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                   CancellationToken                                                      cancellationToken = default)
+    => Task.CompletedTask;
+
   public Task SetTaskCanceledAsync(string            taskId,
                                    CancellationToken cancellationToken = default)
     => Task.CompletedTask;

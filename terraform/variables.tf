@@ -18,11 +18,6 @@ variable "num_partitions" {
   default = "3"
 }
 
-variable "unresolved_dependencies_queue" {
-  type    = string
-  default = "UnresolvedDependenciesQueueDefault"
-}
-
 variable "mongodb_params" {
   type = object({
     max_connection_pool_size = optional(string, "500")

@@ -53,7 +53,7 @@ public class TestTaskHandlerProvider : IDisposable
   private readonly        LoggerFactory         loggerFactory_;
   private readonly        IObjectStorageFactory objectStorageFactory_;
   public readonly         IPartitionTable       PartitionTable;
-  private readonly        IResultTable          resultTable_;
+  public readonly         IResultTable          ResultTable;
   private readonly        IMongoRunner          runner_;
   public readonly         ISessionTable         SessionTable;
   public readonly         ISubmitter            Submitter;
@@ -111,10 +111,6 @@ public class TestTaskHandlerProvider : IDisposable
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                   },
-                                                  {
-                                                    $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
-                                                    nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
-                                                  },
                                                 };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -137,8 +133,6 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddOption<Injection.Options.DependencyResolver>(builder.Configuration,
-                                                            Injection.Options.DependencyResolver.SettingSection)
            .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
@@ -164,7 +158,7 @@ public class TestTaskHandlerProvider : IDisposable
 
     app_ = builder.Build();
 
-    resultTable_          = app_.Services.GetRequiredService<IResultTable>();
+    ResultTable           = app_.Services.GetRequiredService<IResultTable>();
     TaskTable             = app_.Services.GetRequiredService<ITaskTable>();
     PartitionTable        = app_.Services.GetRequiredService<IPartitionTable>();
     SessionTable          = app_.Services.GetRequiredService<ISessionTable>();
@@ -172,8 +166,8 @@ public class TestTaskHandlerProvider : IDisposable
     TaskHandler           = app_.Services.GetRequiredService<TaskHandler>();
     objectStorageFactory_ = app_.Services.GetRequiredService<IObjectStorageFactory>();
 
-    resultTable_.Init(CancellationToken.None)
-                .Wait();
+    ResultTable.Init(CancellationToken.None)
+               .Wait();
     TaskTable.Init(CancellationToken.None)
              .Wait();
     PartitionTable.Init(CancellationToken.None)

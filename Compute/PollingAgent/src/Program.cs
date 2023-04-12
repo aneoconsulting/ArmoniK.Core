@@ -28,7 +28,6 @@ using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Utils;
@@ -93,8 +92,6 @@ public static class Program
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
-             .AddInitializedOption<DependencyResolver>(builder.Configuration,
-                                                       DependencyResolver.SettingSection)
              .AddSingleton(pollsterOptions)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
