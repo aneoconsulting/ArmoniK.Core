@@ -46,19 +46,19 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string          DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication  app_;
-  private readonly        IMongoClient    client_;
-  private readonly        LoggerFactory   loggerFactory_;
-  private readonly        IObjectStorage  objectStorage_;
-  public readonly         IPartitionTable PartitionTable;
-  public readonly         IResultTable    ResultTable;
-  private readonly        IMongoRunner    runner_;
-  public readonly         ISessionTable   SessionTable;
-  public readonly         ISubmitter      Submitter;
-  public readonly         TaskHandler     TaskHandler;
-  public readonly         ITaskTable      TaskTable;
+  private const           string                DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource        ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication        app_;
+  private readonly        IMongoClient          client_;
+  private readonly        LoggerFactory         loggerFactory_;
+  private readonly        IObjectStorageFactory objectStorageFactory_;
+  public readonly         IPartitionTable       PartitionTable;
+  public readonly         IResultTable          ResultTable;
+  private readonly        IMongoRunner          runner_;
+  public readonly         ISessionTable         SessionTable;
+  public readonly         ISubmitter            Submitter;
+  public readonly         TaskHandler           TaskHandler;
+  public readonly         ITaskTable            TaskTable;
 
 
   public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
@@ -158,13 +158,13 @@ public class TestTaskHandlerProvider : IDisposable
 
     app_ = builder.Build();
 
-    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    SessionTable   = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
-    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
+    ResultTable           = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable             = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable        = app_.Services.GetRequiredService<IPartitionTable>();
+    SessionTable          = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter             = app_.Services.GetRequiredService<ISubmitter>();
+    TaskHandler           = app_.Services.GetRequiredService<TaskHandler>();
+    objectStorageFactory_ = app_.Services.GetRequiredService<IObjectStorageFactory>();
 
     ResultTable.Init(CancellationToken.None)
                .Wait();

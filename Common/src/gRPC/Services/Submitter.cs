@@ -48,7 +48,7 @@ public class Submitter : ISubmitter
 {
   private readonly ActivitySource              activitySource_;
   private readonly ILogger<Submitter>          logger_;
-  private readonly IObjectStorage              objectStorage_;
+  private readonly IObjectStorageFactory       objectStorageFactory_;
   private readonly IPartitionTable             partitionTable_;
   private readonly IPushQueueStorage           pushQueueStorage_;
   private readonly IResultTable                resultTable_;
@@ -58,7 +58,7 @@ public class Submitter : ISubmitter
 
   [UsedImplicitly]
   public Submitter(IPushQueueStorage           pushQueueStorage,
-                   IObjectStorage              objectStorage,
+                   IObjectStorageFactory       objectStorageFactory,
                    ILogger<Submitter>          logger,
                    ISessionTable               sessionTable,
                    ITaskTable                  taskTable,
@@ -67,15 +67,15 @@ public class Submitter : ISubmitter
                    Injection.Options.Submitter submitterOptions,
                    ActivitySource              activitySource)
   {
-    objectStorage_    = objectStorage;
-    logger_           = logger;
-    sessionTable_     = sessionTable;
-    taskTable_        = taskTable;
-    resultTable_      = resultTable;
-    partitionTable_   = partitionTable;
-    submitterOptions_ = submitterOptions;
-    activitySource_   = activitySource;
-    pushQueueStorage_ = pushQueueStorage;
+    objectStorageFactory_ = objectStorageFactory;
+    logger_               = logger;
+    sessionTable_         = sessionTable;
+    taskTable_            = taskTable;
+    resultTable_          = resultTable;
+    partitionTable_       = partitionTable;
+    submitterOptions_     = submitterOptions;
+    activitySource_       = activitySource;
+    pushQueueStorage_     = pushQueueStorage;
   }
 
   /// <inheritdoc />
@@ -149,31 +149,27 @@ public class Submitter : ISubmitter
                                              cancellationToken)
                           .ConfigureAwait(false);
 
-        // Get the dependencies that are already completed in order to remove them from the remaining dependencies.
+        // This Get is required to avoid race-condition with the dependency resolution.
+        // A result can be marked Completed after the submitter has checked the result status,
+        // but before the task has been added to the dependency list.
+        // This is a typical case of TOCTOU issues (Time Of Check, Time Of Use).
+        // The second check ensures that the result completion will be visible,
+        // even if it happens in parallel to the task submission.
         var completedDependencies = await resultTable_.GetResults(sessionId,
                                                                   dependencies,
                                                                   cancellationToken)
                                                       .Where(result => result.Status == ResultStatus.Completed)
-                                                      .Select(result => result.ResultId)
+                                                      .Select(result => result.Name)
                                                       .ToListAsync(cancellationToken)
                                                       .ConfigureAwait(false);
 
-        // Remove all the dependencies that are already completed from the task.
-        // If an Agent has completed one of the dependencies between the GetResults and this remove,
-        // One will succeed removing the dependency, the other will silently fail.
-        // In either case, the task will be submitted without error by the Agent.
-        // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
-        // and both will queue the task.
-        // This is benign as it will be handled during dequeue with message deduplication.
-        await taskTable_.RemoveRemainingDataDependenciesAsync(new[]
+        await taskTable_.RemoveRemainingDataDependenciesAsync(new List<(string taskId, IEnumerable<string> dependenciesToRemove)>
                                                               {
-                                                                request.Id,
+                                                                (request.Id, completedDependencies),
                                                               },
-                                                              completedDependencies,
                                                               cancellationToken)
                         .ConfigureAwait(false);
 
-        // If all dependencies were already completed, the task is ready to be started.
         if (dependencies.Count == completedDependencies.Count)
         {
           readyTasks.Add(request.Id);

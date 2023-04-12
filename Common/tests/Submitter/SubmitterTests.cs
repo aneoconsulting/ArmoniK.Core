@@ -198,6 +198,14 @@ public class SubmitterTests
                                                                  PartitionId = "part1",
                                                                };
 
+  public static readonly TaskOptions DefaultTaskOptionsPart1 = new()
+                                                               {
+                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                 MaxRetries  = 2,
+                                                                 Priority    = 1,
+                                                                 PartitionId = "part1",
+                                                               };
+
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
                                                                                                          IResultTable      resultTable,
@@ -858,31 +866,8 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
-                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
-
-    await resultTable_!.Create(new[]
-                               {
-                                 new Result(sessionId,
-                                            ExpectedOutput4,
-                                            "",
-                                            "",
-                                            ResultStatus.Created,
-                                            new List<string>(),
-                                            DateTime.UtcNow,
-                                            Array.Empty<byte>()),
-                                 new Result(sessionId,
-                                            ExpectedOutput5,
-                                            "",
-                                            "",
-                                            ResultStatus.Created,
-                                            new List<string>(),
-                                            DateTime.UtcNow,
-                                            Array.Empty<byte>()),
-                               },
-                               CancellationToken.None)
-                       .ConfigureAwait(false);
 
     var tuple = await submitter_!.CreateTasks(sessionId,
                                               sessionId,

@@ -417,22 +417,21 @@ public class TaskTable : ITaskTable
     return Task.CompletedTask;
   }
 
-  public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
-                                                   ICollection<string> dependenciesToRemove,
-                                                   CancellationToken   cancellationToken = default)
+  public Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                   CancellationToken                                                      cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
-    foreach (var taskId in taskIds)
+    foreach (var (taskId, dependenciesToRemove) in dependencies)
     {
       taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new TaskNotFoundException("The task does not exist."),
+                                   _ => throw new InvalidOperationException("The task does not exist."),
                                    (_,
                                     data) =>
                                    {
-                                     var remainingDep = data.RemainingDataDependencies;
+                                     var remainingDep = data.RemainingDataDependencies.ToList();
 
-                                     foreach (var dep in dependenciesToRemove.Select(TaskData.EscapeKey))
+                                     foreach (var dep in dependenciesToRemove)
                                      {
                                        remainingDep.Remove(dep);
                                      }

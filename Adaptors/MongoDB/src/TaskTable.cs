@@ -527,34 +527,22 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
-                                                         ICollection<string> dependenciesToRemove,
-                                                         CancellationToken   cancellationToken = default)
+  public async Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                         CancellationToken                                                      cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(RemoveRemainingDataDependenciesAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
-
-    // MongoDB driver does not support to unset a list, so Unset should be called multiple times.
-    // However, Unset on an UpdateDefinitionBuilder returns an UpdateDefinition.
-    // We need to call Unset on the first element outside of the loop.
-    using var deps = dependenciesToRemove.GetEnumerator();
-    if (!deps.MoveNext())
-    {
-      return;
-    }
+    var       sessionHandle  = sessionProvider_.Get();
 
 
-    var key0   = TaskData.EscapeKey(deps.Current);
-    var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
-    while (deps.MoveNext())
-    {
-      var key = TaskData.EscapeKey(deps.Current);
-      update = update.Unset(data => data.RemainingDataDependencies[key]);
-    }
-
-    await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId),
-                                         update,
-                                         cancellationToken: cancellationToken)
+    await taskCollection.BulkWriteAsync(sessionHandle,
+                                        dependencies.Select(tuple
+                                                              => new UpdateOneModel<TaskData>(new ExpressionFilterDefinition<TaskData>(data => data.TaskId == tuple
+                                                                                                                                                 .taskId),
+                                                                                              new UpdateDefinitionBuilder<TaskData>()
+                                                                                                .PullAll(data => data.RemainingDataDependencies,
+                                                                                                         tuple.dependenciesToRemove))),
+                                        cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
   }
 

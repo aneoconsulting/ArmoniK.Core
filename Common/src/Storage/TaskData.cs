@@ -39,7 +39,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   represents a submission from the client
 /// </param>
 /// <param name="DataDependencies">Unique identifiers of the results the task depends on</param>
-/// <param name="RemainingDataDependencies">List of dependencies that are not yet satisfied</param>
+/// <param name="RemainingDataDependencies">Copy of data dependencies used for dependency resolution</param>
 /// <param name="ExpectedOutputIds">
 ///   Identifiers of the outputs the task should produce or should transmit the
 ///   responsibility to produce
@@ -64,25 +64,21 @@ public record TaskData(string        SessionId,
                        string        PayloadId,
                        IList<string> ParentTaskIds,
                        IList<string> DataDependencies,
-                       // FIXME: RemainingDataDependencies should be a HashSet, but there is no HashSet in MongoDB.
-                       // List would also work but would make dependency management *much* slower when there is many dependencies on a single task.
-                       // (Removing elements from a list is linear time, but removing from an object in constant time)
-                       // Ideal solution would most likely be to put HashSet here, and have a custom Serializer/Deserializer in MongoDB "schema".
-                       IDictionary<string, bool> RemainingDataDependencies,
-                       IList<string>             ExpectedOutputIds,
-                       string                    InitialTaskId,
-                       IList<string>             RetryOfIds,
-                       TaskStatus                Status,
-                       string                    StatusMessage,
-                       TaskOptions               Options,
-                       DateTime                  CreationDate,
-                       DateTime?                 SubmittedDate,
-                       DateTime?                 StartDate,
-                       DateTime?                 EndDate,
-                       DateTime?                 ReceptionDate,
-                       DateTime?                 AcquisitionDate,
-                       DateTime?                 PodTtl,
-                       Output                    Output)
+                       IList<string> RemainingDataDependencies,
+                       IList<string> ExpectedOutputIds,
+                       string        InitialTaskId,
+                       IList<string> RetryOfIds,
+                       TaskStatus    Status,
+                       string        StatusMessage,
+                       TaskOptions   Options,
+                       DateTime      CreationDate,
+                       DateTime?     SubmittedDate,
+                       DateTime?     StartDate,
+                       DateTime?     EndDate,
+                       DateTime?     ReceptionDate,
+                       DateTime?     AcquisitionDate,
+                       DateTime?     PodTtl,
+                       Output        Output)
 {
   /// <summary>
   ///   Initializes task metadata with specified fields
@@ -124,8 +120,7 @@ public record TaskData(string        SessionId,
            payloadId,
            parentTaskIds,
            dataDependencies,
-           dataDependencies.ToDictionary(EscapeKey,
-                                         _ => true),
+           dataDependencies,
            expectedOutputIds,
            taskId,
            retryOfIds,

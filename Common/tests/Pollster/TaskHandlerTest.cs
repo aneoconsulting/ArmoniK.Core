@@ -138,6 +138,7 @@ public class TaskHandlerTest
     await testServiceProvider.ResultTable.Create(new[]
                                                  {
                                                    new Result(sessionId,
+<<<<<<< HEAD
                                                               "ExpectedOutput0",
                                                               "",
                                                               "",
@@ -149,10 +150,15 @@ public class TaskHandlerTest
                                                               "DataDep",
                                                               "",
                                                               "",
+=======
+                                                              "DataDep",
+                                                              "",
+>>>>>>> 8b9cb992 (feat: Depedency checking without external service)
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
                                                               Array.Empty<byte>()),
+<<<<<<< HEAD
                                                    new Result(sessionId,
                                                               "ExpectedOutput1",
                                                               "",
@@ -212,6 +218,11 @@ public class TaskHandlerTest
                              }.ToAsyncEnumerable()),
                        };
 
+=======
+                                                 })
+                             .ConfigureAwait(false);
+
+>>>>>>> 8b9cb992 (feat: Depedency checking without external service)
     var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                                             sessionId,
                                                                                                             new Api.gRPC.V1.TaskOptions
@@ -395,6 +406,7 @@ public class TaskHandlerTest
                                 new List<string>(),
                                 new Dictionary<string, bool>(),
                                 new List<string>(),
+                                new List<string>(),
                                 "init",
                                 new List<string>(),
                                 status,
@@ -486,6 +498,7 @@ public class TaskHandlerTest
                           new List<string>(),
                           new List<string>(),
                           new Dictionary<string, bool>(),
+                          new List<string>(),
                           new List<string>(),
                           "taskId",
                           new List<string>(),
@@ -586,9 +599,8 @@ public class TaskHandlerTest
                                     CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
-                                                     ICollection<string> dependenciesToRemove,
-                                                     CancellationToken   cancellationToken = default)
+    public Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
+                                                     CancellationToken                                                      cancellationToken = default)
       => Task.CompletedTask;
 
     public Task SetTaskCanceledAsync(string            taskId,
@@ -624,6 +636,7 @@ public class TaskHandlerTest
                           new List<string>(),
                           new List<string>(),
                           new Dictionary<string, bool>(),
+                          new List<string>(),
                           new List<string>(),
                           "taskId",
                           new List<string>(),
@@ -661,6 +674,7 @@ public class TaskHandlerTest
                                       new List<string>(),
                                       new List<string>(),
                                       new Dictionary<string, bool>(),
+                                      new List<string>(),
                                       new List<string>(),
                                       "taskId",
                                       new List<string>(),

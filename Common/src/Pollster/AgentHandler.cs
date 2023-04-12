@@ -47,7 +47,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   private readonly WebApplication        app_;
   private readonly ComputePlane          computePlaneOptions_;
   private readonly ILogger<AgentHandler> logger_;
-  private readonly IObjectStorage        objectStorage_;
+  private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly IPushQueueStorage     pushQueueStorage_;
   private readonly IResultTable          resultTable_;
   private readonly GrpcAgentService      service_;
@@ -68,19 +68,19 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   public AgentHandler(LoggerInit            loggerInit,
                       ComputePlane          computePlaneOptions,
                       ISubmitter            submitter,
-                      IObjectStorage        objectStorage,
+                      IObjectStorageFactory objectStorageFactory,
                       IPushQueueStorage     pushQueueStorage,
                       IResultTable          resultTable,
                       ITaskTable            taskTable,
                       ILogger<AgentHandler> logger)
   {
-    computePlaneOptions_ = computePlaneOptions;
-    submitter_           = submitter;
-    objectStorage_       = objectStorage;
-    pushQueueStorage_    = pushQueueStorage;
-    resultTable_         = resultTable;
-    taskTable_           = taskTable;
-    logger_              = logger;
+    computePlaneOptions_  = computePlaneOptions;
+    submitter_            = submitter;
+    objectStorageFactory_ = objectStorageFactory;
+    pushQueueStorage_     = pushQueueStorage;
+    resultTable_          = resultTable;
+    taskTable_            = taskTable;
+    logger_               = logger;
 
     try
     {

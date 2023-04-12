@@ -241,9 +241,10 @@ public class ResultTable : IResultTable
     var resultCollection = resultCollectionProvider_.Get();
 
     Logger.LogInformation("Update result {resultId} to completed",
-                          resultId);
+                          key);
 
-    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.ResultId == resultId && model.OwnerTaskId == ownerTaskId),
+    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Id == Result.GenerateId(sessionId,
+                                                                                                                         key) && model.OwnerTaskId == ownerTaskId),
                                                     Builders<Result>.Update.Set(model => model.Status,
                                                                                 ResultStatus.Completed)
                                                                     .Set(model => model.Data,
@@ -273,9 +274,10 @@ public class ResultTable : IResultTable
     var resultCollection = resultCollectionProvider_.Get();
 
     Logger.LogInformation("Update result {resultId} to completed",
-                          resultId);
+                          key);
 
-    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.ResultId == resultId && model.OwnerTaskId == ownerTaskId),
+    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Id == Result.GenerateId(sessionId,
+                                                                                                                         key) && model.OwnerTaskId == ownerTaskId),
                                                     Builders<Result>.Update.Set(model => model.Status,
                                                                                 ResultStatus.Completed),
                                                     cancellationToken: cancellationToken)
