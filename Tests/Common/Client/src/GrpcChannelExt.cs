@@ -151,8 +151,9 @@ public static class GrpcChannelExt
                             usageRatio.Average());
     }
 
-    var timeSpentList = taskDependencies.Values.Select(raw => (raw.SubmittedAt - raw.CreatedAt).ToTimeSpan()
-                                                                                               .TotalMilliseconds / 1000)
+    var timeSpentList = taskDependencies.Values.Where(raw => raw.SubmittedAt is not null && raw.CreatedAt is not null)
+                                        .Select(raw => (raw.SubmittedAt - raw.CreatedAt).ToTimeSpan()
+                                                                                        .TotalMilliseconds / 1000)
                                         .ToList();
     logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
                           TaskStatus.Creating,
@@ -161,8 +162,9 @@ public static class GrpcChannelExt
                           timeSpentList.Max(),
                           timeSpentList.Average());
 
-    timeSpentList = taskDependencies.Values.Select(raw => (raw.StartedAt - raw.AcquiredAt).ToTimeSpan()
-                                                                                          .TotalMilliseconds / 1000)
+    timeSpentList = taskDependencies.Values.Where(raw => raw.StartedAt is not null && raw.AcquiredAt is not null)
+                                    .Select(raw => (raw.StartedAt - raw.AcquiredAt).ToTimeSpan()
+                                                                                   .TotalMilliseconds / 1000)
                                     .ToList();
     logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
                           TaskStatus.Dispatched,
@@ -171,8 +173,9 @@ public static class GrpcChannelExt
                           timeSpentList.Max(),
                           timeSpentList.Average());
 
-    timeSpentList = taskDependencies.Values.Select(raw => (raw.EndedAt - raw.StartedAt).ToTimeSpan()
-                                                                                       .TotalMilliseconds / 1000)
+    timeSpentList = taskDependencies.Values.Where(raw => raw.EndedAt is not null && raw.StartedAt is not null)
+                                    .Select(raw => (raw.EndedAt - raw.StartedAt).ToTimeSpan()
+                                                                                .TotalMilliseconds / 1000)
                                     .ToList();
     logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
                           TaskStatus.Processing,
@@ -181,8 +184,9 @@ public static class GrpcChannelExt
                           timeSpentList.Max(),
                           timeSpentList.Average());
 
-    timeSpentList = taskDependencies.Values.Select(raw => (raw.EndedAt - raw.AcquiredAt).ToTimeSpan()
-                                                                                        .TotalMilliseconds / 1000)
+    timeSpentList = taskDependencies.Values.Where(raw => raw.EndedAt is not null && raw.AcquiredAt is not null)
+                                    .Select(raw => (raw.EndedAt - raw.AcquiredAt).ToTimeSpan()
+                                                                                 .TotalMilliseconds / 1000)
                                     .ToList();
     logger.LogInformation("Time spent between {status1} and {status2} : {min}s, {max}s, {avg}s",
                           TaskStatus.Dispatched,
@@ -191,8 +195,10 @@ public static class GrpcChannelExt
                           timeSpentList.Max(),
                           timeSpentList.Average());
 
-    var sessionStart    = taskDependencies.Values.Min(raw => raw.CreatedAt);
-    var sessionEnd      = taskDependencies.Values.Max(raw => raw.EndedAt);
+    var sessionStart = taskDependencies.Values.Where(raw => raw.CreatedAt is not null)
+                                       .Min(raw => raw.CreatedAt);
+    var sessionEnd = taskDependencies.Values.Where(raw => raw.EndedAt is not null)
+                                     .Max(raw => raw.EndedAt);
     var sessionDuration = (sessionEnd - sessionStart).ToTimeSpan();
     var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error);
 
