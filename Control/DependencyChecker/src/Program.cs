@@ -95,12 +95,13 @@ public static class Program
                                            });
 
         builder.Services.AddSingleton(ActivitySource)
-               .AddOpenTelemetryTracing(b =>
-                                        {
-                                          b.AddSource(ActivitySource.Name);
-                                          b.AddAspNetCoreInstrumentation();
-                                          b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
-                                        });
+               .AddOpenTelemetry()
+               .WithTracing(b =>
+                            {
+                              b.AddSource(ActivitySource.Name);
+                              b.AddAspNetCoreInstrumentation();
+                              b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
+                            });
       }
 
       builder.WebHost.UseKestrel(options => options.ListenAnyIP(1081,
