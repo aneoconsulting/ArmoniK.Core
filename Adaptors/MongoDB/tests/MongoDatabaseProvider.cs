@@ -70,30 +70,30 @@ internal class MongoDatabaseProvider : IDisposable
     var client = new MongoClient(settings);
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                 },
-                                                 {
-                                                   $"{Components.SettingSection}:{nameof(Components.ObjectStorage)}", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                 },
-                                                 {
-                                                   $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
-                                                   "ArmoniK.Adapters.MongoDB.AuthenticationTable"
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:{nameof(Options.MongoDB.TableStorage.PollingDelayMax)}",
-                                                   "00:00:10"
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:{nameof(Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                   "140000"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                  },
+                                                  {
+                                                    $"{Components.SettingSection}:{nameof(Components.ObjectStorage)}", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                                  },
+                                                  {
+                                                    $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
+                                                    "ArmoniK.Adapters.MongoDB.AuthenticationTable"
+                                                  },
+                                                  {
+                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
+                                                  },
+                                                  {
+                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:{nameof(Options.MongoDB.TableStorage.PollingDelayMax)}",
+                                                    "00:00:10"
+                                                  },
+                                                  {
+                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:{nameof(Options.MongoDB.ObjectStorage.ChunkSize)}",
+                                                    "140000"
+                                                  },
+                                                };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);

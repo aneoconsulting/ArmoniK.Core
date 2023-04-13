@@ -51,15 +51,15 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                                                           2000)));
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
-                                                 },
-                                                 {
-                                                   "Redis:MaxRetry", "5"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
+                                                  },
+                                                  {
+                                                    "Redis:MaxRetry", "5"
+                                                  },
+                                                };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
