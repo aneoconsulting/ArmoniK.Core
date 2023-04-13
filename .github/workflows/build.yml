@@ -58,10 +58,7 @@ jobs:
 
     - name: Setup just
       run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
     - name: Minio Server UP
       if: ${{ matrix.projects }} == "Adaptors/S3/tests"
@@ -111,10 +108,7 @@ jobs:
     
     - name: Setup just
       run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
     - name: Set up queue
       run: |
@@ -352,18 +346,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -435,18 +424,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -555,18 +539,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -654,18 +633,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -722,18 +696,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
