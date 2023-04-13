@@ -52,18 +52,18 @@ internal class IndexTest
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
-                                                 },
-                                                 {
-                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                  },
+                                                  {
+                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
+                                                  },
+                                                  {
+                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10"
+                                                  },
+                                                };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);

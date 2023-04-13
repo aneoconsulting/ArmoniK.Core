@@ -76,41 +76,41 @@ public class TestPollsterProvider : IDisposable
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                 },
-                                                 {
-                                                   "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                   DatabaseName
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
-                                                   "00:00:10"
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                   "14000"
-                                                 },
-                                                 {
-                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
-                                                   "DefaultPartition"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
-                                                   nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                  },
+                                                  {
+                                                    "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
+                                                    DatabaseName
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
+                                                    "00:00:10"
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
+                                                    "14000"
+                                                  },
+                                                  {
+                                                    $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
+                                                    "DefaultPartition"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
+                                                    nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
+                                                  },
+                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
 
@@ -141,10 +141,7 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton(agentHandler)
            .AddSingleton(pullQueueStorage);
 
-
-    var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
-    var computePlanOptions   = computePlanComponent.Get<ComputePlane>();
-
+    var computePlanOptions = builder.Configuration.GetRequiredValue<ComputePlane>(ComputePlane.SettingSection);
     builder.Services.AddSingleton(computePlanOptions);
 
     app_ = builder.Build();
