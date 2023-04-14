@@ -63,15 +63,17 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddOpenTelemetryMetrics(b =>
-                                      {
-                                        b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
-                                        b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                                                                            .AddService("armonik-service"));
-                                        b.AddMeter(nameof(ArmoniKMeter));
-                                      })
              .AddHostedService<ArmoniKMeter>()
              .AddControllers();
+
+      builder.Services.AddOpenTelemetry()
+             .WithMetrics(b =>
+                          {
+                            b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
+                            b.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                                                                .AddService("armonik-service"));
+                            b.AddMeter(nameof(ArmoniKMeter));
+                          });
 
       var app = builder.Build();
 
