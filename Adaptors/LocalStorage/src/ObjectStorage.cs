@@ -73,6 +73,7 @@ public class ObjectStorage : IObjectStorage
     logger_.LogDebug("Initializing Local ObjectStorageFactory at path {path}, chunked by {chunkSize}",
                      path_,
                      chunkSize_);
+    // This creates all intermediate directories and does not fail if it already exists: https://learn.microsoft.com/en-us/dotnet/api/system.io.directory.createdirectory
     Directory.CreateDirectory(path_);
     isInitialized_ = true;
     return Task.CompletedTask;
