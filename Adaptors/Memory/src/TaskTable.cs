@@ -425,7 +425,7 @@ public class TaskTable : ITaskTable
     foreach (var (taskId, dependenciesToRemove) in dependencies)
     {
       taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new InvalidOperationException("The task does not exist."),
+                                   _ => throw new TaskNotFoundException("The task does not exist."),
                                    (_,
                                     data) =>
                                    {
