@@ -37,6 +37,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   represents a submission from the client
 /// </param>
 /// <param name="DataDependencies">Unique identifiers of the results the task depends on</param>
+/// <param name="RemainingDataDependencies">Copy of data dependencies used for dependency resolution</param>
 /// <param name="ExpectedOutputIds">
 ///   Identifiers of the outputs the task should produce or should transmit the
 ///   responsibility to produce
@@ -61,6 +62,7 @@ public record TaskData(string        SessionId,
                        string        PayloadId,
                        IList<string> ParentTaskIds,
                        IList<string> DataDependencies,
+                       IList<string> RemainingDataDependencies,
                        IList<string> ExpectedOutputIds,
                        string        InitialTaskId,
                        IList<string> RetryOfIds,
@@ -115,6 +117,7 @@ public record TaskData(string        SessionId,
            ownerPodName,
            payloadId,
            parentTaskIds,
+           dataDependencies,
            dataDependencies,
            expectedOutputIds,
            taskId,

@@ -40,7 +40,7 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 using Agent = ArmoniK.Core.Common.gRPC.Services.Agent;
-using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
+using Result = ArmoniK.Core.Common.Storage.Result;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -63,6 +63,8 @@ public class AgentTest
   private const string Partition       = "PartitionId";
   private const string ExpectedOutput1 = "ExpectedOutput1";
   private const string ExpectedOutput2 = "ExpectedOutput2";
+  private const string DataDependency1 = "Task1DD";
+  private const string DataDependency2 = "Task2DD";
 
 
   private static readonly TaskOptions Options = new(new Dictionary<string, string>
@@ -89,12 +91,6 @@ public class AgentTest
                                                                            DefaultPartition = Partition,
                                                                            MaxErrorAllowed  = -1,
                                                                          };
-
-  private static readonly Injection.Options.DependencyResolver DependencyResolverOptions = new()
-                                                                                           {
-                                                                                             UnresolvedDependenciesQueue =
-                                                                                               nameof(DependencyResolverOptions.UnresolvedDependenciesQueue),
-                                                                                           };
 
   public class MyPushQueueStorage : IPushQueueStorage
   {
@@ -144,7 +140,6 @@ public class AgentTest
       QueueStorage = new MyPushQueueStorage();
       prov_ = new TestDatabaseProvider(collection => collection.AddSingleton<ISubmitter, gRPC.Services.Submitter>()
                                                                .AddSingleton(SubmitterOptions)
-                                                               .AddSingleton(DependencyResolverOptions)
                                                                .AddSingleton<IPushQueueStorage>(QueueStorage));
 
       ResultTable = prov_.GetRequiredService<IResultTable>();
@@ -167,6 +162,25 @@ public class AgentTest
       var sessionData = sessionTable.GetSessionAsync(Session,
                                                      CancellationToken.None)
                                     .Result;
+
+      ResultTable.Create(new[]
+                         {
+                           new Result(sessionData.SessionId,
+                                      DataDependency1,
+                                      "",
+                                      ResultStatus.Completed,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      Array.Empty<byte>()),
+                           new Result(sessionData.SessionId,
+                                      DataDependency2,
+                                      "",
+                                      ResultStatus.Completed,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      Array.Empty<byte>()),
+                         })
+                 .Wait();
 
       var createdTasks = submitter.CreateTasks(Session,
                                                Session,
@@ -257,7 +271,7 @@ public class AgentTest
                         objectStorageFactory,
                         QueueStorage,
                         ResultTable,
-                        DependencyResolverOptions,
+                        TaskTable,
                         sessionData,
                         TaskData,
                         Token,
@@ -291,13 +305,13 @@ public class AgentTest
     Assert.AreEqual(CreateTaskReply.ResponseOneofCase.Error,
                     createTaskReply.ResponseCase);
 
-    var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Result>(new[]
-                                                                                            {
-                                                                                              new Result
-                                                                                              {
-                                                                                                CommunicationToken = token,
-                                                                                              },
-                                                                                            }),
+    var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
+                                                                                                              {
+                                                                                                                new Api.gRPC.V1.Agent.Result
+                                                                                                                {
+                                                                                                                  CommunicationToken = token,
+                                                                                                                },
+                                                                                                              }),
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -413,54 +427,53 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.IsFalse(holder.QueueStorage.Messages.Keys.Contains(DependencyResolverOptions.UnresolvedDependenciesQueue));
     Assert.AreEqual(0,
                     holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
                           .Count());
 
-    var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Result>(new[]
-                                                                                            {
-                                                                                              new Result
-                                                                                              {
-                                                                                                CommunicationToken = holder.Token,
-                                                                                                Init = new InitKeyedDataStream
-                                                                                                       {
-                                                                                                         Key = ExpectedOutput1,
-                                                                                                       },
-                                                                                              },
-                                                                                              new Result
-                                                                                              {
-                                                                                                CommunicationToken = holder.Token,
-                                                                                                Data = new DataChunk
-                                                                                                       {
-                                                                                                         Data = ByteString.CopyFromUtf8("Data1"),
-                                                                                                       },
-                                                                                              },
-                                                                                              new Result
-                                                                                              {
-                                                                                                CommunicationToken = holder.Token,
-                                                                                                Data = new DataChunk
-                                                                                                       {
-                                                                                                         Data = ByteString.CopyFromUtf8("Data2"),
-                                                                                                       },
-                                                                                              },
-                                                                                              new Result
-                                                                                              {
-                                                                                                CommunicationToken = holder.Token,
-                                                                                                Data = new DataChunk
-                                                                                                       {
-                                                                                                         DataComplete = true,
-                                                                                                       },
-                                                                                              },
-                                                                                              new Result
-                                                                                              {
-                                                                                                CommunicationToken = holder.Token,
-                                                                                                Init = new InitKeyedDataStream
-                                                                                                       {
-                                                                                                         LastResult = true,
-                                                                                                       },
-                                                                                              },
-                                                                                            }),
+    var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
+                                                                                                              {
+                                                                                                                new Api.gRPC.V1.Agent.Result
+                                                                                                                {
+                                                                                                                  CommunicationToken = holder.Token,
+                                                                                                                  Init = new InitKeyedDataStream
+                                                                                                                         {
+                                                                                                                           Key = ExpectedOutput1,
+                                                                                                                         },
+                                                                                                                },
+                                                                                                                new Api.gRPC.V1.Agent.Result
+                                                                                                                {
+                                                                                                                  CommunicationToken = holder.Token,
+                                                                                                                  Data = new DataChunk
+                                                                                                                         {
+                                                                                                                           Data = ByteString.CopyFromUtf8("Data1"),
+                                                                                                                         },
+                                                                                                                },
+                                                                                                                new Api.gRPC.V1.Agent.Result
+                                                                                                                {
+                                                                                                                  CommunicationToken = holder.Token,
+                                                                                                                  Data = new DataChunk
+                                                                                                                         {
+                                                                                                                           Data = ByteString.CopyFromUtf8("Data2"),
+                                                                                                                         },
+                                                                                                                },
+                                                                                                                new Api.gRPC.V1.Agent.Result
+                                                                                                                {
+                                                                                                                  CommunicationToken = holder.Token,
+                                                                                                                  Data = new DataChunk
+                                                                                                                         {
+                                                                                                                           DataComplete = true,
+                                                                                                                         },
+                                                                                                                },
+                                                                                                                new Api.gRPC.V1.Agent.Result
+                                                                                                                {
+                                                                                                                  CommunicationToken = holder.Token,
+                                                                                                                  Init = new InitKeyedDataStream
+                                                                                                                         {
+                                                                                                                           LastResult = true,
+                                                                                                                         },
+                                                                                                                },
+                                                                                                              }),
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -494,12 +507,32 @@ public class AgentTest
                     dependents);
 
     Assert.Contains(holder.TaskWithDependencies1,
-                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]);
+                    holder.QueueStorage.Messages[Partition]);
     Assert.Contains(holder.TaskWithDependencies2,
-                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]);
+                    holder.QueueStorage.Messages[Partition]);
     Assert.AreEqual(2,
-                    holder.QueueStorage.Messages[DependencyResolverOptions.UnresolvedDependenciesQueue]
+                    holder.QueueStorage.Messages[Partition]
                           .Count);
+
+    var taskData1 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies1,
+                                                         CancellationToken.None)
+                                .ConfigureAwait(false);
+
+    Assert.Contains(ExpectedOutput1,
+                    taskData1.DataDependencies.ToList());
+    Assert.IsEmpty(taskData1.RemainingDataDependencies);
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData1.Status);
+
+    var taskData2 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies2,
+                                                         CancellationToken.None)
+                                .ConfigureAwait(false);
+
+    Assert.Contains(ExpectedOutput1,
+                    taskData2.DataDependencies.ToList());
+    Assert.IsEmpty(taskData2.RemainingDataDependencies);
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData2.Status);
   }
 
   [Test]
@@ -526,7 +559,7 @@ public class AgentTest
                                              {
                                                DataDependencies =
                                                {
-                                                 "Task1DD",
+                                                 DataDependency1,
                                                },
                                                ExpectedOutputKeys =
                                                {
@@ -568,7 +601,7 @@ public class AgentTest
                                              {
                                                DataDependencies =
                                                {
-                                                 "Task1DD",
+                                                 DataDependency1,
                                                },
                                                ExpectedOutputKeys =
                                                {
@@ -645,7 +678,7 @@ public class AgentTest
                                               {
                                                 DataDependencies =
                                                 {
-                                                  "Task1DD",
+                                                  DataDependency1,
                                                 },
                                                 ExpectedOutputKeys =
                                                 {

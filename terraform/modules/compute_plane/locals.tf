@@ -11,7 +11,6 @@ locals {
     "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_delay}",
     "Zipkin__Uri=${var.zipkin_uri}",
     "Amqp__PartitionId=TestPartition${local.partition_chooser}",
-    "DependencyResolver__UnresolvedDependenciesQueue=${var.unresolved_dependencies_queue}",
   ]
   gen_env = [for k, v in var.generated_env_vars : "${k}=${v}"]
 }

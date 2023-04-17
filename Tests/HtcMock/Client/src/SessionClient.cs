@@ -153,6 +153,9 @@ public class SessionClient : ISessionClient
       case CreateTaskReply.ResponseOneofCase.None:
         throw new Exception("Issue with Server !");
       case CreateTaskReply.ResponseOneofCase.CreationStatusList:
+        logger_.LogInformation("task created {taskId}",
+                               createTaskReply.CreationStatusList.CreationStatuses.Select(status => status.TaskInfo.TaskId)
+                                              .Single());
         return taskRequests.Select(request => request.ExpectedOutputKeys.Single());
       case CreateTaskReply.ResponseOneofCase.Error:
         throw new Exception("Error : " + createTaskReply.Error);
