@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -56,28 +57,28 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
-public record TaskData(string         SessionId,
-                       string         TaskId,
-                       string         OwnerPodId,
-                       string         OwnerPodName,
-                       string         PayloadId,
-                       IList<string>  ParentTaskIds,
-                       IList<string>  DataDependencies,
+public record TaskData(string                    SessionId,
+                       string                    TaskId,
+                       string                    OwnerPodId,
+                       string                    OwnerPodName,
+                       string                    PayloadId,
+                       IList<string>             ParentTaskIds,
+                       IList<string>             DataDependencies,
                        IDictionary<string, bool> RemainingDataDependencies,
-                       IList<string>  ExpectedOutputIds,
-                       string         InitialTaskId,
-                       IList<string>  RetryOfIds,
-                       TaskStatus     Status,
-                       string         StatusMessage,
-                       TaskOptions    Options,
-                       DateTime       CreationDate,
-                       DateTime?      SubmittedDate,
-                       DateTime?      StartDate,
-                       DateTime?      EndDate,
-                       DateTime?      ReceptionDate,
-                       DateTime?      AcquisitionDate,
-                       DateTime?      PodTtl,
-                       Output         Output)
+                       IList<string>             ExpectedOutputIds,
+                       string                    InitialTaskId,
+                       IList<string>             RetryOfIds,
+                       TaskStatus                Status,
+                       string                    StatusMessage,
+                       TaskOptions               Options,
+                       DateTime                  CreationDate,
+                       DateTime?                 SubmittedDate,
+                       DateTime?                 StartDate,
+                       DateTime?                 EndDate,
+                       DateTime?                 ReceptionDate,
+                       DateTime?                 AcquisitionDate,
+                       DateTime?                 PodTtl,
+                       Output                    Output)
 {
   /// <summary>
   ///   Initializes task metadata with specified fields
@@ -119,7 +120,8 @@ public record TaskData(string         SessionId,
            payloadId,
            parentTaskIds,
            dataDependencies,
-           dataDependencies.ToDictionary(key => key, _ => true),
+           dataDependencies.ToDictionary(EscapeKey,
+                                         _ => true),
            expectedOutputIds,
            taskId,
            retryOfIds,
@@ -136,6 +138,15 @@ public record TaskData(string         SessionId,
            output)
   {
   }
+
+  public static string EscapeKey(string key)
+    => new StringBuilder(key).Replace("@",
+                                      "@at@")
+                             .Replace(".",
+                                      "@dot@")
+                             .Replace("$",
+                                      "@dollar@")
+                             .ToString();
 
 
   /// <summary>

@@ -534,26 +534,51 @@ public class TaskTable : ITaskTable
     var       taskCollection = taskCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
 
+    IEnumerable<UpdateOneModel<TaskData>> Writes()
+    {
+      var empty = true;
+      foreach (var tuple in dependencies)
+      {
+        using var deps = tuple.dependenciesToRemove.GetEnumerator();
+        if (!deps.MoveNext())
+        {
+          continue;
+        }
 
-    await taskCollection.BulkWriteAsync(sessionHandle,
-                                        dependencies.Select(tuple
-                                                              =>
-                                                            {
-                                                              using var                  deps   = tuple.dependenciesToRemove.GetEnumerator();
-                                                              deps.MoveNext();
-                                                              var key = deps.Current;
-                                                              var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key]);
-                                                              while (deps.MoveNext())
-                                                              {
-                                                                key = deps.Current;
-                                                                update = update.Unset(data => data.RemainingDataDependencies[key]);
-                                                              }
-                                                              return new UpdateOneModel<TaskData>(new ExpressionFilterDefinition<TaskData>(data => data.TaskId == tuple
-                                                                                                                                                     .taskId),
-                                                                                                  update);
-                                                            }),
-                                        cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+        empty = false;
+
+        var key0   = TaskData.EscapeKey(deps.Current);
+        var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
+        while (deps.MoveNext())
+        {
+          var key = TaskData.EscapeKey(deps.Current);
+          update = update.Unset(data => data.RemainingDataDependencies[key]);
+        }
+
+        yield return new UpdateOneModel<TaskData>(new ExpressionFilterDefinition<TaskData>(data => data.TaskId == tuple.taskId),
+                                                  update);
+      }
+
+      if (empty)
+      {
+        throw new NotImplementedException();
+      }
+    }
+
+    try
+    {
+      await taskCollection.BulkWriteAsync(sessionHandle,
+                                          Writes(),
+                                          new BulkWriteOptions
+                                          {
+                                            IsOrdered = false,
+                                          },
+                                          cancellationToken)
+                          .ConfigureAwait(false);
+    }
+    catch (NotImplementedException)
+    {
+    }
   }
 
   /// <inheritdoc />

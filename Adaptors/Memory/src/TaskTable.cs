@@ -431,7 +431,7 @@ public class TaskTable : ITaskTable
                                    {
                                      var remainingDep = data.RemainingDataDependencies;
 
-                                     foreach (var dep in dependenciesToRemove)
+                                     foreach (var dep in dependenciesToRemove.Select(TaskData.EscapeKey))
                                      {
                                        remainingDep.Remove(dep);
                                      }
