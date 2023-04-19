@@ -124,9 +124,9 @@ public class AgentTest
   private class AgentHolder : IDisposable
   {
     public readonly  Agent                Agent;
+    public readonly  IObjectStorage       ObjectStorage;
     private readonly TestDatabaseProvider prov_;
     public readonly  MyPushQueueStorage   QueueStorage;
-    public readonly  IObjectStorage       ResourceStorage;
     public readonly  IResultTable         ResultTable;
     public readonly  string               Session;
     public readonly  TaskData             TaskData;
@@ -142,14 +142,12 @@ public class AgentTest
                                                                .AddSingleton(SubmitterOptions)
                                                                .AddSingleton<IPushQueueStorage>(QueueStorage));
 
-      ResultTable = prov_.GetRequiredService<IResultTable>();
-      TaskTable   = prov_.GetRequiredService<ITaskTable>();
+      ResultTable   = prov_.GetRequiredService<IResultTable>();
+      TaskTable     = prov_.GetRequiredService<ITaskTable>();
+      ObjectStorage = prov_.GetRequiredService<IObjectStorage>();
 
-      var sessionTable         = prov_.GetRequiredService<ISessionTable>();
-      var submitter            = prov_.GetRequiredService<ISubmitter>();
-      var objectStorageFactory = prov_.GetRequiredService<IObjectStorageFactory>();
-
-      ResourceStorage = objectStorageFactory.CreateResourcesStorage();
+      var sessionTable = prov_.GetRequiredService<ISessionTable>();
+      var submitter    = prov_.GetRequiredService<ISubmitter>();
 
       Session = sessionTable.SetSessionDataAsync(new[]
                                                  {
@@ -268,7 +266,7 @@ public class AgentTest
                   .ToString();
 
       Agent = new Agent(submitter,
-                        objectStorageFactory,
+                        ObjectStorage,
                         QueueStorage,
                         ResultTable,
                         TaskTable,
@@ -766,14 +764,14 @@ public class AgentTest
     using var holder       = new AgentHolder();
     var       resourceData = new TestHelperServerStreamWriter<DataReply>();
 
-    await holder.ResourceStorage.AddOrUpdateAsync("ResourceData",
-                                                  new List<byte[]>
-                                                    {
-                                                      Encoding.ASCII.GetBytes("Data1"),
-                                                      Encoding.ASCII.GetBytes("Data2"),
-                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
-                                                     .ToAsyncEnumerable(),
-                                                  CancellationToken.None)
+    await holder.ObjectStorage.AddOrUpdateAsync("ResourceData",
+                                                new List<byte[]>
+                                                  {
+                                                    Encoding.ASCII.GetBytes("Data1"),
+                                                    Encoding.ASCII.GetBytes("Data2"),
+                                                  }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                   .ToAsyncEnumerable(),
+                                                CancellationToken.None)
                 .ConfigureAwait(false);
 
     await holder.Agent.GetResourceData(new DataRequest

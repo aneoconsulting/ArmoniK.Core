@@ -135,7 +135,7 @@ public class TestDatabaseProvider : IDisposable
         .Init(CancellationToken.None)
         .Wait();
 
-    app_.Services.GetRequiredService<IObjectStorageFactory>()
+    app_.Services.GetRequiredService<IObjectStorage>()
         .Init(CancellationToken.None)
         .Wait();
   }

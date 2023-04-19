@@ -133,8 +133,8 @@ public class SubmitterTests
 
     submitter_ = provider.GetRequiredService<ISubmitter>();
 
-    var objectFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    await objectFactory.Init(CancellationToken.None)
+    var objectStorage = provider.GetRequiredService<IObjectStorage>();
+    await objectStorage.Init(CancellationToken.None)
                        .ConfigureAwait(false);
 
     var resultTable = provider.GetRequiredService<IResultTable>();
