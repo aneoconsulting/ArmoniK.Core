@@ -50,9 +50,9 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   private readonly IObjectStorage        objectStorage_;
   private readonly IPushQueueStorage     pushQueueStorage_;
   private readonly IResultTable          resultTable_;
-  private readonly ITaskTable            taskTable_;
   private readonly GrpcAgentService      service_;
   private readonly ISubmitter            submitter_;
+  private readonly ITaskTable            taskTable_;
 
   /// <summary>
   ///   Initializes a new instance
