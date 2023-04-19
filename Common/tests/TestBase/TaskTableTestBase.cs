@@ -1622,13 +1622,14 @@ public class TaskTableTestBase
                                    })
                       .ConfigureAwait(false);
 
-      await TaskTable.RemoveRemainingDataDependenciesAsync(new List<(string taskId, IEnumerable<string> dependenciesToRemove)>
+      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
                                                            {
-                                                             (taskId, new List<string>
-                                                                      {
-                                                                        dd1,
-                                                                        dd2,
-                                                                      }),
+                                                             taskId,
+                                                           },
+                                                           new[]
+                                                           {
+                                                             dd1,
+                                                             dd2,
                                                            },
                                                            CancellationToken.None)
                      .ConfigureAwait(false);
@@ -1675,12 +1676,13 @@ public class TaskTableTestBase
                                    })
                       .ConfigureAwait(false);
 
-      await TaskTable.RemoveRemainingDataDependenciesAsync(new List<(string taskId, IEnumerable<string> dependenciesToRemove)>
+      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
                                                            {
-                                                             (taskId, new List<string>
-                                                                      {
-                                                                        dd1,
-                                                                      }),
+                                                             taskId,
+                                                           },
+                                                           new[]
+                                                           {
+                                                             dd1,
                                                            },
                                                            CancellationToken.None)
                      .ConfigureAwait(false);

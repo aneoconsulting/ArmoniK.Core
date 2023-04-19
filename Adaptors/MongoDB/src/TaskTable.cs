@@ -527,71 +527,18 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
-                                                         CancellationToken                                                      cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-    var       sessionHandle  = sessionProvider_.Get();
-
-    IEnumerable<UpdateOneModel<TaskData>> Writes()
-    {
-      var empty = true;
-      foreach (var tuple in dependencies)
-      {
-        using var deps = tuple.dependenciesToRemove.GetEnumerator();
-        if (!deps.MoveNext())
-        {
-          continue;
-        }
-
-        empty = false;
-
-        var key0   = TaskData.EscapeKey(deps.Current);
-        var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
-        while (deps.MoveNext())
-        {
-          var key = TaskData.EscapeKey(deps.Current);
-          update = update.Unset(data => data.RemainingDataDependencies[key]);
-        }
-
-        yield return new UpdateOneModel<TaskData>(new ExpressionFilterDefinition<TaskData>(data => data.TaskId == tuple.taskId),
-                                                  update);
-      }
-
-      if (empty)
-      {
-        throw new NotImplementedException();
-      }
-    }
-
-    try
-    {
-      await taskCollection.BulkWriteAsync(sessionHandle,
-                                          Writes(),
-                                          new BulkWriteOptions
-                                          {
-                                            IsOrdered = false,
-                                          },
-                                          cancellationToken)
-                          .ConfigureAwait(false);
-    }
-    catch (NotImplementedException)
-    {
-    }
-  }
-
-  /// <inheritdoc />
   public async Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
                                                          ICollection<string> dependenciesToRemove,
                                                          CancellationToken   cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(RemoveRemainingDataDependenciesAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
-    var       sessionHandle  = sessionProvider_.Get();
 
     using var deps = dependenciesToRemove.GetEnumerator();
-    deps.MoveNext();
+    if (!deps.MoveNext())
+    {
+      return;
+    }
 
     var key0   = TaskData.EscapeKey(deps.Current);
     var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
