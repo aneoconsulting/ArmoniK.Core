@@ -23,7 +23,6 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;

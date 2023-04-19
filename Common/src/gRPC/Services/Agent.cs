@@ -116,6 +116,7 @@ public class Agent : IAgent
 
     logger_.LogDebug("Submit tasks which new data are available");
 
+    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
     var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
                                                        sentResults_,
                                                        cancellationToken)
@@ -134,11 +135,17 @@ public class Agent : IAgent
                        dependentTasks);
     }
 
+    // Remove all results that were completed by the current task from their dependents.
+    // This will try to remove more results than strictly necessary.
+    // This is completely safe and should be optimized by the DB.
     await taskTable_.RemoveRemainingDataDependenciesAsync(dependentTasks,
                                                           sentResults_,
                                                           cancellationToken)
                     .ConfigureAwait(false);
 
+    // Find all tasks whose dependencies are now complete in order to start them.
+    // Multiple agents can see the same task as ready and will try to start it multiple times.
+    // This is benign as it will be handled during dequeue with message deduplication.
     var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
                                                           data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
                                                   data => new

@@ -39,7 +39,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   represents a submission from the client
 /// </param>
 /// <param name="DataDependencies">Unique identifiers of the results the task depends on</param>
-/// <param name="RemainingDataDependencies">Copy of data dependencies used for dependency resolution</param>
+/// <param name="RemainingDataDependencies">List of dependencies that are not yet satisfied</param>
 /// <param name="ExpectedOutputIds">
 ///   Identifiers of the outputs the task should produce or should transmit the
 ///   responsibility to produce
@@ -57,13 +57,17 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
-public record TaskData(string                    SessionId,
-                       string                    TaskId,
-                       string                    OwnerPodId,
-                       string                    OwnerPodName,
-                       string                    PayloadId,
-                       IList<string>             ParentTaskIds,
-                       IList<string>             DataDependencies,
+public record TaskData(string        SessionId,
+                       string        TaskId,
+                       string        OwnerPodId,
+                       string        OwnerPodName,
+                       string        PayloadId,
+                       IList<string> ParentTaskIds,
+                       IList<string> DataDependencies,
+                       // FIXME: RemainingDataDependencies should be a HashSet, but there is no HashSet in MongoDB.
+                       // List would also work but would make dependency management *much* slower when there is many dependencies on a single task.
+                       // (Removing elements from a list is linear time, but removing from an object in constant time)
+                       // Ideal solution would most likely be to put HashSet here, and have a custom Serializer/Deserializer in MongoDB "schema".
                        IDictionary<string, bool> RemainingDataDependencies,
                        IList<string>             ExpectedOutputIds,
                        string                    InitialTaskId,
@@ -139,6 +143,14 @@ public record TaskData(string                    SessionId,
   {
   }
 
+  /// <summary>
+  ///   ResultIds could contain dots (eg: it is the case in htcmock),
+  ///   but MongoDB does not support well dots in keys.
+  ///   This escapes the key to replace dots with something else.
+  ///   Escaped keys are guaranteed to have neither dots nor dollars
+  /// </summary>
+  /// <param name="key">Key string</param>
+  /// <returns>Escaped key</returns>
   public static string EscapeKey(string key)
     => new StringBuilder(key).Replace("@",
                                       "@at@")

@@ -534,11 +534,15 @@ public class TaskTable : ITaskTable
     using var activity       = activitySource_.StartActivity($"{nameof(RemoveRemainingDataDependenciesAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
+    // MongoDB driver does not support to unset a list, so Unset should be called multiple times.
+    // However, Unset on an UpdateDefinitionBuilder returns an UpdateDefinition.
+    // We need to call Unset on the first element outside of the loop.
     using var deps = dependenciesToRemove.GetEnumerator();
     if (!deps.MoveNext())
     {
       return;
     }
+
 
     var key0   = TaskData.EscapeKey(deps.Current);
     var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
