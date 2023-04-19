@@ -119,8 +119,8 @@ public class Agent : IAgent
     var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
                                                        sentResults_,
                                                        cancellationToken)
-                                           .Select(result => (result.Name, result.DependentTasks))
-                                           .ToListAsync(cancellationToken)
+                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
+                                           .ToHashSetAsync(cancellationToken)
                                            .ConfigureAwait(false);
 
     if (!dependentTasks.Any())
@@ -128,45 +128,18 @@ public class Agent : IAgent
       return;
     }
 
-    var toUpdate = new Dictionary<string, List<string>>();
-
-    foreach (var (name, tasks) in dependentTasks)
-    {
-      foreach (var task in tasks)
-      {
-        if (toUpdate.TryGetValue(task,
-                                 out var dicTasks))
-        {
-          dicTasks.Add(name);
-        }
-        else
-        {
-          toUpdate.TryAdd(task,
-                          new List<string>
-                          {
-                            name,
-                          });
-        }
-      }
-    }
-
     if (logger_.IsEnabled(LogLevel.Debug))
     {
       logger_.LogDebug("Dependent Tasks Dictionary {@dependents}",
-                       toUpdate);
+                       dependentTasks);
     }
 
-
-    if (!toUpdate.Any())
-    {
-      return;
-    }
-
-    await taskTable_.RemoveRemainingDataDependenciesAsync(toUpdate.Select(pair => (pair.Key, pair.Value.AsEnumerable())),
+    await taskTable_.RemoveRemainingDataDependenciesAsync(dependentTasks,
+                                                          sentResults_,
                                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    var groups = (await taskTable_.FindTasksAsync(data => toUpdate.Keys.Contains(data.TaskId),
+    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId),
                                                   _ => _,
                                                   cancellationToken)).Where(data => data.Status == TaskStatus.Creating && !data.RemainingDataDependencies.Any())
                                                                      .GroupBy(data => (data.Options.PartitionId, data.Options.Priority));

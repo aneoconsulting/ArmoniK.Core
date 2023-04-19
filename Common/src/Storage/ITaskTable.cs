@@ -287,6 +287,19 @@ public interface ITaskTable : IInitializable
                                             CancellationToken                                                      cancellationToken = default);
 
   /// <summary>
+  ///   Remove data dependencies from remaining data dependencies
+  /// </summary>
+  /// <param name="taskIds">Tasks</param>
+  /// <param name="dependenciesToRemove">Dependencies</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
+                                            ICollection<string> dependenciesToRemove,
+                                            CancellationToken   cancellationToken = default);
+
+  /// <summary>
   ///   Change the status of the task to canceled
   /// </summary>
   /// <param name="taskId">Id of the task to tag as canceled</param>

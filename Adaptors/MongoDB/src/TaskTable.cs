@@ -582,6 +582,32 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
+                                                         ICollection<string> dependenciesToRemove,
+                                                         CancellationToken   cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+    var       sessionHandle  = sessionProvider_.Get();
+
+    using var deps = dependenciesToRemove.GetEnumerator();
+    deps.MoveNext();
+
+    var key0   = TaskData.EscapeKey(deps.Current);
+    var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
+    while (deps.MoveNext())
+    {
+      var key = TaskData.EscapeKey(deps.Current);
+      update = update.Unset(data => data.RemainingDataDependencies[key]);
+    }
+
+    await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId),
+                                         update,
+                                         cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task SetTaskCanceledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
