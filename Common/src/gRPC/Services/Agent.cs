@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -139,10 +139,16 @@ public class Agent : IAgent
                                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId),
-                                                  _ => _,
-                                                  cancellationToken)).Where(data => data.Status == TaskStatus.Creating && !data.RemainingDataDependencies.Any())
-                                                                     .GroupBy(data => (data.Options.PartitionId, data.Options.Priority));
+    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+                                                          data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+                                                  data => new
+                                                          {
+                                                            data.TaskId,
+                                                            data.Options.PartitionId,
+                                                            data.Options.Priority,
+                                                          },
+                                                  cancellationToken)
+                                  .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
 
     foreach (var group in groups)
     {
