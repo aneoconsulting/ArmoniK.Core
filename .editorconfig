@@ -127,6 +127,7 @@ resharper_place_simple_anonymousmethod_on_single_line = false
 resharper_place_simple_embedded_statement_on_same_line = false
 resharper_place_simple_initializer_on_single_line = false
 resharper_place_simple_property_pattern_on_single_line = false
+resharper_enforce_line_ending_style = true
 resharper_protobuf_indent_size = 2
 resharper_protobuf_tab_width = 2
 resharper_protobuf_use_indent_from_vs = false

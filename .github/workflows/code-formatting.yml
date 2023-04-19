@@ -28,7 +28,7 @@ jobs:
 
     - name: Reformat
       run: |
-        jb cleanupcode ArmoniK.Core.sln
+        jb cleanupcode --profile="Full Cleanup With Headers" ArmoniK.Core.sln
 
     - name: Check Diff
       id: check-diff
