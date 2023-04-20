@@ -20,7 +20,7 @@ jobs:
 
     - name: Install ReSharper
       run: |
-        dotnet tool install -g JetBrains.ReSharper.GlobalTools --version 2022.2.2
+        dotnet tool install -g JetBrains.ReSharper.GlobalTools --version 2023.1.0
 
     - name: Restore
       run: |
