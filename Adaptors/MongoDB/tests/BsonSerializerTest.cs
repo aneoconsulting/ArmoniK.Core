@@ -179,6 +179,7 @@ internal class BsonSerializerTest
     Assert.AreEqual(tdm.Options.Options["key2"],
                     deserialized.Options.Options["key2"]);
     Assert.IsTrue(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies));
+    Assert.IsTrue(tdm.RemainingDataDependencies.SequenceEqual(deserialized.RemainingDataDependencies));
     Assert.AreEqual(tdm.Options.MaxDuration,
                     deserialized.Options.MaxDuration);
     Assert.AreEqual(tdm.Options.MaxRetries,

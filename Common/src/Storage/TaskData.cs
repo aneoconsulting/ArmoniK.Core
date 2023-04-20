@@ -17,6 +17,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -37,7 +39,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   represents a submission from the client
 /// </param>
 /// <param name="DataDependencies">Unique identifiers of the results the task depends on</param>
-/// <param name="RemainingDataDependencies">Copy of data dependencies used for dependency resolution</param>
+/// <param name="RemainingDataDependencies">List of dependencies that are not yet satisfied</param>
 /// <param name="ExpectedOutputIds">
 ///   Identifiers of the outputs the task should produce or should transmit the
 ///   responsibility to produce
@@ -62,21 +64,25 @@ public record TaskData(string        SessionId,
                        string        PayloadId,
                        IList<string> ParentTaskIds,
                        IList<string> DataDependencies,
-                       IList<string> RemainingDataDependencies,
-                       IList<string> ExpectedOutputIds,
-                       string        InitialTaskId,
-                       IList<string> RetryOfIds,
-                       TaskStatus    Status,
-                       string        StatusMessage,
-                       TaskOptions   Options,
-                       DateTime      CreationDate,
-                       DateTime?     SubmittedDate,
-                       DateTime?     StartDate,
-                       DateTime?     EndDate,
-                       DateTime?     ReceptionDate,
-                       DateTime?     AcquisitionDate,
-                       DateTime?     PodTtl,
-                       Output        Output)
+                       // FIXME: RemainingDataDependencies should be a HashSet, but there is no HashSet in MongoDB.
+                       // List would also work but would make dependency management *much* slower when there is many dependencies on a single task.
+                       // (Removing elements from a list is linear time, but removing from an object in constant time)
+                       // Ideal solution would most likely be to put HashSet here, and have a custom Serializer/Deserializer in MongoDB "schema".
+                       IDictionary<string, bool> RemainingDataDependencies,
+                       IList<string>             ExpectedOutputIds,
+                       string                    InitialTaskId,
+                       IList<string>             RetryOfIds,
+                       TaskStatus                Status,
+                       string                    StatusMessage,
+                       TaskOptions               Options,
+                       DateTime                  CreationDate,
+                       DateTime?                 SubmittedDate,
+                       DateTime?                 StartDate,
+                       DateTime?                 EndDate,
+                       DateTime?                 ReceptionDate,
+                       DateTime?                 AcquisitionDate,
+                       DateTime?                 PodTtl,
+                       Output                    Output)
 {
   /// <summary>
   ///   Initializes task metadata with specified fields
@@ -118,7 +124,8 @@ public record TaskData(string        SessionId,
            payloadId,
            parentTaskIds,
            dataDependencies,
-           dataDependencies,
+           dataDependencies.ToDictionary(EscapeKey,
+                                         _ => true),
            expectedOutputIds,
            taskId,
            retryOfIds,
@@ -135,6 +142,23 @@ public record TaskData(string        SessionId,
            output)
   {
   }
+
+  /// <summary>
+  ///   ResultIds could contain dots (eg: it is the case in htcmock),
+  ///   but MongoDB does not support well dots in keys.
+  ///   This escapes the key to replace dots with something else.
+  ///   Escaped keys are guaranteed to have neither dots nor dollars
+  /// </summary>
+  /// <param name="key">Key string</param>
+  /// <returns>Escaped key</returns>
+  public static string EscapeKey(string key)
+    => new StringBuilder(key).Replace("@",
+                                      "@at@")
+                             .Replace(".",
+                                      "@dot@")
+                             .Replace("$",
+                                      "@dollar@")
+                             .ToString();
 
 
   /// <summary>

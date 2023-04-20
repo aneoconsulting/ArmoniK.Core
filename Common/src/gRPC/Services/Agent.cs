@@ -116,11 +116,12 @@ public class Agent : IAgent
 
     logger_.LogDebug("Submit tasks which new data are available");
 
+    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
     var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
                                                        sentResults_,
                                                        cancellationToken)
-                                           .Select(result => (result.Name, result.DependentTasks))
-                                           .ToListAsync(cancellationToken)
+                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
+                                           .ToHashSetAsync(cancellationToken)
                                            .ConfigureAwait(false);
 
     if (!dependentTasks.Any())
@@ -128,48 +129,33 @@ public class Agent : IAgent
       return;
     }
 
-    var toUpdate = new Dictionary<string, List<string>>();
-
-    foreach (var (name, tasks) in dependentTasks)
-    {
-      foreach (var task in tasks)
-      {
-        if (toUpdate.TryGetValue(task,
-                                 out var dicTasks))
-        {
-          dicTasks.Add(name);
-        }
-        else
-        {
-          toUpdate.TryAdd(task,
-                          new List<string>
-                          {
-                            name,
-                          });
-        }
-      }
-    }
-
     if (logger_.IsEnabled(LogLevel.Debug))
     {
       logger_.LogDebug("Dependent Tasks Dictionary {@dependents}",
-                       toUpdate);
+                       dependentTasks);
     }
 
-
-    if (!toUpdate.Any())
-    {
-      return;
-    }
-
-    await taskTable_.RemoveRemainingDataDependenciesAsync(toUpdate.Select(pair => (pair.Key, pair.Value.AsEnumerable())),
+    // Remove all results that were completed by the current task from their dependents.
+    // This will try to remove more results than strictly necessary.
+    // This is completely safe and should be optimized by the DB.
+    await taskTable_.RemoveRemainingDataDependenciesAsync(dependentTasks,
+                                                          sentResults_,
                                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    var groups = (await taskTable_.FindTasksAsync(data => toUpdate.Keys.Contains(data.TaskId),
-                                                  _ => _,
-                                                  cancellationToken)).Where(data => data.Status == TaskStatus.Creating && !data.RemainingDataDependencies.Any())
-                                                                     .GroupBy(data => (data.Options.PartitionId, data.Options.Priority));
+    // Find all tasks whose dependencies are now complete in order to start them.
+    // Multiple agents can see the same task as ready and will try to start it multiple times.
+    // This is benign as it will be handled during dequeue with message deduplication.
+    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+                                                          data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+                                                  data => new
+                                                          {
+                                                            data.TaskId,
+                                                            data.Options.PartitionId,
+                                                            data.Options.Priority,
+                                                          },
+                                                  cancellationToken)
+                                  .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
 
     foreach (var group in groups)
     {

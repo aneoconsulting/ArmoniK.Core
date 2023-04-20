@@ -365,7 +365,7 @@ public class TaskHandlerTest
                                 "payload",
                                 new List<string>(),
                                 new List<string>(),
-                                new List<string>(),
+                                new Dictionary<string, bool>(),
                                 new List<string>(),
                                 "init",
                                 new List<string>(),
@@ -457,7 +457,7 @@ public class TaskHandlerTest
                           "payload",
                           new List<string>(),
                           new List<string>(),
-                          new List<string>(),
+                          new Dictionary<string, bool>(),
                           new List<string>(),
                           "taskId",
                           new List<string>(),
@@ -558,8 +558,9 @@ public class TaskHandlerTest
                                     CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task RemoveRemainingDataDependenciesAsync(IEnumerable<(string taskId, IEnumerable<string> dependenciesToRemove)> dependencies,
-                                                     CancellationToken                                                      cancellationToken = default)
+    public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
+                                                     ICollection<string> dependenciesToRemove,
+                                                     CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
 
     public Task SetTaskCanceledAsync(string            taskId,
@@ -594,7 +595,7 @@ public class TaskHandlerTest
                           "payload",
                           new List<string>(),
                           new List<string>(),
-                          new List<string>(),
+                          new Dictionary<string, bool>(),
                           new List<string>(),
                           "taskId",
                           new List<string>(),
@@ -631,7 +632,7 @@ public class TaskHandlerTest
                                       "payload",
                                       new List<string>(),
                                       new List<string>(),
-                                      new List<string>(),
+                                      new Dictionary<string, bool>(),
                                       new List<string>(),
                                       "taskId",
                                       new List<string>(),

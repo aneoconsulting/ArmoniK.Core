@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -51,7 +52,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetDefaultValue(Array.Empty<string>());
                                                 cm.MapProperty(nameof(TaskData.RemainingDataDependencies))
                                                   .SetIgnoreIfDefault(true)
-                                                  .SetDefaultValue(Array.Empty<string>());
+                                                  .SetDefaultValue(new Dictionary<string, bool>());
                                                 cm.MapProperty(nameof(TaskData.ExpectedOutputIds))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.InitialTaskId))
