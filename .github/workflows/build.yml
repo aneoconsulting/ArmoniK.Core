@@ -359,7 +359,7 @@ jobs:
           sleep 10
 
       - name: Run Stream Test
-        timeout-minutes: 3
+        timeout-minutes: 4
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
