@@ -25,7 +25,7 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Adapters.Amqp;
 [UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly AsyncLazy               connectionTask_;
+  private readonly AsyncLazy<ValueTuple>   connectionTask_;
   private readonly ILogger<ConnectionAmqp> logger_;
   private readonly QueueCommon.Amqp        options_;
   private          bool                    isInitialized_;
@@ -45,9 +45,14 @@ public class ConnectionAmqp : IConnectionAmqp
   public ConnectionAmqp(QueueCommon.Amqp        options,
                         ILogger<ConnectionAmqp> logger)
   {
-    options_        = options;
-    logger_         = logger;
-    connectionTask_ = new AsyncLazy(() => InitTask(this));
+    options_ = options;
+    logger_  = logger;
+    connectionTask_ = new AsyncLazy<ValueTuple>(async () =>
+                                                {
+                                                  await InitTask(this)
+                                                    .ConfigureAwait(false);
+                                                  return new ValueTuple();
+                                                });
   }
 
   public Connection? Connection { get; private set; }
