@@ -37,7 +37,6 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
-using Grpc.Net.Client;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -51,25 +50,25 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 namespace ArmoniK.Samples.Bench.Client;
 
 /// <summary>
-///   Policy for creating a <see cref="GrpcChannel" /> for the <see cref="ObjectPool" />
+///   Policy for creating a <see cref="ChannelBase" /> for the <see cref="ObjectPool" />
 /// </summary>
-internal sealed class GrpcChannelObjectPolicy : IPooledObjectPolicy<GrpcChannel>
+internal sealed class GrpcChannelObjectPolicy : IPooledObjectPolicy<ChannelBase>
 {
   private readonly GrpcClient options_;
 
   /// <summary>
-  ///   Initializes a Policy for <see cref="GrpcChannel" />
+  ///   Initializes a Policy for <see cref="ChannelBase" />
   /// </summary>
-  /// <param name="options">Options for creating a GrpcChannel</param>
+  /// <param name="options">Options for creating a ChannelBase</param>
   public GrpcChannelObjectPolicy(GrpcClient options)
     => options_ = options;
 
   /// <inheritdoc />
-  public GrpcChannel Create()
+  public ChannelBase Create()
     => GrpcChannelFactory.CreateChannel(options_);
 
   /// <inheritdoc />
-  public bool Return(GrpcChannel obj)
+  public bool Return(ChannelBase obj)
     => true;
 }
 
@@ -101,7 +100,7 @@ internal static class Program
     var channel          = GrpcChannelFactory.CreateChannel(options);
     var partitionsClient = new Partitions.PartitionsClient(channel);
 
-    var channelPool = new DefaultObjectPool<GrpcChannel>(new GrpcChannelObjectPolicy(options));
+    var channelPool = new DefaultObjectPool<ChannelBase>(new GrpcChannelObjectPolicy(options));
 
     var partitions = await partitionsClient.ListPartitionsAsync(new ListPartitionsRequest
                                                                 {

@@ -27,6 +27,7 @@ using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
 
+using Grpc.Core;
 using Grpc.Net.Client;
 
 using Microsoft.AspNetCore.Authorization;
@@ -41,7 +42,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication      app_;
   private readonly ILoggerFactory      loggerFactory_;
-  private          GrpcChannel?        channel_;
+  private          ChannelBase?        channel_;
   private          HttpMessageHandler? handler_;
   private          ILogger             logger_;
   private          TestServer?         server_;
@@ -115,7 +116,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
     server_ = null;
     handler_?.Dispose();
     handler_ = null;
-    channel_?.Dispose();
     channel_ = null;
     loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
@@ -130,7 +130,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     handler_ ??= server_.CreateHandler();
   }
 
-  public async Task<GrpcChannel> CreateChannel()
+  public async Task<ChannelBase> CreateChannel()
   {
     if (handler_ == null)
     {
@@ -157,7 +157,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     await channel_.ShutdownAsync()
                   .ConfigureAwait(false);
-    channel_.Dispose();
     channel_ = null;
   }
 
