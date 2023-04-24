@@ -29,7 +29,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 
