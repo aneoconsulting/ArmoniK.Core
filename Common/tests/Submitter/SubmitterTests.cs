@@ -35,6 +35,7 @@ using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using EphemeralMongo;
 
@@ -785,7 +786,7 @@ public class SubmitterTests
     var result = (await taskTable_!.CountPartitionTasksAsync(CancellationToken.None)
                                    .ConfigureAwait(false)).OrderBy(r => r.Status)
                                                           .ThenBy(r => r.PartitionId)
-                                                          .ToIList();
+                                                          .AsIList();
 
     Assert.AreEqual(3,
                     result.Count);
