@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Control.PartitionMetrics.Options;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Fennel.CSharp;
 
