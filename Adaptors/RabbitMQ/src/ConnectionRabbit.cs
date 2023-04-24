@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 [UsedImplicitly]
 public class ConnectionRabbit : IConnectionRabbit
 {
-  private readonly AsyncLazy                 connectionTask_;
+  private readonly AsyncLazy<ValueTuple>     connectionTask_;
   private readonly ILogger<ConnectionRabbit> logger_;
 
   private readonly Amqp options_;
@@ -47,9 +47,14 @@ public class ConnectionRabbit : IConnectionRabbit
   public ConnectionRabbit(Amqp                      options,
                           ILogger<ConnectionRabbit> logger)
   {
-    logger_         = logger;
-    options_        = options;
-    connectionTask_ = new AsyncLazy(() => InitTask(this));
+    logger_  = logger;
+    options_ = options;
+    connectionTask_ = new AsyncLazy<ValueTuple>(async () =>
+                                                {
+                                                  await InitTask(this)
+                                                    .ConfigureAwait(false);
+                                                  return new ValueTuple();
+                                                });
   }
 
   private IConnection? Connection { get; set; }

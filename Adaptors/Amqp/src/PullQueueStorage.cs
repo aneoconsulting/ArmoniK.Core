@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 using Amqp;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -94,8 +94,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                         $"{Options.PartitionId}###q{i}")))
                            .ToArray();
 
-      var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
-      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
+      var senders   = Task.WhenAll(senders_.Select(lazy => lazy.Value));
+      var receivers = Task.WhenAll(receivers_.Select(lazy => lazy.Value));
       await Task.WhenAll(senders,
                          receivers)
                 .ConfigureAwait(false);
