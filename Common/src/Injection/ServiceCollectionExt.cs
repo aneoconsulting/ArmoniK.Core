@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -106,28 +106,37 @@ public static class ServiceCollectionExt
     logger.LogInformation("Loaded assembly {assemblyName}",
                           assembly.FullName);
 
-    var type = assembly.GetType(queueSettings.ClassName,
-                                true,
-                                true);
-
-    logger.LogDebug("class loaded {type}",
-                    type);
-
-    if (!typeof(IDependencyInjectionBuildable).IsAssignableFrom(type))
+    try
     {
-      throw new InvalidOperationException($"Provided Type does not implement {nameof(IDependencyInjectionBuildable)} interface.");
-    }
+      var type = assembly.GetType(queueSettings.ClassName,
+                                  true,
+                                  true);
 
-    if (Activator.CreateInstance(type) is not IDependencyInjectionBuildable builder)
+      logger.LogDebug("class loaded {type}",
+                      type);
+
+      if (!typeof(IDependencyInjectionBuildable).IsAssignableFrom(type))
+      {
+        throw new InvalidOperationException($"Provided Type does not implement {nameof(IDependencyInjectionBuildable)} interface.");
+      }
+
+      if (Activator.CreateInstance(type) is not IDependencyInjectionBuildable builder)
+      {
+        throw new InvalidOperationException("Cannot instantiate loaded type.");
+      }
+
+      builder.Build(services,
+                    configuration,
+                    logger);
+
+      return services;
+    }
+    catch (TypeLoadException e)
     {
-      throw new InvalidOperationException("Cannot instantiate loaded type.");
+      logger.LogError(e, "Error while loading class");
+      logger.LogError(e.InnerException, "Inner exception while loading class");
+      throw;
     }
-
-    builder.Build(services,
-                  configuration,
-                  logger);
-
-    return services;
   }
 
   /// <summary>
