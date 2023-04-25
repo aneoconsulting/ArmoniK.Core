@@ -134,3 +134,19 @@ module "partition_metrics_exporter" {
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
 }
+
+module "ingress" {
+  source             = "./modules/ingress"
+  for_each           = tomap({ for c in var.ingress.configs : c.container_name => c })
+  tag                = var.ingress.tag
+  image              = var.ingress.image
+  container_name     = each.value.container_name
+  tls                = each.value.tls
+  mtls               = each.value.mtls
+  port               = each.value.port
+  network            = docker_network.armonik.name
+  submitter_url      = module.submitter.url
+  submitter_port     = module.submitter.port
+  log_driver         = module.fluenbit.log_driver
+  submitter_image_id = module.submitter.image_id
+}

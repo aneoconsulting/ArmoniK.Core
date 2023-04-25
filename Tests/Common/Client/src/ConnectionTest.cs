@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
@@ -58,24 +59,38 @@ internal class ConnectionTest
             "",
             TestName = "Ingress_TLS_NoValidation")]
   [TestCase("https://localhost:5202",
-            "",
+            "../../../../../../../terraform/.terraform/ingress_tls/server/ca.crt",
             "",
             false,
             TestName = "Ingress_TLS")]
-  [TestCase("https://localhost:5203",
-            "",
-            "",
-            TestName = "Ingress_MTLS_NoValidation")]
-  [TestCase("https://localhost:5203",
-            "",
+  [TestCase("https://localhost:5202",
+            "../../../../../../../terraform/.terraform/ingress_tls/server/ca.crt",
             "",
             false,
+            true,
+            TestName = "Ingress_TLS_CAInstalled")]
+  [TestCase("https://localhost:5203",
+            "",
+            "../../../../../../../terraform/.terraform/ingress_mtls/client/client.p12",
+            TestName = "Ingress_MTLS_NoValidation")]
+  [TestCase("https://localhost:5203",
+            "../../../../../../../terraform/.terraform/ingress_mtls/server/ca.crt",
+            "../../../../../../../terraform/.terraform/ingress_mtls/client/client.p12",
+            false,
             TestName = "Ingress_MTLS")]
+  [TestCase("https://localhost:5203",
+            "../../../../../../../terraform/.terraform/ingress_mtls/server/ca.crt",
+            "../../../../../../../terraform/.terraform/ingress_mtls/client/client.p12",
+            false,
+            true,
+            TestName = "Ingress_MTLS_CAInstalled")]
   public void ConnectionShouldSucceed(string endpoint,
                                       string caFile,
                                       string clientCertP12,
-                                      bool   allowInsecure = true)
+                                      bool   allowInsecure = true,
+                                      bool   caIsInstalled = false)
   {
+    Console.WriteLine(Directory.GetCurrentDirectory());
     Dictionary<string, string?> baseConfig = new()
                                              {
                                                {
@@ -85,7 +100,9 @@ internal class ConnectionTest
                                                  "GrpcClient:CertP12", clientCertP12
                                                },
                                                {
-                                                 "GrpcClient:CaCert", caFile
+                                                 "GrpcClient:CaCert", caIsInstalled
+                                                                        ? ""
+                                                                        : caFile
                                                },
                                                {
                                                  "GrpcClient:AllowUnsafeConnection", allowInsecure.ToString()
@@ -97,6 +114,11 @@ internal class ConnectionTest
     var configuration = builder.Build();
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
+
+    if (caIsInstalled && !allowInsecure && Environment.GetEnvironmentVariable("CA_INSTALLED") == null)
+    {
+      Assert.Ignore("CA is not installed in this case");
+    }
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
     channel_ = GrpcChannelFactory.CreateChannel(options);

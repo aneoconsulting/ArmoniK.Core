@@ -202,3 +202,35 @@ variable "database_image" {
   type    = string
   default = "mongo"
 }
+
+variable "ingress" {
+  type = object({
+    image = string,
+    tag   = string,
+    configs = list(object({
+      container_name = string,
+      port           = number,
+      tls            = optional(bool, false),
+      mtls           = optional(bool, false),
+  })) })
+  default = {
+    image = "nginxinc/nginx-unprivileged",
+    tag   = "1.23.3",
+    configs = [
+      {
+        container_name = "ingress",
+        port           = 5201
+      },
+      {
+        container_name = "ingress_tls",
+        port           = 5202,
+        tls            = true
+      },
+      {
+        container_name = "ingress_mtls",
+        port           = 5203,
+        tls            = true,
+        mtls           = true
+      }
+  ] }
+}
