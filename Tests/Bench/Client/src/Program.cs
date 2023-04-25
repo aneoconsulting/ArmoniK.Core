@@ -32,6 +32,7 @@ using Armonik.Api.Grpc.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -96,7 +97,7 @@ internal static class Program
                  .Bind(benchOptions);
     logger.LogInformation("bench options : {@benchOptions}",
                           benchOptions);
-    using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
+    using var propertyScope = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
     var channel          = GrpcChannelFactory.CreateChannel(options);
     var partitionsClient = new Partitions.PartitionsClient(channel);
@@ -208,120 +209,144 @@ internal static class Program
                             .ToList();
     var rnd = new Random();
 
-    foreach (var chunk in results.Chunk(benchOptions.BatchSize))
-    {
-      var createTaskReply = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
-                                                                   null,
-                                                                   chunk.Select(resultId =>
-                                                                                {
-                                                                                  var dataBytes = new byte[benchOptions.PayloadSize * 1024];
-                                                                                  rnd.NextBytes(dataBytes);
-                                                                                  return new TaskRequest
-                                                                                         {
-                                                                                           ExpectedOutputKeys =
-                                                                                           {
-                                                                                             resultId,
-                                                                                           },
-                                                                                           Payload = UnsafeByteOperations.UnsafeWrap(dataBytes),
-                                                                                         };
-                                                                                }))
-                                                 .ConfigureAwait(false);
+    await results.Chunk(benchOptions.BatchSize)
+                 .ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
+                                  async chunk =>
+                                  {
+                                    var localChannel = channelPool.Get();
+                                    try
+                                    {
+                                      var client = new Submitter.SubmitterClient(localChannel);
+                                      var createTaskReply = await client.CreateTasksAsync(createSessionReply.SessionId,
+                                                                                          null,
+                                                                                          chunk.Select(resultId =>
+                                                                                                       {
+                                                                                                         var dataBytes = new byte[benchOptions.PayloadSize * 1024];
+                                                                                                         rnd.NextBytes(dataBytes);
+                                                                                                         return new TaskRequest
+                                                                                                                {
+                                                                                                                  ExpectedOutputKeys =
+                                                                                                                  {
+                                                                                                                    resultId,
+                                                                                                                  },
+                                                                                                                  Payload = UnsafeByteOperations.UnsafeWrap(dataBytes),
+                                                                                                                };
+                                                                                                       }))
+                                                                        .ConfigureAwait(false);
 
-      if (logger.IsEnabled(LogLevel.Debug))
-      {
-        foreach (var status in createTaskReply.CreationStatusList.CreationStatuses)
-        {
-          logger.LogDebug("task created {taskId}",
-                          status.TaskInfo.TaskId);
-        }
-      }
-    }
+                                      if (logger.IsEnabled(LogLevel.Debug))
+                                      {
+                                        foreach (var status in createTaskReply.CreationStatusList.CreationStatuses)
+                                        {
+                                          logger.LogDebug("task created {taskId}",
+                                                          status.TaskInfo.TaskId);
+                                        }
+                                      }
+                                    }
+                                    finally
+                                    {
+                                      channelPool.Return(localChannel);
+                                    }
+                                  })
+                 .ConfigureAwait(false);
 
     var taskCreated = Stopwatch.GetTimestamp();
 
-    foreach (var resultId in results)
-    {
-      var resultRequest = new ResultRequest
-                          {
-                            ResultId = resultId,
-                            Session  = createSessionReply.SessionId,
-                          };
+    await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
+                                  async resultId =>
+                                  {
+                                    var localChannel = channelPool.Get();
+                                    try
+                                    {
+                                      var client = new Submitter.SubmitterClient(localChannel);
+                                      var resultRequest = new ResultRequest
+                                                          {
+                                                            ResultId = resultId,
+                                                            Session  = createSessionReply.SessionId,
+                                                          };
 
-      var availabilityReply = submitterClient.WaitForAvailability(resultRequest);
+                                      var availabilityReply = await client.WaitForAvailabilityAsync(resultRequest)
+                                                                          .ConfigureAwait(false);
 
-      switch (availabilityReply.TypeCase)
-      {
-        case AvailabilityReply.TypeOneofCase.None:
-          throw new Exception("Issue with Server !");
-        case AvailabilityReply.TypeOneofCase.Ok:
-          break;
-        case AvailabilityReply.TypeOneofCase.Error:
-          throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
-        case AvailabilityReply.TypeOneofCase.NotCompletedTask:
-          throw new Exception($"Task not completed - result id {resultId}");
-        default:
-          throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
-      }
-    }
+                                      switch (availabilityReply.TypeCase)
+                                      {
+                                        case AvailabilityReply.TypeOneofCase.None:
+                                          throw new Exception("Issue with Server !");
+                                        case AvailabilityReply.TypeOneofCase.Ok:
+                                          break;
+                                        case AvailabilityReply.TypeOneofCase.Error:
+                                          throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
+                                        case AvailabilityReply.TypeOneofCase.NotCompletedTask:
+                                          throw new Exception($"Task not completed - result id {resultId}");
+                                        default:
+                                          throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
+                                      }
+                                    }
+                                    finally
+                                    {
+                                      channelPool.Return(localChannel);
+                                    }
+                                  })
+                 .ConfigureAwait(false);
 
     var resultsAvailable = Stopwatch.GetTimestamp();
 
     var countRes = 0;
 
-    results.AsParallel()
-           .WithDegreeOfParallelism(benchOptions.DegreeOfParallelism)
-           .ForAll(resultId =>
-                   {
-                     for (var i = 0; i < benchOptions.MaxRetries; i++)
-                     {
-                       var localChannel = channelPool.Get();
-                       try
-                       {
-                         var resultRequest = new ResultRequest
-                                             {
-                                               ResultId = resultId,
-                                               Session  = createSessionReply.SessionId,
-                                             };
+    await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
+                                  async resultId =>
+                                  {
+                                    for (var i = 0; i < benchOptions.MaxRetries; i++)
+                                    {
+                                      var localChannel = channelPool.Get();
+                                      try
+                                      {
+                                        var resultRequest = new ResultRequest
+                                                            {
+                                                              ResultId = resultId,
+                                                              Session  = createSessionReply.SessionId,
+                                                            };
 
-                         var client = new Submitter.SubmitterClient(localChannel);
+                                        var client = new Submitter.SubmitterClient(localChannel);
 
-                         var result = client.GetResultAsync(resultRequest,
-                                                            CancellationToken.None)
-                                            .Result;
+                                        var result = await client.GetResultAsync(resultRequest,
+                                                                                 CancellationToken.None)
+                                                                 .ConfigureAwait(false);
 
-                         // A good a way to process results would be to process them individually as soon as they are
-                         // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
-                         // be careful to not overload your memory. If you need to retrieve a lot of results to apply
-                         // post-processing on, consider doing so with sub-tasking so that the client-side application
-                         // has to do less work.
+                                        // A good a way to process results would be to process them individually as soon as they are
+                                        // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
+                                        // be careful to not overload your memory. If you need to retrieve a lot of results to apply
+                                        // post-processing on, consider doing so with sub-tasking so that the client-side application
+                                        // has to do less work.
 
-                         if (result.Length != benchOptions.ResultSize * 1024)
-                         {
-                           logger.LogInformation("Received length {received}, expected length {expected}",
-                                                 result.Length,
-                                                 benchOptions.ResultSize * 1024);
-                           throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
-                         }
+                                        if (result.Length != benchOptions.ResultSize * 1024)
+                                        {
+                                          logger.LogInformation("Received length {received}, expected length {expected}",
+                                                                result.Length,
+                                                                benchOptions.ResultSize * 1024);
+                                          throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
+                                        }
 
-                         Interlocked.Increment(ref countRes);
-                         // If successful, return
-                         return;
-                       }
-                       catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
-                       {
-                         logger.LogWarning(e,
-                                           "Error during result retrieving, retrying to get {resultId}",
-                                           resultId);
-                       }
-                       finally
-                       {
-                         channelPool.Return(localChannel);
-                       }
-                     }
+                                        Interlocked.Increment(ref countRes);
+                                        // If successful, return
+                                        return;
+                                      }
+                                      catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+                                      {
+                                        logger.LogWarning(e,
+                                                          "Error during result retrieving, retrying to get {resultId}",
+                                                          resultId);
+                                      }
+                                      finally
+                                      {
+                                        channelPool.Return(localChannel);
+                                      }
+                                    }
 
-                     // in this case, retries are all made so we need to tell that it did not work
-                     throw new InvalidOperationException("Too many retries");
-                   });
+                                    // in this case, retries are all made so we need to tell that it did not work
+                                    throw new InvalidOperationException("Too many retries");
+                                  })
+                 .ConfigureAwait(false);
 
     logger.LogInformation("Results retrieved {number}",
                           countRes);
