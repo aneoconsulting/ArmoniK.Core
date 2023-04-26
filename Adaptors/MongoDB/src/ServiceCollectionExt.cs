@@ -37,7 +37,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
@@ -194,6 +193,7 @@ public static class ServiceCollectionExt
     settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
     settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    settings.MaxConnecting          = mongoOptions.MaxConnecting;
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
@@ -204,7 +204,7 @@ public static class ServiceCollectionExt
 
     var client = new MongoClient(settings);
 
-    services.AddSingleton<IMongoClient>( _ =>
+    services.AddSingleton<IMongoClient>(_ =>
                                         {
                                           logger.LogInformation("MongoDB client creation");
                                           return client;

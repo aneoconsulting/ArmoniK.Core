@@ -62,4 +62,6 @@ public class MongoDB
 
   public int      MaxConnectionPoolSize  { get; set; } = 500;
   public TimeSpan ServerSelectionTimeout { get; set; } = TimeSpan.FromMinutes(2);
+
+  public int MaxConnecting { get; set; } = 1;
 }

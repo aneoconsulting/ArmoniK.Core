@@ -24,6 +24,7 @@ using ArmoniK.Core.Base;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
@@ -39,6 +40,7 @@ public class SessionProvider : IInitializable
   [UsedImplicitly]
   public SessionProvider(IMongoClient client)
     => client_ = client;
+
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
@@ -62,6 +64,7 @@ public class SessionProvider : IInitializable
 
   public Task Init(CancellationToken cancellationToken)
   {
+
     if (clientSessionHandle_ is not null)
     {
       return Task.CompletedTask;
@@ -70,6 +73,7 @@ public class SessionProvider : IInitializable
     lock (lockObj_)
     {
       clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
+      Console.WriteLine("MongoDB client from Session Provider");
     }
 
     return Task.CompletedTask;
@@ -84,4 +88,5 @@ public class SessionProvider : IInitializable
 
     return clientSessionHandle_;
   }
+
 }
