@@ -681,7 +681,7 @@ public class Submitter : ISubmitter
 
     await resultTable_.SetTaskOwnership(sessionId,
                                         requests.SelectMany(r => r.ExpectedOutputKeys.Select(key => (key, r.Id)))
-                                                .ToIList(),
+                                                .AsICollection(),
                                         cancellationToken)
                       .ConfigureAwait(false);
 
