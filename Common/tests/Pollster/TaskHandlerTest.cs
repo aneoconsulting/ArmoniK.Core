@@ -101,6 +101,43 @@ public class TaskHandlerTest
   private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string sessionId)> InitProviderRunnableTask(
     TestTaskHandlerProvider testServiceProvider)
   {
+    var taskRequests = new List<TaskRequest>();
+    taskRequests.Add(new TaskRequest(new List<string>
+                                     {
+                                       "ExpectedOutput0",
+                                     },
+                                     new List<string>(),
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
+
+    taskRequests.Add(new TaskRequest(new List<string>
+                                     {
+                                       "ExpectedOutput1",
+                                     },
+                                     new List<string>
+                                     {
+                                       "DataDep",
+                                     },
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
+
+    taskRequests.Add(new TaskRequest(new List<string>
+                                     {
+                                       "ExpectedOutput2",
+                                     },
+                                     new List<string>
+                                     {
+                                       "DataDep",
+                                     },
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
+
     await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
                                                                    {
                                                                      new PartitionData("part1",
@@ -138,45 +175,13 @@ public class TaskHandlerTest
     await testServiceProvider.ResultTable.Create(new[]
                                                  {
                                                    new Result(sessionId,
-<<<<<<< HEAD
-                                                              "ExpectedOutput0",
-                                                              "",
-                                                              "",
-                                                              ResultStatus.Created,
-                                                              new List<string>(),
-                                                              DateTime.UtcNow,
-                                                              Array.Empty<byte>()),
-                                                   new Result(sessionId,
                                                               "DataDep",
                                                               "",
-                                                              "",
-=======
-                                                              "DataDep",
-                                                              "",
->>>>>>> 8b9cb992 (feat: Depedency checking without external service)
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
                                                               Array.Empty<byte>()),
-<<<<<<< HEAD
-                                                   new Result(sessionId,
-                                                              "ExpectedOutput1",
-                                                              "",
-                                                              "",
-                                                              ResultStatus.Created,
-                                                              new List<string>(),
-                                                              DateTime.UtcNow,
-                                                              Array.Empty<byte>()),
-                                                   new Result(sessionId,
-                                                              "ExpectedOutput2",
-                                                              "",
-                                                              "",
-                                                              ResultStatus.Created,
-                                                              new List<string>(),
-                                                              DateTime.UtcNow,
-                                                              Array.Empty<byte>()),
-                                                 },
-                                                 CancellationToken.None)
+                                                 })
                              .ConfigureAwait(false);
 
     var taskRequests = new List<TaskRequest>
@@ -218,11 +223,6 @@ public class TaskHandlerTest
                              }.ToAsyncEnumerable()),
                        };
 
-=======
-                                                 })
-                             .ConfigureAwait(false);
-
->>>>>>> 8b9cb992 (feat: Depedency checking without external service)
     var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                                             sessionId,
                                                                                                             new Api.gRPC.V1.TaskOptions
@@ -404,7 +404,6 @@ public class TaskHandlerTest
                                 "payload",
                                 new List<string>(),
                                 new List<string>(),
-                                new Dictionary<string, bool>(),
                                 new List<string>(),
                                 new List<string>(),
                                 "init",
@@ -497,7 +496,6 @@ public class TaskHandlerTest
                           "payload",
                           new List<string>(),
                           new List<string>(),
-                          new Dictionary<string, bool>(),
                           new List<string>(),
                           new List<string>(),
                           "taskId",
@@ -635,7 +633,6 @@ public class TaskHandlerTest
                           "payload",
                           new List<string>(),
                           new List<string>(),
-                          new Dictionary<string, bool>(),
                           new List<string>(),
                           new List<string>(),
                           "taskId",
@@ -673,7 +670,6 @@ public class TaskHandlerTest
                                       "payload",
                                       new List<string>(),
                                       new List<string>(),
-                                      new Dictionary<string, bool>(),
                                       new List<string>(),
                                       new List<string>(),
                                       "taskId",

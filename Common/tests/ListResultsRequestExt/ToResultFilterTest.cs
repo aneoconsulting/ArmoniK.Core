@@ -33,7 +33,6 @@ namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 public class ToResultFilterTest
 {
   private readonly Result result_ = new("SessionId",
-                                        "ResultId",
                                         "Name",
                                         "OwnerTaskId",
                                         ResultStatus.Created,

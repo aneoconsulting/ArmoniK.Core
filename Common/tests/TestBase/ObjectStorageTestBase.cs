@@ -45,8 +45,10 @@ public class ObjectStorageTestBase
       return;
     }
 
-    await ObjectStorage!.Init(CancellationToken.None)
-                        .ConfigureAwait(false);
+    ObjectStorageFactory!.Init(CancellationToken.None)
+                         .Wait();
+
+    ObjectStorage = ObjectStorageFactory.CreateObjectStorage("storage");
 
     var dataBytesList = new List<byte[]>
                         {
@@ -79,8 +81,9 @@ public class ObjectStorageTestBase
   [TearDown]
   public virtual void TearDown()
   {
-    ObjectStorage = null;
-    RunTests      = false;
+    ObjectStorage        = null;
+    ObjectStorageFactory = null;
+    RunTests             = false;
   }
 
   private static bool CheckForSkipSetup()
@@ -90,7 +93,8 @@ public class ObjectStorageTestBase
   }
 
   /* Interface to test */
-  protected IObjectStorage? ObjectStorage;
+  protected IObjectStorage?        ObjectStorage;
+  protected IObjectStorageFactory? ObjectStorageFactory;
 
   /* Boolean to control that tests are executed in
    * an instance of this class */
@@ -109,27 +113,27 @@ public class ObjectStorageTestBase
     if (RunTests)
     {
       Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorage!.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
+                         (await ObjectStorageFactory!.Check(HealthCheckTag.Liveness)
+                                                     .ConfigureAwait(false)).Status);
       Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorage.Check(HealthCheckTag.Readiness)
-                                             .ConfigureAwait(false)).Status);
+                         (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
+                                                    .ConfigureAwait(false)).Status);
       Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorage.Check(HealthCheckTag.Startup)
-                                             .ConfigureAwait(false)).Status);
+                         (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
+                                                    .ConfigureAwait(false)).Status);
 
-      await ObjectStorage.Init(CancellationToken.None)
-                         .ConfigureAwait(false);
+      await ObjectStorageFactory.Init(CancellationToken.None)
+                                .ConfigureAwait(false);
 
       Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorage.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Liveness)
+                                                 .ConfigureAwait(false)).Status);
       Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorage.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false)).Status);
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
+                                                 .ConfigureAwait(false)).Status);
       Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorage.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false)).Status);
+                      (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
+                                                 .ConfigureAwait(false)).Status);
     }
   }
 
@@ -240,6 +244,9 @@ public class ObjectStorageTestBase
       var res = await ObjectStorage!.GetValuesAsync("dataKey")
                                     .ToListAsync()
                                     .ConfigureAwait(false);
+
+      Assert.AreEqual(listChunks.Count,
+                      res.Count);
 
       Assert.AreEqual(string.Join("",
                                   listChunks.Select(chunk => Encoding.ASCII.GetString(chunk))),

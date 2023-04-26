@@ -277,20 +277,20 @@ internal class InjectionTests
   }
 
   [Test]
-  public void BuildObjectStorage()
+  public void BuildObjectStorageFactory()
   {
-    var objectStorage = provider_!.GetRequiredService<ObjectStorage>();
+    var objectStorageFactory = provider_!.GetRequiredService<ObjectStorageFactory>();
 
-    Assert.NotNull(objectStorage);
+    Assert.NotNull(objectStorageFactory);
   }
 
   [Test]
-  public void ObjectStorageFactoryHasBindingToObjectStorage()
+  public void ObjectStorageFactoryHasBindingToObjectStorageFactory()
   {
-    var objectStorage = provider_!.GetRequiredService<IObjectStorage>();
+    var objectStorage = provider_!.GetRequiredService<IObjectStorageFactory>();
 
     Assert.NotNull(objectStorage);
-    Assert.AreEqual(typeof(ObjectStorage),
+    Assert.AreEqual(typeof(ObjectStorageFactory),
                     objectStorage.GetType());
   }
 }

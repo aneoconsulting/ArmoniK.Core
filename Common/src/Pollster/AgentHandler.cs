@@ -60,7 +60,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   /// <param name="loggerInit">Logger initializer used to configure the loggers needed by the worker</param>
   /// <param name="computePlaneOptions">Options needed for the creation of the servers</param>
   /// <param name="submitter">Interface to manage tasks</param>
-  /// <param name="objectStorage">Interface class to create object storage</param>
+  /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskTable">Interface to manage task states</param>
@@ -137,7 +137,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     try
     {
       var agent = new Agent(submitter_,
-                            objectStorage_,
+                            objectStorageFactory_,
                             pushQueueStorage_,
                             resultTable_,
                             taskTable_,

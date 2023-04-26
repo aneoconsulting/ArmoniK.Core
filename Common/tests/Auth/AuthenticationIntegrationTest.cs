@@ -140,7 +140,6 @@ public class AuthenticationIntegrationTest
   private static readonly CountTasksByStatusRequest                      CountTasksByStatusRequestApplications;
   private static readonly Api.gRPC.V1.Sessions.CountTasksByStatusRequest CountTasksByStatusRequestSessions;
   private static readonly Api.gRPC.V1.Tasks.CountTasksByStatusRequest    CountTasksByStatusRequestTasks;
-  private static readonly CreateResultsMetaDataRequest                   CreateResultsMetaDataRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -373,8 +372,6 @@ public class AuthenticationIntegrationTest
                                         };
 
     CountTasksByStatusRequestTasks = new Api.gRPC.V1.Tasks.CountTasksByStatusRequest();
-
-    CreateResultsMetaDataRequest = new CreateResultsMetaDataRequest();
   }
 
   public enum AuthenticationType
@@ -830,8 +827,6 @@ public class AuthenticationIntegrationTest
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.CountTasksByStatus), CountTasksByStatusRequestTasks),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.GetOwnerTaskId), GetOwnerTaskIdRequest),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.ListResults), ListResultsRequest),
-                                                       (typeof(Results.ResultsClient), nameof(Results.ResultsClient.CreateResultsMetaData),
-                                                        CreateResultsMetaDataRequest),
                                                        (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.GetPartition), GetPartitionRequest),
                                                        (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.ListPartitions), ListPartitionsRequest),
                                                      };

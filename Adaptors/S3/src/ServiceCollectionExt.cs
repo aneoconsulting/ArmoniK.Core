@@ -77,7 +77,8 @@ public static class ServiceCollectionExt
 
 
       serviceCollection.AddSingleton(_ => s3Client);
-      serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
+
+      serviceCollection.AddSingletonWithHealthCheck<IObjectStorageFactory, ObjectStorageFactory>(nameof(IObjectStorageFactory));
     }
 
     return serviceCollection;

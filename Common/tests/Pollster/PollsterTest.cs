@@ -23,7 +23,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
@@ -69,7 +68,6 @@ public class PollsterTest
 
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
-                                                                                                         IResultTable      resultTable,
                                                                                                          CancellationToken token)
   {
     var defaultTaskOptions = new TaskOptions
@@ -108,28 +106,6 @@ public class PollsterTest
                                                    defaultTaskOptions,
                                                    token)
                                     .ConfigureAwait(false)).SessionId;
-
-    await resultTable.Create(new[]
-                             {
-                               new Result(sessionId,
-                                          ExpectedOutput1,
-                                          "",
-                                          "",
-                                          ResultStatus.Created,
-                                          new List<string>(),
-                                          DateTime.UtcNow,
-                                          Array.Empty<byte>()),
-                               new Result(sessionId,
-                                          ExpectedOutput2,
-                                          "",
-                                          "",
-                                          ResultStatus.Created,
-                                          new List<string>(),
-                                          DateTime.UtcNow,
-                                          Array.Empty<byte>()),
-                             },
-                             token)
-                     .ConfigureAwait(false);
 
     var taskCreating = (await submitter.CreateTasks(sessionId,
                                                     sessionId,
@@ -479,7 +455,6 @@ public class PollsterTest
 
     var tuple = await InitSubmitter(testServiceProvider.Submitter,
                                     testServiceProvider.PartitionTable,
-                                    testServiceProvider.ResultTable,
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 
@@ -533,7 +508,6 @@ public class PollsterTest
 
     var tuple = await InitSubmitter(testServiceProvider.Submitter,
                                     testServiceProvider.PartitionTable,
-                                    testServiceProvider.ResultTable,
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 
@@ -688,7 +662,6 @@ public class PollsterTest
 
     var tuple = await InitSubmitter(testServiceProvider.Submitter,
                                     testServiceProvider.PartitionTable,
-                                    testServiceProvider.ResultTable,
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 

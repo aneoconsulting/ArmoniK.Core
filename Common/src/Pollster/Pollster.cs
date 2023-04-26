@@ -49,7 +49,7 @@ public class Pollster : IInitializable
   private readonly IHostApplicationLifetime   lifeTime_;
   private readonly ILogger<Pollster>          logger_;
   private readonly int                        messageBatchSize_;
-  private readonly IObjectStorage             objectStorage_;
+  private readonly IObjectStorageFactory      objectStorageFactory_;
   private readonly string                     ownerPodId_;
   private readonly string                     ownerPodName_;
   private readonly Injection.Options.Pollster pollsterOptions_;
@@ -72,7 +72,7 @@ public class Pollster : IInitializable
                   IHostApplicationLifetime   lifeTime,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
-                  IObjectStorage             objectStorage,
+                  IObjectStorageFactory      objectStorageFactory,
                   IResultTable               resultTable,
                   ISubmitter                 submitter,
                   ISessionTable              sessionTable,
@@ -94,7 +94,7 @@ public class Pollster : IInitializable
     dataPrefetcher_        = dataPrefetcher;
     pollsterOptions_       = pollsterOptions;
     messageBatchSize_      = options.MessageBatchSize;
-    objectStorage_         = objectStorage;
+    objectStorageFactory_  = objectStorageFactory;
     resultTable_           = resultTable;
     submitter_             = submitter;
     sessionTable_          = sessionTable;
@@ -118,7 +118,7 @@ public class Pollster : IInitializable
     => await Task.WhenAll(pullQueueStorage_.Init(cancellationToken),
                           dataPrefetcher_.Init(cancellationToken),
                           workerStreamHandler_.Init(cancellationToken),
-                          objectStorage_.Init(cancellationToken),
+                          objectStorageFactory_.Init(cancellationToken),
                           resultTable_.Init(cancellationToken),
                           sessionTable_.Init(cancellationToken),
                           taskTable_.Init(cancellationToken))
@@ -141,7 +141,7 @@ public class Pollster : IInitializable
                    pullQueueStorage_.Check(tag),
                    dataPrefetcher_.Check(tag),
                    workerStreamHandler_.Check(tag),
-                   objectStorage_.Check(tag),
+                   objectStorageFactory_.Check(tag),
                    resultTable_.Check(tag),
                    sessionTable_.Check(tag),
                    taskTable_.Check(tag),

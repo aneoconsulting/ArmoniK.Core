@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -46,9 +46,10 @@ public class ObjectStorageTests : ObjectStorageTestBase
                        true);
     }
 
-    ObjectStorage = new ObjectStorage(rootPath,
-                                      8,
-                                      NullLogger<ObjectStorage>.Instance);
-    RunTests = true;
+    ObjectStorageFactory = new ObjectStorageFactory(rootPath,
+                                                    8,
+                                                    NullLoggerFactory.Instance);
+    ObjectStorage = ObjectStorageFactory.CreateObjectStorage("LocalStorageTests");
+    RunTests      = true;
   }
 }

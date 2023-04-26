@@ -24,11 +24,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.LocalStorage;
@@ -38,7 +36,6 @@ public class ObjectStorage : IObjectStorage
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 path_;
-  private          bool                   isInitialized_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for LocalStorage
@@ -50,54 +47,14 @@ public class ObjectStorage : IObjectStorage
                        int                    chunkSize,
                        ILogger<ObjectStorage> logger)
   {
-    path_ = path == ""
-              ? Options.LocalStorage.Default.Path
-              : path;
-    chunkSize_ = chunkSize == 0
-                   ? Options.LocalStorage.Default.ChunkSize
-                   : chunkSize;
-
-
-    logger_ = logger;
+    path_      = path;
+    logger_    = logger;
+    chunkSize_ = chunkSize;
 
     logger.LogDebug("Creating Local ObjectStorage at {path}",
                     path);
 
     Directory.CreateDirectory(path);
-  }
-
-  /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
-  {
-    _ = cancellationToken;
-    logger_.LogDebug("Initializing Local ObjectStorageFactory at path {path}, chunked by {chunkSize}",
-                     path_,
-                     chunkSize_);
-    // This creates all intermediate directories and does not fail if it already exists: https://learn.microsoft.com/en-us/dotnet/api/system.io.directory.createdirectory
-    Directory.CreateDirectory(path_);
-    isInitialized_ = true;
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Local storage not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && Directory.Exists(path_)
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Local storage not initialized or folder has been deleted."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
   }
 
   /// <inheritdoc />

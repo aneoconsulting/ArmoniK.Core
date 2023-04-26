@@ -36,8 +36,6 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using static Google.Protobuf.WellKnownTypes.Timestamp;
-
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -50,8 +48,8 @@ public class Agent : IAgent
 {
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
   private readonly ILogger                                                                             logger_;
-  private readonly IObjectStorage                                                                      objectStorage_;
   private readonly IPushQueueStorage                                                                   pushQueueStorage_;
+  private readonly IObjectStorage                                                                      resourcesStorage_;
   private readonly IResultTable                                                                        resultTable_;
   private readonly List<string>                                                                        sentResults_;
   private readonly SessionData                                                                         sessionData_;
@@ -64,7 +62,7 @@ public class Agent : IAgent
   ///   Initializes a new instance of the <see cref="Agent" />
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
-  /// <param name="objectStorage">Interface class to manage tasks data</param>
+  /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskTable">Interface to manage task states</param>
@@ -118,7 +116,6 @@ public class Agent : IAgent
 
     logger_.LogDebug("Submit tasks which new data are available");
 
-    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
     var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
                                                        sentResults_,
                                                        cancellationToken)
@@ -471,9 +468,9 @@ public class Agent : IAgent
 
     try
     {
-      await foreach (var data in objectStorage_.GetValuesAsync(request.Key,
-                                                               cancellationToken)
-                                               .ConfigureAwait(false))
+      await foreach (var data in resourcesStorage_.GetValuesAsync(request.Key,
+                                                                  cancellationToken)
+                                                  .ConfigureAwait(false))
       {
         await responseStream.WriteAsync(new DataReply
                                         {
@@ -622,41 +619,6 @@ public class Agent : IAgent
     }
 
     return new ResultReply();
-  }
-
-  /// <inheritdoc />
-  public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                                         CancellationToken            cancellationToken)
-  {
-    var results = request.Results.Select(rc => new Storage.Result(request.SessionId,
-                                                                  Guid.NewGuid()
-                                                                      .ToString(),
-                                                                  rc.Name,
-                                                                  "",
-                                                                  ResultStatus.Created,
-                                                                  new List<string>(),
-                                                                  DateTime.UtcNow,
-                                                                  Array.Empty<byte>()))
-                         .ToList();
-
-    await resultTable_.Create(results,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    return new CreateResultsMetaDataResponse
-           {
-             Results =
-             {
-               results.Select(result => new ResultMetaData
-                                        {
-                                          CreatedAt = FromDateTime(result.CreationDate),
-                                          Name      = result.Name,
-                                          SessionId = result.SessionId,
-                                          Status    = result.Status,
-                                          ResultId  = result.ResultId,
-                                        }),
-             },
-           };
   }
 
   /// <inheritdoc />

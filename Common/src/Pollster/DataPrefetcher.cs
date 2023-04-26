@@ -42,23 +42,23 @@ public class DataPrefetcher : IInitializable
 {
   private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
-  private readonly IObjectStorage          objectStorage_;
+  private readonly IObjectStorageFactory   objectStorageFactory_;
 
   private bool isInitialized_;
 
   /// <summary>
   ///   Create data prefetcher for tasks
   /// </summary>
-  /// <param name="objectStorage">Interface to manage data</param>
+  /// <param name="objectStorageFactory">Factory to create Object Storage</param>
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
-  public DataPrefetcher(IObjectStorage          objectStorage,
+  public DataPrefetcher(IObjectStorageFactory   objectStorageFactory,
                         ActivitySource?         activitySource,
                         ILogger<DataPrefetcher> logger)
   {
-    objectStorage_  = objectStorage;
-    logger_         = logger;
-    activitySource_ = activitySource;
+    objectStorageFactory_ = objectStorageFactory;
+    logger_               = logger;
+    activitySource_       = activitySource;
   }
 
   /// <inheritdoc />
@@ -72,8 +72,8 @@ public class DataPrefetcher : IInitializable
   {
     if (!isInitialized_)
     {
-      await objectStorage_.Init(cancellationToken)
-                          .ConfigureAwait(false);
+      await objectStorageFactory_.Init(cancellationToken)
+                                 .ConfigureAwait(false);
       isInitialized_ = true;
     }
   }
@@ -93,9 +93,12 @@ public class DataPrefetcher : IInitializable
   {
     using var activity = activitySource_?.StartActivity();
 
+    var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
+    var payloadStorage = objectStorageFactory_.CreatePayloadStorage(taskData.SessionId);
+
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-    var payloadChunks = await objectStorage_.GetValuesAsync(taskData.PayloadId,
+    var payloadChunks = await payloadStorage.GetValuesAsync(taskData.PayloadId,
                                                             cancellationToken)
                                             .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                             .ToListAsync(cancellationToken)
@@ -118,11 +121,11 @@ public class DataPrefetcher : IInitializable
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
-      var dependencyChunks = await objectStorage_.GetValuesAsync(dataDependency,
-                                                                 cancellationToken)
-                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                                 .ToListAsync(cancellationToken)
-                                                 .ConfigureAwait(false);
+      var dependencyChunks = await resultStorage.GetValuesAsync(dataDependency,
+                                                                cancellationToken)
+                                                .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
+                                                .ToListAsync(cancellationToken)
+                                                .ConfigureAwait(false);
 
       computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)

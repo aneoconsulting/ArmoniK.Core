@@ -123,12 +123,12 @@ public static class GrpcChannelExt
                                                     })
                                     .ResultTask.Select(m => m.TaskId);
 
-      var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key) && pair.Value.EndedAt is not null)
+      var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key))
                                                    .Select(pair => pair.Value)
                                                    .MaxBy(pair => pair.EndedAt);
       if (lastDependencyFinished is not null)
       {
-        var diff = agg.StartedAt - lastDependencyFinished.EndedAt;
+        var diff = agg.StartedAt - lastDependencyFinished?.EndedAt;
         timediff.Add(diff.ToTimeSpan()
                          .TotalMilliseconds / 1000);
       }

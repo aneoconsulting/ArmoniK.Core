@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Tests.Client;
 
@@ -40,7 +39,6 @@ public class SessionClient : ISessionClient
 {
   private readonly GrpcChannel               channel_;
   private readonly ILogger<GridClient>       logger_;
-  private readonly Results.ResultsClient     resultsClient_;
   private readonly string                    sessionId_;
   private readonly Submitter.SubmitterClient submitterClient_;
 
@@ -49,7 +47,6 @@ public class SessionClient : ISessionClient
                        ILogger<GridClient> logger)
   {
     submitterClient_ = new Submitter.SubmitterClient(channel);
-    resultsClient_   = new Results.ResultsClient(channel);
     channel_         = channel;
     logger_          = logger;
     sessionId_       = sessionId;
@@ -128,18 +125,6 @@ public class SessionClient : ISessionClient
 
     foreach (var (payload, dependencies) in payloadsWithDependencies)
     {
-      var reply = resultsClient_.CreateResultsMetaData(new CreateResultsMetaDataRequest
-                                                       {
-                                                         SessionId = sessionId_,
-                                                         Results =
-                                                         {
-                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
-                                                           {
-                                                             Name = "root",
-                                                           },
-                                                         },
-                                                       });
-
       var taskRequest = new TaskRequest
                         {
                           Payload = ByteString.CopyFrom(payload),
@@ -149,8 +134,7 @@ public class SessionClient : ISessionClient
                           },
                           ExpectedOutputKeys =
                           {
-                            reply.Results.Single()
-                                 .ResultId,
+                            Guid.NewGuid() + "%root",
                           },
                         };
       ;

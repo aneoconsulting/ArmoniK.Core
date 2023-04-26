@@ -78,8 +78,7 @@ internal class BsonSerializerTest
   public void SerializeResultDataModel()
   {
     var rdm = new Result("sessionId",
-                         "ResultId",
-                         "Name",
+                         "Key",
                          "OwnerTaskId",
                          ResultStatus.Completed,
                          new List<string>
@@ -100,8 +99,8 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<Result>(serialized);
 
-    Assert.AreEqual(rdm.ResultId,
-                    deserialized.ResultId);
+    Assert.AreEqual(rdm.Id,
+                    deserialized.Id);
     Assert.AreEqual(rdm.SessionId,
                     deserialized.SessionId);
     Assert.AreEqual(rdm.Name,
@@ -180,7 +179,6 @@ internal class BsonSerializerTest
     Assert.AreEqual(tdm.Options.Options["key2"],
                     deserialized.Options.Options["key2"]);
     Assert.IsTrue(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies));
-    Assert.IsTrue(tdm.RemainingDataDependencies.SequenceEqual(deserialized.RemainingDataDependencies));
     Assert.AreEqual(tdm.Options.MaxDuration,
                     deserialized.Options.MaxDuration);
     Assert.AreEqual(tdm.Options.MaxRetries,

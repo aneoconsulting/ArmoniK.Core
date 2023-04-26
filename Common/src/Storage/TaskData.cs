@@ -17,8 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -137,23 +135,6 @@ public record TaskData(string        SessionId,
            output)
   {
   }
-
-  /// <summary>
-  ///   ResultIds could contain dots (eg: it is the case in htcmock),
-  ///   but MongoDB does not support well dots in keys.
-  ///   This escapes the key to replace dots with something else.
-  ///   Escaped keys are guaranteed to have neither dots nor dollars
-  /// </summary>
-  /// <param name="key">Key string</param>
-  /// <returns>Escaped key</returns>
-  public static string EscapeKey(string key)
-    => new StringBuilder(key).Replace("@",
-                                      "@at@")
-                             .Replace(".",
-                                      "@dot@")
-                             .Replace("$",
-                                      "@dollar@")
-                             .ToString();
 
 
   /// <summary>

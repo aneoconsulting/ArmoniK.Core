@@ -121,9 +121,7 @@ public static class Program
                               b.AddSource(ActivitySource.Name);
                               b.AddAspNetCoreInstrumentation();
                               b.AddMongoDBInstrumentation();
-                              b.AddZipkinExporter(options => options.Endpoint =
-                                                               new Uri(builder.Configuration["Zipkin:Uri"] ??
-                                                                       throw new InvalidOperationException("Zipkin uri should not be null")));
+                              b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
                             });
       }
 

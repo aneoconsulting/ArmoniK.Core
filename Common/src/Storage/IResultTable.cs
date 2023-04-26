@@ -220,19 +220,6 @@ public interface IResultTable : IInitializable
                                                                          CancellationToken   cancellationToken = default);
 
   /// <summary>
-  ///   Set Task that should produce the result
-  /// </summary>
-  /// <param name="sessionId"></param>
-  /// <param name="requests">Results to update with the associated task id</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task SetTaskOwnership(string                                        sessionId,
-                        ICollection<(string resultId, string taskId)> requests,
-                        CancellationToken                             cancellationToken = default);
-
-  /// <summary>
   ///   Abort the results of the given task
   /// </summary>
   /// <param name="sessionId">id of the session containing the results</param>

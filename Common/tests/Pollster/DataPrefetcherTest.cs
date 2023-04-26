@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 
@@ -58,8 +59,15 @@ public class DataPrefetcherTest
   [Test]
   public async Task EmptyPayloadAndOneDependency()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
+                                                  CancellationToken.None))
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
+
+    var mockResultStorage = new Mock<IObjectStorage>();
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
                      .Returns((string            _,
                                CancellationToken _) => new List<byte[]>
@@ -69,9 +77,26 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("3333"),
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
+
+    mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
+                            .Returns((string objname) =>
+                                     {
+                                       if (objname.StartsWith("results"))
+                                       {
+                                         return mockResultStorage.Object;
+                                       }
+
+                                       if (objname.StartsWith("payloads"))
+                                       {
+                                         return mockObjectStorage.Object;
+                                       }
+
+                                       throw new ArmoniKException();
+                                     });
+
     var loggerFactory = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -134,96 +159,77 @@ public class DataPrefetcherTest
     Assert.AreEqual(computeRequests[0]
                     .InitRequest.ExpectedOutputKeys.First(),
                     output1);
-
+    Assert.AreEqual(computeRequests[0]
+                    .InitRequest.Payload.Data,
+                    Array.Empty<byte>());
     Assert.AreEqual(computeRequests[1]
                       .TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
     Assert.AreEqual(computeRequests[1]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[2]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[2]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[3]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[3]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[4]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[4]
                     .Payload.TypeCase,
                     DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[4]
+    Assert.IsTrue(computeRequests[1]
                   .Payload.DataComplete);
-
-    Assert.AreEqual(computeRequests[5]
+    Assert.AreEqual(computeRequests[2]
                       .TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.AreEqual(computeRequests[5]
+    Assert.AreEqual(computeRequests[2]
                     .InitData.Key,
                     dependency1);
-
+    Assert.AreEqual(computeRequests[3]
+                      .TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[3]
+                    .Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[4]
+                      .TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[4]
+                    .Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[5]
+                      .TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[5]
+                    .Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
     Assert.AreEqual(computeRequests[6]
                       .TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
     Assert.AreEqual(computeRequests[6]
                     .Data.TypeCase,
                     DataChunk.TypeOneofCase.Data);
-
     Assert.AreEqual(computeRequests[7]
                       .TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
     Assert.AreEqual(computeRequests[7]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[8]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[8]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[9]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[9]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[10]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[10]
                     .Data.TypeCase,
                     DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[10]
+    Assert.IsTrue(computeRequests[7]
                   .Data.DataComplete);
-
-    Assert.AreEqual(computeRequests[11]
+    Assert.AreEqual(computeRequests[8]
                       .TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.AreEqual(computeRequests[11]
+    Assert.AreEqual(computeRequests[8]
                     .InitData.TypeCase,
                     ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData);
-    Assert.IsTrue(computeRequests[11]
+    Assert.IsTrue(computeRequests[8]
                   .InitData.LastData);
   }
 
   [Test]
   public async Task EmptyPayloadAndOneDependencyStateMachine()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
+                                                  CancellationToken.None))
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
+
+    var mockResultStorage = new Mock<IObjectStorage>();
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
                      .Returns((string            _,
                                CancellationToken _) => new List<byte[]>
@@ -234,9 +240,25 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
 
+    mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
+                            .Returns((string objname) =>
+                                     {
+                                       if (objname.StartsWith("results"))
+                                       {
+                                         return mockResultStorage.Object;
+                                       }
+
+                                       if (objname.StartsWith("payloads"))
+                                       {
+                                         return mockObjectStorage.Object;
+                                       }
+
+                                       throw new ArmoniKException();
+                                     });
+
     var loggerFactory = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -288,8 +310,21 @@ public class DataPrefetcherTest
   [Test]
   public async Task EmptyPayloadAndOneDependencyWithDataStateMachine()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
+                                                  CancellationToken.None))
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("AAAA"),
+                                                         Convert.FromBase64String("BBBB"),
+                                                         Convert.FromBase64String("CCCC"),
+                                                         Convert.FromBase64String("DDDD"),
+                                                       }.ToAsyncEnumerable());
+
+    var mockResultStorage = new Mock<IObjectStorage>();
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
                      .Returns((string            _,
                                CancellationToken _) => new List<byte[]>
@@ -300,9 +335,25 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
 
+    mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
+                            .Returns((string objname) =>
+                                     {
+                                       if (objname.StartsWith("results"))
+                                       {
+                                         return mockResultStorage.Object;
+                                       }
+
+                                       if (objname.StartsWith("payloads"))
+                                       {
+                                         return mockObjectStorage.Object;
+                                       }
+
+                                       throw new ArmoniKException();
+                                     });
+
     var loggerFactory = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -354,8 +405,21 @@ public class DataPrefetcherTest
   [Test]
   public async Task PayloadWithDataAndOneDependencyWithDataStateMachine()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
+                                                  CancellationToken.None))
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("AAAA"),
+                                                         Convert.FromBase64String("BBBB"),
+                                                         Convert.FromBase64String("CCCC"),
+                                                         Convert.FromBase64String("DDDD"),
+                                                       }.ToAsyncEnumerable());
+
+    var mockResultStorage = new Mock<IObjectStorage>();
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
                      .Returns((string            _,
                                CancellationToken _) => new List<byte[]>
@@ -366,9 +430,25 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
 
+    mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
+                            .Returns((string objname) =>
+                                     {
+                                       if (objname.StartsWith("results"))
+                                       {
+                                         return mockResultStorage.Object;
+                                       }
+
+                                       if (objname.StartsWith("payloads"))
+                                       {
+                                         return mockObjectStorage.Object;
+                                       }
+
+                                       throw new ArmoniKException();
+                                     });
+
     var loggerFactory = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -420,8 +500,15 @@ public class DataPrefetcherTest
   [Test]
   public async Task EmptyPayloadAndTwoDependenciesStateMachine()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
+                                                  CancellationToken.None))
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
+
+    var mockResultStorage = new Mock<IObjectStorage>();
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
                      .Returns((string            _,
                                CancellationToken _) => new List<byte[]>
@@ -432,9 +519,25 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
 
+    mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
+                            .Returns((string objname) =>
+                                     {
+                                       if (objname.StartsWith("results"))
+                                       {
+                                         return mockResultStorage.Object;
+                                       }
+
+                                       if (objname.StartsWith("payloads"))
+                                       {
+                                         return mockObjectStorage.Object;
+                                       }
+
+                                       throw new ArmoniKException();
+                                     });
+
     var loggerFactory = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -488,8 +591,15 @@ public class DataPrefetcherTest
   [Test]
   public async Task EmptyPayloadAndNoDependenciesStateMachine()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
+                                                  CancellationToken.None))
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
+
+    var mockResultStorage = new Mock<IObjectStorage>();
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
                      .Returns((string            _,
                                CancellationToken _) => new List<byte[]>
@@ -500,9 +610,25 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
 
+    mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
+                            .Returns((string objname) =>
+                                     {
+                                       if (objname.StartsWith("results"))
+                                       {
+                                         return mockResultStorage.Object;
+                                       }
+
+                                       if (objname.StartsWith("payloads"))
+                                       {
+                                         return mockObjectStorage.Object;
+                                       }
+
+                                       throw new ArmoniKException();
+                                     });
+
     var loggerFactory = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -557,10 +683,10 @@ public class DataPrefetcherTest
   [Test]
   public async Task InitShouldSucceed()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    var loggerFactory     = new LoggerFactory();
+    var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
+    var loggerFactory            = new LoggerFactory();
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory.Object,
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 

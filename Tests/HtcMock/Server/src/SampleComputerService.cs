@@ -114,12 +114,6 @@ public class SampleComputerService : WorkerStreamWrapper
                            .Count());
         var readyRequests = requests[true];
 
-        var createResultsResponse = await taskHandler.CreateResultsMetaDataAsync(readyRequests.Select(r => new CreateResultsMetaDataRequest.Types.ResultCreate
-                                                                                                           {
-                                                                                                             Name = r.Id,
-                                                                                                           }))
-                                                     .ConfigureAwait(false);
-
         // todo : can be batched in order to improve memory usage
         var taskRequests = readyRequests.Select(r => new TaskRequest
                                                      {
@@ -131,8 +125,7 @@ public class SampleComputerService : WorkerStreamWrapper
                                                        },
                                                        ExpectedOutputKeys =
                                                        {
-                                                         createResultsResponse.Results.Single(resultMetaData => resultMetaData.Name == r.Id)
-                                                                              .ResultId,
+                                                         Guid.NewGuid() + "%" + r.Id,
                                                        },
                                                      })
                                         .ToList();

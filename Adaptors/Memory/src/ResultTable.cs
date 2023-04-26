@@ -53,7 +53,7 @@ public class ResultTable : IResultTable
                                                                        IEnumerable<string> keys,
                                                                        CancellationToken   cancellationToken = default)
     => Task.FromResult(results_[sessionId]
-                       .Where(model => keys.Contains(model.Value.ResultId))
+                       .Where(model => keys.Contains(model.Value.Name))
                        .GroupBy(model => model.Value.Status)
                        .Select(models => new ResultStatusCount(models.Key,
                                                                models.Count())));
@@ -71,7 +71,7 @@ public class ResultTable : IResultTable
                              .Where(result => result.OwnerTaskId == oldTaskId))
       {
         results_[result.SessionId]
-          .TryUpdate(result.ResultId,
+          .TryUpdate(result.Name,
                      result with
                      {
                        OwnerTaskId = request.NewTaskId,
@@ -91,10 +91,10 @@ public class ResultTable : IResultTable
     {
       var sessionResults = results_.GetOrAdd(result.SessionId,
                                              new ConcurrentDictionary<string, Result>());
-      if (!sessionResults.TryAdd(result.ResultId,
+      if (!sessionResults.TryAdd(result.Name,
                                  result))
       {
-        throw new ArmoniKException($"Key {result.ResultId} already exists");
+        throw new ArmoniKException($"Key {result.Name} already exists");
       }
     }
 
@@ -186,7 +186,7 @@ public class ResultTable : IResultTable
                                              IEnumerable<string> keys,
                                              CancellationToken   cancellationToken = default)
     => results_[sessionId]
-       .Values.Where(r => keys.Contains(r.ResultId))
+       .Values.Where(r => keys.Contains(r.Name))
        .ToAsyncEnumerable();
 
   /// <inheritdoc />
@@ -226,7 +226,7 @@ public class ResultTable : IResultTable
     var result = results_[sessionId][key];
 
     results_[result.SessionId]
-      .TryUpdate(result.ResultId,
+      .TryUpdate(result.Name,
                  result with
                  {
                    Data = smallPayload,
@@ -245,7 +245,7 @@ public class ResultTable : IResultTable
     var result = results_[sessionId][key];
 
     results_[result.SessionId]
-      .TryUpdate(result.ResultId,
+      .TryUpdate(result.Name,
                  result with
                  {
                    Status = ResultStatus.Completed,
@@ -262,38 +262,9 @@ public class ResultTable : IResultTable
                        .Where(model => ids.Contains(model.Key))
                        .Select(model => new GetResultStatusReply.Types.IdStatus
                                         {
-                                          ResultId = model.Value.ResultId,
+                                          ResultId = model.Value.Name,
                                           Status   = model.Value.Status,
                                         }));
-
-  public Task SetTaskOwnership(string                                        sessionId,
-                               ICollection<(string resultId, string taskId)> requests,
-                               CancellationToken                             cancellationToken = default)
-  {
-    if (!results_.TryGetValue(sessionId,
-                              out var session))
-    {
-      throw new SessionNotFoundException($"Session '{session}' not found");
-    }
-
-    foreach (var req in requests)
-    {
-      if (!session.TryGetValue(req.resultId,
-                               out var result))
-      {
-        throw new ResultNotFoundException($"Key '{req.resultId}' not found");
-      }
-
-      session.TryUpdate(req.resultId,
-                        result with
-                        {
-                          OwnerTaskId = req.taskId,
-                        },
-                        result);
-    }
-
-    return Task.CompletedTask;
-  }
 
   /// <inheritdoc />
   public Task AbortTaskResults(string            sessionId,
@@ -305,7 +276,7 @@ public class ResultTable : IResultTable
                            .Where(result => result.OwnerTaskId == ownerTaskId))
     {
       results_[result.SessionId]
-        .TryUpdate(result.ResultId,
+        .TryUpdate(result.Name,
                    result with
                    {
                      Status = ResultStatus.Aborted,

@@ -23,12 +23,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
@@ -41,55 +39,23 @@ public class ObjectStorage : IObjectStorage
   private readonly string                 objectStorageName_;
   private readonly IDatabaseAsync         redis_;
   private readonly Options.Redis          redisOptions_;
-  private          bool                   isInitialized_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for Redis
   /// </summary>
   /// <param name="redis">Connection to redis database</param>
   /// <param name="redisOptions">Redis object storage options</param>
+  /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(IDatabaseAsync         redis,
                        Options.Redis          redisOptions,
+                       string                 objectStorageName,
                        ILogger<ObjectStorage> logger)
   {
     redis_             = redis;
     redisOptions_      = redisOptions;
-    objectStorageName_ = "objectStorageName";
+    objectStorageName_ = objectStorageName;
     logger_            = logger;
-  }
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      await redis_.PingAsync()
-                  .ConfigureAwait(false);
-    }
-
-    isInitialized_ = true;
-  }
-
-  /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Redis not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
   }
 
   /// <inheritdoc />

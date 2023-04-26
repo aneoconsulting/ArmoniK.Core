@@ -69,14 +69,15 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddS3(configuration,
                    logger.GetLogger());
 
-    services.AddSingleton<IObjectStorage, ObjectStorage>();
+    services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {
                                                    ValidateOnBuild = true,
                                                  });
 
-    ObjectStorage = provider.GetRequiredService<IObjectStorage>();
-    RunTests      = true;
+    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
+    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
+    RunTests             = true;
   }
 }

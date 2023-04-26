@@ -57,18 +57,8 @@ public class TestDatabaseProvider : IDisposable
                     StandardErrorLogger     = line => logger.LogError(line),
                   };
 
-    var loggerProvider = new ConsoleForwardingLoggerProvider();
-    var loggerDB       = loggerProvider.CreateLogger("db commands");
-
     runner_ = MongoRunner.Run(options);
-    var settings = MongoClientSettings.FromConnectionString(runner_.ConnectionString);
-    //settings.ClusterConfigurator = cb =>
-    //                               {
-    //                                 cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
-    //                                                                                          e.CommandName,
-    //                                                                                          e.Command.ToJson()));
-    //                               };
-    client_ = new MongoClient(settings);
+    client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -111,6 +101,8 @@ public class TestDatabaseProvider : IDisposable
 
     builder.Logging.ClearProviders();
 
+    var loggerProvider = new ConsoleForwardingLoggerProvider();
+
     builder.Logging.AddProvider(loggerProvider);
 
     builder.Services.AddMongoStorages(builder.Configuration,
@@ -143,7 +135,7 @@ public class TestDatabaseProvider : IDisposable
         .Init(CancellationToken.None)
         .Wait();
 
-    app_.Services.GetRequiredService<IObjectStorage>()
+    app_.Services.GetRequiredService<IObjectStorageFactory>()
         .Init(CancellationToken.None)
         .Wait();
   }
