@@ -94,8 +94,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                         $"{Options.PartitionId}###q{i}")))
                            .ToArray();
 
-      var senders   = Task.WhenAll(senders_.Select(lazy => lazy.Value));
-      var receivers = Task.WhenAll(receivers_.Select(lazy => lazy.Value));
+      var senders = senders_.Select(lazy => lazy.Value)
+                            .WhenAll();
+      var receivers = receivers_.Select(lazy => lazy.Value)
+                                .WhenAll();
       await Task.WhenAll(senders,
                          receivers)
                 .ConfigureAwait(false);
