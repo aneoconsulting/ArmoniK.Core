@@ -82,8 +82,8 @@ public static class ServiceCollectionExt
     {
       services.AddOption<Options.ObjectStorage>(configuration,
                                                 Options.ObjectStorage.SettingSection)
-              .AddTransient<ObjectStorageFactory>()
-              .AddTransient<IObjectStorageFactory, ObjectStorageFactory>();
+              .AddTransient<ObjectStorage>()
+              .AddTransient<IObjectStorage, ObjectStorage>();
     }
 
     services.AddOption<Options.MongoDB>(configuration,

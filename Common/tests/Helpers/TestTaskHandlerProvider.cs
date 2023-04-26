@@ -174,8 +174,8 @@ public class TestTaskHandlerProvider : IDisposable
                   .Wait();
     SessionTable.Init(CancellationToken.None)
                 .Wait();
-    objectStorageFactory_.Init(CancellationToken.None)
-                         .Wait();
+    objectStorage_.Init(CancellationToken.None)
+                  .Wait();
   }
 
   public void Dispose()

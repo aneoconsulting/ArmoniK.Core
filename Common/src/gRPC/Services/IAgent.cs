@@ -99,4 +99,15 @@ public interface IAgent : IDisposable
   /// </returns>
   Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
                                CancellationToken          cancellationToken);
+
+  /// <summary>
+  ///   Create results metadata
+  /// </summary>
+  /// <param name="request">Requests containing the results to create</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Reply sent to the worker with the created results
+  /// </returns>
+  Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                            CancellationToken            cancellationToken);
 }
