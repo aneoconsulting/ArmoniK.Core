@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
@@ -39,6 +40,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
@@ -63,6 +65,19 @@ public class GrpcSubmitterServiceTests
   private readonly Mock<ISessionTable> mockSessionTable_ = new();
   private readonly Mock<ITaskTable>    mockTaskTable_    = new();
   private readonly Mock<ISubmitter>    mockSubmitter_    = new();
+
+  private readonly TaskOptions taskOptions_ = new()
+                                              {
+                                                ApplicationName      = "",
+                                                ApplicationNamespace = "",
+                                                ApplicationService   = "",
+                                                ApplicationVersion   = "",
+                                                EngineType           = "",
+                                                MaxDuration          = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
+                                                MaxRetries           = 5,
+                                                PartitionId          = "Partition",
+                                                Priority             = 1,
+                                              };
 
   [Test]
   public async Task TryGetResultStreamConstructionShouldSucceed()
@@ -754,7 +769,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<TaskOptions>(),
+                                                             It.IsAny<Storage.TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => Task.FromResult(new CreateSessionReply
                                                 {
@@ -771,7 +786,10 @@ public class GrpcSubmitterServiceTests
 
     var response = await service.CreateSession(new CreateSessionRequest
                                                {
-                                                 DefaultTaskOption = new TaskOptions(),
+                                                 DefaultTaskOption = new TaskOptions
+                                                                     {
+                                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
+                                                                     },
                                                },
                                                TestServerCallContext.Create())
                                 .ConfigureAwait(false);
@@ -785,7 +803,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<TaskOptions>(),
+                                                             It.IsAny<Storage.TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
@@ -801,7 +819,10 @@ public class GrpcSubmitterServiceTests
     {
       await service.CreateSession(new CreateSessionRequest
                                   {
-                                    DefaultTaskOption = new TaskOptions(),
+                                    DefaultTaskOption = new TaskOptions
+                                                        {
+                                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
+                                                        },
                                   },
                                   TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -820,7 +841,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<TaskOptions>(),
+                                                             It.IsAny<Storage.TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
@@ -844,6 +865,7 @@ public class GrpcSubmitterServiceTests
                                     DefaultTaskOption = new TaskOptions
                                                         {
                                                           PartitionId = "part1",
+                                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
                                                         },
                                   },
                                   TestServerCallContext.Create())
@@ -864,10 +886,10 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int(), string.Empty)));
+                 .Returns(() => Task.FromResult((new List<TaskCreationRequest>().AsEnumerable(), new int(), string.Empty)));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
@@ -880,7 +902,7 @@ public class GrpcSubmitterServiceTests
     var response = await service.CreateSmallTasks(new CreateSmallTaskRequest
                                                   {
                                                     SessionId   = "SessionId",
-                                                    TaskOptions = new TaskOptions(),
+                                                    TaskOptions = taskOptions_,
                                                     TaskRequests =
                                                     {
                                                       new Api.gRPC.V1.TaskRequest
@@ -910,7 +932,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
@@ -928,7 +950,7 @@ public class GrpcSubmitterServiceTests
       await service.CreateSmallTasks(new CreateSmallTaskRequest
                                      {
                                        SessionId   = "SessionId",
-                                       TaskOptions = new TaskOptions(),
+                                       TaskOptions = taskOptions_,
                                        TaskRequests =
                                        {
                                          new Api.gRPC.V1.TaskRequest
@@ -963,7 +985,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
@@ -981,7 +1003,7 @@ public class GrpcSubmitterServiceTests
       await service.CreateSmallTasks(new CreateSmallTaskRequest
                                      {
                                        SessionId   = "SessionId",
-                                       TaskOptions = new TaskOptions(),
+                                       TaskOptions = taskOptions_,
                                        TaskRequests =
                                        {
                                          new Api.gRPC.V1.TaskRequest
@@ -1016,10 +1038,10 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int(), string.Empty)));
+                 .Returns(() => Task.FromResult((new List<TaskCreationRequest>().AsEnumerable(), new int(), string.Empty)));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
@@ -1033,7 +1055,7 @@ public class GrpcSubmitterServiceTests
                  {
                    InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                  {
-                                   TaskOptions = new TaskOptions(),
+                                   TaskOptions = taskOptions_,
                                    SessionId   = "SessionId",
                                  },
                  },
@@ -1056,10 +1078,10 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int(), string.Empty)));
+                 .Returns(() => Task.FromResult((new List<TaskCreationRequest>().AsEnumerable(), new int(), string.Empty)));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
@@ -1093,7 +1115,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions?>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
@@ -1110,7 +1132,7 @@ public class GrpcSubmitterServiceTests
                  {
                    InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                  {
-                                   TaskOptions = new TaskOptions(),
+                                   TaskOptions = taskOptions_,
                                    SessionId   = "SessionId",
                                  },
                  },
@@ -1141,7 +1163,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
@@ -1158,7 +1180,7 @@ public class GrpcSubmitterServiceTests
                  {
                    InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                  {
-                                   TaskOptions = new TaskOptions(),
+                                   TaskOptions = taskOptions_,
                                    SessionId   = "SessionId",
                                  },
                  },

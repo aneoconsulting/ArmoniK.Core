@@ -48,8 +48,8 @@ using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskRequest = ArmoniK.Core.Common.Storage.TaskRequest;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Submitter;
@@ -161,19 +161,17 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                   CancellationToken cancellationToken)
       => Task.FromException<CreateSessionReply>(new T());
 
-    public Task<(IEnumerable<TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                                      sessionId,
-                                                                                                   string                                      parentTaskId,
-                                                                                                   TaskOptions                                 options,
-                                                                                                   IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                                                   CancellationToken                           cancellationToken)
-      => Task.FromException<(IEnumerable<TaskRequest>, int, string)>(new T());
+    public Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
+                                                                                                           string                        parentTaskId,
+                                                                                                           TaskOptions?                  options,
+                                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                                                           CancellationToken             cancellationToken)
+      => Task.FromException<(IEnumerable<TaskCreationRequest>, int, string)>(new T());
 
-    public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
-                                     int                      priority,
-                                     string                   partitionId,
-                                     string                   sessionId,
-                                     string                   parentTaskId,
-                                     CancellationToken        cancellationToken)
+    public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
+                                     string                           sessionId,
+                                     string                           parentTaskId,
+                                     CancellationToken                cancellationToken)
       => Task.FromException(new T());
 
     public Task<Configuration> GetServiceConfiguration(Empty             request,
@@ -219,19 +217,17 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                   CancellationToken cancellationToken)
       => throw new T();
 
-    public Task<(IEnumerable<TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                                      sessionId,
-                                                                                                   string                                      parentTaskId,
-                                                                                                   TaskOptions                                 options,
-                                                                                                   IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                                                   CancellationToken                           cancellationToken)
+    public Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
+                                                                                                           string                        parentTaskId,
+                                                                                                           TaskOptions?                  options,
+                                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                                                           CancellationToken             cancellationToken)
       => throw new T();
 
-    public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
-                                     int                      priority,
-                                     string                   partitionId,
-                                     string                   sessionId,
-                                     string                   parentTaskId,
-                                     CancellationToken        cancellationToken)
+    public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
+                                     string                           sessionId,
+                                     string                           parentTaskId,
+                                     CancellationToken                cancellationToken)
       => throw new T();
 
     public Task<Configuration> GetServiceConfiguration(Empty             request,
@@ -441,7 +437,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       _ = client.CreateSession(new CreateSessionRequest
                                {
-                                 DefaultTaskOption = new TaskOptions
+                                 DefaultTaskOption = new Api.gRPC.V1.TaskOptions
                                                      {
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                                        MaxRetries  = 2,
@@ -488,7 +484,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                         Payload = ByteString.CopyFromUtf8("Payload"),
                                       },
                                     },
-                                    TaskOptions = new TaskOptions
+                                    TaskOptions = new Api.gRPC.V1.TaskOptions
                                                   {
                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                                     MaxRetries  = 2,
@@ -527,6 +523,12 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                      InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                                                    {
                                                                      SessionId = "SessionId",
+                                                                     TaskOptions = new Api.gRPC.V1.TaskOptions
+                                                                                   {
+                                                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                                                                     MaxRetries  = 2,
+                                                                                     Priority    = 1,
+                                                                                   },
                                                                    },
                                                    })
                          .ConfigureAwait(false);

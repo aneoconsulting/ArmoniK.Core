@@ -163,7 +163,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     try
     {
       return await submitter_.CreateSession(request.PartitionIds,
-                                            request.DefaultTaskOption,
+                                            request.DefaultTaskOption.ToTaskOptions(),
                                             context.CancellationToken)
                              .ConfigureAwait(false);
     }
@@ -199,7 +199,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     {
       var tuple = await submitter_.CreateTasks(request.SessionId,
                                                request.SessionId,
-                                               request.TaskOptions,
+                                               request.TaskOptions.ToTaskOptions(),
                                                request.TaskRequests.ToAsyncEnumerable()
                                                       .Select(taskRequest => new TaskRequest(taskRequest.ExpectedOutputKeys,
                                                                                              taskRequest.DataDependencies,
@@ -211,8 +211,6 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                   .ConfigureAwait(false);
 
       await submitter_.FinalizeTaskCreation(tuple.requests,
-                                            tuple.priority,
-                                            request.TaskOptions.PartitionId,
                                             request.SessionId,
                                             request.SessionId,
                                             context.CancellationToken)
@@ -228,7 +226,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                                              {
                                                                                TaskInfo = new CreateTaskReply.Types.TaskInfo
                                                                                           {
-                                                                                            TaskId = taskRequest.Id,
+                                                                                            TaskId = taskRequest.TaskId,
                                                                                           },
                                                                              }),
                                       },
@@ -281,14 +279,12 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
       var (requests, priority, partitionId) = await submitter_.CreateTasks(first.InitRequest.SessionId,
                                                                            first.InitRequest.SessionId,
-                                                                           first.InitRequest.TaskOptions,
+                                                                           first.InitRequest.TaskOptions.ToNullableTaskOptions(),
                                                                            enumerator.BuildRequests(context.CancellationToken),
                                                                            context.CancellationToken)
                                                               .ConfigureAwait(false);
 
       await submitter_.FinalizeTaskCreation(requests,
-                                            priority,
-                                            partitionId,
                                             first.InitRequest.SessionId,
                                             first.InitRequest.SessionId,
                                             context.CancellationToken)
@@ -304,7 +300,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                                        {
                                                                          TaskInfo = new CreateTaskReply.Types.TaskInfo
                                                                                     {
-                                                                                      TaskId = taskRequest.Id,
+                                                                                      TaskId = taskRequest.TaskId,
                                                                                       DataDependencies =
                                                                                       {
                                                                                         taskRequest.DataDependencies,
@@ -313,6 +309,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                                                       {
                                                                                         taskRequest.ExpectedOutputKeys,
                                                                                       },
+                                                                                      PayloadId = taskRequest.PayloadId,
                                                                                     },
                                                                        }),
                                       },

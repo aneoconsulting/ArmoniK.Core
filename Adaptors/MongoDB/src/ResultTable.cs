@@ -286,6 +286,34 @@ public class ResultTable : IResultTable
     }
   }
 
+  public async Task<Result> CompleteResult(string            sessionId,
+                                           string            resultId,
+                                           CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(CompleteResult)}");
+    activity?.SetTag($"{nameof(CompleteResult)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(CompleteResult)}_key",
+                     resultId);
+
+    var resultCollection = resultCollectionProvider_.Get();
+
+    Logger.LogInformation("Update result {resultId} to completed",
+                          resultId);
+
+    var res = await resultCollection.FindOneAndUpdateAsync(Builders<Result>.Filter.Where(model => model.ResultId == resultId),
+                                                           Builders<Result>.Update.Set(model => model.Status,
+                                                                                       ResultStatus.Completed),
+                                                           new FindOneAndUpdateOptions<Result>
+                                                           {
+                                                             ReturnDocument = ReturnDocument.After,
+                                                           },
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+
+    return res ?? throw new ResultNotFoundException($"Key '{resultId}' not found");
+  }
+
   /// <inheritdoc />
   public async Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> keys,
                                                                                       string              sessionId,

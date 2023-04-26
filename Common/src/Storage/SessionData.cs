@@ -52,7 +52,7 @@ public record SessionData(string        SessionId,
                          ? FromDateTime(sessionData.CancellationDate.Value)
                          : null,
          CreatedAt = FromDateTime(sessionData.CreationDate),
-         Options   = sessionData.Options,
+         Options   = sessionData.Options.ToGrpcTaskOptions(),
          PartitionIds =
          {
            sessionData.PartitionIds,

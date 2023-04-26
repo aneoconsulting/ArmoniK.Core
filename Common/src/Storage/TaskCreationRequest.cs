@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -19,6 +19,8 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record TaskRequest(string              Id,
-                          IEnumerable<string> ExpectedOutputKeys,
-                          IEnumerable<string> DataDependencies);
+public record TaskCreationRequest(string              TaskId,
+                                  string              PayloadId,
+                                  TaskOptions         Options,
+                                  ICollection<string> ExpectedOutputKeys,
+                                  ICollection<string> DataDependencies);
