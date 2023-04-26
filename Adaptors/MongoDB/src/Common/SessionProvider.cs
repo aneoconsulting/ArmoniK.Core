@@ -73,7 +73,6 @@ public class SessionProvider : IInitializable
     lock (lockObj_)
     {
       clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
-      Console.WriteLine("MongoDB client from Session Provider");
     }
 
     return Task.CompletedTask;

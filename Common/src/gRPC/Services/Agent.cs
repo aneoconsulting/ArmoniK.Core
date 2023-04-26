@@ -36,7 +36,10 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -46,50 +49,50 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class Agent : IAgent
 {
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
-  private readonly Injection.Options.DependencyResolver                                                dependencyResolverOptions_;
   private readonly ILogger                                                                             logger_;
+  private readonly IObjectStorage                                                                      objectStorage_;
   private readonly IPushQueueStorage                                                                   pushQueueStorage_;
-  private readonly IObjectStorage                                                                      resourcesStorage_;
   private readonly IResultTable                                                                        resultTable_;
   private readonly List<string>                                                                        sentResults_;
   private readonly SessionData                                                                         sessionData_;
   private readonly ISubmitter                                                                          submitter_;
   private readonly TaskData                                                                            taskData_;
+  private readonly ITaskTable                                                                          taskTable_;
   private readonly string                                                                              token_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
-  /// <param name="objectStorageFactory">Interface class to create object storage</param>
+  /// <param name="objectStorage">Interface class to manage tasks data</param>
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="resultTable">Interface to manage result states</param>
-  /// <param name="dependencyResolverOptions">Configuration for the Dependency Resolver</param>
+  /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public Agent(ISubmitter                           submitter,
-               IObjectStorageFactory                objectStorageFactory,
-               IPushQueueStorage                    pushQueueStorage,
-               IResultTable                         resultTable,
-               Injection.Options.DependencyResolver dependencyResolverOptions,
-               SessionData                          sessionData,
-               TaskData                             taskData,
-               string                               token,
-               ILogger                              logger)
+  public Agent(ISubmitter        submitter,
+               IObjectStorage    objectStorage,
+               IPushQueueStorage pushQueueStorage,
+               IResultTable      resultTable,
+               ITaskTable        taskTable,
+               SessionData       sessionData,
+               TaskData          taskData,
+               string            token,
+               ILogger           logger)
   {
-    submitter_                 = submitter;
-    pushQueueStorage_          = pushQueueStorage;
-    resultTable_               = resultTable;
-    dependencyResolverOptions_ = dependencyResolverOptions;
-    logger_                    = logger;
-    resourcesStorage_          = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_              = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
-    sentResults_               = new List<string>();
-    sessionData_               = sessionData;
-    taskData_                  = taskData;
-    token_                     = token;
+    submitter_        = submitter;
+    objectStorage_    = objectStorage;
+    pushQueueStorage_ = pushQueueStorage;
+    resultTable_      = resultTable;
+    taskTable_        = taskTable;
+    logger_           = logger;
+    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
+    sentResults_      = new List<string>();
+    sessionData_      = sessionData;
+    taskData_         = taskData;
+    token_            = token;
   }
 
   /// <inheritdoc />
@@ -113,8 +116,9 @@ public class Agent : IAgent
                       .ConfigureAwait(false);
     }
 
-    logger_.LogDebug("Send tasks which new data are available in the dependency checker queue");
+    logger_.LogDebug("Submit tasks which new data are available");
 
+    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
     var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
                                                        sentResults_,
                                                        cancellationToken)
@@ -122,11 +126,53 @@ public class Agent : IAgent
                                            .ToHashSetAsync(cancellationToken)
                                            .ConfigureAwait(false);
 
-    await pushQueueStorage_.PushMessagesAsync(dependentTasks,
-                                              dependencyResolverOptions_.UnresolvedDependenciesQueue,
-                                              taskData_.Options.Priority,
-                                              cancellationToken)
-                           .ConfigureAwait(false);
+    if (!dependentTasks.Any())
+    {
+      return;
+    }
+
+    if (logger_.IsEnabled(LogLevel.Debug))
+    {
+      logger_.LogDebug("Dependent Tasks Dictionary {@dependents}",
+                       dependentTasks);
+    }
+
+    // Remove all results that were completed by the current task from their dependents.
+    // This will try to remove more results than strictly necessary.
+    // This is completely safe and should be optimized by the DB.
+    await taskTable_.RemoveRemainingDataDependenciesAsync(dependentTasks,
+                                                          sentResults_,
+                                                          cancellationToken)
+                    .ConfigureAwait(false);
+
+    // Find all tasks whose dependencies are now complete in order to start them.
+    // Multiple agents can see the same task as ready and will try to start it multiple times.
+    // This is benign as it will be handled during dequeue with message deduplication.
+    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+                                                          data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+                                                  data => new
+                                                          {
+                                                            data.TaskId,
+                                                            data.Options.PartitionId,
+                                                            data.Options.Priority,
+                                                          },
+                                                  cancellationToken)
+                                  .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
+
+    foreach (var group in groups)
+    {
+      var ids = group.Select(data => data.TaskId)
+                     .ToList();
+      await pushQueueStorage_.PushMessagesAsync(ids,
+                                                group.Key.PartitionId,
+                                                group.Key.Priority,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
+
+      await taskTable_.FinalizeTaskCreation(ids,
+                                            cancellationToken)
+                      .ConfigureAwait(false);
+    }
   }
 
   /// <inheritdoc />
@@ -410,9 +456,9 @@ public class Agent : IAgent
 
     try
     {
-      await foreach (var data in resourcesStorage_.GetValuesAsync(request.Key,
-                                                                  cancellationToken)
-                                                  .ConfigureAwait(false))
+      await foreach (var data in objectStorage_.GetValuesAsync(request.Key,
+                                                               cancellationToken)
+                                               .ConfigureAwait(false))
       {
         await responseStream.WriteAsync(new DataReply
                                         {
@@ -561,6 +607,41 @@ public class Agent : IAgent
     }
 
     return new ResultReply();
+  }
+
+  /// <inheritdoc />
+  public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                         CancellationToken            cancellationToken)
+  {
+    var results = request.Results.Select(rc => new Storage.Result(request.SessionId,
+                                                                  Guid.NewGuid()
+                                                                      .ToString(),
+                                                                  rc.Name,
+                                                                  "",
+                                                                  ResultStatus.Created,
+                                                                  new List<string>(),
+                                                                  DateTime.UtcNow,
+                                                                  Array.Empty<byte>()))
+                         .ToList();
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    return new CreateResultsMetaDataResponse
+           {
+             Results =
+             {
+               results.Select(result => new ResultMetaData
+                                        {
+                                          CreatedAt = FromDateTime(result.CreationDate),
+                                          Name      = result.Name,
+                                          SessionId = result.SessionId,
+                                          Status    = result.Status,
+                                          ResultId  = result.ResultId,
+                                        }),
+             },
+           };
   }
 
   /// <inheritdoc />

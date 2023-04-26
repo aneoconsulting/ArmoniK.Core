@@ -204,11 +204,7 @@ public static class ServiceCollectionExt
 
     var client = new MongoClient(settings);
 
-    services.AddSingleton<IMongoClient>(_ =>
-                                        {
-                                          logger.LogInformation("MongoDB client creation");
-                                          return client;
-                                        });
+    services.AddSingleton<IMongoClient>(client);
 
     logger.LogInformation("MongoDB configuration complete");
 

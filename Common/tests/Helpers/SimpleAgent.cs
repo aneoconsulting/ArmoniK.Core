@@ -54,6 +54,10 @@ public class SimpleAgent : IAgent
                                       CancellationToken          cancellationToken)
     => Task.FromResult(new ResultReply());
 
+  public Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                   CancellationToken            cancellationToken)
+    => Task.FromResult(new CreateResultsMetaDataResponse());
+
   public void Dispose()
   {
   }

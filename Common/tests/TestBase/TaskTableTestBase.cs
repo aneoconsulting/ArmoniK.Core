@@ -1582,4 +1582,117 @@ public class TaskTableTestBase
                                     .Count(s => s == "dependency1"));
     }
   }
+
+  [Test]
+  public async Task RemoveRemainingDataDependenciesShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var taskId = Guid.NewGuid()
+                       .ToString();
+      var dd1 = "dependency.1";
+      var dd2 = "dependency.2";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    dd1,
+                                                    dd2,
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                    "output2",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Creating,
+                                                  options_,
+                                                  new Output(true,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                           {
+                                                             taskId,
+                                                           },
+                                                           new[]
+                                                           {
+                                                             dd1,
+                                                             dd2,
+                                                           },
+                                                           CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.IsEmpty(taskData.RemainingDataDependencies);
+    }
+  }
+
+  [Test]
+  public async Task RemoveRemainingDataDependenciesDepDoesNotExistShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var taskId = Guid.NewGuid()
+                       .ToString();
+      var dd1 = "dependency1";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new List<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                    "output2",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Creating,
+                                                  options_,
+                                                  new Output(true,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                           {
+                                                             taskId,
+                                                           },
+                                                           new[]
+                                                           {
+                                                             dd1,
+                                                           },
+                                                           CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.IsEmpty(taskData.RemainingDataDependencies);
+      Assert.IsEmpty(taskData.DataDependencies);
+    }
+  }
 }

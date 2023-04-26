@@ -46,39 +46,36 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Submitter : ISubmitter
 {
-  private readonly ActivitySource                       activitySource_;
-  private readonly Injection.Options.DependencyResolver dependencyResolverOptions_;
-  private readonly ILogger<Submitter>                   logger_;
-  private readonly IObjectStorageFactory                objectStorageFactory_;
-  private readonly IPartitionTable                      partitionTable_;
-  private readonly IPushQueueStorage                    pushQueueStorage_;
-  private readonly IResultTable                         resultTable_;
-  private readonly ISessionTable                        sessionTable_;
-  private readonly Injection.Options.Submitter          submitterOptions_;
-  private readonly ITaskTable                           taskTable_;
+  private readonly ActivitySource              activitySource_;
+  private readonly ILogger<Submitter>          logger_;
+  private readonly IObjectStorage              objectStorage_;
+  private readonly IPartitionTable             partitionTable_;
+  private readonly IPushQueueStorage           pushQueueStorage_;
+  private readonly IResultTable                resultTable_;
+  private readonly ISessionTable               sessionTable_;
+  private readonly Injection.Options.Submitter submitterOptions_;
+  private readonly ITaskTable                  taskTable_;
 
   [UsedImplicitly]
-  public Submitter(IPushQueueStorage                    pushQueueStorage,
-                   IObjectStorageFactory                objectStorageFactory,
-                   ILogger<Submitter>                   logger,
-                   ISessionTable                        sessionTable,
-                   ITaskTable                           taskTable,
-                   IResultTable                         resultTable,
-                   IPartitionTable                      partitionTable,
-                   Injection.Options.Submitter          submitterOptions,
-                   Injection.Options.DependencyResolver dependencyResolverOptions,
-                   ActivitySource                       activitySource)
+  public Submitter(IPushQueueStorage           pushQueueStorage,
+                   IObjectStorage              objectStorage,
+                   ILogger<Submitter>          logger,
+                   ISessionTable               sessionTable,
+                   ITaskTable                  taskTable,
+                   IResultTable                resultTable,
+                   IPartitionTable             partitionTable,
+                   Injection.Options.Submitter submitterOptions,
+                   ActivitySource              activitySource)
   {
-    objectStorageFactory_      = objectStorageFactory;
-    logger_                    = logger;
-    sessionTable_              = sessionTable;
-    taskTable_                 = taskTable;
-    resultTable_               = resultTable;
-    partitionTable_            = partitionTable;
-    submitterOptions_          = submitterOptions;
-    dependencyResolverOptions_ = dependencyResolverOptions;
-    activitySource_            = activitySource;
-    pushQueueStorage_          = pushQueueStorage;
+    objectStorage_    = objectStorage;
+    logger_           = logger;
+    sessionTable_     = sessionTable;
+    taskTable_        = taskTable;
+    resultTable_      = resultTable;
+    partitionTable_   = partitionTable;
+    submitterOptions_ = submitterOptions;
+    activitySource_   = activitySource;
+    pushQueueStorage_ = pushQueueStorage;
   }
 
   /// <inheritdoc />
@@ -132,19 +129,17 @@ public class Submitter : ISubmitter
     foreach (var request in taskRequests)
     {
       var dependencies = request.DataDependencies.ToList();
-      if (dependencies.Any())
-      {
-        dependencies = await resultTable_.GetResults(sessionId,
-                                                     dependencies,
-                                                     cancellationToken)
-                                         .Where(result => result.Status != ResultStatus.Completed)
-                                         .Select(result => result.Name)
-                                         .ToListAsync(cancellationToken)
-                                         .ConfigureAwait(false);
-      }
+
+      logger_.LogDebug("Process task request {request}",
+                       request);
 
       if (dependencies.Any())
       {
+        // If there is dependencies, we need to register the current task as a dependent of its dependencies.
+        // This should be done *before* verifying if the dependencies are satisfied in order to avoid missing
+        // any result completion.
+        // If a result is completed at the same time, either the submitter will see the result has been completed,
+        // Or the Agent will remove the result from the remaining dependencies of the task.
         await resultTable_.AddTaskDependency(sessionId,
                                              dependencies,
                                              new List<string>
@@ -154,22 +149,37 @@ public class Submitter : ISubmitter
                                              cancellationToken)
                           .ConfigureAwait(false);
 
-        // This Get is required to avoid race-condition with the dependency resolution.
-        // A result can be marked Completed after the submitter has checked the result status,
-        // but before the task has been added to the dependency list.
-        // This is a typical case of TOCTOU issues (Time Of Check, Time Of Use).
-        // The second check ensures that the result completion will be visible,
-        // even if it happens in parallel to the task submission.
-        dependencies = await resultTable_.GetResults(sessionId,
-                                                     dependencies,
-                                                     cancellationToken)
-                                         .Where(result => result.Status != ResultStatus.Completed)
-                                         .Select(result => result.Name)
-                                         .ToListAsync(cancellationToken)
-                                         .ConfigureAwait(false);
-      }
+        // Get the dependencies that are already completed in order to remove them from the remaining dependencies.
+        var completedDependencies = await resultTable_.GetResults(sessionId,
+                                                                  dependencies,
+                                                                  cancellationToken)
+                                                      .Where(result => result.Status == ResultStatus.Completed)
+                                                      .Select(result => result.ResultId)
+                                                      .ToListAsync(cancellationToken)
+                                                      .ConfigureAwait(false);
 
-      if (!dependencies.Any())
+        // Remove all the dependencies that are already completed from the task.
+        // If an Agent has completed one of the dependencies between the GetResults and this remove,
+        // One will succeed removing the dependency, the other will silently fail.
+        // In either case, the task will be submitted without error by the Agent.
+        // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
+        // and both will queue the task.
+        // This is benign as it will be handled during dequeue with message deduplication.
+        await taskTable_.RemoveRemainingDataDependenciesAsync(new[]
+                                                              {
+                                                                request.Id,
+                                                              },
+                                                              completedDependencies,
+                                                              cancellationToken)
+                        .ConfigureAwait(false);
+
+        // If all dependencies were already completed, the task is ready to be started.
+        if (dependencies.Count == completedDependencies.Count)
+        {
+          readyTasks.Add(request.Id);
+        }
+      }
+      else
       {
         readyTasks.Add(request.Id);
       }
@@ -243,7 +253,6 @@ public class Submitter : ISubmitter
                                  CancellationToken                cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
-    var       storage  = ResultStorage(request.Session);
 
     var result = await resultTable_.GetResult(request.Session,
                                               request.ResultId,
@@ -301,9 +310,9 @@ public class Submitter : ISubmitter
       }
     }
 
-    await foreach (var chunk in storage.GetValuesAsync(request.ResultId,
-                                                       cancellationToken)
-                                       .ConfigureAwait(false))
+    await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+                                                              cancellationToken)
+                                              .ConfigureAwait(false))
     {
       await responseStream.WriteAsync(new ResultReply
                                       {
@@ -445,10 +454,9 @@ public class Submitter : ISubmitter
                              taskData.TaskId);
 
       //Discard value is used to remove warnings CS4014 !!
-      _ = Task.Factory.StartNew(async () => await PayloadStorage(taskData.SessionId)
-                                                  .TryDeleteAsync(taskData.TaskId,
-                                                                  CancellationToken.None)
-                                                  .ConfigureAwait(false),
+      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(taskData.TaskId,
+                                                                                CancellationToken.None)
+                                                                .ConfigureAwait(false),
                                 cancellationToken);
     }
     else
@@ -488,10 +496,11 @@ public class Submitter : ISubmitter
       }
       else
       {
-        await resultTable_.AbortTaskResults(taskData.SessionId,
-                                            taskData.TaskId,
-                                            cancellationToken)
-                          .ConfigureAwait(false);
+        await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                        resultTable_,
+                                                        taskData.TaskId,
+                                                        CancellationToken.None)
+                                   .ConfigureAwait(false);
       }
     }
   }
@@ -567,12 +576,11 @@ public class Submitter : ISubmitter
                               CancellationToken                      cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
-    var       storage  = ResultStorage(sessionId);
 
-    await storage.AddOrUpdateAsync(key,
-                                   chunks,
-                                   cancellationToken)
-                 .ConfigureAwait(false);
+    await objectStorage_.AddOrUpdateAsync(key,
+                                          chunks,
+                                          cancellationToken)
+                        .ConfigureAwait(false);
 
     await resultTable_.SetResult(sessionId,
                                  ownerTaskId,
@@ -635,10 +643,9 @@ public class Submitter : ISubmitter
       requests.Add(new Storage.TaskRequest(taskId,
                                            taskRequest.ExpectedOutputKeys,
                                            taskRequest.DataDependencies));
-      payloadUploadTasks.Add(PayloadStorage(sessionData.SessionId)
-                               .AddOrUpdateAsync(taskId,
-                                                 taskRequest.PayloadChunks,
-                                                 cancellationToken));
+      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(taskId,
+                                                             taskRequest.PayloadChunks,
+                                                             cancellationToken));
     }
 
     var parentTaskIds = new List<string>();
@@ -672,15 +679,14 @@ public class Submitter : ISubmitter
                                  cancellationToken)
                     .ConfigureAwait(false);
 
+    await resultTable_.SetTaskOwnership(sessionId,
+                                        requests.SelectMany(r => r.ExpectedOutputKeys.Select(key => (key, r.Id)))
+                                                .ToIList(),
+                                        cancellationToken)
+                      .ConfigureAwait(false);
+
     return (requests, options.Priority, options.PartitionId);
   }
-
-  private IObjectStorage ResultStorage(string session)
-    => objectStorageFactory_.CreateResultStorage(session);
-
-  private IObjectStorage PayloadStorage(string session)
-    => objectStorageFactory_.CreatePayloadStorage(session);
-
 
   private async Task ChangeResultOwnership(string                           session,
                                            string                           parentTaskId,
@@ -703,32 +709,12 @@ public class Submitter : ISubmitter
                                                         .ConfigureAwait(false));
     }
 
-    var taskDataModels = requests.Select(request =>
-                                         {
-                                           var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
-                                                                                   .ToList();
-
-                                           var resultModel = request.ExpectedOutputKeys.Except(intersect)
-                                                                    .Select(key => new Result(session,
-                                                                                              key,
-                                                                                              request.Id,
-                                                                                              ResultStatus.Created,
-                                                                                              new List<string>(),
-                                                                                              DateTime.UtcNow,
-                                                                                              Array.Empty<byte>()));
-
-                                           return (Result: resultModel, Req: new IResultTable.ChangeResultOwnershipRequest(intersect,
-                                                                                                                           request.Id));
-                                         });
-
+    var taskDataModels = requests.Select(request => new IResultTable.ChangeResultOwnershipRequest(parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys),
+                                                                                                  request.Id));
     await resultTable_.ChangeResultOwnership(session,
                                              parentTaskId,
-                                             taskDataModels.Select(tuple => tuple.Req),
+                                             taskDataModels,
                                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    await resultTable_.Create(taskDataModels.SelectMany(task => task.Result),
-                              cancellationToken)
                       .ConfigureAwait(false);
   }
 }

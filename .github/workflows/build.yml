@@ -222,8 +222,6 @@ jobs:
            path: ./Control/PartitionMetrics/src/Dockerfile
         -  img : dockerhubaneo/armonik_control
            path: ./Control/Submitter/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_dependency_checker
-           path: ./Control/DependencyChecker/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -271,8 +269,6 @@ jobs:
            path: ./Control/PartitionMetrics/src/Dockerfile
         -  img : dockerhubaneo/armonik_control
            path: ./Control/Submitter/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_dependency_checker
-           path: ./Control/DependencyChecker/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -363,7 +359,7 @@ jobs:
           sleep 10
 
       - name: Run Stream Test
-        timeout-minutes: 3
+        timeout-minutes: 4
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001

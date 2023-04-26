@@ -38,6 +38,3 @@ variable "log_driver" {
   })
 }
 
-variable "unresolved_dependencies_queue" {
-  type = string
-}

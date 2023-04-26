@@ -80,7 +80,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                              TextWriter.Null)
                                                                     .GetDatabase());
-    services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+    services.AddSingleton<IObjectStorage, ObjectStorage>();
 
     services.AddOption(configuration,
                        Options.Redis.SettingSection,
@@ -91,8 +91,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                    ValidateOnBuild = true,
                                                  });
 
-    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
-    RunTests             = true;
+    ObjectStorage = provider.GetRequiredService<IObjectStorage>();
+    RunTests      = true;
   }
 }

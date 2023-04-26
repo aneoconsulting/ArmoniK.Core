@@ -46,19 +46,19 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string                DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource        ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication        app_;
-  private readonly        IMongoClient          client_;
-  private readonly        LoggerFactory         loggerFactory_;
-  private readonly        IObjectStorageFactory objectStorageFactory_;
-  public readonly         IPartitionTable       PartitionTable;
-  private readonly        IResultTable          resultTable_;
-  private readonly        IMongoRunner          runner_;
-  public readonly         ISessionTable         SessionTable;
-  public readonly         ISubmitter            Submitter;
-  public readonly         TaskHandler           TaskHandler;
-  public readonly         ITaskTable            TaskTable;
+  private const           string          DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication  app_;
+  private readonly        IMongoClient    client_;
+  private readonly        LoggerFactory   loggerFactory_;
+  private readonly        IObjectStorage  objectStorage_;
+  public readonly         IPartitionTable PartitionTable;
+  public readonly         IResultTable    ResultTable;
+  private readonly        IMongoRunner    runner_;
+  public readonly         ISessionTable   SessionTable;
+  public readonly         ISubmitter      Submitter;
+  public readonly         TaskHandler     TaskHandler;
+  public readonly         ITaskTable      TaskTable;
 
 
   public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
@@ -111,10 +111,6 @@ public class TestTaskHandlerProvider : IDisposable
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                   },
-                                                  {
-                                                    $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
-                                                    nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
-                                                  },
                                                 };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -137,8 +133,6 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddOption<Injection.Options.DependencyResolver>(builder.Configuration,
-                                                            Injection.Options.DependencyResolver.SettingSection)
            .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
@@ -164,24 +158,24 @@ public class TestTaskHandlerProvider : IDisposable
 
     app_ = builder.Build();
 
-    resultTable_          = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable             = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable        = app_.Services.GetRequiredService<IPartitionTable>();
-    SessionTable          = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter             = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler           = app_.Services.GetRequiredService<TaskHandler>();
-    objectStorageFactory_ = app_.Services.GetRequiredService<IObjectStorageFactory>();
+    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
+    SessionTable   = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
+    TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
+    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
 
-    resultTable_.Init(CancellationToken.None)
-                .Wait();
+    ResultTable.Init(CancellationToken.None)
+               .Wait();
     TaskTable.Init(CancellationToken.None)
              .Wait();
     PartitionTable.Init(CancellationToken.None)
                   .Wait();
     SessionTable.Init(CancellationToken.None)
                 .Wait();
-    objectStorageFactory_.Init(CancellationToken.None)
-                         .Wait();
+    objectStorage_.Init(CancellationToken.None)
+                  .Wait();
   }
 
   public void Dispose()

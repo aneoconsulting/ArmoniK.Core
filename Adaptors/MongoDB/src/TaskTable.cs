@@ -527,6 +527,38 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
+                                                         ICollection<string> dependenciesToRemove,
+                                                         CancellationToken   cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(RemoveRemainingDataDependenciesAsync)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    // MongoDB driver does not support to unset a list, so Unset should be called multiple times.
+    // However, Unset on an UpdateDefinitionBuilder returns an UpdateDefinition.
+    // We need to call Unset on the first element outside of the loop.
+    using var deps = dependenciesToRemove.GetEnumerator();
+    if (!deps.MoveNext())
+    {
+      return;
+    }
+
+
+    var key0   = TaskData.EscapeKey(deps.Current);
+    var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
+    while (deps.MoveNext())
+    {
+      var key = TaskData.EscapeKey(deps.Current);
+      update = update.Unset(data => data.RemainingDataDependencies[key]);
+    }
+
+    await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId),
+                                         update,
+                                         cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task SetTaskCanceledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
@@ -580,10 +612,10 @@ public class TaskTable : ITaskTable
 
     var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId);
 
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
-                          TaskStatus.Error,
-                          taskOutput);
+    Logger.LogDebug("update task {taskId} to status {status} with {output}",
+                    taskId,
+                    TaskStatus.Error,
+                    taskOutput);
     var task = await taskCollection.FindOneAndUpdateAsync(filter,
                                                           updateDefinition,
                                                           new FindOneAndUpdateOptions<TaskData>
@@ -818,6 +850,7 @@ public class TaskTable : ITaskTable
                                    taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
+                                   taskData.RemainingDataDependencies,
                                    taskData.ExpectedOutputIds,
                                    taskData.InitialTaskId,
                                    newTaskRetryOfIds,

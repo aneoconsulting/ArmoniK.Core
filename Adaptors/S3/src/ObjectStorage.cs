@@ -20,14 +20,17 @@ using System.Text;
 
 using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Util;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
 using CommunityToolkit.HighPerformance;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.S3;
@@ -39,6 +42,7 @@ public class ObjectStorage : IObjectStorage
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
   private readonly AmazonS3Client         s3Client_;
+  private          bool                   isInitialized_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for S3
@@ -48,14 +52,47 @@ public class ObjectStorage : IObjectStorage
   /// <param name="options">S3 object storage options</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(AmazonS3Client         s3Client,
-                       string                 objectStorageName,
                        Options.S3             options,
                        ILogger<ObjectStorage> logger)
   {
     s3Client_          = s3Client;
-    objectStorageName_ = objectStorageName;
+    objectStorageName_ = "objectStorageName";
     bucketName_        = options.BucketName;
     logger_            = logger;
+  }
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      await AmazonS3Util.DoesS3BucketExistV2Async(s3Client_,
+                                                  bucketName_);
+    }
+
+    logger_.LogInformation("ObjectStorageFactory has correctly been initialized.");
+    isInitialized_ = true;
+  }
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    switch (tag)
+    {
+      case HealthCheckTag.Startup:
+      case HealthCheckTag.Readiness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("S3 not initialized yet."));
+      case HealthCheckTag.Liveness:
+        return Task.FromResult(isInitialized_
+                                 ? HealthCheckResult.Healthy()
+                                 : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped."));
+      default:
+        throw new ArgumentOutOfRangeException(nameof(tag),
+                                              tag,
+                                              null);
+    }
   }
 
   public async Task AddOrUpdateAsync(string                   key,

@@ -926,6 +926,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                     CancellationToken cancellationToken = default)
       => throw new T();
 
+    public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
+                                                     ICollection<string> dependenciesToRemove,
+                                                     CancellationToken   cancellationToken = default)
+      => throw new T();
+
     public Task SetTaskCanceledAsync(string            taskId,
                                      CancellationToken cancellationToken = default)
       => throw new T();

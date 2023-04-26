@@ -50,10 +50,10 @@ public class TestPollsterProvider : IDisposable
   private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   private readonly        WebApplication           app_;
   private readonly        IMongoClient             client_;
-  private readonly        IObjectStorageFactory    objectStorageFactory_;
+  private readonly        IObjectStorage           objectStorage_;
   public readonly         IPartitionTable          PartitionTable;
   public readonly         Common.Pollster.Pollster Pollster;
-  private readonly        IResultTable             resultTable_;
+  public readonly         IResultTable             ResultTable;
   private readonly        IMongoRunner             runner_;
   private readonly        ISessionTable            sessionTable_;
   public readonly         ISubmitter               Submitter;
@@ -106,10 +106,6 @@ public class TestPollsterProvider : IDisposable
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                   },
-                                                  {
-                                                    $"{Injection.Options.DependencyResolver.SettingSection}:{nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)}",
-                                                    nameof(Injection.Options.DependencyResolver.UnresolvedDependenciesQueue)
-                                                  },
                                                 };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -128,8 +124,6 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
-           .AddOption<Injection.Options.DependencyResolver>(builder.Configuration,
-                                                            Injection.Options.DependencyResolver.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<DataPrefetcher>()
@@ -146,20 +140,20 @@ public class TestPollsterProvider : IDisposable
 
     app_ = builder.Build();
 
-    resultTable_          = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable             = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable        = app_.Services.GetRequiredService<IPartitionTable>();
-    sessionTable_         = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter             = app_.Services.GetRequiredService<ISubmitter>();
-    Pollster              = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
-    objectStorageFactory_ = app_.Services.GetRequiredService<IObjectStorageFactory>();
+    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
+    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
+    Pollster       = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
+    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
 
-    resultTable_.Init(CancellationToken.None)
-                .Wait();
+    ResultTable.Init(CancellationToken.None)
+               .Wait();
     TaskTable.Init(CancellationToken.None)
              .Wait();
-    objectStorageFactory_.Init(CancellationToken.None)
-                         .Wait();
+    objectStorage_.Init(CancellationToken.None)
+                  .Wait();
     PartitionTable.Init(CancellationToken.None)
                   .Wait();
     sessionTable_.Init(CancellationToken.None)

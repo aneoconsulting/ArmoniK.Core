@@ -47,7 +47,7 @@ using Moq;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
+using Result = ArmoniK.Core.Common.Storage.Result;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -101,43 +101,6 @@ public class TaskHandlerTest
   private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string sessionId)> InitProviderRunnableTask(
     TestTaskHandlerProvider testServiceProvider)
   {
-    var taskRequests = new List<TaskRequest>();
-    taskRequests.Add(new TaskRequest(new List<string>
-                                     {
-                                       "ExpectedOutput0",
-                                     },
-                                     new List<string>(),
-                                     new List<ReadOnlyMemory<byte>>
-                                     {
-                                       ReadOnlyMemory<byte>.Empty,
-                                     }.ToAsyncEnumerable()));
-
-    taskRequests.Add(new TaskRequest(new List<string>
-                                     {
-                                       "ExpectedOutput1",
-                                     },
-                                     new List<string>
-                                     {
-                                       "DataDep",
-                                     },
-                                     new List<ReadOnlyMemory<byte>>
-                                     {
-                                       ReadOnlyMemory<byte>.Empty,
-                                     }.ToAsyncEnumerable()));
-
-    taskRequests.Add(new TaskRequest(new List<string>
-                                     {
-                                       "ExpectedOutput2",
-                                     },
-                                     new List<string>
-                                     {
-                                       "DataDep",
-                                     },
-                                     new List<ReadOnlyMemory<byte>>
-                                     {
-                                       ReadOnlyMemory<byte>.Empty,
-                                     }.ToAsyncEnumerable()));
-
     await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
                                                                    {
                                                                      new PartitionData("part1",
@@ -171,6 +134,83 @@ public class TaskHandlerTest
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).SessionId;
+
+    await testServiceProvider.ResultTable.Create(new[]
+                                                 {
+                                                   new Result(sessionId,
+                                                              "ExpectedOutput0",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                   new Result(sessionId,
+                                                              "DataDep",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                   new Result(sessionId,
+                                                              "ExpectedOutput1",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                   new Result(sessionId,
+                                                              "ExpectedOutput2",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                 },
+                                                 CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var taskRequests = new List<TaskRequest>
+                       {
+                         new(new List<string>
+                             {
+                               "ExpectedOutput0",
+                             },
+                             new List<string>(),
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+
+                         new(new List<string>
+                             {
+                               "ExpectedOutput1",
+                             },
+                             new List<string>
+                             {
+                               "DataDep",
+                             },
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+
+                         new(new List<string>
+                             {
+                               "ExpectedOutput2",
+                             },
+                             new List<string>
+                             {
+                               "DataDep",
+                             },
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+                       };
 
     var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                                             sessionId,
@@ -353,6 +393,7 @@ public class TaskHandlerTest
                                 "payload",
                                 new List<string>(),
                                 new List<string>(),
+                                new Dictionary<string, bool>(),
                                 new List<string>(),
                                 "init",
                                 new List<string>(),
@@ -444,6 +485,7 @@ public class TaskHandlerTest
                           "payload",
                           new List<string>(),
                           new List<string>(),
+                          new Dictionary<string, bool>(),
                           new List<string>(),
                           "taskId",
                           new List<string>(),
@@ -544,6 +586,11 @@ public class TaskHandlerTest
                                     CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
+    public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
+                                                     ICollection<string> dependenciesToRemove,
+                                                     CancellationToken   cancellationToken = default)
+      => Task.CompletedTask;
+
     public Task SetTaskCanceledAsync(string            taskId,
                                      CancellationToken cancellationToken)
       => throw new NotImplementedException();
@@ -576,6 +623,7 @@ public class TaskHandlerTest
                           "payload",
                           new List<string>(),
                           new List<string>(),
+                          new Dictionary<string, bool>(),
                           new List<string>(),
                           "taskId",
                           new List<string>(),
@@ -612,6 +660,7 @@ public class TaskHandlerTest
                                       "payload",
                                       new List<string>(),
                                       new List<string>(),
+                                      new Dictionary<string, bool>(),
                                       new List<string>(),
                                       "taskId",
                                       new List<string>(),
@@ -839,7 +888,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.IsTrue(acquired);
+    Assert.IsFalse(acquired);
   }
 
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
@@ -1194,10 +1243,10 @@ public class TaskHandlerTest
                       .ConfigureAwait(false);
 
 
-    var resultStreamReader = new TestHelperAsyncStreamReader<Result>(new[]
-                                                                     {
-                                                                       new Result(),
-                                                                     });
+    var resultStreamReader = new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
+                                                                                       {
+                                                                                         new Api.gRPC.V1.Agent.Result(),
+                                                                                       });
     await agentHandler.Agent.SendResult(resultStreamReader,
                                         CancellationToken.None)
                       .ConfigureAwait(false);

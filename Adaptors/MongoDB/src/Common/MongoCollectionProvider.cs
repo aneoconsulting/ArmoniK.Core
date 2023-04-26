@@ -92,7 +92,6 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     if (!isInitialized_)
     {
       mongoCollection_ = await Initialization.ConfigureAwait(false);
-      logger_.LogInformation("MongoDB client from Collection Provider");
     }
 
     isInitialized_ = true;
