@@ -39,8 +39,7 @@ internal class ConnectionTest
   public void TearDown()
   {
     channel_?.ShutdownAsync()
-            .GetAwaiter()
-            .GetResult();
+            .Wait();
     channel_ = null;
   }
 
@@ -59,28 +58,28 @@ internal class ConnectionTest
             "",
             TestName = "Ingress_TLS_NoValidation")]
   [TestCase("https://localhost:5202",
-            "../../../../../../../terraform/.terraform/ingress_tls/server/ca.crt",
+            "terraform/.terraform/ingress_tls/server/ca.crt",
             "",
             false,
             TestName = "Ingress_TLS")]
   [TestCase("https://localhost:5202",
-            "../../../../../../../terraform/.terraform/ingress_tls/server/ca.crt",
+            "terraform/.terraform/ingress_tls/server/ca.crt",
             "",
             false,
             true,
             TestName = "Ingress_TLS_CAInstalled")]
   [TestCase("https://localhost:5203",
             "",
-            "../../../../../../../terraform/.terraform/ingress_mtls/client/client.p12",
+            "terraform/.terraform/ingress_mtls/client/client.p12",
             TestName = "Ingress_MTLS_NoValidation")]
   [TestCase("https://localhost:5203",
-            "../../../../../../../terraform/.terraform/ingress_mtls/server/ca.crt",
-            "../../../../../../../terraform/.terraform/ingress_mtls/client/client.p12",
+            "terraform/.terraform/ingress_mtls/server/ca.crt",
+            "terraform/.terraform/ingress_mtls/client/client.p12",
             false,
             TestName = "Ingress_MTLS")]
   [TestCase("https://localhost:5203",
-            "../../../../../../../terraform/.terraform/ingress_mtls/server/ca.crt",
-            "../../../../../../../terraform/.terraform/ingress_mtls/client/client.p12",
+            "terraform/.terraform/ingress_mtls/server/ca.crt",
+            "terraform/.terraform/ingress_mtls/client/client.p12",
             false,
             true,
             TestName = "Ingress_MTLS_CAInstalled")]
@@ -90,19 +89,35 @@ internal class ConnectionTest
                                       bool   allowInsecure = true,
                                       bool   caIsInstalled = false)
   {
-    Console.WriteLine(Directory.GetCurrentDirectory());
+    var rootFolder = "../../../../../../../";
+    Console.WriteLine(string.IsNullOrEmpty(clientCertP12)
+                        ? ""
+                        : Path.GetFullPath(Path.Combine(rootFolder,
+                                                        clientCertP12)));
+    Console.WriteLine(caIsInstalled
+                        ? ""
+                        : string.IsNullOrEmpty(caFile)
+                          ? ""
+                          : Path.GetFullPath(Path.Combine(rootFolder,
+                                                          caFile)));
     Dictionary<string, string?> baseConfig = new()
                                              {
                                                {
                                                  "GrpcClient:Endpoint", endpoint
                                                },
                                                {
-                                                 "GrpcClient:CertP12", clientCertP12
+                                                 "GrpcClient:CertP12", string.IsNullOrEmpty(clientCertP12)
+                                                                         ? ""
+                                                                         : Path.GetFullPath(Path.Combine(rootFolder,
+                                                                                                         clientCertP12))
                                                },
                                                {
                                                  "GrpcClient:CaCert", caIsInstalled
                                                                         ? ""
-                                                                        : caFile
+                                                                        : string.IsNullOrEmpty(caFile)
+                                                                          ? ""
+                                                                          : Path.GetFullPath(Path.Combine(rootFolder,
+                                                                                                          caFile))
                                                },
                                                {
                                                  "GrpcClient:AllowUnsafeConnection", allowInsecure.ToString()
@@ -115,12 +130,14 @@ internal class ConnectionTest
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
 
-    if (caIsInstalled && !allowInsecure && Environment.GetEnvironmentVariable("CA_INSTALLED") == null)
+    if (caIsInstalled && !allowInsecure && Environment.GetEnvironmentVariable("CA_INSTALLED") != "true")
     {
       Assert.Ignore("CA is not installed in this case");
     }
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
+    Console.WriteLine($"CertP12 : {options.CertP12}");
+    Console.WriteLine($"CaCert : {options.CaCert}");
     channel_ = GrpcChannelFactory.CreateChannel(options);
     var client = new Submitter.SubmitterClient(channel_);
     Console.WriteLine("Client created");

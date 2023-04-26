@@ -75,8 +75,7 @@ internal class StreamWrapperTests
     partition_ = null;
     client_    = null;
     channel_?.ShutdownAsync()
-            .GetAwaiter()
-            .GetResult();
+            .Wait();
     channel_ = null;
   }
 
