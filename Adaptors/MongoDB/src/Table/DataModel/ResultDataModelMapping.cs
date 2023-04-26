@@ -34,7 +34,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
     {
       BsonClassMap.RegisterClassMap<Result>(cm =>
                                             {
-                                              cm.MapIdProperty(nameof(Result.Id));
+                                              cm.MapIdProperty(nameof(Result.ResultId));
                                               cm.MapProperty(nameof(Result.SessionId))
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Name))
@@ -52,6 +52,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetIsRequired(true);
                                               cm.SetIgnoreExtraElements(true);
                                               cm.MapCreator(model => new Result(model.SessionId,
+                                                                                model.ResultId,
                                                                                 model.Name,
                                                                                 model.OwnerTaskId,
                                                                                 model.Status,

@@ -78,7 +78,8 @@ internal class BsonSerializerTest
   public void SerializeResultDataModel()
   {
     var rdm = new Result("sessionId",
-                         "Key",
+                         "ResultId",
+                         "Name",
                          "OwnerTaskId",
                          ResultStatus.Completed,
                          new List<string>
@@ -99,8 +100,8 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<Result>(serialized);
 
-    Assert.AreEqual(rdm.Id,
-                    deserialized.Id);
+    Assert.AreEqual(rdm.ResultId,
+                    deserialized.ResultId);
     Assert.AreEqual(rdm.SessionId,
                     deserialized.SessionId);
     Assert.AreEqual(rdm.Name,

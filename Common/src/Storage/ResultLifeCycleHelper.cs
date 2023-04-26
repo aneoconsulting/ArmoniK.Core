@@ -70,8 +70,8 @@ public static class ResultLifeCycleHelper
     var creatingResults = await resultTable.GetResults(taskData.SessionId,
                                                        taskData.ExpectedOutputIds,
                                                        cancellationToken)
-                                           .Where(result => result.Status == ResultStatus.Created && result.OwnerTaskId == taskId)
-                                           .Select(result => result.Name)
+                                           .Where(result => result.OwnerTaskId == taskId)
+                                           .Select(result => result.ResultId)
                                            .ToListAsync(cancellationToken)
                                            .ConfigureAwait(false);
 
