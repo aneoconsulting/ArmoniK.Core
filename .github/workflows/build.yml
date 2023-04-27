@@ -580,7 +580,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just tag=${VERSION} log_level=Verbose deploy
+          just tag=${VERSION} deploy
           sleep 10
 
       - name: Add CA to store
@@ -593,9 +593,7 @@ jobs:
          sudo update-ca-certificates
 
       - name: Run connection test
-        run: |
-          docker ps -a
-          GRPC_VERBOSITY=DEBUG GRPC_TRACE="transport_security,handshaker,dns_resolver" CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx"
+        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx"
 
       - name: Test Report
         uses: dorny/test-reporter@v1

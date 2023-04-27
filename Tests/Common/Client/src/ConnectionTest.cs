@@ -43,6 +43,8 @@ internal class ConnectionTest
     channel_ = null;
   }
 
+  private const string rootFolder = "../../../../../../../";
+
   private ChannelBase? channel_;
 
   [TestCase("http://localhost:5001",
@@ -89,17 +91,6 @@ internal class ConnectionTest
                                       bool   allowInsecure = true,
                                       bool   caIsInstalled = false)
   {
-    var rootFolder = "../../../../../../../";
-    Console.WriteLine(string.IsNullOrEmpty(clientCertP12)
-                        ? ""
-                        : Path.GetFullPath(Path.Combine(rootFolder,
-                                                        clientCertP12)));
-    Console.WriteLine(caIsInstalled
-                        ? ""
-                        : string.IsNullOrEmpty(caFile)
-                          ? ""
-                          : Path.GetFullPath(Path.Combine(rootFolder,
-                                                          caFile)));
     Dictionary<string, string?> baseConfig = new()
                                              {
                                                {
@@ -135,13 +126,15 @@ internal class ConnectionTest
       Assert.Ignore("CA is not installed in this case");
     }
 
-    Console.WriteLine($"endpoint : {options.Endpoint}");
-    Console.WriteLine($"CertP12 : {options.CertP12}");
-    Console.WriteLine($"CaCert : {options.CaCert}");
+    TestContext.Progress.WriteLine($"endpoint : {options.Endpoint}");
+    TestContext.Progress.WriteLine($"CertP12 : {options.CertP12}");
+    TestContext.Progress.WriteLine($"CaCert : {options.CaCert}");
     channel_ = GrpcChannelFactory.CreateChannel(options);
     var client = new Submitter.SubmitterClient(channel_);
-    Console.WriteLine("Client created");
+    TestContext.Progress.WriteLine("Client created");
 
     Assert.DoesNotThrow(() => client.GetServiceConfiguration(new Empty()));
+
+    TestContext.Progress.WriteLine("Test succeeded");
   }
 }

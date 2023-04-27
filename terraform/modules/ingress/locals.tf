@@ -8,10 +8,10 @@ locals {
     var.tls ? [{
       target = "/ingress.crt"
       source = abspath("${path.root}/.terraform/${var.container_name}/server/ingress.crt")
-    },
-    {
-      target = "/ingress.key"
-      source = abspath("${path.root}/.terraform/${var.container_name}/server/ingress.key")
+      },
+      {
+        target = "/ingress.key"
+        source = abspath("${path.root}/.terraform/${var.container_name}/server/ingress.key")
     }] : [],
     var.mtls ? [{
       target = "/client_ca.crt"

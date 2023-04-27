@@ -31,8 +31,8 @@ resource "docker_container" "ingress" {
     for_each = local.volume_map
     content {
       container_path = volumes.value.target
-      host_path = volumes.value.source
-      read_only = true
+      host_path      = volumes.value.source
+      read_only      = true
     }
   }
   restart = "on-failure"
