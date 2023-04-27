@@ -1,7 +1,7 @@
 locals {
   volumes_list = concat([
     {
-      target = "/etc/nginx/conf.d/server.conf"
+      target = "/etc/nginx/conf.d/default.conf"
       source = abspath(local_file.ingress_conf_file.filename)
     }
     ],
