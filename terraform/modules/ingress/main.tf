@@ -34,6 +34,7 @@ resource "docker_container" "ingress" {
       type   = var.submitter_image_id == "" ? "bind" : "bind"
       target = mounts.value.target
       source = mounts.value.source
+      read_only = true
     }
   }
   restart = "on-failure"
