@@ -24,7 +24,6 @@ using ArmoniK.Core.Base;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
@@ -64,7 +63,6 @@ public class SessionProvider : IInitializable
 
   public Task Init(CancellationToken cancellationToken)
   {
-
     if (clientSessionHandle_ is not null)
     {
       return Task.CompletedTask;
@@ -87,5 +85,4 @@ public class SessionProvider : IInitializable
 
     return clientSessionHandle_;
   }
-
 }

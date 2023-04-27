@@ -58,8 +58,6 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                      mongoDatabase,
                                      logger,
                                      cancellationToken);
-
-    
   }
 
   /// <inheritdoc />
@@ -182,5 +180,4 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
 
     return mongoCollection_!;
   }
-
 }
