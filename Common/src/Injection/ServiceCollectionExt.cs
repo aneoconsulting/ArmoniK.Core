@@ -134,7 +134,10 @@ public static class ServiceCollectionExt
     catch (TypeLoadException e)
     {
       logger.LogError(e, "Error while loading class");
-      logger.LogError(e.InnerException, "Inner exception while loading class");
+      string innerMessage = "";
+      if(e.InnerException != null)
+         innerMessage = e.InnerException.Message;
+      logger.LogError(e.InnerException, $"Inner exception while loading class\n\t{innerMessage}");
       throw;
     }
   }
