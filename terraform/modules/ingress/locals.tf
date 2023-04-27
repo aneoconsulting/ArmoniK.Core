@@ -6,12 +6,16 @@ locals {
     }
     ],
     var.tls ? [{
-      target = "/ingress"
-      source = abspath("${path.root}/.terraform/${var.container_name}/server/")
+      target = "/ingress.crt"
+      source = abspath("${path.root}/.terraform/${var.container_name}/server/ingress.crt")
+    },
+    {
+      target = "/ingress.key"
+      source = abspath("${path.root}/.terraform/${var.container_name}/server/ingress.key")
     }] : [],
     var.mtls ? [{
-      target = "/ingressclient"
-      source = abspath("${path.root}/.terraform/${var.container_name}/client/")
+      target = "/client_ca.crt"
+      source = abspath("${path.root}/.terraform/${var.container_name}/client/client_ca.crt")
     }] : []
   )
   volume_map = tomap({

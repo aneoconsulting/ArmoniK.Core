@@ -19,11 +19,11 @@ server {
     listen [::]:8443 ssl http2;
     listen 9443 ssl http2;
     listen [::]:9443 ssl http2;
-    ssl_certificate     /ingress/ingress.crt;
-    ssl_certificate_key /ingress/ingress.key;
+    ssl_certificate     /ingress.crt;
+    ssl_certificate_key /ingress.key;
 %{if var.mtls~}
     ssl_verify_client on;
-    ssl_client_certificate /ingressclient/client_ca.crt;
+    ssl_client_certificate /client_ca.crt;
 %{else~}
     ssl_verify_client off;
     proxy_hide_header X-Certificate-Client-CN;

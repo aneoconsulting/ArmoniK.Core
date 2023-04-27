@@ -14,7 +14,7 @@ resource "docker_container" "ingress" {
   log_driver = var.log_driver.name
 
   log_opts = {
-    fluentd-address = var.log_driver.address
+    fluentd-address = var.submitter_image_id == "" ? var.log_driver.address : var.log_driver.address
   }
 
   ports {
@@ -27,13 +27,11 @@ resource "docker_container" "ingress" {
     external = var.tls ? (var.mtls ? 5203 : 5202) : 5201
   }
 
-  dynamic "mounts" {
+  dynamic "volumes" {
     for_each = local.volume_map
     content {
-      // For dependency
-      type   = var.submitter_image_id == "" ? "bind" : "bind"
-      target = mounts.value.target
-      source = mounts.value.source
+      container_path = volumes.value.target
+      host_path = volumes.value.source
       read_only = true
     }
   }
