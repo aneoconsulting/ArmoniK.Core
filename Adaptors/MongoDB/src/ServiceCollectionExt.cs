@@ -82,8 +82,8 @@ public static class ServiceCollectionExt
     {
       services.AddOption<Options.ObjectStorage>(configuration,
                                                 Options.ObjectStorage.SettingSection)
-              .AddSingleton<ObjectStorageFactory>()
-              .AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+              .AddSingleton<ObjectStorage>()
+              .AddSingleton<IObjectStorage, ObjectStorage>();
     }
 
     services.AddOption<Options.MongoDB>(configuration,
