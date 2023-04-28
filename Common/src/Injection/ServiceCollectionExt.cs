@@ -137,7 +137,7 @@ public static class ServiceCollectionExt
       string innerMessage = "";
       if(e.InnerException != null)
          innerMessage = e.InnerException.Message;
-      logger.LogError(e.InnerException, $"Inner exception while loading class\n\t{innerMessage}");
+      logger.LogError(e.InnerException, $"Inner exception while loading class: {0}", innerMessage);
       throw;
     }
   }
