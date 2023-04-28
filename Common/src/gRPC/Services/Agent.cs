@@ -36,6 +36,8 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -605,6 +607,41 @@ public class Agent : IAgent
     }
 
     return new ResultReply();
+  }
+
+  /// <inheritdoc />
+  public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                         CancellationToken            cancellationToken)
+  {
+    var results = request.Results.Select(rc => new Storage.Result(request.SessionId,
+                                                                  Guid.NewGuid()
+                                                                      .ToString(),
+                                                                  rc.Name,
+                                                                  "",
+                                                                  ResultStatus.Created,
+                                                                  new List<string>(),
+                                                                  DateTime.UtcNow,
+                                                                  Array.Empty<byte>()))
+                         .ToList();
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    return new CreateResultsMetaDataResponse
+           {
+             Results =
+             {
+               results.Select(result => new ResultMetaData
+                                        {
+                                          CreatedAt = FromDateTime(result.CreationDate),
+                                          Name      = result.Name,
+                                          SessionId = result.SessionId,
+                                          Status    = result.Status,
+                                          ResultId  = result.ResultId,
+                                        }),
+             },
+           };
   }
 
   /// <inheritdoc />

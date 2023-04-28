@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -29,6 +30,7 @@ using ArmoniK.Api.gRPC.V1.Events;
 
 using Armonik.Api.Grpc.V1.Partitions;
 
+using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
@@ -201,10 +203,30 @@ internal static class Program
                                 Environment.Exit(0);
                               };
 
-    var results = Enumerable.Range(0,
-                                   benchOptions.NTasks)
-                            .Select(i => Guid.NewGuid() + "root" + i)
-                            .ToList();
+    var results = new List<string>(benchOptions.NTasks);
+
+    var resultClient = new Results.ResultsClient(channel);
+
+    foreach (var req in Enumerable.Range(0,
+                                         benchOptions.NTasks)
+                                  .Chunk(benchOptions.BatchSize))
+    {
+      var resp = await resultClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                               {
+                                                                 SessionId = createSessionReply.SessionId,
+                                                                 Results =
+                                                                 {
+                                                                   req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                   {
+                                                                                     Name = $"root {i}",
+                                                                                   }),
+                                                                 },
+                                                               });
+
+      results.AddRange(resp.Results.Select(raw => raw.ResultId));
+    }
+
+
     var rnd = new Random();
 
     foreach (var chunk in results.Chunk(benchOptions.BatchSize))

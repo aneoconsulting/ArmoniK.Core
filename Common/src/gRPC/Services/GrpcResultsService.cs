@@ -15,10 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
@@ -91,6 +94,35 @@ public class GrpcResultsService : Results.ResultsBase
                results.results.Select(result => new ResultRaw(result)),
              },
              Total = results.totalCount,
+           };
+  }
+
+  [RequiresPermission(typeof(GrpcResultsService),
+                      nameof(CreateResultsMetaData))]
+  public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                                  ServerCallContext            context)
+  {
+    var results = request.Results.Select(rc => new Result(request.SessionId,
+                                                          Guid.NewGuid()
+                                                              .ToString(),
+                                                          rc.Name,
+                                                          "",
+                                                          ResultStatus.Created,
+                                                          new List<string>(),
+                                                          DateTime.UtcNow,
+                                                          Array.Empty<byte>()))
+                         .ToList();
+
+    await resultTable_.Create(results,
+                              context.CancellationToken)
+                      .ConfigureAwait(false);
+
+    return new CreateResultsMetaDataResponse
+           {
+             Results =
+             {
+               results.Select(result => new ResultRaw(result)),
+             },
            };
   }
 }
