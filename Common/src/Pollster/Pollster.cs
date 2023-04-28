@@ -31,7 +31,7 @@ using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
