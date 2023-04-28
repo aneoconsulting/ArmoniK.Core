@@ -74,8 +74,8 @@ internal class StreamWrapperTests
   [TearDown]
   public void TearDown()
   {
-    partition_ = null;
-    client_    = null;
+    partition_    = null;
+    client_       = null;
     resultClient_ = null;
     channel_?.ShutdownAsync()
             .Wait();
