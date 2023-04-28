@@ -108,6 +108,11 @@ public static class ServiceCollectionExt
 
     try
     {
+      Type[] types= assembly.GetTypes();
+      foreach (Type type_item in types)
+            {
+                logger.LogInformation("Found type: {Type}", type_item.FullName);
+            }
       var type = assembly.GetType(queueSettings.ClassName,
                                   true,
                                   true);
