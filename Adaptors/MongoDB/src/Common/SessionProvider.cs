@@ -40,7 +40,6 @@ public class SessionProvider : IInitializable
   public SessionProvider(IMongoClient client)
     => client_ = client;
 
-
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     switch (tag)

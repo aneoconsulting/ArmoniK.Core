@@ -193,7 +193,6 @@ public static class ServiceCollectionExt
     settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
     settings.ReplicaSetName         = mongoOptions.ReplicaSet;
-    settings.MaxConnecting          = mongoOptions.MaxConnecting;
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
