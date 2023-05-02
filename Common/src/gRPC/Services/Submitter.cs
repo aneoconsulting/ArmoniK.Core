@@ -28,7 +28,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 
@@ -681,7 +681,7 @@ public class Submitter : ISubmitter
 
     await resultTable_.SetTaskOwnership(sessionId,
                                         requests.SelectMany(r => r.ExpectedOutputKeys.Select(key => (key, r.Id)))
-                                                .ToIList(),
+                                                .AsICollection(),
                                         cancellationToken)
                       .ConfigureAwait(false);
 

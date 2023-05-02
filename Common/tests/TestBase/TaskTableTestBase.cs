@@ -30,7 +30,7 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -597,7 +597,7 @@ public class TaskTableTestBase
       var result = (await TaskTable!.CountPartitionTasksAsync(CancellationToken.None)
                                     .ConfigureAwait(false)).OrderBy(r => r.Status)
                                                            .ThenBy(r => r.PartitionId)
-                                                           .ToIList();
+                                                           .AsIList();
 
       Assert.AreEqual(5,
                       result.Count);

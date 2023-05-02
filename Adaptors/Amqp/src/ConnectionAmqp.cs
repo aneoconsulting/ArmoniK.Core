@@ -25,7 +25,7 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
