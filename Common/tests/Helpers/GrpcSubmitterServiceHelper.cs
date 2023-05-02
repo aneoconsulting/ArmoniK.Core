@@ -116,6 +116,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
     server_ = null;
     handler_?.Dispose();
     handler_ = null;
+    channel_?.ShutdownAsync()
+            .Wait();
     channel_ = null;
     loggerFactory_.Dispose();
     GC.SuppressFinalize(this);

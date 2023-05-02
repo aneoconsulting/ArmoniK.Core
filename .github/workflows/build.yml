@@ -597,7 +597,7 @@ jobs:
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: success() || failure()
+        if: always()
         with:
           name: Test - Connectivity CA ${{ matrix.ca }}
           path: ./Tests/Common/Client/src/TestResults/test-results.trx

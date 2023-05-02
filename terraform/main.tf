@@ -137,10 +137,10 @@ module "partition_metrics_exporter" {
 
 module "ingress" {
   source             = "./modules/ingress"
-  for_each           = tomap({ for c in var.ingress.configs : c.container_name => c })
+  for_each           = var.ingress.configs
   tag                = var.ingress.tag
   image              = var.ingress.image
-  container_name     = each.value.container_name
+  container_name     = each.key
   tls                = each.value.tls
   mtls               = each.value.mtls
   port               = each.value.port

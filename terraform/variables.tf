@@ -205,32 +205,26 @@ variable "database_image" {
 
 variable "ingress" {
   type = object({
-    image = string,
-    tag   = string,
-    configs = list(object({
-      container_name = string,
-      port           = number,
-      tls            = optional(bool, false),
-      mtls           = optional(bool, false),
+    image = optional(string, "nginxinc/nginx-unprivileged"),
+    tag   = optional(string, "1.23.3"),
+    configs = map(object({
+      port = number,
+      tls  = optional(bool, false),
+      mtls = optional(bool, false),
   })) })
   default = {
-    image = "nginxinc/nginx-unprivileged",
-    tag   = "1.23.3",
-    configs = [
-      {
-        container_name = "ingress",
-        port           = 5201
+    configs = {
+      ingress = {
+        port = 5201
       },
-      {
-        container_name = "ingress_tls",
-        port           = 5202,
-        tls            = true
+      ingress_tls = {
+        port = 5202,
+        tls  = true
       },
-      {
-        container_name = "ingress_mtls",
-        port           = 5203,
-        tls            = true,
-        mtls           = true
+      ingress_mtls = {
+        port = 5203,
+        tls  = true,
+        mtls = true
       }
-  ] }
+  } }
 }
