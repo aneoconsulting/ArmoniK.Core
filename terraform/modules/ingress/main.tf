@@ -1,10 +1,10 @@
 resource "docker_image" "ingress" {
-  name         = "${var.image}:${var.tag}"
+  name         = "${var.container.image}:${var.container.tag}"
   keep_locally = true
 }
 
 resource "docker_container" "ingress" {
-  name  = var.container_name
+  name  = var.container.name
   image = docker_image.ingress.image_id
 
   networks_advanced {
@@ -14,7 +14,7 @@ resource "docker_container" "ingress" {
   log_driver = var.log_driver.name
 
   log_opts = {
-    fluentd-address = var.submitter_image_id == "" ? var.log_driver.address : var.log_driver.address
+    fluentd-address = var.submitter.id == "" ? var.log_driver.address : var.log_driver.address
   }
 
   ports {
@@ -27,12 +27,11 @@ resource "docker_container" "ingress" {
     external = var.tls ? (var.mtls ? 5203 : 5202) : 5201
   }
 
-  dynamic "volumes" {
-    for_each = local.volume_map
+  dynamic "upload" {
+    for_each = local.server_files
     content {
-      container_path = volumes.value.target
-      host_path      = volumes.value.source
-      read_only      = true
+      file    = upload.key
+      content = upload.value
     }
   }
   restart = "on-failure"

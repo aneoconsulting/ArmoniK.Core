@@ -132,48 +132,27 @@ resource "pkcs12_from_pem" "ingress_client_pkcs12" {
 resource "local_sensitive_file" "ingress_ca" {
   count           = length(tls_self_signed_cert.root_ingress)
   content         = tls_self_signed_cert.root_ingress.0.cert_pem
-  filename        = "${path.root}/.terraform/${var.container_name}/server/ca.crt"
-  file_permission = "0644"
-}
-
-resource "local_sensitive_file" "ingress_crt" {
-  count           = length(tls_locally_signed_cert.ingress_certificate)
-  content         = tls_locally_signed_cert.ingress_certificate.0.cert_pem
-  filename        = "${path.root}/.terraform/${var.container_name}/server/ingress.crt"
-  file_permission = "0644"
-}
-
-resource "local_sensitive_file" "ingress_key" {
-  count           = length(tls_private_key.ingress_private_key)
-  content         = tls_private_key.ingress_private_key.0.private_key_pem
-  filename        = "${path.root}/.terraform/${var.container_name}/server/ingress.key"
-  file_permission = "0644"
-}
-
-resource "local_sensitive_file" "ingress_client_ca" {
-  count           = length(tls_self_signed_cert.client_root_ingress)
-  content         = tls_self_signed_cert.client_root_ingress.0.cert_pem
-  filename        = "${path.root}/.terraform/${var.container_name}/client/client_ca.crt"
+  filename        = "${path.root}/generated/${var.container.name}/server/ca.crt"
   file_permission = "0644"
 }
 
 resource "local_sensitive_file" "ingress_client_crt" {
   count           = length(tls_locally_signed_cert.ingress_client_certificate)
   content         = tls_locally_signed_cert.ingress_client_certificate.0.cert_pem
-  filename        = "${path.root}/.terraform/${var.container_name}/client/client.crt"
-  file_permission = "0644"
+  filename        = "${path.root}/generated/${var.container.name}/client/client.crt"
+  file_permission = "0600"
 }
 
 resource "local_sensitive_file" "ingress_client_key" {
   count           = length(tls_private_key.ingress_client_private_key)
   content         = tls_private_key.ingress_client_private_key.0.private_key_pem
-  filename        = "${path.root}/.terraform/${var.container_name}/client/client.key"
-  file_permission = "0644"
+  filename        = "${path.root}/generated/${var.container.name}/client/client.key"
+  file_permission = "0600"
 }
 
 resource "local_sensitive_file" "ingress_client_p12" {
   count           = length(pkcs12_from_pem.ingress_client_pkcs12)
   content_base64  = pkcs12_from_pem.ingress_client_pkcs12.0.result
-  filename        = "${path.root}/.terraform/${var.container_name}/client/client.p12"
-  file_permission = "0644"
+  filename        = "${path.root}/generated/${var.container.name}/client/client.p12"
+  file_permission = "0600"
 }

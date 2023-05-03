@@ -60,28 +60,28 @@ internal class ConnectionTest
             "",
             TestName = "Ingress_TLS_NoValidation")]
   [TestCase("https://localhost:5202",
-            "terraform/.terraform/ingress_tls/server/ca.crt",
+            "terraform/generated/ingress_tls/server/ca.crt",
             "",
             false,
             TestName = "Ingress_TLS")]
   [TestCase("https://localhost:5202",
-            "terraform/.terraform/ingress_tls/server/ca.crt",
+            "terraform/generated/ingress_tls/server/ca.crt",
             "",
             false,
             true,
             TestName = "Ingress_TLS_CAInstalled")]
   [TestCase("https://localhost:5203",
             "",
-            "terraform/.terraform/ingress_mtls/client/client.p12",
+            "terraform/generated/ingress_mtls/client/client.p12",
             TestName = "Ingress_MTLS_NoValidation")]
   [TestCase("https://localhost:5203",
-            "terraform/.terraform/ingress_mtls/server/ca.crt",
-            "terraform/.terraform/ingress_mtls/client/client.p12",
+            "terraform/generated/ingress_mtls/server/ca.crt",
+            "terraform/generated/ingress_mtls/client/client.p12",
             false,
             TestName = "Ingress_MTLS")]
   [TestCase("https://localhost:5203",
-            "terraform/.terraform/ingress_mtls/server/ca.crt",
-            "terraform/.terraform/ingress_mtls/client/client.p12",
+            "terraform/generated/ingress_mtls/server/ca.crt",
+            "terraform/generated/ingress_mtls/client/client.p12",
             false,
             true,
             TestName = "Ingress_MTLS_CAInstalled")]

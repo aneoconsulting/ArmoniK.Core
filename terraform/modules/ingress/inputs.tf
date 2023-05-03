@@ -1,13 +1,9 @@
-variable "container_name" {
-  type = string
-}
-
-variable "image" {
-  type = string
-}
-
-variable "tag" {
-  type = string
+variable "container" {
+  type = object({
+    name  = string,
+    image = string,
+    tag   = string
+  })
 }
 
 variable "network" {
@@ -26,12 +22,12 @@ variable "mtls" {
   type = bool
 }
 
-variable "submitter_url" {
-  type = string
-}
-
-variable "submitter_port" {
-  type = number
+variable "submitter" {
+  type = object({
+    url  = string,
+    port = string,
+    id   = string
+  })
 }
 
 variable "log_driver" {
@@ -39,9 +35,4 @@ variable "log_driver" {
     name    = string,
     address = string,
   })
-}
-
-variable "submitter_image_id" {
-  type        = string
-  description = "For dependencies"
 }

@@ -46,7 +46,7 @@ server {
         grpc_set_header X-Certificate-Client-CN $ssl_client_s_dn_cn;
         grpc_set_header X-Certificate-Client-Fingerprint $ssl_client_fingerprint;
 %{endif~}
-        grpc_pass grpc://${var.submitter_url}:${var.submitter_port};
+        grpc_pass grpc://${var.submitter.url}:${var.submitter.port};
 
         # Apparently, multiple chunks in a grpc stream is counted has a single body
         # So disable the limit
@@ -61,10 +61,4 @@ server {
     }
 }
 EOF
-}
-
-resource "local_file" "ingress_conf_file" {
-  content         = local.armonik_conf
-  filename        = "${path.root}/.terraform/${var.container_name}/server/armonik.conf"
-  file_permission = "0644"
 }

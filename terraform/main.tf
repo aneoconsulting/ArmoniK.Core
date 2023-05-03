@@ -136,17 +136,17 @@ module "partition_metrics_exporter" {
 }
 
 module "ingress" {
-  source             = "./modules/ingress"
-  for_each           = var.ingress.configs
-  tag                = var.ingress.tag
-  image              = var.ingress.image
-  container_name     = each.key
-  tls                = each.value.tls
-  mtls               = each.value.mtls
-  port               = each.value.port
-  network            = docker_network.armonik.name
-  submitter_url      = module.submitter.url
-  submitter_port     = module.submitter.port
-  log_driver         = module.fluenbit.log_driver
-  submitter_image_id = module.submitter.image_id
+  source   = "./modules/ingress"
+  for_each = var.ingress.configs
+  container = {
+    name  = each.key,
+    image = var.ingress.image
+    tag   = var.ingress.tag
+  }
+  tls        = each.value.tls
+  mtls       = each.value.mtls
+  port       = each.value.port
+  network    = docker_network.armonik.name
+  submitter  = module.submitter
+  log_driver = module.fluenbit.log_driver
 }

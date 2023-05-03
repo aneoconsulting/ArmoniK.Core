@@ -6,6 +6,6 @@ output "port" {
   value = docker_container.submitter.ports.0.internal
 }
 
-output "image_id" {
+output "id" {
   value = docker_container.submitter.id
 }
