@@ -26,13 +26,13 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
-using Grpc.Net.Client;
+using Grpc.Core;
 
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 public static class GrpcChannelExt
 {
-  public static async Task<TestPayload> GetPayloadAsyncAndCheck(this GrpcChannel channel,
+  public static async Task<TestPayload> GetPayloadAsyncAndCheck(this ChannelBase channel,
                                                                 string           sessionId,
                                                                 string           resultId)
   {

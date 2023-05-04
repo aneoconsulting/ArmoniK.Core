@@ -28,7 +28,7 @@ using ArmoniK.Core.Common.Tests.Client;
 
 using Google.Protobuf;
 
-using Grpc.Net.Client;
+using Grpc.Core;
 
 using Htc.Mock;
 
@@ -38,13 +38,13 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public class SessionClient : ISessionClient
 {
-  private readonly GrpcChannel               channel_;
+  private readonly ChannelBase               channel_;
   private readonly ILogger<GridClient>       logger_;
   private readonly Results.ResultsClient     resultsClient_;
   private readonly string                    sessionId_;
   private readonly Submitter.SubmitterClient submitterClient_;
 
-  public SessionClient(GrpcChannel         channel,
+  public SessionClient(ChannelBase         channel,
                        string              sessionId,
                        ILogger<GridClient> logger)
   {

@@ -28,3 +28,7 @@ resource "docker_container" "grafana" {
   }
 
 }
+
+output "url" {
+  value = "http://localhost:${var.exposed_port}"
+}
