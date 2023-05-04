@@ -25,15 +25,13 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
-using Google.Protobuf.WellKnownTypes;
-
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
@@ -50,12 +48,16 @@ internal class BsonSerializerTest
                                 "part1",
                                 "part2",
                               },
-                              new TaskOptions
-                              {
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                                MaxRetries  = 2,
-                                Priority    = 1,
-                              });
+                              new TaskOptions(new Dictionary<string, string>(),
+                                              TimeSpan.FromHours(1),
+                                              2,
+                                              1,
+                                              "part1",
+                                              "ApplicationName2",
+                                              "ApplicationVersion2",
+                                              "",
+                                              "",
+                                              ""));
 
     var serialized = rdm.ToBson();
 
@@ -143,24 +145,24 @@ internal class BsonSerializerTest
                            },
                            Array.Empty<string>(),
                            TaskStatus.Completed,
-                           new Core.Common.Storage.TaskOptions(new Dictionary<string, string>
-                                                               {
-                                                                 {
-                                                                   "key1", "data1"
-                                                                 },
-                                                                 {
-                                                                   "key2", "data2"
-                                                                 },
-                                                               },
-                                                               TimeSpan.FromSeconds(200),
-                                                               5,
-                                                               1,
-                                                               "part1",
-                                                               "applicationName",
-                                                               "applicationVersion",
-                                                               "applicationNamespace",
-                                                               "applicationService",
-                                                               "engineType"),
+                           new TaskOptions(new Dictionary<string, string>
+                                           {
+                                             {
+                                               "key1", "data1"
+                                             },
+                                             {
+                                               "key2", "data2"
+                                             },
+                                           },
+                                           TimeSpan.FromSeconds(200),
+                                           5,
+                                           1,
+                                           "part1",
+                                           "applicationName",
+                                           "applicationVersion",
+                                           "applicationNamespace",
+                                           "applicationService",
+                                           "engineType"),
                            new Output(true,
                                       ""));
 

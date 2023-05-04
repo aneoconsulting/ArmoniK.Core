@@ -26,14 +26,11 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 
-using Google.Protobuf.WellKnownTypes;
-
 using LinqKit;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
@@ -50,13 +47,16 @@ public class SimpleTaskTable : ITaskTable
   public static readonly TaskOptions TaskOptions;
 
   static SimpleTaskTable()
-    => TaskOptions = new TaskOptions
-                     {
-                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                       MaxRetries  = 4,
-                       Priority    = 2,
-                       PartitionId = PartitionId,
-                     };
+    => TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                     TimeSpan.FromSeconds(1),
+                                     5,
+                                     1,
+                                     PartitionId,
+                                     "",
+                                     "",
+                                     "",
+                                     "",
+                                     "");
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));

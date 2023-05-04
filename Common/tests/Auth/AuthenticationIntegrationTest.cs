@@ -36,6 +36,7 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
@@ -85,6 +86,9 @@ public class AuthenticationIntegrationTest
                                                 .AddSingleton<IResultTable>(new SimpleResultTable())
                                                 .AddSingleton<IPartitionTable>(new SimplePartitionTable())
                                                 .AddSingleton<ITaskWatcher>(new SimpleTaskWatcher())
+                                                .AddSingleton<IPushQueueStorage>(new SimplePushQueueStorage())
+                                                .AddSingleton<IPullQueueStorage>(new SimplePullQueueStorage())
+                                                .AddSingleton<IObjectStorage>(new SimpleObjectStorage())
                                                 .AddSingleton<IResultWatcher>(new SimpleResultWatcher());
                                              });
   }

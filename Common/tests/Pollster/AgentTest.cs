@@ -32,6 +32,7 @@ using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
 
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -41,7 +42,7 @@ using NUnit.Framework;
 
 using Agent = ArmoniK.Core.Common.gRPC.Services.Agent;
 using Result = ArmoniK.Core.Common.Storage.Result;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -66,25 +67,27 @@ public class AgentTest
   private const string DataDependency1 = "Task1DD";
   private const string DataDependency2 = "Task2DD";
 
-
-  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+  private static readonly TaskOptions Options = new()
+                                                {
+                                                  ApplicationName      = "applicationName",
+                                                  ApplicationNamespace = "applicationNamespace",
+                                                  ApplicationVersion   = "applicationVersion",
+                                                  ApplicationService   = "applicationService",
+                                                  EngineType           = "engineType",
+                                                  PartitionId          = Partition,
+                                                  MaxDuration          = Duration.FromTimeSpan(TimeSpan.FromMinutes(10)),
+                                                  MaxRetries           = 5,
+                                                  Priority             = 1,
+                                                  Options =
+                                                  {
                                                     {
-                                                      {
-                                                        "key1", "val1"
-                                                      },
-                                                      {
-                                                        "key2", "val2"
-                                                      },
+                                                      "key1", "val1"
                                                     },
-                                                    TimeSpan.FromMinutes(10),
-                                                    5,
-                                                    1,
-                                                    Partition,
-                                                    "applicationName",
-                                                    "applicationVersion",
-                                                    "applicationNamespace",
-                                                    "applicationService",
-                                                    "engineType");
+                                                    {
+                                                      "key2", "val2"
+                                                    },
+                                                  },
+                                                };
 
   private static readonly Injection.Options.Submitter SubmitterOptions = new()
                                                                          {
@@ -153,7 +156,7 @@ public class AgentTest
                                                  {
                                                    Partition,
                                                  },
-                                                 Options,
+                                                 Options.ToTaskOptions(),
                                                  CancellationToken.None)
                             .Result;
 
@@ -201,7 +204,7 @@ public class AgentTest
 
       var createdTasks = submitter.CreateTasks(Session,
                                                Session,
-                                               Options,
+                                               Options.ToTaskOptions(),
                                                new[]
                                                {
                                                  new TaskRequest(new List<string>
@@ -220,8 +223,6 @@ public class AgentTest
                                   .Result;
 
       submitter.FinalizeTaskCreation(createdTasks.requests,
-                                     createdTasks.priority,
-                                     createdTasks.partitionId,
                                      Session,
                                      Session,
                                      CancellationToken.None)
@@ -230,13 +231,13 @@ public class AgentTest
       QueueStorage.Messages.Clear();
 
       TaskData = TaskTable.ReadTaskAsync(createdTasks.requests.Single()
-                                                     .Id,
+                                                     .TaskId,
                                          CancellationToken.None)
                           .Result;
 
       var createdTasks2 = submitter.CreateTasks(Session,
                                                 Session,
-                                                Options,
+                                                Options.ToTaskOptions(),
                                                 new[]
                                                 {
                                                   new TaskRequest(new List<string>
@@ -269,13 +270,11 @@ public class AgentTest
                                    .Result;
 
       TaskWithDependencies1 = createdTasks2.requests.First()
-                                           .Id;
+                                           .TaskId;
       TaskWithDependencies2 = createdTasks2.requests.Last()
-                                           .Id;
+                                           .TaskId;
 
       submitter.FinalizeTaskCreation(createdTasks2.requests,
-                                     createdTasks2.priority,
-                                     createdTasks2.partitionId,
                                      Session,
                                      Session,
                                      CancellationToken.None)
@@ -552,6 +551,83 @@ public class AgentTest
                     taskData2.Status);
   }
 
+  /// <summary>
+  ///   Create one task per result
+  /// </summary>
+  /// <param name="token">Communication token</param>
+  /// <param name="options">Task options</param>
+  /// <param name="results">Results to build task creation requests</param>
+  /// <param name="payloadChunksPerTask"></param>
+  /// <returns></returns>
+  private static IEnumerable<CreateTaskRequest> GenerateCreateTaskRequest(string              token,
+                                                                          TaskOptions?        options,
+                                                                          IEnumerable<string> results,
+                                                                          int                 payloadChunksPerTask)
+  {
+    yield return new CreateTaskRequest
+                 {
+                   CommunicationToken = token,
+                   InitRequest = new CreateTaskRequest.Types.InitRequest
+                                 {
+                                   TaskOptions = options,
+                                 },
+                 };
+
+
+    foreach (var result in results)
+    {
+      yield return new CreateTaskRequest
+                   {
+                     CommunicationToken = token,
+                     InitTask = new InitTaskRequest
+                                {
+                                  Header = new TaskRequestHeader
+                                           {
+                                             DataDependencies =
+                                             {
+                                               DataDependency1,
+                                             },
+                                             ExpectedOutputKeys =
+                                             {
+                                               result,
+                                             },
+                                           },
+                                },
+                   };
+
+
+      for (var j = 0; j < payloadChunksPerTask; j++)
+      {
+        yield return new CreateTaskRequest
+                     {
+                       CommunicationToken = token,
+                       TaskPayload = new DataChunk
+                                     {
+                                       Data = ByteString.CopyFromUtf8($"Task1Data{j}"),
+                                     },
+                     };
+      }
+
+      yield return new CreateTaskRequest
+                   {
+                     CommunicationToken = token,
+                     TaskPayload = new DataChunk
+                                   {
+                                     DataComplete = true,
+                                   },
+                   };
+    }
+
+    yield return new CreateTaskRequest
+                 {
+                   CommunicationToken = token,
+                   InitTask = new InitTaskRequest
+                              {
+                                LastTask = true,
+                              },
+                 };
+  }
+
   [Test]
   public async Task CreateTasksShouldSucceed()
   {
@@ -576,113 +652,11 @@ public class AgentTest
                                                            CancellationToken.None)
                               .ConfigureAwait(false);
 
-    var requests = new[]
-                   {
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       InitRequest = new CreateTaskRequest.Types.InitRequest
-                                     {
-                                       TaskOptions = Options,
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       InitTask = new InitTaskRequest
-                                  {
-                                    Header = new TaskRequestHeader
-                                             {
-                                               DataDependencies =
-                                               {
-                                                 DataDependency1,
-                                               },
-                                               ExpectedOutputKeys =
-                                               {
-                                                 results.Results.First()
-                                                        .ResultId,
-                                               },
-                                             },
-                                  },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       Data = ByteString.CopyFromUtf8("Task1Data1"),
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       Data = ByteString.CopyFromUtf8("Task1Data2"),
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       DataComplete = true,
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       InitTask = new InitTaskRequest
-                                  {
-                                    Header = new TaskRequestHeader
-                                             {
-                                               DataDependencies =
-                                               {
-                                                 DataDependency1,
-                                               },
-                                               ExpectedOutputKeys =
-                                               {
-                                                 results.Results.Last()
-                                                        .ResultId,
-                                               },
-                                             },
-                                  },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       Data = ByteString.CopyFromUtf8("Task2Data1"),
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       Data = ByteString.CopyFromUtf8("Task2Data2"),
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       DataComplete = true,
-                                     },
-                     },
-                     new CreateTaskRequest
-                     {
-                       CommunicationToken = holder.Token,
-                       InitTask = new InitTaskRequest
-                                  {
-                                    LastTask = true,
-                                  },
-                     },
-                   };
-
-    var createTaskReply = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(requests),
+    var createTaskReply = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(GenerateCreateTaskRequest(holder.Token,
+                                                                                                                                     Options,
+                                                                                                                                     results.Results
+                                                                                                                                            .Select(r => r.ResultId),
+                                                                                                                                     2)),
                                                         CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -712,70 +686,12 @@ public class AgentTest
                                                             CancellationToken.None)
                                .ConfigureAwait(false);
 
-    var requests2 = new[]
-                    {
-                      new CreateTaskRequest
-                      {
-                        CommunicationToken = holder.Token,
-                        InitRequest = new CreateTaskRequest.Types.InitRequest
-                                      {
-                                        TaskOptions = Options,
-                                      },
-                      },
-                      new CreateTaskRequest
-                      {
-                        CommunicationToken = holder.Token,
-                        InitTask = new InitTaskRequest
-                                   {
-                                     Header = new TaskRequestHeader
-                                              {
-                                                DataDependencies =
-                                                {
-                                                  DataDependency1,
-                                                },
-                                                ExpectedOutputKeys =
-                                                {
-                                                  results2.Results.Single()
-                                                          .ResultId,
-                                                },
-                                              },
-                                   },
-                      },
-                      new CreateTaskRequest
-                      {
-                        CommunicationToken = holder.Token,
-                        TaskPayload = new DataChunk
-                                      {
-                                        Data = ByteString.CopyFromUtf8("Task3Data1"),
-                                      },
-                      },
-                      new CreateTaskRequest
-                      {
-                        CommunicationToken = holder.Token,
-                        TaskPayload = new DataChunk
-                                      {
-                                        Data = ByteString.CopyFromUtf8("Task3Data2"),
-                                      },
-                      },
-                      new CreateTaskRequest
-                      {
-                        CommunicationToken = holder.Token,
-                        TaskPayload = new DataChunk
-                                      {
-                                        DataComplete = true,
-                                      },
-                      },
-                      new CreateTaskRequest
-                      {
-                        CommunicationToken = holder.Token,
-                        InitTask = new InitTaskRequest
-                                   {
-                                     LastTask = true,
-                                   },
-                      },
-                    };
 
-    var createTaskReply2 = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(requests2),
+    var createTaskReply2 = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(GenerateCreateTaskRequest(holder.Token,
+                                                                                                                                      Options,
+                                                                                                                                      results2.Results
+                                                                                                                                              .Select(r => r.ResultId),
+                                                                                                                                      2)),
                                                          CancellationToken.None)
                                        .ConfigureAwait(false);
 
@@ -812,6 +728,54 @@ public class AgentTest
 
     Assert.AreEqual(TaskStatus.Submitted,
                     taskData3.Status);
+  }
+
+  [Test]
+  [TestCase(false)]
+  [TestCase(true)]
+  public async Task CreateLotsOfTasksShouldSucceed(bool optionsNull)
+  {
+    using var holder = new AgentHolder();
+
+    var results = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                           {
+                                                             CommunicationToken = holder.Token,
+                                                             SessionId          = holder.Session,
+                                                             Results =
+                                                             {
+                                                               Enumerable.Range(0,
+                                                                                200)
+                                                                         .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                      {
+                                                                                        Name = $"Task{i}EOK",
+                                                                                      }),
+                                                             },
+                                                           },
+                                                           CancellationToken.None)
+                              .ConfigureAwait(false);
+
+    var createTaskReply = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(GenerateCreateTaskRequest(holder.Token,
+                                                                                                                                     optionsNull
+                                                                                                                                       ? null
+                                                                                                                                       : Options,
+                                                                                                                                     results.Results
+                                                                                                                                            .Select(r => r.ResultId),
+                                                                                                                                     2)),
+                                                        CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+
+    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
+                    createTaskReply.ResponseCase);
+
+    Assert.AreEqual(0,
+                    createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error));
+
+    Assert.AreEqual(200,
+                    createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo));
+
+    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+                .ConfigureAwait(false);
   }
 
   [Test]
@@ -854,5 +818,283 @@ public class AgentTest
                                 .Data.Data);
     Assert.IsTrue(resourceData.Messages[2]
                               .Data.DataComplete);
+  }
+
+  [Test]
+  public async Task CreateResultsShouldSucceed()
+  {
+    using var holder = new AgentHolder();
+
+    var results = await holder.Agent.CreateResults(new CreateResultsRequest
+                                                   {
+                                                     SessionId          = holder.Session,
+                                                     CommunicationToken = holder.Token,
+                                                     Results =
+                                                     {
+                                                       new List<CreateResultsRequest.Types.ResultCreate>
+                                                       {
+                                                         new()
+                                                         {
+                                                           Name = "Result1",
+                                                           Data = ByteString.CopyFromUtf8("Result1"),
+                                                         },
+                                                         new()
+                                                         {
+                                                           Name = "Result2",
+                                                           Data = ByteString.CopyFromUtf8("Result2"),
+                                                         },
+                                                       },
+                                                     },
+                                                   },
+                                                   CancellationToken.None)
+                              .ConfigureAwait(false);
+
+    foreach (var result in results.Results)
+    {
+      Console.WriteLine(result);
+
+      var resultMetadata = await holder.ResultTable.GetResult(holder.Session,
+                                                              result.ResultId,
+                                                              CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+      Assert.AreEqual(result.Name,
+                      resultMetadata.Name);
+      Assert.AreEqual(ResultStatus.Completed,
+                      resultMetadata.Status);
+
+      var bytes = (await holder.ObjectStorage.GetValuesAsync(result.ResultId)
+                               .ToListAsync()
+                               .ConfigureAwait(false)).Single();
+
+      Assert.AreEqual(ByteString.CopyFromUtf8(result.Name)
+                                .ToByteArray(),
+                      bytes);
+    }
+  }
+
+
+  [Test]
+  [TestCase(false)]
+  [TestCase(true)]
+  public async Task SubmitTasksCreateOneRequestShouldSucceed(bool optionsNull)
+  {
+    using var holder = new AgentHolder();
+
+    var payload = await holder.Agent.CreateResults(new CreateResultsRequest
+                                                   {
+                                                     SessionId          = holder.Session,
+                                                     CommunicationToken = holder.Token,
+                                                     Results =
+                                                     {
+                                                       new List<CreateResultsRequest.Types.ResultCreate>
+                                                       {
+                                                         new()
+                                                         {
+                                                           Name = "Payload",
+                                                           Data = ByteString.CopyFromUtf8("Payload"),
+                                                         },
+                                                       },
+                                                     },
+                                                   },
+                                                   CancellationToken.None)
+                              .ConfigureAwait(false);
+
+    var eok = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                       {
+                                                         SessionId          = holder.Session,
+                                                         CommunicationToken = holder.Token,
+                                                         Results =
+                                                         {
+                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                           {
+                                                             Name = "EOK1",
+                                                           },
+                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                           {
+                                                             Name = "EOK2",
+                                                           },
+                                                         },
+                                                       },
+                                                       CancellationToken.None)
+                          .ConfigureAwait(false);
+
+    var reply = await holder.Agent.SubmitTasks(new SubmitTasksRequest
+                                               {
+                                                 CommunicationToken = holder.Token,
+                                                 SessionId          = holder.Session,
+                                                 TaskCreations =
+                                                 {
+                                                   new SubmitTasksRequest.Types.TaskCreation
+                                                   {
+                                                     ExpectedOutputKeys =
+                                                     {
+                                                       eok.Results.Select(r => r.ResultId),
+                                                     },
+                                                     PayloadId = payload.Results.Single()
+                                                                        .ResultId,
+                                                     TaskOptions = optionsNull
+                                                                     ? null
+                                                                     : Options,
+                                                   },
+                                                 },
+                                                 TaskOptions = optionsNull
+                                                                 ? null
+                                                                 : Options,
+                                               },
+                                               CancellationToken.None)
+                            .ConfigureAwait(false);
+
+    Assert.AreEqual(1,
+                    reply.TaskInfos.Count);
+    Assert.AreEqual(payload.Results.Single()
+                           .ResultId,
+                    reply.TaskInfos.Single()
+                         .PayloadId);
+    foreach (var eokResult in eok.Results)
+    {
+      Assert.Contains(eokResult.ResultId,
+                      reply.TaskInfos.Single()
+                           .ExpectedOutputIds);
+    }
+
+    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+                .ConfigureAwait(false);
+
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+                                                             .TaskId,
+                                                        CancellationToken.None)
+                               .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData.Status);
+  }
+
+
+  [Test]
+  [TestCase(false)]
+  [TestCase(true)]
+  public async Task SubmitTasksUploadPayloadShouldSucceed(bool optionsNull)
+  {
+    using var holder = new AgentHolder();
+
+    var eok = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                       {
+                                                         SessionId          = holder.Session,
+                                                         CommunicationToken = holder.Token,
+                                                         Results =
+                                                         {
+                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                           {
+                                                             Name = "EOK1",
+                                                           },
+                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                           {
+                                                             Name = "EOK2",
+                                                           },
+                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                           {
+                                                             Name = "Payload",
+                                                           },
+                                                         },
+                                                       },
+                                                       CancellationToken.None)
+                          .ConfigureAwait(false);
+
+    var reply = await holder.Agent.SubmitTasks(new SubmitTasksRequest
+                                               {
+                                                 CommunicationToken = holder.Token,
+                                                 SessionId          = holder.Session,
+                                                 TaskCreations =
+                                                 {
+                                                   new SubmitTasksRequest.Types.TaskCreation
+                                                   {
+                                                     ExpectedOutputKeys =
+                                                     {
+                                                       eok.Results.Select(r => r.ResultId)
+                                                          .SkipLast(1),
+                                                     },
+                                                     PayloadId = eok.Results.Last()
+                                                                    .ResultId,
+                                                     TaskOptions = optionsNull
+                                                                     ? null
+                                                                     : Options,
+                                                   },
+                                                 },
+                                                 TaskOptions = optionsNull
+                                                                 ? null
+                                                                 : Options,
+                                               },
+                                               CancellationToken.None)
+                            .ConfigureAwait(false);
+
+
+    await holder.Agent.UploadResultData(new TestHelperAsyncStreamReader<UploadResultDataRequest>(new List<UploadResultDataRequest>
+                                                                                                 {
+                                                                                                   new()
+                                                                                                   {
+                                                                                                     CommunicationToken = holder.Token,
+                                                                                                     Id = new UploadResultDataRequest.Types.ResultIdentifier
+                                                                                                          {
+                                                                                                            ResultId = eok.Results.Last()
+                                                                                                                          .ResultId,
+                                                                                                            SessionId = holder.Session,
+                                                                                                          },
+                                                                                                   },
+                                                                                                   new()
+                                                                                                   {
+                                                                                                     CommunicationToken = holder.Token,
+                                                                                                     DataChunk          = ByteString.CopyFromUtf8("DataPart1"),
+                                                                                                   },
+                                                                                                   new()
+                                                                                                   {
+                                                                                                     CommunicationToken = holder.Token,
+                                                                                                     DataChunk          = ByteString.CopyFromUtf8("DataPart2"),
+                                                                                                   },
+                                                                                                 }),
+                                        CancellationToken.None)
+                .ConfigureAwait(false);
+
+    Assert.AreEqual(1,
+                    reply.TaskInfos.Count);
+    Assert.AreEqual(eok.Results.Last()
+                       .ResultId,
+                    reply.TaskInfos.Single()
+                         .PayloadId);
+
+    foreach (var eokResult in eok.Results.SkipLast(1))
+    {
+      Assert.Contains(eokResult.ResultId,
+                      reply.TaskInfos.Single()
+                           .ExpectedOutputIds);
+    }
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+                                                             .TaskId,
+                                                        CancellationToken.None)
+                               .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
+    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+                .ConfigureAwait(false);
+
+    taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+                                                         .TaskId,
+                                                    CancellationToken.None)
+                           .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData.Status);
+
+    /*
+     *
+     * TODO : payload availability is not checked before putting the task in submitted status
+     * 1/ We need to check the availability
+     * 2/ We need to write a test that upload the data for the payload afer task finalization and check that the task status changes from creating to submitted
+     *
+     */
   }
 }

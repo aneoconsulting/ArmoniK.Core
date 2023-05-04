@@ -34,8 +34,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
-using Google.Protobuf.WellKnownTypes;
-
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -125,13 +123,16 @@ public class TaskHandlerTest
                                                                          "part1",
                                                                          "part2",
                                                                        },
-                                                                       new Api.gRPC.V1.TaskOptions
-                                                                       {
-                                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                         MaxRetries  = 2,
-                                                                         Priority    = 1,
-                                                                         PartitionId = "part1",
-                                                                       },
+                                                                       new TaskOptions(new Dictionary<string, string>(),
+                                                                                       TimeSpan.FromSeconds(1),
+                                                                                       5,
+                                                                                       1,
+                                                                                       "part1",
+                                                                                       "",
+                                                                                       "",
+                                                                                       "",
+                                                                                       "",
+                                                                                       ""),
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).SessionId;
 
@@ -214,37 +215,37 @@ public class TaskHandlerTest
 
     var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                                             sessionId,
-                                                                                                            new Api.gRPC.V1.TaskOptions
-                                                                                                            {
-                                                                                                              MaxDuration =
-                                                                                                                Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                                              MaxRetries  = 2,
-                                                                                                              Priority    = 1,
-                                                                                                              PartitionId = "part1",
-                                                                                                            },
+                                                                                                            new TaskOptions(new Dictionary<string, string>(),
+                                                                                                                            TimeSpan.FromSeconds(1),
+                                                                                                                            5,
+                                                                                                                            1,
+                                                                                                                            "part1",
+                                                                                                                            "",
+                                                                                                                            "",
+                                                                                                                            "",
+                                                                                                                            "",
+                                                                                                                            ""),
                                                                                                             taskRequests.ToAsyncEnumerable(),
                                                                                                             CancellationToken.None)
                                                                                      .ConfigureAwait(false);
     var requests = requestsIEnumerable.ToList();
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
-                                                             priority,
-                                                             whichPartitionId,
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
 
     var taskId = requests.First()
-                         .Id;
+                         .TaskId;
     requests.RemoveAt(0);
 
 
     var taskUnresolvedDepId = requests.First()
-                                      .Id;
+                                      .TaskId;
     requests.RemoveAt(0);
 
     var taskErrorId = requests.First()
-                              .Id;
+                              .TaskId;
 
     var taskErrorData = await testServiceProvider.TaskTable.ReadTaskAsync(taskErrorId,
                                                                           CancellationToken.None)

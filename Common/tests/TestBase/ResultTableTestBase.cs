@@ -810,4 +810,57 @@ public class ResultTableTestBase
                                                                                 .ConfigureAwait(false));
     }
   }
+
+  [Test]
+  public async Task CompleteResultShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var resultId = Guid.NewGuid()
+                         .ToString();
+      var sessionId = Guid.NewGuid()
+                          .ToString();
+      await ResultTable!.Create(new List<Result>
+                                {
+                                  new(sessionId,
+                                      resultId,
+                                      "Name",
+                                      "",
+                                      ResultStatus.Created,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      Array.Empty<byte>()),
+                                },
+                                CancellationToken.None)
+                        .ConfigureAwait(false);
+
+      var result = await ResultTable.CompleteResult(sessionId,
+                                                    resultId,
+                                                    CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(ResultStatus.Completed,
+                      result.Status);
+
+      result = await ResultTable.GetResult(sessionId,
+                                           resultId,
+                                           CancellationToken.None)
+                                .ConfigureAwait(false);
+
+      Assert.AreEqual(ResultStatus.Completed,
+                      result.Status);
+    }
+  }
+
+  [Test]
+  public void CompleteResultShouldThrow()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.CompleteResult("SessionId",
+                                                                                                "NotExistingResult111",
+                                                                                                CancellationToken.None)
+                                                                                .ConfigureAwait(false));
+    }
+  }
 }

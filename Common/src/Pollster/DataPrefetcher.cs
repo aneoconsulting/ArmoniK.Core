@@ -105,7 +105,7 @@ public class DataPrefetcher : IInitializable
     computeRequests.Init(PayloadConfiguration.MaxChunkSize,
                          taskData.SessionId,
                          taskData.TaskId,
-                         taskData.Options,
+                         taskData.Options.ToGrpcTaskOptions(),
                          payloadChunks.FirstOrDefault(),
                          taskData.ExpectedOutputIds);
 

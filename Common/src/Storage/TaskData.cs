@@ -175,7 +175,7 @@ public record TaskData(string        SessionId,
          Status     = taskData.Status,
          Output     = taskData.Output,
          OwnerPodId = taskData.OwnerPodId,
-         Options    = taskData.Options,
+         Options    = taskData.Options.ToGrpcTaskOptions(),
          DataDependencies =
          {
            taskData.DataDependencies,
@@ -228,7 +228,7 @@ public record TaskData(string        SessionId,
        {
          SessionId = taskData.SessionId,
          Status    = taskData.Status,
-         Options   = taskData.Options,
+         Options   = taskData.Options.ToGrpcTaskOptions(),
          CreatedAt = FromDateTime(taskData.CreationDate),
          EndedAt = taskData.EndDate is not null
                      ? FromDateTime(taskData.EndDate.Value)

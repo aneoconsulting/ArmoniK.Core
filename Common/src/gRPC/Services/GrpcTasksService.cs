@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -32,6 +33,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 using Task = ArmoniK.Api.gRPC.V1.Tasks.Tasks;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -39,13 +41,22 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcTasksService : Task.TasksBase
 {
   private readonly ILogger<GrpcTasksService> logger_;
+  private readonly IPushQueueStorage         pushQueueStorage_;
+  private readonly IResultTable              resultTable_;
+  private readonly ISessionTable             sessionTable_;
   private readonly ITaskTable                taskTable_;
 
   public GrpcTasksService(ITaskTable                taskTable,
+                          ISessionTable             sessionTable,
+                          IResultTable              resultTable,
+                          IPushQueueStorage         pushQueueStorage,
                           ILogger<GrpcTasksService> logger)
   {
-    logger_    = logger;
-    taskTable_ = taskTable;
+    logger_           = logger;
+    taskTable_        = taskTable;
+    sessionTable_     = sessionTable;
+    resultTable_      = resultTable;
+    pushQueueStorage_ = pushQueueStorage;
   }
 
   [RequiresPermission(typeof(GrpcTasksService),
@@ -237,5 +248,113 @@ public class GrpcTasksService : Task.TasksBase
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
+  }
+
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(ListTasksRaw))]
+  public override async Task<ListTasksRawResponse> ListTasksRaw(ListTasksRequest  request,
+                                                                ServerCallContext context)
+  {
+    try
+    {
+      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
+                                                     request.Sort.ToTaskDataField(),
+                                                     request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc,
+                                                     request.Page,
+                                                     request.PageSize,
+                                                     context.CancellationToken)
+                                     .ConfigureAwait(false);
+
+      return new ListTasksRawResponse
+             {
+               Page     = request.Page,
+               PageSize = request.PageSize,
+               Tasks =
+               {
+                 taskData.tasks.Select(data => new TaskRaw(data)),
+               },
+               Total = taskData.totalCount,
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing tasks");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing tasks");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(SubmitTasks))]
+  public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                                              ServerCallContext  context)
+  {
+    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                          context.CancellationToken)
+                                         .ConfigureAwait(false);
+
+
+    var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,
+                                                                request.TaskOptions.ToNullableTaskOptions(),
+                                                                request.SessionId,
+                                                                pushQueueStorage_.MaxPriority,
+                                                                logger_,
+                                                                context.CancellationToken);
+
+    var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
+                                                                                                .ToString(),
+                                                                                            creation.PayloadId,
+                                                                                            TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                              submissionOptions),
+                                                                                            creation.ExpectedOutputKeys,
+                                                                                            creation.DataDependencies))
+                                  .ToList();
+
+
+    await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                          resultTable_,
+                                          request.SessionId,
+                                          request.SessionId,
+                                          creationRequests,
+                                          logger_,
+                                          context.CancellationToken)
+                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                   resultTable_,
+                                                   pushQueueStorage_,
+                                                   creationRequests,
+                                                   request.SessionId,
+                                                   request.SessionId,
+                                                   logger_,
+                                                   context.CancellationToken)
+                             .ConfigureAwait(false);
+
+    return new SubmitTasksResponse
+           {
+             TaskInfos =
+             {
+               creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
+                                                          {
+                                                            DataDependencies =
+                                                            {
+                                                              creationRequest.DataDependencies,
+                                                            },
+                                                            ExpectedOutputIds =
+                                                            {
+                                                              creationRequest.ExpectedOutputKeys,
+                                                            },
+                                                            TaskId = creationRequest.TaskId,
+                                                          }),
+             },
+           };
   }
 }

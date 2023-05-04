@@ -254,6 +254,32 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
+  public Task<Result> CompleteResult(string            sessionId,
+                                     string            resultId,
+                                     CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      var result = results_[sessionId][resultId];
+      var newResult = result with
+                      {
+                        Status = ResultStatus.Completed,
+                      };
+
+      results_[result.SessionId]
+        .TryUpdate(result.ResultId,
+                   newResult,
+                   result);
+
+      return Task.FromResult(newResult);
+    }
+    catch (KeyNotFoundException e)
+    {
+      throw new ResultNotFoundException($"Result {resultId} not found",
+                                        e);
+    }
+  }
+
   /// <inheritdoc />
   public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                                 string              sessionId,

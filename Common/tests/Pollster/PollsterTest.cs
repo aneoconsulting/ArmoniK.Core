@@ -34,8 +34,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
-using Google.Protobuf.WellKnownTypes;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -43,9 +41,8 @@ using Moq;
 
 using NUnit.Framework;
 
-using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -72,13 +69,16 @@ public class PollsterTest
                                                                                                          IResultTable      resultTable,
                                                                                                          CancellationToken token)
   {
-    var defaultTaskOptions = new TaskOptions
-                             {
-                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                               MaxRetries  = 2,
-                               Priority    = 1,
-                               PartitionId = "part1",
-                             };
+    var defaultTaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                             TimeSpan.FromSeconds(2),
+                                             2,
+                                             1,
+                                             "part1",
+                                             "",
+                                             "",
+                                             "",
+                                             "",
+                                             "");
 
     await partitionTable.CreatePartitionsAsync(new[]
                                                {
@@ -148,7 +148,7 @@ public class PollsterTest
                                                     }.ToAsyncEnumerable(),
                                                     CancellationToken.None)
                                        .ConfigureAwait(false)).requests.First()
-                                                              .Id;
+                                                              .TaskId;
 
     var tuple = await submitter.CreateTasks(sessionId,
                                             sessionId,
@@ -169,11 +169,9 @@ public class PollsterTest
                                .ConfigureAwait(false);
 
     var taskSubmitted = tuple.requests.First()
-                             .Id;
+                             .TaskId;
 
     await submitter.FinalizeTaskCreation(tuple.requests,
-                                         tuple.priority,
-                                         tuple.partitionId,
                                          sessionId,
                                          sessionId,
                                          CancellationToken.None)
