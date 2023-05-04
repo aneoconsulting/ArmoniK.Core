@@ -22,7 +22,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Google.Protobuf.WellKnownTypes;
 
-using Grpc.Net.Client;
+using Grpc.Core;
 
 using Htc.Mock;
 
@@ -32,11 +32,11 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public class GridClient : IGridClient
 {
-  private readonly GrpcChannel         channel_;
+  private readonly ChannelBase         channel_;
   private readonly ILogger<GridClient> logger_;
   private readonly Options.HtcMock     optionsHtcMock_;
 
-  public GridClient(GrpcChannel     channel,
+  public GridClient(ChannelBase     channel,
                     ILoggerFactory  loggerFactory,
                     Options.HtcMock optionsHtcMock)
   {
