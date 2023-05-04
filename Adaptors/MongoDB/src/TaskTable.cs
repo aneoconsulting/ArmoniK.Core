@@ -94,8 +94,7 @@ public class TaskTable : ITaskTable
 
     try
     {
-      return await taskCollection.AsQueryable(sessionHandle)
-                                 .Where(tdm => tdm.TaskId == taskId)
+      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }
@@ -179,9 +178,8 @@ public class TaskTable : ITaskTable
 
     try
     {
-      return await taskCollection.AsQueryable(sessionHandle)
-                                 .Where(model => model.TaskId == taskId)
-                                 .Select(model => model.Status == TaskStatus.Cancelled || model.Status == TaskStatus.Cancelling)
+      return await taskCollection.Find(model => model.TaskId == taskId)
+                                 .Project(model => model.Status == TaskStatus.Cancelled || model.Status == TaskStatus.Cancelling)
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }
@@ -795,9 +793,8 @@ public class TaskTable : ITaskTable
 
     try
     {
-      return await taskCollection.AsQueryable(sessionHandle)
-                                 .Where(tdm => tdm.TaskId == taskId)
-                                 .Select(model => model.ExpectedOutputIds)
+      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
+                                 .Project(model => model.ExpectedOutputIds)
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }
@@ -818,9 +815,8 @@ public class TaskTable : ITaskTable
 
     try
     {
-      return await taskCollection.AsQueryable(sessionHandle)
-                                 .Where(tdm => tdm.TaskId == taskId)
-                                 .Select(model => model.ParentTaskIds)
+      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
+                                 .Project(model => model.ParentTaskIds)
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }

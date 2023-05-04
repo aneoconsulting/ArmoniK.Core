@@ -105,9 +105,8 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .SingleAsync(cancellationToken)
+      return await sessionCollection.Find(session => session.SessionId == sessionId)
+                                    .SingleAsync()
                                     .ConfigureAwait(false);
     }
     catch (InvalidOperationException e)
