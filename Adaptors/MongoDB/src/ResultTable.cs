@@ -416,7 +416,7 @@ public class ResultTable : IResultTable
 
     await foreach (var result in resultCollection.Find(model => model.SessionId == sessionId)
                                                  .Project(model => model.ResultId)
-                                                 .ToAsyncEnumerable()
+                                                 .ToAsyncEnumerable(cancellationToken)
                                                  .WithCancellation(cancellationToken)
                                                  .ConfigureAwait(false))
     {

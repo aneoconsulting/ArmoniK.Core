@@ -46,11 +46,11 @@ internal static class IMongoQueryableExt
   }
 
 
-  public static async IAsyncEnumerable<U> ToAsyncEnumerable<T,U>(this                     IFindFluent<T, U>    queryable,
-                                                               [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public static async IAsyncEnumerable<U> ToAsyncEnumerable<T, U>(this                     IFindFluent<T, U> findFluent,
+                                                                  [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var cursor = await queryable.ToCursorAsync(cancellationToken)
-                                .ConfigureAwait(false);
+    var cursor = await findFluent.ToCursorAsync(cancellationToken)
+                                 .ConfigureAwait(false);
     while (await cursor.MoveNextAsync(cancellationToken)
                        .ConfigureAwait(false))
     {
