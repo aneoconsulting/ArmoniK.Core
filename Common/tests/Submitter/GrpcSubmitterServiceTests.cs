@@ -28,6 +28,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -889,7 +890,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<TaskCreationRequest>().AsEnumerable(), new int(), string.Empty)));
+                 .Returns(() => Task.FromResult(new List<TaskCreationRequest>().AsICollection()));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
@@ -1041,7 +1042,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<TaskCreationRequest>().AsEnumerable(), new int(), string.Empty)));
+                 .Returns(() => Task.FromResult(new List<TaskCreationRequest>().AsICollection()));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
@@ -1081,7 +1082,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<TaskCreationRequest>().AsEnumerable(), new int(), string.Empty)));
+                 .Returns(() => Task.FromResult(new List<TaskCreationRequest>().AsICollection()));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,

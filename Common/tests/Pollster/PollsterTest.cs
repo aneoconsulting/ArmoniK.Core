@@ -147,31 +147,31 @@ public class PollsterTest
                                                           }.ToAsyncEnumerable()),
                                                     }.ToAsyncEnumerable(),
                                                     CancellationToken.None)
-                                       .ConfigureAwait(false)).requests.First()
+                                       .ConfigureAwait(false)).First()
                                                               .TaskId;
 
-    var tuple = await submitter.CreateTasks(sessionId,
-                                            sessionId,
-                                            defaultTaskOptions,
-                                            new List<TaskRequest>
-                                            {
-                                              new(new[]
-                                                  {
-                                                    ExpectedOutput2,
-                                                  },
-                                                  new List<string>(),
-                                                  new List<ReadOnlyMemory<byte>>
-                                                  {
-                                                    new(Encoding.ASCII.GetBytes("AAAA")),
-                                                  }.ToAsyncEnumerable()),
-                                            }.ToAsyncEnumerable(),
-                                            CancellationToken.None)
-                               .ConfigureAwait(false);
+    var requests = await submitter.CreateTasks(sessionId,
+                                               sessionId,
+                                               defaultTaskOptions,
+                                               new List<TaskRequest>
+                                               {
+                                                 new(new[]
+                                                     {
+                                                       ExpectedOutput2,
+                                                     },
+                                                     new List<string>(),
+                                                     new List<ReadOnlyMemory<byte>>
+                                                     {
+                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                     }.ToAsyncEnumerable()),
+                                               }.ToAsyncEnumerable(),
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    var taskSubmitted = tuple.requests.First()
-                             .TaskId;
+    var taskSubmitted = requests.First()
+                                .TaskId;
 
-    await submitter.FinalizeTaskCreation(tuple.requests,
+    await submitter.FinalizeTaskCreation(requests,
                                          sessionId,
                                          sessionId,
                                          CancellationToken.None)

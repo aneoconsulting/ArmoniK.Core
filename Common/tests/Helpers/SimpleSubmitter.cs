@@ -64,32 +64,32 @@ public class SimpleSubmitter : ISubmitter
                        });
 
 
-  public async Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                               string                        parentTaskId,
-                                                                                                               TaskOptions?                  options,
-                                                                                                               IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                               CancellationToken             cancellationToken)
-    => (await taskRequests.Select(r =>
-                                  {
-                                    var id = Guid.NewGuid()
-                                                 .ToString();
-                                    return new TaskCreationRequest(id,
-                                                                   id,
-                                                                   options ?? new TaskOptions(new Dictionary<string, string>(),
-                                                                                              TimeSpan.FromSeconds(1),
-                                                                                              5,
-                                                                                              1,
-                                                                                              "Partition",
-                                                                                              "Application",
-                                                                                              "Version",
-                                                                                              "Namespace",
-                                                                                              "Service",
-                                                                                              "Engine"),
-                                                                   r.ExpectedOutputKeys.ToList(),
-                                                                   r.DataDependencies.ToList());
-                                  })
-                          .ToArrayAsync(cancellationToken)
-                          .ConfigureAwait(false), 1, "");
+  public async Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                                  string                        parentTaskId,
+                                                                  TaskOptions?                  options,
+                                                                  IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                  CancellationToken             cancellationToken)
+    => await taskRequests.Select(r =>
+                                 {
+                                   var id = Guid.NewGuid()
+                                                .ToString();
+                                   return new TaskCreationRequest(id,
+                                                                  id,
+                                                                  options ?? new TaskOptions(new Dictionary<string, string>(),
+                                                                                             TimeSpan.FromSeconds(1),
+                                                                                             5,
+                                                                                             1,
+                                                                                             "Partition",
+                                                                                             "Application",
+                                                                                             "Version",
+                                                                                             "Namespace",
+                                                                                             "Service",
+                                                                                             "Engine"),
+                                                                  r.ExpectedOutputKeys.ToList(),
+                                                                  r.DataDependencies.ToList());
+                                 })
+                         .ToArrayAsync(cancellationToken)
+                         .ConfigureAwait(false);
 
   public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
                                    string                           sessionId,

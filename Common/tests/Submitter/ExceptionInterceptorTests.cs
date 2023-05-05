@@ -206,26 +206,26 @@ internal class ExceptionInterceptorTests
                               throw ex;
                             }
 
-                            return (new List<TaskCreationRequest>
-                                    {
-                                      new("taskId",
-                                          "taskId",
-                                          new Storage.TaskOptions(new Dictionary<string, string>(),
-                                                                  TimeSpan.FromSeconds(2),
-                                                                  5,
-                                                                  1,
-                                                                  "Partition",
-                                                                  "",
-                                                                  "",
-                                                                  "",
-                                                                  "",
-                                                                  ""),
-                                          new[]
-                                          {
-                                            "output",
-                                          },
-                                          Array.Empty<string>()),
-                                    }, new int(), string.Empty);
+                            return new List<TaskCreationRequest>
+                                   {
+                                     new("taskId",
+                                         "taskId",
+                                         new Storage.TaskOptions(new Dictionary<string, string>(),
+                                                                 TimeSpan.FromSeconds(2),
+                                                                 5,
+                                                                 1,
+                                                                 "Partition",
+                                                                 "",
+                                                                 "",
+                                                                 "",
+                                                                 "",
+                                                                 ""),
+                                         new[]
+                                         {
+                                           "output",
+                                         },
+                                         Array.Empty<string>()),
+                                   };
                           });
 
     var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
