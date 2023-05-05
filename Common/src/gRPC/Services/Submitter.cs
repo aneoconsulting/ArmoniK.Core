@@ -371,10 +371,16 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
     Storage.Output cOutput = output;
+    var taskDataEnd = taskData with
+                      {
+                        EndDate = DateTime.UtcNow,
+                        CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
+                        ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
+                      };
 
     if (cOutput.Success)
     {
-      await taskTable_.SetTaskSuccessAsync(taskData.TaskId,
+      await taskTable_.SetTaskSuccessAsync(taskDataEnd,
                                            cancellationToken)
                       .ConfigureAwait(false);
 
@@ -391,7 +397,7 @@ public class Submitter : ISubmitter
     {
       // not done means that another pod put this task in error so we do not need to do it a second time
       // so nothing to do
-      if (!await taskTable_.SetTaskErrorAsync(taskData.TaskId,
+      if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
                                               cOutput.Error,
                                               cancellationToken)
                            .ConfigureAwait(false))

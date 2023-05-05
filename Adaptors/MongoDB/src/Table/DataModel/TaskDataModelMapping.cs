@@ -79,6 +79,10 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.PodTtl))
                                                   .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.ProcessingToEndDuration))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.CreationToEndDuration))
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Output))
                                                   .SetIsRequired(true);
                                                 cm.SetIgnoreExtraElements(true);
@@ -103,6 +107,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                     model.ReceptionDate,
                                                                                     model.AcquisitionDate,
                                                                                     model.PodTtl,
+                                                                                    model.ProcessingToEndDuration,
+                                                                                    model.CreationToEndDuration,
                                                                                     model.Output));
                                               });
     }
@@ -168,14 +174,16 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<TaskData> collection)
   {
-    var sessionIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
-    var ownerIndex     = Builders<TaskData>.IndexKeys.Hashed(model => model.OwnerPodId);
-    var creationIndex  = Builders<TaskData>.IndexKeys.Ascending(model => model.CreationDate);
-    var submittedIndex = Builders<TaskData>.IndexKeys.Ascending(model => model.SubmittedDate);
-    var startIndex     = Builders<TaskData>.IndexKeys.Ascending(model => model.StartDate);
-    var endIndex       = Builders<TaskData>.IndexKeys.Ascending(model => model.EndDate);
-    var partitionIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.Options.PartitionId);
-    var statusIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
+    var sessionIndex                 = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
+    var ownerIndex                   = Builders<TaskData>.IndexKeys.Hashed(model => model.OwnerPodId);
+    var creationIndex                = Builders<TaskData>.IndexKeys.Ascending(model => model.CreationDate);
+    var submittedIndex               = Builders<TaskData>.IndexKeys.Ascending(model => model.SubmittedDate);
+    var startIndex                   = Builders<TaskData>.IndexKeys.Ascending(model => model.StartDate);
+    var endIndex                     = Builders<TaskData>.IndexKeys.Ascending(model => model.EndDate);
+    var partitionIndex               = Builders<TaskData>.IndexKeys.Hashed(model => model.Options.PartitionId);
+    var statusIndex                  = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
+    var creationToEndDurationIndex   = Builders<TaskData>.IndexKeys.Ascending(model => model.CreationToEndDuration);
+    var processingToEndDurationIndex = Builders<TaskData>.IndexKeys.Ascending(model => model.ProcessingToEndDuration);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
@@ -218,6 +226,16 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             new CreateIndexOptions
                             {
                               Name = nameof(statusIndex),
+                            }),
+                        new(creationToEndDurationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(creationToEndDurationIndex),
+                            }),
+                        new(processingToEndDurationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(processingToEndDurationIndex),
                             }),
                       };
 

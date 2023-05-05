@@ -119,12 +119,12 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Update a task status to TaskStatus.Processing
   /// </summary>
-  /// <param name="taskId">Id of the task to start</param>
+  /// <param name="taskData">Metadata of the task to update</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task StartTask(string            taskId,
+  Task StartTask(TaskData          taskData,
                  CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -267,12 +267,12 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Change the status of the task to succeeded
   /// </summary>
-  /// <param name="taskId">Id of the task to tag as succeeded</param>
+  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task SetTaskSuccessAsync(string            taskId,
+  Task SetTaskSuccessAsync(TaskData          taskData,
                            CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -291,25 +291,25 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Change the status of the task to canceled
   /// </summary>
-  /// <param name="taskId">Id of the task to tag as canceled</param>
+  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task SetTaskCanceledAsync(string            taskId,
+  Task SetTaskCanceledAsync(TaskData          taskData,
                             CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Tag a task as errored and populate its output with an
   ///   error message
   /// </summary>
-  /// <param name="taskId">Id of the task to mark as errored</param>
+  /// <param name="taskData">Metadata of the task to mark as errored</param>
   /// <param name="errorDetail">Error message to be inserted in task's output</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   A boolean representing whether the status has been updated
   /// </returns>
-  Task<bool> SetTaskErrorAsync(string            taskId,
+  Task<bool> SetTaskErrorAsync(TaskData          taskData,
                                string            errorDetail,
                                CancellationToken cancellationToken = default);
 
@@ -327,31 +327,23 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Acquire the task to process it on the current agent
   /// </summary>
-  /// <param name="taskId">Id of the task to acquire</param>
-  /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
-  /// <param name="ownerPodName">Hostname of the pollster</param>
-  /// <param name="receptionDate">Date when the message from the queue storage is received</param>
+  /// <param name="taskData">Metadata of the task to acquire</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to acquire
   /// </returns>
-  Task<TaskData> AcquireTask(string            taskId,
-                             string            ownerPodId,
-                             string            ownerPodName,
-                             DateTime          receptionDate,
+  Task<TaskData> AcquireTask(TaskData          taskData,
                              CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Release the task from the current agent
   /// </summary>
-  /// <param name="taskId">Id of the task to release</param>
-  /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
+  /// <param name="taskData">Metadata of the task to release</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to release
   /// </returns>
-  Task<TaskData> ReleaseTask(string            taskId,
-                             string            ownerPodId,
+  Task<TaskData> ReleaseTask(TaskData          taskData,
                              CancellationToken cancellationToken = default);
 
   /// <summary>

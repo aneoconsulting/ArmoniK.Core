@@ -127,31 +127,43 @@ internal class BsonSerializerTest
   public void SerializeTaskDataModel()
   {
     var tdm = new TaskData("SessionId",
-                           "TaskCompletedId",
-                           "OwnerPodId",
-                           "OwnerPodName",
-                           "PayloadId",
-                           new[]
+                           "TaskId",
+                           "ownerPodId",
+                           "ownerPodName",
+                           "payload",
+                           new List<string>
                            {
                              "parent1",
                            },
-                           new[]
+                           new List<string>
                            {
                              "dependency1",
                            },
-                           new[]
+                           new Dictionary<string, bool>
+                           {
+                             {
+                               "dependency1", true
+                             },
+                           },
+                           new List<string>
                            {
                              "output1",
                            },
-                           Array.Empty<string>(),
-                           TaskStatus.Completed,
+                           "taskId",
+                           new List<string>
+                           {
+                             "retry1",
+                             "retry2",
+                           },
+                           TaskStatus.Submitted,
+                           "",
                            new TaskOptions(new Dictionary<string, string>
                                            {
                                              {
-                                               "key1", "data1"
+                                               "key1", "value1"
                                              },
                                              {
-                                               "key2", "data2"
+                                               "key2", "value2"
                                              },
                                            },
                                            TimeSpan.FromSeconds(200),
@@ -163,8 +175,17 @@ internal class BsonSerializerTest
                                            "applicationNamespace",
                                            "applicationService",
                                            "engineType"),
-                           new Output(true,
-                                      ""));
+                           DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
+                           TimeSpan.FromSeconds(1),
+                           TimeSpan.FromSeconds(2),
+                           new Output(false,
+                                      "Output Message"));
 
     var serialized = tdm.ToBson();
 
@@ -195,6 +216,18 @@ internal class BsonSerializerTest
                     deserialized.SessionId);
     Assert.AreEqual(tdm.OwnerPodId,
                     deserialized.OwnerPodId);
+    Assert.AreEqual(tdm.SubmittedDate,
+                    deserialized.SubmittedDate);
+    Assert.AreEqual(tdm.CreationDate,
+                    deserialized.CreationDate);
+    Assert.AreEqual(tdm.ReceptionDate,
+                    deserialized.ReceptionDate);
+    Assert.AreEqual(tdm.AcquisitionDate,
+                    deserialized.AcquisitionDate);
+    Assert.AreEqual(tdm.CreationToEndDuration,
+                    deserialized.CreationToEndDuration);
+    Assert.AreEqual(tdm.ProcessingToEndDuration,
+                    deserialized.ProcessingToEndDuration);
     Assert.IsTrue(tdm.RetryOfIds.SequenceEqual(deserialized.RetryOfIds));
     Assert.IsTrue(tdm.ExpectedOutputIds.SequenceEqual(deserialized.ExpectedOutputIds));
     Assert.IsTrue(tdm.ParentTaskIds.SequenceEqual(deserialized.ParentTaskIds));

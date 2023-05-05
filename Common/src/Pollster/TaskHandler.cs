@@ -195,7 +195,12 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelling:
           logger_.LogInformation("Task is being cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+          taskData_ = taskData_ with
+                      {
+                        EndDate = DateTime.UtcNow,
+                        CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                      };
+          await taskTable_.SetTaskCanceledAsync(taskData_,
                                                 CancellationToken.None)
                           .ConfigureAwait(false);
           await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
@@ -258,7 +263,12 @@ public class TaskHandler : IAsyncDisposable
         logger_.LogInformation("Task is being cancelled because its session is cancelled");
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
-        await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+        taskData_ = taskData_ with
+                    {
+                      EndDate = DateTime.UtcNow,
+                      CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                    };
+        await taskTable_.SetTaskCanceledAsync(taskData_,
                                               CancellationToken.None)
                         .ConfigureAwait(false);
 
@@ -286,18 +296,21 @@ public class TaskHandler : IAsyncDisposable
       }
 
       logger_.LogDebug("Trying to acquire task");
-      taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
-                                               ownerPodId_,
-                                               ownerPodName_,
-                                               messageHandler_.ReceptionDateTime,
+      taskData_ = taskData_ with
+                  {
+                    OwnerPodId = ownerPodId_,
+                    OwnerPodName = ownerPodName_,
+                    AcquisitionDate = DateTime.UtcNow,
+                    ReceptionDate = messageHandler_.ReceptionDateTime,
+                  };
+      taskData_ = await taskTable_.AcquireTask(taskData_,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         logger_.LogDebug("Task acquired but execution cancellation requested");
-        await taskTable_.ReleaseTask(taskData_.TaskId,
-                                     ownerPodId_,
+        await taskTable_.ReleaseTask(taskData_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -353,7 +366,12 @@ public class TaskHandler : IAsyncDisposable
           if (taskData_.Status is TaskStatus.Cancelling)
           {
             messageHandler_.Status = QueueMessageStatus.Cancelled;
-            await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+            taskData_ = taskData_ with
+                        {
+                          EndDate = DateTime.UtcNow,
+                          CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                        };
+            await taskTable_.SetTaskCanceledAsync(taskData_,
                                                   CancellationToken.None)
                             .ConfigureAwait(false);
             await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
@@ -374,8 +392,7 @@ public class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         logger_.LogDebug("Task preconditions ok but execution cancellation requested");
-        await taskTable_.ReleaseTask(taskData_.TaskId,
-                                     ownerPodId_,
+        await taskTable_.ReleaseTask(taskData_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -468,7 +485,12 @@ public class TaskHandler : IAsyncDisposable
                                   .ConfigureAwait(false);
 
       logger_.LogInformation("Start processing task");
-      await taskTable_.StartTask(taskData_.TaskId,
+      taskData_ = taskData_ with
+                  {
+                    StartDate = DateTime.UtcNow,
+                    PodTtl = DateTime.UtcNow,
+                  };
+      await taskTable_.StartTask(taskData_,
                                  cancellationTokenSource_.Token)
                       .ConfigureAwait(false);
 
@@ -609,8 +631,7 @@ public class TaskHandler : IAsyncDisposable
                            ? "Cancellation triggered, task cancelled here and re executed elsewhere"
                            : "Worker not available, task cancelled here and re executed elsewhere");
 
-      await taskTable_.ReleaseTask(taskData.TaskId,
-                                   ownerPodId_,
+      await taskTable_.ReleaseTask(taskData,
                                    CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Postponed;
