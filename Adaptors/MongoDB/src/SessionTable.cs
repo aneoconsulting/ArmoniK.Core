@@ -105,8 +105,7 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
+      return await sessionCollection.Find(session => session.SessionId == sessionId)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
@@ -144,9 +143,8 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Options)
+      return await sessionCollection.Find(sdm => sdm.SessionId == sessionId)
+                                    .Project(sdm => sdm.Options)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }

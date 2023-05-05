@@ -442,10 +442,9 @@ public class ResultTable : IResultTable
     var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    await foreach (var result in resultCollection.AsQueryable(sessionHandle)
-                                                 .Where(model => model.SessionId == sessionId)
-                                                 .Select(model => model.ResultId)
-                                                 .ToAsyncEnumerable()
+    await foreach (var result in resultCollection.Find(model => model.SessionId == sessionId)
+                                                 .Project(model => model.ResultId)
+                                                 .ToAsyncEnumerable(cancellationToken)
                                                  .WithCancellation(cancellationToken)
                                                  .ConfigureAwait(false))
     {
