@@ -19,12 +19,7 @@ regex = compile(r'(<\s*PackageReference\s+Include\s*=\s*"ArmoniK\.Api\.[a-zA-Z]+
 for file in files:
     print(file)
 
-    lines = []
-
-    with open(file, "r") as f:
-        for line in f.readlines():
-            newline = regex.sub(fr'\g<1>{args.new_version}\g<2>', line)
-            lines.append(newline)
-
-    with open(file, "w") as f:
+    with open(file, "r+") as f:
+        lines = [regex.sub(fr'\g<1>{args.new_version}\g<2>', line) for line in f.readlines()]
+        f.seek(0)
         f.writelines(lines)
