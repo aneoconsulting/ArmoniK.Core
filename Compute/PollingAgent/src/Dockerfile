@@ -1,9 +1,9 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj", "Compute/PollingAgent/src/"]
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
@@ -18,7 +18,7 @@ COPY . .
 WORKDIR "/src/Compute/PollingAgent/src"
 RUN dotnet build "ArmoniK.Core.Compute.PollingAgent.csproj" -c Release -o /app/build
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS adapters
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS adapters
 WORKDIR /src
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
