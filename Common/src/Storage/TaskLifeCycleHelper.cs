@@ -153,7 +153,8 @@ public static class TaskLifeCycleHelper
                                             cancellationToken)
                      .ConfigureAwait(false);
 
-    var readyTasks = new List<(string taskId, int priority, string partitionId)>();
+    var readyTasks = new Dictionary<(int priority, string partitionId), List<string>>();
+
 
     foreach (var request in taskRequests)
     {
@@ -205,27 +206,48 @@ public static class TaskLifeCycleHelper
         // If all dependencies were already completed, the task is ready to be started.
         if (dependencies.Count == completedDependencies.Count)
         {
-          readyTasks.Add((request.TaskId, request.Options.Priority, request.Options.PartitionId));
+          if (readyTasks.TryGetValue((request.Options.Priority, request.Options.PartitionId),
+                                     out var ids))
+          {
+            ids.Add(request.TaskId);
+          }
+          else
+          {
+            readyTasks.Add((request.Options.Priority, request.Options.PartitionId),
+                           new List<string>
+                           {
+                             request.TaskId,
+                           });
+          }
         }
       }
       else
       {
-        readyTasks.Add((request.TaskId, request.Options.Priority, request.Options.PartitionId));
+        if (readyTasks.TryGetValue((request.Options.Priority, request.Options.PartitionId),
+                                   out var ids))
+        {
+          ids.Add(request.TaskId);
+        }
+        else
+        {
+          readyTasks.Add((request.Options.Priority, request.Options.PartitionId),
+                         new List<string>
+                         {
+                           request.TaskId,
+                         });
+        }
       }
     }
 
     if (readyTasks.Any())
     {
-      var groups = readyTasks.GroupBy(tuple => (tuple.partitionId, tuple.priority));
-
-      foreach (var group in groups)
+      foreach (var key in readyTasks.Keys)
       {
-        var ids = group.Select(tuple => tuple.taskId)
-                       .ToList();
+        var ids = readyTasks[key];
 
         await pushQueueStorage.PushMessagesAsync(ids,
-                                                 group.Key.partitionId,
-                                                 group.Key.priority,
+                                                 key.partitionId,
+                                                 key.priority,
                                                  cancellationToken)
                               .ConfigureAwait(false);
         await taskTable.FinalizeTaskCreation(ids,
