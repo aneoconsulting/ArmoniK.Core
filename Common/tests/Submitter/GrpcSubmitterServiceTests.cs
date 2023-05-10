@@ -1043,7 +1043,8 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult(new List<TaskCreationRequest>().AsICollection()));
+                 .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
+                                                     .AsICollection()));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
@@ -1083,7 +1084,8 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult(new List<TaskCreationRequest>().AsICollection()));
+                 .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
+                                                     .AsICollection()));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
