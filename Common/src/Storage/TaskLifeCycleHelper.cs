@@ -241,16 +241,14 @@ public static class TaskLifeCycleHelper
 
     if (readyTasks.Any())
     {
-      foreach (var key in readyTasks.Keys)
+      foreach (var item in readyTasks)
       {
-        var ids = readyTasks[key];
-
-        await pushQueueStorage.PushMessagesAsync(ids,
-                                                 key.partitionId,
-                                                 key.priority,
+        await pushQueueStorage.PushMessagesAsync(item.Value,
+                                                 item.Key.partitionId,
+                                                 item.Key.priority,
                                                  cancellationToken)
                               .ConfigureAwait(false);
-        await taskTable.FinalizeTaskCreation(ids,
+        await taskTable.FinalizeTaskCreation(item.Value,
                                              cancellationToken)
                        .ConfigureAwait(false);
       }
