@@ -9,52 +9,6 @@ on:
     tags-ignore: [ '**' ]
 
 jobs:
-  sonarCloud:
-    runs-on: windows-latest
-    steps:
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 11
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-          submodules: true
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: .\.sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v3
-        with:
-          path: .\.sonar\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-      - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          New-Item -Path .\.sonar\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-      - name: Install dotnet-coverage tool
-        run: |
-          dotnet tool install --global dotnet-coverage
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
-        run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"aneoconsulting_ArmoniK.Core" /o:"aneoconsulting" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
-          dotnet build --no-incremental ArmoniK.Core.sln
-          dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml" --settings "dotnet-coverage.runsettings.xml"
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-
   versionning:
     name: Versionning
     runs-on: ubuntu-latest
@@ -69,61 +23,14 @@ jobs:
 
     - name: Generate Version
       id: genver
-      run: |
-        if [[ "${{ github.ref_name }}" == "releases/"* ]]
-        then
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=${{ github.ref_name }})
-        else
-          VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=main)
-        fi
-
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Version :" >> $GITHUB_STEP_SUMMARY
-        echo "$VERSION" >> $GITHUB_STEP_SUMMARY
-        echo $VERSION
-
-  format:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      uses: codacy/git-version@2.7.1
       with:
-        ref: ${{ github.ref }}
-        fetch-depth: 0
-        submodules: true
+        minor-identifier: "feat:"
+        release-branch: release
+        dev-branch: main
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
-    - name: Install ReSharper
-      run: |
-        dotnet tool install -g JetBrains.ReSharper.GlobalTools --version 2022.2.2
-
-    - name: Restore
-      run: |
-        dotnet restore ArmoniK.Core.sln
-
-    - name: Reformat
-      run: |
-        jb cleanupcode ArmoniK.Core.sln
-
-    - name: Check Diff
-      run: |
-        DIFF="$(git diff --name-only)"
-
-        if [ -z "$DIFF" ]; then
-          echo "OK: Format is clean"
-        else
-          echo "Error: Format was not clean"
-          echo "List of files:"
-          echo "$DIFF"
-          git diff
-          exit 1
-        fi
-
+    - name: Print version
+      run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
   tests:
     strategy:
@@ -148,6 +55,10 @@ jobs:
       with:
         dotnet-version: 6.x
 
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
@@ -161,16 +72,20 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueueProto100:
+  testsQueueProtos:
     strategy:
       matrix:
+        queue:
+          - activemq
+          - rabbitmq
         projects:
           - Adaptors/Amqp/tests
-        queue:
-          - activemqp
-          - rabbitmq
         os:
           - ubuntu-latest
+        include:
+          - queue: rabbitmq091
+            projects: Adaptors/RabbitMQ/tests
+            os: ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -184,52 +99,14 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
-
-    - name: Setup queue
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
-
-    - name: Run tests
+    
+    - name: Setup just
       run: |
-        cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+          sudo snap install --edge --classic just
 
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
-
-  testsQueueProto091:
-    strategy:
-      matrix:
-        projects:
-          - Adaptors/RabbitMQ/tests
-        queue:
-          - rabbitmq-0.9.1
-        os:
-          - ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
-    - name: Setup queue
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
+    - name: Set up queue
+      run: |
+          just queue=${{ matrix.queue }} deployTargetQueue
 
     - name: Run tests
       run: |
@@ -296,6 +173,29 @@ jobs:
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release
 
+  publish-nuget:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Build the package
+      run: |
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+
+    - name: Pack the package
+      run: |
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+
+    - name: Push the package
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
   buildImages:
     runs-on: ubuntu-latest
@@ -382,10 +282,6 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: login
-      run: |
-        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
 
@@ -393,23 +289,27 @@ jobs:
       id: buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
     - name: platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
 
-    - name: Build
-      run: |
-        docker buildx create --use
-        docker buildx build \
-          --platform linux/arm64 \
-          -t ${{ matrix.img }}:${VERSION}-arm \
-          -f ${{ matrix.path }} . \
-          --push
+    - name: Build and push
+      uses: docker/build-push-action@v3
+      with:
+        file: ${{ matrix.path }}
+        context: .
+        platforms: linux/arm64
+        push: true
+        tags: |
+            ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm
 
     - name: Create multi-arch manifest
-      run: docker manifest create ${{ matrix.img }}:${VERSION} -a ${{ matrix.img }}:${VERSION} -a ${{ matrix.img }}:${VERSION}-arm
-
-    - name: Push multi-arch manifest
-      run: docker manifest push ${{ matrix.img }}:${VERSION}
+      run: docker buildx imagetools create ${{ matrix.img }}:${VERSION} --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-arm
 
   testStreamDC:
     needs:
@@ -423,8 +323,7 @@ jobs:
       fail-fast: false
       matrix:
         queue:
-          - activemqp
-          - artemis
+          - activemq
           - rabbitmq
           - rabbitmq091
         log-level:
@@ -437,35 +336,24 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
 
       - name: Run Stream Test
-        timeout-minutes: 10
+        timeout-minutes: 4
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
@@ -485,18 +373,18 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
 
   testHtcMockDC:
     needs:
@@ -509,13 +397,15 @@ jobs:
       fail-fast: false
       matrix:
         queue:
-          - activemqp
+          - activemq
           - rabbitmq
           - rabbitmq091
+        object:
+          - redis
         log-level:
           - Information
           - Verbose
-    name: HtcMock ${{ matrix.queue }} ${{ matrix.log-level }}
+    name: HtcMock ${{ matrix.queue }} ${{ matrix.object }} ${{ matrix.log-level }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -523,37 +413,32 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=htcmock deploy
+          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
+
+      - name: Print And Time Metrics
+        run: |
+          set -x
+          time curl localhost:5002/metrics
+          time curl localhost:5003/metrics
 
       - name: Run HtcMock test 100 tasks 1 level
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -564,9 +449,9 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Run HtcMock test 100 tasks 4 levels
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -576,11 +461,39 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
+      - name: Run HtcMock test 100 tasks 4 levels with retries
+        timeout-minutes: 3
+        run: |
+          docker run --net armonik_network --rm \
+            -e HtcMock__NTasks=100 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=4 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e HtcMock__TaskRpcException=a \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Run HtcMock test 100 tasks 4 levels with errors
+        timeout-minutes: 3
+        run: |
+          ! docker run --net armonik_network --rm \
+            -e HtcMock__NTasks=100 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=4 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e HtcMock__TaskError=a \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
       - name: Run HtcMock test 1000 tasks 1 level
-        timeout-minutes: 10
+        timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -591,10 +504,10 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Run HtcMock test 1000 tasks 4 levels
-        timeout-minutes: 10
+        timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -604,25 +517,30 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
+      - name: Print And Time Metrics
+        run: |
+          set -x
+          time curl localhost:5002/metrics
+          time curl localhost:5003/metrics
+
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.tar.gz
 
-      - name: Collect docker compose logs
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
-
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-container-logs.tar.gz
 
   runBench:
     needs:
@@ -638,53 +556,52 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} queue=activemqp worker=bench deploy
+          just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Run Bench test tasks - many tasks (200)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=200 \
             -e BenchOptions__TaskDurationMs=100 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Run Bench test time - long tasks (10s)
-        timeout-minutes: 10
+      - name: Run Bench test tasks - many tasks (200) with events
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
+            -e BenchOptions__NTasks=200 \
+            -e BenchOptions__TaskDurationMs=100 \
+            -e BenchOptions__ShowEvents=true \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_bench_test_client:$VERSION
+      - name: Run Bench test time - long tasks (10s)
+        timeout-minutes: 3
+        run: |
+          docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=2 \
             -e BenchOptions__TaskDurationMs=10000 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test time - large payloads (10MB)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
             -e BenchOptions__TaskDurationMs=10 \
             -e BenchOptions__ResultSize=1 \
@@ -692,9 +609,9 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test time - large results (10MB)
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
             -e BenchOptions__TaskDurationMs=10 \
             -e BenchOptions__ResultSize=10000 \
@@ -706,19 +623,18 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
-
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
 
   defaultPartitionMock:
     needs:
@@ -734,37 +650,27 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
+          just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -772,25 +678,25 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
 
 
   healthCheckTest:
@@ -807,37 +713,27 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
-      - name: Update compose
-        run: |
-          docker-compose --version
-          sudo apt-get remove docker-compose
-          VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
-          DESTINATION=/usr/local/bin/docker-compose
-          sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
-          sudo chmod 755 $DESTINATION
-          docker-compose --version
-
       - name: Setup just
-        uses: extractions/setup-just@v1
-        with:
-          just-version: '1.8.0'
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Deploy Core
         run: |
-          just LOGGING_LEVEL=Information tag=${VERSION} worker=htcmock queue=activemqp deploy
+          just tag=${VERSION} object=redis deploy
           sleep 10
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -845,21 +741,21 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Health Check Test when database is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} stop database
+          just tag=${VERSION} object=redis stop database
           just healthChecks
-          just tag=${VERSION} restoreDeployment database
+          just tag=${VERSION} object=redis restoreDeployment database
           sleep 10
           just healthChecks
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -867,21 +763,21 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Health Check Test when queue is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} stop queue
+          just tag=${VERSION} object=redis stop queue
           just healthChecks
-          just tag=${VERSION} restoreDeployment queue
+          just tag=${VERSION} object=redis restoreDeployment queue
           sleep 10
           just healthChecks
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -889,21 +785,21 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Health Check Test when object is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} stop object
+          just tag=${VERSION} object=redis stop object
           just healthChecks
-          just tag=${VERSION} restoreDeployment object
+          just tag=${VERSION} object=redis restoreDeployment object
           sleep 10
           just healthChecks
 
       - name: Run HtcMock test
-        timeout-minutes: 10
+        timeout-minutes: 3
         run: |
-          docker run --net armonik-net --rm \
+          docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -911,32 +807,30 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la docker-compose/logs/*.json
+          ls -la terraform/logs/*.json
 
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - docker-compose/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
 
   canMerge:
     needs:
-      - format
       - tests
-      - testsQueueProto091
-      - testsQueueProto100
+      - testsQueueProtos
       - testsWinOnly
       - testHtcMockDC
       - defaultPartitionMock

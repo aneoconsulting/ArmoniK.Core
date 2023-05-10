@@ -1,17 +1,19 @@
 name: Release
 
+permissions:
+  contents: write
+
 on:
   push:
-    branches:
-      - release
-    tags-ignore: [ '**' ]
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   versionning:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.genver.outputs.version }}
-      release: ${{ steps.genver.outputs.release }}
+      version: ${{ steps.snapshot.outputs.version }}
+      release: ${{ steps.release.outputs.version }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -19,37 +21,75 @@ jobs:
         ref: ${{ github.ref }}
         fetch-depth: 0
 
-    - name: Generate Version
-      id: genver
+    - name: Remove tag locally
+    # This is done so that codacy/git-version can compute the version of the images deployed on docker hub
       run: |
-        VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }}-pre --dev-branch=${{ github.ref_name }})
-        echo "::set-output name=version::$VERSION"
-        echo "VERSION : $VERSION"
-        RELEASE=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }} --dev-branch=main)
-        echo "::set-output name=release::$RELEASE"
-        echo "RELEASE : $RELEASE"
+        git tag -d ${{ github.ref_name }}
 
-  tagImagesRelease:
+    - name: Compute branch for codacy
+    # This is the branch to give to codacy to compute the snapshot version
+      id: rev
+      run: |
+        export CURRENT_BRANCH=$(git describe --tags)
+        echo "current-branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
+
+    - name: Generate Snapshot Version
+      id: snapshot
+      uses: codacy/git-version@2.7.1
+      with:
+        minor-identifier: "feat:"
+        release-branch: ${{ github.ref_name }}-pre
+        dev-branch: ${{ steps.rev.outputs.current-branch }}
+
+    - name: Generate Release Version
+      id: release
+      uses: codacy/git-version@2.7.1
+      with:
+        minor-identifier: "feat:"
+        release-branch: ${{ steps.rev.outputs.current-branch }}
+        dev-branch: main
+
+    - name: Put versions in step summary
+      run: |
+        echo SNAPSHOT => ${{ steps.snapshot.outputs.version }} >> $GITHUB_STEP_SUMMARY
+        echo RELASE   => ${{ steps.release.outputs.version }} >> $GITHUB_STEP_SUMMARY
+
+    - name: Validate tag
+      run : test ${{ steps.release.outputs.version }} == ${{ github.ref_name }}
+
+    - name: Delete tag if invalid
+      if: failure() || cancelled()
+      run : git push origin -d ${{ github.ref_name }}
+
+
+  buildImages:
     runs-on: ubuntu-latest
     needs:
       - versionning
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-      RELEASE: ${{ needs.versionning.outputs.release }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        image:
-        - dockerhubaneo/armonik_pollingagent
-        - dockerhubaneo/armonik_control_metrics
-        - dockerhubaneo/armonik_control_partition_metrics
-        - dockerhubaneo/armonik_control
-        - dockerhubaneo/armonik_core_stream_test_worker
-        - dockerhubaneo/armonik_core_stream_test_client
-        - dockerhubaneo/armonik_core_htcmock_test_worker
-        - dockerhubaneo/armonik_core_htcmock_test_client
-        - dockerhubaneo/armonik_core_bench_test_worker
-        - dockerhubaneo/armonik_core_bench_test_client
+        include:
+        -  img : dockerhubaneo/armonik_pollingagent
+           path: ./Compute/PollingAgent/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_metrics
+           path: ./Control/Metrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_partition_metrics
+           path: ./Control/PartitionMetrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control
+           path: ./Control/Submitter/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_worker
+           path: ./Tests/Stream/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_client
+           path: ./Tests/Stream/Client/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
+           path: ./Tests/HtcMock/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_client
+           path: ./Tests/HtcMock/Client/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_worker
+           path: ./Tests/Bench/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_client
+           path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -57,32 +97,73 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v2
+
     - name: login
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    - name: ReTag
-      run: |
-        set -xe
-        docker manifest inspect ${{ matrix.image }}:${VERSION} | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:${RELEASE} -a 
-        docker manifest inspect ${{ matrix.image }}:${VERSION} | jq --raw-output ".manifests[].digest" | sed -e 's:^:${{ matrix.image }}@:g' | xargs docker manifest create ${{ matrix.image }}:latest -a 
-        docker manifest push ${{ matrix.image }}:${RELEASE}
-        docker manifest push ${{ matrix.image }}:latest
+    - name: platforms
+      run: echo ${{ steps.buildx.outputs.platforms }}
 
-  tag:
+    - name: Build and push
+      uses: docker/build-push-action@v3
+      with:
+        file: ${{ matrix.path }}
+        context: .
+        platforms: |
+          linux/arm64
+          linux/amd64
+        push: true
+        tags: |
+            ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
+            ${{ matrix.img }}:latest
+
+  publish-nuget:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/release' }}
     needs:
       - versionning
-      - tagImagesRelease
     env:
-      RELEASE: ${{ needs.versionning.outputs.release }}
+      VERSION: ${{ needs.versionning.outputs.release }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
       with:
         ref: ${{ github.ref }}
 
-    - name: tag
+    - name: Build the package
       run: |
-        git tag $RELEASE
-        git push origin $RELEASE
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+
+    - name: Pack the package
+      run: |
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+
+    - name: Push the package
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+
+  update-changelog:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - run: npx changelogithub
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
