@@ -21,8 +21,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Utils;
+
+using Grpc.Core;
+
+using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
