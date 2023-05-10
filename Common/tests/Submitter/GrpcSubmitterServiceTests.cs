@@ -890,7 +890,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult(new List<TaskCreationRequest>().AsICollection()));
+                 .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
