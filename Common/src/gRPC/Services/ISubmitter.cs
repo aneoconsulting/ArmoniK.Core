@@ -44,11 +44,11 @@ public interface ISubmitter
                                          TaskOptions       defaultTaskOptions,
                                          CancellationToken cancellationToken);
 
-  Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                  string                        parentTaskId,
-                                                                                                  TaskOptions?                  options,
-                                                                                                  IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                  CancellationToken             cancellationToken);
+  Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                     string                        parentTaskId,
+                                                     TaskOptions?                  options,
+                                                     IAsyncEnumerable<TaskRequest> taskRequests,
+                                                     CancellationToken             cancellationToken);
 
   Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
                             string                           sessionId,

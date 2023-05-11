@@ -176,12 +176,11 @@ public class Agent : IAgent
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
-    var                                                                           fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
-    Task?                                                                         completionTask      = null;
-    Channel<ReadOnlyMemory<byte>>?                                                payloadsChannel     = null;
-    var                                                                           taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
-    (IEnumerable<TaskCreationRequest> requests, int priority, string partitionId) currentTasks;
-    currentTasks.requests = new List<TaskCreationRequest>();
+    var                               fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
+    Task?                             completionTask      = null;
+    Channel<ReadOnlyMemory<byte>>?    payloadsChannel     = null;
+    var                               taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
+    ICollection<TaskCreationRequest>? currentTasks        = null;
 
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
                                           ("taskId", taskData_.TaskId),
@@ -221,7 +220,7 @@ public class Agent : IAgent
                                                                                   taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
                                                                                   cancellationToken)
                                                                      .ConfigureAwait(false);
-                                      createdTasks_.AddRange(currentTasks.requests);
+                                      createdTasks_.AddRange(currentTasks);
                                     },
                                     cancellationToken);
 
@@ -263,22 +262,22 @@ public class Agent : IAgent
                                               {
                                                 CreationStatuses =
                                                 {
-                                                  currentTasks.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
-                                                                                              {
-                                                                                                TaskInfo = new CreateTaskReply.Types.TaskInfo
-                                                                                                           {
-                                                                                                             TaskId = taskRequest.TaskId,
-                                                                                                             DataDependencies =
-                                                                                                             {
-                                                                                                               taskRequest.DataDependencies,
-                                                                                                             },
-                                                                                                             ExpectedOutputKeys =
-                                                                                                             {
-                                                                                                               taskRequest.ExpectedOutputKeys,
-                                                                                                             },
-                                                                                                             PayloadId = taskRequest.PayloadId,
-                                                                                                           },
-                                                                                              }),
+                                                  currentTasks!.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                                      {
+                                                                                        TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                                   {
+                                                                                                     TaskId = taskRequest.TaskId,
+                                                                                                     DataDependencies =
+                                                                                                     {
+                                                                                                       taskRequest.DataDependencies,
+                                                                                                     },
+                                                                                                     ExpectedOutputKeys =
+                                                                                                     {
+                                                                                                       taskRequest.ExpectedOutputKeys,
+                                                                                                     },
+                                                                                                     PayloadId = taskRequest.PayloadId,
+                                                                                                   },
+                                                                                      }),
                                                 },
                                               },
                        };
@@ -293,10 +292,10 @@ public class Agent : IAgent
                                               {
                                                 CreationStatuses =
                                                 {
-                                                  currentTasks.requests.Select(_ => new CreateTaskReply.Types.CreationStatus
-                                                                                    {
-                                                                                      Error = "An error occured during task creation",
-                                                                                    }),
+                                                  currentTasks!.Select(_ => new CreateTaskReply.Types.CreationStatus
+                                                                            {
+                                                                              Error = "An error occured during task creation",
+                                                                            }),
                                                 },
                                               },
                        };

@@ -518,11 +518,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                               string                        parentTaskId,
-                                                                                                               TaskOptions?                  options,
-                                                                                                               IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                               CancellationToken             cancellationToken)
+  public async Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                                  string                        parentTaskId,
+                                                                  TaskOptions?                  options,
+                                                                  IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                  CancellationToken             cancellationToken)
   {
     var sessionData = await sessionTable_.GetSessionAsync(sessionId,
                                                           cancellationToken)
@@ -572,6 +572,6 @@ public class Submitter : ISubmitter
                                           cancellationToken)
                              .ConfigureAwait(false);
 
-    return (requests, options.Priority, options.PartitionId);
+    return requests;
   }
 }

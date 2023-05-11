@@ -161,12 +161,12 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                   CancellationToken cancellationToken)
       => Task.FromException<CreateSessionReply>(new T());
 
-    public Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                           string                        parentTaskId,
-                                                                                                           TaskOptions?                  options,
-                                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                           CancellationToken             cancellationToken)
-      => Task.FromException<(IEnumerable<TaskCreationRequest>, int, string)>(new T());
+    public Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                              string                        parentTaskId,
+                                                              TaskOptions?                  options,
+                                                              IAsyncEnumerable<TaskRequest> taskRequests,
+                                                              CancellationToken             cancellationToken)
+      => Task.FromException<ICollection<TaskCreationRequest>>(new T());
 
     public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
                                      string                           sessionId,
@@ -217,11 +217,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                   CancellationToken cancellationToken)
       => throw new T();
 
-    public Task<(IEnumerable<TaskCreationRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                           string                        parentTaskId,
-                                                                                                           TaskOptions?                  options,
-                                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                           CancellationToken             cancellationToken)
+    public Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                              string                        parentTaskId,
+                                                              TaskOptions?                  options,
+                                                              IAsyncEnumerable<TaskRequest> taskRequests,
+                                                              CancellationToken             cancellationToken)
       => throw new T();
 
     public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,

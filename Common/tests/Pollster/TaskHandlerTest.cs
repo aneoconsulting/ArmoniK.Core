@@ -213,38 +213,35 @@ public class TaskHandlerTest
                              }.ToAsyncEnumerable()),
                        };
 
-    var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
-                                                                                                            sessionId,
-                                                                                                            new TaskOptions(new Dictionary<string, string>(),
-                                                                                                                            TimeSpan.FromSeconds(1),
-                                                                                                                            5,
-                                                                                                                            1,
-                                                                                                                            "part1",
-                                                                                                                            "",
-                                                                                                                            "",
-                                                                                                                            "",
-                                                                                                                            "",
-                                                                                                                            ""),
-                                                                                                            taskRequests.ToAsyncEnumerable(),
-                                                                                                            CancellationToken.None)
-                                                                                     .ConfigureAwait(false);
-    var requests = requestsIEnumerable.ToList();
+    var requests = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                   sessionId,
+                                                                   new TaskOptions(new Dictionary<string, string>(),
+                                                                                   TimeSpan.FromSeconds(1),
+                                                                                   5,
+                                                                                   1,
+                                                                                   "part1",
+                                                                                   "",
+                                                                                   "",
+                                                                                   "",
+                                                                                   "",
+                                                                                   ""),
+                                                                   taskRequests.ToAsyncEnumerable(),
+                                                                   CancellationToken.None)
+                                            .ConfigureAwait(false);
+
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var taskId = requests.First()
+    var taskId = requests.ElementAt(0)
                          .TaskId;
-    requests.RemoveAt(0);
 
-
-    var taskUnresolvedDepId = requests.First()
+    var taskUnresolvedDepId = requests.ElementAt(1)
                                       .TaskId;
-    requests.RemoveAt(0);
 
-    var taskErrorId = requests.First()
+    var taskErrorId = requests.ElementAt(2)
                               .TaskId;
 
     var taskErrorData = await testServiceProvider.TaskTable.ReadTaskAsync(taskErrorId,

@@ -222,7 +222,7 @@ public class AgentTest
                                                CancellationToken.None)
                                   .Result;
 
-      submitter.FinalizeTaskCreation(createdTasks.requests,
+      submitter.FinalizeTaskCreation(createdTasks,
                                      Session,
                                      Session,
                                      CancellationToken.None)
@@ -230,7 +230,7 @@ public class AgentTest
 
       QueueStorage.Messages.Clear();
 
-      TaskData = TaskTable.ReadTaskAsync(createdTasks.requests.Single()
+      TaskData = TaskTable.ReadTaskAsync(createdTasks.Single()
                                                      .TaskId,
                                          CancellationToken.None)
                           .Result;
@@ -269,12 +269,12 @@ public class AgentTest
                                                 CancellationToken.None)
                                    .Result;
 
-      TaskWithDependencies1 = createdTasks2.requests.First()
+      TaskWithDependencies1 = createdTasks2.First()
                                            .TaskId;
-      TaskWithDependencies2 = createdTasks2.requests.Last()
+      TaskWithDependencies2 = createdTasks2.Last()
                                            .TaskId;
 
-      submitter.FinalizeTaskCreation(createdTasks2.requests,
+      submitter.FinalizeTaskCreation(createdTasks2,
                                      Session,
                                      Session,
                                      CancellationToken.None)
