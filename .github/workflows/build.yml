@@ -325,12 +325,14 @@ jobs:
 
       - name: Deploy Core
         run: |
+          set -x
           just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
 
       - name: Run Stream Test
         timeout-minutes: 4
         run: |
+          set -x
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
           export Partition=TestPartition0
@@ -402,6 +404,7 @@ jobs:
 
       - name: Deploy Core
         run: |
+          set -x
           just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
           sleep 10
 
@@ -414,6 +417,7 @@ jobs:
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -427,6 +431,7 @@ jobs:
       - name: Run HtcMock test 100 tasks 4 levels
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -440,6 +445,7 @@ jobs:
       - name: Run HtcMock test 100 tasks 4 levels with retries
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -454,6 +460,7 @@ jobs:
       - name: Run HtcMock test 100 tasks 4 levels with errors
         timeout-minutes: 3
         run: |
+          set -x
           ! docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -469,6 +476,7 @@ jobs:
         timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -483,6 +491,7 @@ jobs:
         timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -545,6 +554,7 @@ jobs:
 
       - name: Deploy Core
         run: |
+          set -x
           just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
           sleep 10
           ls -la terraform/logs/*.json
@@ -552,6 +562,7 @@ jobs:
       - name: Run Bench test tasks - many tasks (200)
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=200 \
             -e BenchOptions__TaskDurationMs=100 \
@@ -560,6 +571,7 @@ jobs:
       - name: Run Bench test tasks - many tasks (200) with events
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=200 \
             -e BenchOptions__TaskDurationMs=100 \
@@ -569,6 +581,7 @@ jobs:
       - name: Run Bench test time - long tasks (10s)
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=2 \
             -e BenchOptions__TaskDurationMs=10000 \
@@ -577,6 +590,7 @@ jobs:
       - name: Run Bench test time - large payloads (10MB)
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
             -e BenchOptions__TaskDurationMs=10 \
@@ -587,6 +601,7 @@ jobs:
       - name: Run Bench test time - large results (10MB)
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
             -e BenchOptions__TaskDurationMs=10 \
@@ -639,6 +654,7 @@ jobs:
 
       - name: Deploy Core
         run: |
+          set -x
           just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
           sleep 10
           ls -la terraform/logs/*.json
@@ -646,6 +662,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -702,6 +719,7 @@ jobs:
 
       - name: Deploy Core
         run: |
+          set -x
           just tag=${VERSION} object=redis deploy
           sleep 10
           ls -la terraform/logs/*.json
@@ -709,6 +727,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -722,6 +741,7 @@ jobs:
       - name: Health Check Test when database is down
         timeout-minutes: 10
         run: |
+          set -x
           just tag=${VERSION} object=redis stop database
           just healthChecks
           just tag=${VERSION} object=redis restoreDeployment database
@@ -731,6 +751,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -744,6 +765,7 @@ jobs:
       - name: Health Check Test when queue is down
         timeout-minutes: 10
         run: |
+          set -x
           just tag=${VERSION} object=redis stop queue
           just healthChecks
           just tag=${VERSION} object=redis restoreDeployment queue
@@ -753,6 +775,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -766,7 +789,8 @@ jobs:
       - name: Health Check Test when object is down
         timeout-minutes: 10
         run: |
-          just tag=${VERSION} object=redis stop object
+          set -x
+          just tag=${VERSION} object=redis stop queue
           just healthChecks
           just tag=${VERSION} object=redis restoreDeployment object
           sleep 10
@@ -775,6 +799,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
+          set -x
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
