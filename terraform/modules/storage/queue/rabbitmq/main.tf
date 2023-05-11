@@ -28,7 +28,7 @@ resource "docker_container" "queue" {
   }
 
   wait         = true
-  wait_timeout = 30
+  wait_timeout = 60
 
   healthcheck {
     test         = ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
