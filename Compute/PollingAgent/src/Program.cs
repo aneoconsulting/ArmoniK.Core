@@ -66,6 +66,13 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       var pollsterOptions = builder.Configuration.GetSection(Pollster.SettingSection)

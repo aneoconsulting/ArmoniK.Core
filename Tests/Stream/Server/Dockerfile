@@ -17,7 +17,8 @@ WORKDIR "/src/Tests/Stream/Server"
 RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" -c Release -o /app/publish
+ARG VERSION=1.0.0.0
+RUN dotnet publish "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" -c Release -o /app/publish -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 FROM base AS final
 WORKDIR /app

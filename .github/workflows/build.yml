@@ -198,7 +198,7 @@ jobs:
 
     - name: Pack the package
       run: |
-        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
@@ -245,7 +245,7 @@ jobs:
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Build
-      run: docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
+      run: docker build --build-arg VERSION=$VERSION -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
 
     - name: push
       run: docker push ${{ matrix.img }}:$VERSION
@@ -310,6 +310,8 @@ jobs:
         file: ${{ matrix.path }}
         context: .
         platforms: linux/arm64
+        build-args: |
+          VERSION=${{ needs.versionning.outputs.version }}
         push: true
         tags: |
             ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm

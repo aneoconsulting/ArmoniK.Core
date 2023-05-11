@@ -121,6 +121,8 @@ jobs:
         platforms: |
           linux/arm64
           linux/amd64
+        build-args: |
+          VERSION=${{ needs.versionning.outputs.release }}
         push: true
         tags: |
             ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
@@ -144,7 +146,7 @@ jobs:
 
     - name: Pack the package
       run: |
-        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

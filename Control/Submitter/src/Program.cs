@@ -68,6 +68,13 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Common.gRPC.Services.Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       builder.Host.UseSerilog(logger.GetSerilogConf());
