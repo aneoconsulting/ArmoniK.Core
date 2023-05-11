@@ -118,6 +118,10 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Update a task status to TaskStatus.Processing
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />
+  ///   - <see cref="TaskData.StartDate" />
+  ///   - <see cref="TaskData.PodTtl" />
   /// </summary>
   /// <param name="taskData">Metadata of the task to update</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -266,6 +270,13 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Change the status of the task to succeeded
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />
+  ///   - <see cref="TaskData.StartDate" />
+  ///   - <see cref="TaskData.EndDate" />
+  ///   - <see cref="TaskData.CreationToEndDuration" />
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />
+  ///   - <see cref="TaskData.Output" />
   /// </summary>
   /// <param name="taskData">Metadata of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -290,6 +301,13 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Change the status of the task to canceled
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />
+  ///   - <see cref="TaskData.StartDate" />
+  ///   - <see cref="TaskData.EndDate" />
+  ///   - <see cref="TaskData.CreationToEndDuration" />
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />
+  ///   - <see cref="TaskData.Output" />
   /// </summary>
   /// <param name="taskData">Metadata of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -302,6 +320,13 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Tag a task as errored and populate its output with an
   ///   error message
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />
+  ///   - <see cref="TaskData.StartDate" />
+  ///   - <see cref="TaskData.EndDate" />
+  ///   - <see cref="TaskData.CreationToEndDuration" />
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />
+  ///   - <see cref="TaskData.Output" />
   /// </summary>
   /// <param name="taskData">Metadata of the task to mark as errored</param>
   /// <param name="errorDetail">Error message to be inserted in task's output</param>
@@ -326,6 +351,12 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Acquire the task to process it on the current agent
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />
+  ///   - <see cref="TaskData.OwnerPodId" />
+  ///   - <see cref="TaskData.OwnerPodName" />
+  ///   - <see cref="TaskData.ReceptionDate" />
+  ///   - <see cref="TaskData.AcquisitionDate" />
   /// </summary>
   /// <param name="taskData">Metadata of the task to acquire</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -337,6 +368,12 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Release the task from the current agent
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />
+  ///   - <see cref="TaskData.OwnerPodId" />
+  ///   - <see cref="TaskData.OwnerPodName" />
+  ///   - <see cref="TaskData.ReceptionDate" />
+  ///   - <see cref="TaskData.AcquisitionDate" />
   /// </summary>
   /// <param name="taskData">Metadata of the task to release</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
