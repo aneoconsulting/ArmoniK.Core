@@ -189,7 +189,7 @@ restart serviceName: (container "restart" serviceName)
 
 # Custom command to build a single image
 build $imageTag $dockerFile:
-  docker build -t "$imageTag" -f "$dockerFile" ./
+  docker build --build-arg VERSION={{tag}} -t "$imageTag" -f "$dockerFile" ./
 
 # Build Worker
 buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" )

@@ -13,7 +13,8 @@ WORKDIR "/src/Tests/Bench/Server/src"
 RUN dotnet build "ArmoniK.Samples.Bench.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ArmoniK.Samples.Bench.Server.csproj" -c Release -o /app/publish
+ARG VERSION=1.0.0.0
+RUN dotnet publish "ArmoniK.Samples.Bench.Server.csproj" -c Release -o /app/publish -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 FROM base AS final
 WORKDIR /app

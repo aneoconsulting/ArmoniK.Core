@@ -34,13 +34,15 @@ WORKDIR "/src/Adaptors/Amqp/src"
 RUN dotnet build "ArmoniK.Core.Adapters.Amqp.csproj" -c Release -o /app/build/amq
 
 FROM build AS publish
-RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -c Release -o /app/publish /p:UseAppHost=false
+ARG VERSION=1.0.0.0
+RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -c Release -o /app/publish /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 FROM adapters AS publisha
+ARG VERSION=1.0.0.0
 WORKDIR "/src/Adaptors/RabbitMQ/src"
-RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -c Release -o /app/publish/rabbit /p:UseAppHost=false
+RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -c Release -o /app/publish/rabbit /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 WORKDIR "/src/Adaptors/Amqp/src"
-RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -c Release -o /app/publish/amqp /p:UseAppHost=false
+RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -c Release -o /app/publish/amqp /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 
 FROM base AS final
