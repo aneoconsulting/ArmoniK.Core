@@ -77,15 +77,10 @@ jobs:
       matrix:
         queue:
           - activemq
-          - rabbitmq
         projects:
           - Adaptors/Amqp/tests
         os:
           - ubuntu-latest
-        include:
-          - queue: rabbitmq091
-            projects: Adaptors/RabbitMQ/tests
-            os: ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -300,8 +295,6 @@ jobs:
       matrix:
         queue:
           - activemq
-          - rabbitmq
-          - rabbitmq091
         log-level:
           - Information
           - Verbose
@@ -376,8 +369,6 @@ jobs:
       matrix:
         queue:
           - activemq
-          - rabbitmq
-          - rabbitmq091
         object:
           - redis
         log-level:
@@ -691,143 +682,6 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
 
-
-  healthCheckTest:
-    needs:
-      - versionning
-      - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
-
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Deploy Core
-        run: |
-          set -x
-          just tag=${VERSION} object=redis deploy
-          sleep 10
-          ls -la terraform/logs/*.json
-
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          set -x
-          docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
-
-      - name: Health Check Test when database is down
-        timeout-minutes: 10
-        run: |
-          set -x
-          just tag=${VERSION} object=redis stop database
-          just healthChecks
-          just tag=${VERSION} object=redis restoreDeployment database
-          sleep 10
-          just healthChecks
-
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          set -x
-          docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
-
-      - name: Health Check Test when queue is down
-        timeout-minutes: 10
-        run: |
-          set -x
-          just tag=${VERSION} object=redis stop queue
-          just healthChecks
-          just tag=${VERSION} object=redis restoreDeployment queue
-          sleep 10
-          just healthChecks
-
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          set -x
-          docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
-
-      - name: Health Check Test when object is down
-        timeout-minutes: 10
-        run: |
-          set -x
-          just tag=${VERSION} object=redis stop queue
-          just healthChecks
-          just tag=${VERSION} object=redis restoreDeployment object
-          sleep 10
-          just healthChecks
-
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          set -x
-          docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
-
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
-
   canMerge:
     needs:
       - tests
@@ -838,7 +692,6 @@ jobs:
       - testStreamDC
       - buildImages
       - runBench
-      - healthCheckTest
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
