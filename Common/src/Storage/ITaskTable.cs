@@ -118,12 +118,14 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Update a task status to TaskStatus.Processing
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />
-  ///   - <see cref="TaskData.StartDate" />
-  ///   - <see cref="TaskData.PodTtl" />
   /// </summary>
-  /// <param name="taskData">Metadata of the task to update</param>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.StartDate" />: Date when the task starts
+  ///   - <see cref="TaskData.PodTtl" />: Date TTL on the pod
+  /// </remarks>
+  /// <param name="taskData">Metadata of the task to start</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
@@ -270,14 +272,15 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Change the status of the task to succeeded
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />
-  ///   - <see cref="TaskData.StartDate" />
-  ///   - <see cref="TaskData.EndDate" />
-  ///   - <see cref="TaskData.CreationToEndDuration" />
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />
-  ///   - <see cref="TaskData.Output" />
   /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
+  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
+  ///   - <see cref="TaskData.Output" />: Output of the task
+  /// </remarks>
   /// <param name="taskData">Metadata of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
@@ -301,14 +304,15 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Change the status of the task to canceled
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />
-  ///   - <see cref="TaskData.StartDate" />
-  ///   - <see cref="TaskData.EndDate" />
-  ///   - <see cref="TaskData.CreationToEndDuration" />
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />
-  ///   - <see cref="TaskData.Output" />
   /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
+  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
+  ///   - <see cref="TaskData.Output" />: Output of the task
+  /// </remarks>
   /// <param name="taskData">Metadata of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
@@ -320,14 +324,15 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Tag a task as errored and populate its output with an
   ///   error message
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />
-  ///   - <see cref="TaskData.StartDate" />
-  ///   - <see cref="TaskData.EndDate" />
-  ///   - <see cref="TaskData.CreationToEndDuration" />
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />
-  ///   - <see cref="TaskData.Output" />
   /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
+  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
+  ///   - <see cref="TaskData.Output" />: Output of the task
+  /// </remarks>
   /// <param name="taskData">Metadata of the task to mark as errored</param>
   /// <param name="errorDetail">Error message to be inserted in task's output</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -351,13 +356,16 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Acquire the task to process it on the current agent
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />
-  ///   - <see cref="TaskData.OwnerPodId" />
-  ///   - <see cref="TaskData.OwnerPodName" />
-  ///   - <see cref="TaskData.ReceptionDate" />
-  ///   - <see cref="TaskData.AcquisitionDate" />
   /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
+  ///   acquire the task
+  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
+  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
+  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
+  /// </remarks>
   /// <param name="taskData">Metadata of the task to acquire</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
@@ -368,13 +376,16 @@ public interface ITaskTable : IInitializable
 
   /// <summary>
   ///   Release the task from the current agent
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />
-  ///   - <see cref="TaskData.OwnerPodId" />
-  ///   - <see cref="TaskData.OwnerPodName" />
-  ///   - <see cref="TaskData.ReceptionDate" />
-  ///   - <see cref="TaskData.AcquisitionDate" />
   /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
+  ///   acquire the task
+  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
+  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
+  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
+  /// </remarks>
   /// <param name="taskData">Metadata of the task to release</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
