@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,7 +36,16 @@ namespace ArmoniK.Core.Common.Utils;
 /// <typeparam name="T">Type of the return object</typeparam>
 public class ExecutionSingleizer<T> : IDisposable
 {
-  private Handle handle_ = new();
+  private readonly long   tickValidity_;
+  private          Handle handle_ = new();
+
+
+  /// <summary>
+  ///   Allow initialization of <see cref="ExecutionSingleizer" />
+  /// </summary>
+  /// <param name="timeValidity">Results from the execution will be in cache during timeValidity</param>
+  public ExecutionSingleizer(TimeSpan timeValidity = default)
+    => tickValidity_ = (long)Math.Ceiling(Stopwatch.Frequency * timeValidity.TotalSeconds);
 
   /// <inheritdoc />
   public void Dispose()
@@ -58,8 +68,8 @@ public class ExecutionSingleizer<T> : IDisposable
     var currentHandle = handle_;
 
     // If there is no waiters, the task is complete (success or failed), and no thread is currently running it.
-    // We therefore need to call func again
-    if (currentHandle.Waiters == 0)
+    // We therefore need to call func again if the data has expired.
+    if (currentHandle.Waiters == 0 && Stopwatch.GetTimestamp() > currentHandle.ValidUntil)
     {
       // Prepare new handle, with new cancellation token source and new task
       var cts         = new CancellationTokenSource();
@@ -128,6 +138,13 @@ public class ExecutionSingleizer<T> : IDisposable
     }
     finally
     {
+      // Reset the validity of the result once the result is available.
+      // This is done by all threads in order to avoid race condition with the Waiters decrement.
+      if (!currentHandle.CancellationTokenSource.IsCancellationRequested)
+      {
+        currentHandle.ValidUntil = Stopwatch.GetTimestamp() + tickValidity_;
+      }
+
       // Remove the current thread from the list of waiters.
       var i = Interlocked.Decrement(ref currentHandle.Waiters);
 
@@ -161,6 +178,11 @@ public class ExecutionSingleizer<T> : IDisposable
   /// </summary>
   private sealed class Handle : IDisposable
   {
+    /// <summary>
+    ///   Specify the timestamp until the data is valid
+    /// </summary>
+    public long ValidUntil = long.MinValue;
+
     /// <summary>
     ///   Number of threads waiting for the result.
     /// </summary>
