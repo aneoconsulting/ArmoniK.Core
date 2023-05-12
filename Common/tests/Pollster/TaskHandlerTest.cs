@@ -414,6 +414,8 @@ public class TaskHandlerTest
                                 null,
                                 null,
                                 null,
+                                null,
+                                null,
                                 new Output(false,
                                            ""));
 
@@ -506,6 +508,8 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
+                          TimeSpan.FromSeconds(1),
+                          TimeSpan.FromSeconds(2),
                           new Output(false,
                                      ""));
     }
@@ -524,7 +528,7 @@ public class TaskHandlerTest
                                            CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task StartTask(string            taskId,
+    public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
@@ -580,7 +584,7 @@ public class TaskHandlerTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task SetTaskSuccessAsync(string            taskId,
+    public Task SetTaskSuccessAsync(TaskData          taskData,
                                     CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
@@ -589,11 +593,11 @@ public class TaskHandlerTest
                                                      CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
 
-    public Task SetTaskCanceledAsync(string            taskId,
+    public Task SetTaskCanceledAsync(TaskData          taskData,
                                      CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<bool> SetTaskErrorAsync(string            taskId,
+    public Task<bool> SetTaskErrorAsync(TaskData          taskData,
                                         string            errorDetail,
                                         CancellationToken cancellationToken)
       => Task.FromResult(true);
@@ -602,10 +606,7 @@ public class TaskHandlerTest
                                       CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public async Task<TaskData> AcquireTask(string            taskId,
-                                            string            ownerPodId,
-                                            string            ownerPodName,
-                                            DateTime          receptionDate,
+    public async Task<TaskData> AcquireTask(TaskData          taskData,
                                             CancellationToken cancellationToken = default)
     {
       if (waitMethod_ == WaitMethod.Acquire)
@@ -615,9 +616,9 @@ public class TaskHandlerTest
       }
 
       return new TaskData("SessionId",
-                          taskId,
-                          ownerPodId,
-                          ownerPodName,
+                          taskData.TaskId,
+                          taskData.OwnerPodId,
+                          taskData.OwnerPodName,
                           "payload",
                           new List<string>(),
                           new List<string>(),
@@ -641,20 +642,21 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
-                          receptionDate,
+                          taskData.ReceptionDate,
                           DateTime.Now,
                           DateTime.Now,
+                          TimeSpan.FromSeconds(1),
+                          TimeSpan.FromSeconds(2),
                           new Output(false,
                                      ""));
     }
 
-    public Task<TaskData> ReleaseTask(string            taskId,
-                                      string            ownerPodId,
+    public Task<TaskData> ReleaseTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
       => Task.FromResult(new TaskData("SessionId",
-                                      taskId,
-                                      ownerPodId,
-                                      ownerPodId,
+                                      taskData.TaskId,
+                                      taskData.OwnerPodId,
+                                      taskData.OwnerPodName,
                                       "payload",
                                       new List<string>(),
                                       new List<string>(),
@@ -681,6 +683,8 @@ public class TaskHandlerTest
                                       DateTime.Now,
                                       DateTime.Now,
                                       DateTime.Now,
+                                      TimeSpan.FromSeconds(1),
+                                      TimeSpan.FromSeconds(2),
                                       new Output(false,
                                                  "")));
 
@@ -1054,13 +1058,20 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PostProcessing()
                              .ConfigureAwait(false);
 
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
     Assert.AreEqual(TaskStatus.Completed,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskId,
-                                                                       })
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+                    taskData.Status);
+    Assert.IsNotNull(taskData.StartDate);
+    Assert.IsNotNull(taskData.EndDate);
+    Assert.IsNotNull(taskData.ProcessingToEndDuration);
+    Assert.IsNotNull(taskData.CreationToEndDuration);
+    Assert.Greater(taskData.CreationToEndDuration,
+                   taskData.ProcessingToEndDuration);
 
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);

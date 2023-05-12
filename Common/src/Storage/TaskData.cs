@@ -23,6 +23,8 @@ using System.Text;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 
+using Google.Protobuf.WellKnownTypes;
+
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -55,6 +57,8 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="EndDate">Date when the task ends</param>
 /// <param name="ReceptionDate">Date when the task is received by the polling agent</param>
 /// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
+/// <param name="ProcessingToEndDuration">Duration between the start of processing and the end of the task</param>
+/// <param name="CreationToEndDuration">Duration between the creation and the end of the task</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
 public record TaskData(string        SessionId,
@@ -82,6 +86,8 @@ public record TaskData(string        SessionId,
                        DateTime?                 ReceptionDate,
                        DateTime?                 AcquisitionDate,
                        DateTime?                 PodTtl,
+                       TimeSpan?                 ProcessingToEndDuration,
+                       TimeSpan?                 CreationToEndDuration,
                        Output                    Output)
 {
   /// <summary>
@@ -133,6 +139,8 @@ public record TaskData(string        SessionId,
            "",
            options,
            DateTime.UtcNow,
+           null,
+           null,
            null,
            null,
            null,
@@ -214,6 +222,12 @@ public record TaskData(string        SessionId,
                         ? FromDateTime(taskData.ReceptionDate.Value)
                         : null,
          PodHostname = taskData.OwnerPodName,
+         CreationToEndDuration = taskData.CreationToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
+                                   : null,
+         ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
+                                     ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
+                                     : null,
        };
 
   /// <summary>
@@ -241,6 +255,12 @@ public record TaskData(string        SessionId,
          Error = taskData.Status == TaskStatus.Error
                    ? taskData.Output.Error
                    : "",
+         CreationToEndDuration = taskData.CreationToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
+                                   : null,
+         ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
+                                     ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
+                                     : null,
        };
 
   /// <summary>

@@ -868,7 +868,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                            CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task StartTask(string            taskId,
+    public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
       => throw new T();
 
@@ -924,7 +924,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task SetTaskSuccessAsync(string            taskId,
+    public Task SetTaskSuccessAsync(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
       => throw new T();
 
@@ -933,11 +933,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                      CancellationToken   cancellationToken = default)
       => throw new T();
 
-    public Task SetTaskCanceledAsync(string            taskId,
+    public Task SetTaskCanceledAsync(TaskData          taskData,
                                      CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<bool> SetTaskErrorAsync(string            taskId,
+    public Task<bool> SetTaskErrorAsync(TaskData          taskData,
                                         string            errorDetail,
                                         CancellationToken cancellationToken = default)
       => throw new T();
@@ -946,15 +946,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                               CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<TaskData> AcquireTask(string            taskId,
-                                      string            ownerPodId,
-                                      string            ownerPodName,
-                                      DateTime          receptionDate,
+    public Task<TaskData> AcquireTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<TaskData> ReleaseTask(string            taskId,
-                                      string            ownerPodId,
+    public Task<TaskData> ReleaseTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
       => throw new T();
 

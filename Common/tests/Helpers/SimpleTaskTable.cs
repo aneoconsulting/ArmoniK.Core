@@ -105,7 +105,7 @@ public class SimpleTaskTable : ITaskTable
                                          CancellationToken cancellationToken = default)
     => Task.FromResult(false);
 
-  public Task StartTask(string            taskId,
+  public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
@@ -232,7 +232,7 @@ public class SimpleTaskTable : ITaskTable
                                                                                                    TaskOptions.ApplicationService),
                                                                                  }, 1));
 
-  public Task SetTaskSuccessAsync(string            taskId,
+  public Task SetTaskSuccessAsync(TaskData          taskData,
                                   CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
@@ -241,11 +241,11 @@ public class SimpleTaskTable : ITaskTable
                                                    CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task SetTaskCanceledAsync(string            taskId,
+  public Task SetTaskCanceledAsync(TaskData          taskData,
                                    CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<bool> SetTaskErrorAsync(string            taskId,
+  public Task<bool> SetTaskErrorAsync(TaskData          taskData,
                                       string            errorDetail,
                                       CancellationToken cancellationToken = default)
     => Task.FromResult(false);
@@ -255,15 +255,12 @@ public class SimpleTaskTable : ITaskTable
     => Task.FromResult(new Output(true,
                                   ""));
 
-  public Task<TaskData> AcquireTask(string            taskId,
-                                    string            ownerPodId,
-                                    string            ownerPodName,
-                                    DateTime          receptionDate,
+  public Task<TaskData> AcquireTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new TaskData(SessionId,
-                                    taskId,
-                                    ownerPodId,
-                                    ownerPodName,
+                                    taskData.TaskId,
+                                    taskData.OwnerPodId,
+                                    taskData.OwnerPodName,
                                     PayloadId,
                                     new List<string>(),
                                     new List<string>(),
@@ -277,12 +274,11 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public Task<TaskData> ReleaseTask(string            taskId,
-                                    string            ownerPodId,
+  public Task<TaskData> ReleaseTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new TaskData(SessionId,
-                                    taskId,
-                                    ownerPodId,
+                                    taskData.TaskId,
+                                    taskData.OwnerPodId,
                                     PodName,
                                     PayloadId,
                                     new List<string>(),

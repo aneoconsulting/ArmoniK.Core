@@ -409,7 +409,7 @@ public class SubmitterTests
                                 new Output(false,
                                            ""));
 
-    await taskTable.StartTask(taskCompletedId,
+    await taskTable.StartTask(taskData,
                               token)
                    .ConfigureAwait(false);
 

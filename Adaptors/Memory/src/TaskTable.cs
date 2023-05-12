@@ -131,22 +131,22 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task StartTask(string            taskId,
+  public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
     {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
+      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
     }
 
-    taskId2TaskData_.AddOrUpdate(taskId,
+    taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                  _ => throw new InvalidOperationException("The task does not exist."),
                                  (_,
                                   data) => data with
                                            {
                                              Status = TaskStatus.Processing,
-                                             StartDate = DateTime.UtcNow,
-                                             PodTtl = DateTime.UtcNow,
+                                             StartDate = taskData.StartDate,
+                                             PodTtl = taskData.PodTtl,
                                            });
     return Task.CompletedTask;
   }
@@ -380,7 +380,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task SetTaskSuccessAsync(string            taskId,
+  public Task SetTaskSuccessAsync(TaskData          taskData,
                                   CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
@@ -389,16 +389,16 @@ public class TaskTable : ITaskTable
                                 Success: true);
 
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
+                          taskData.TaskId,
                           TaskStatus.Completed,
                           taskOutput);
 
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
     {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
+      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
     }
 
-    taskId2TaskData_.AddOrUpdate(taskId,
+    taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                  _ => throw new InvalidOperationException("The task does not exist."),
                                  (_,
                                   data) =>
@@ -448,7 +448,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task SetTaskCanceledAsync(string            taskId,
+  public Task SetTaskCanceledAsync(TaskData          taskData,
                                    CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
@@ -457,16 +457,16 @@ public class TaskTable : ITaskTable
                                 Success: false);
 
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
+                          taskData.TaskId,
                           TaskStatus.Cancelled,
                           taskOutput);
 
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
     {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
+      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
     }
 
-    taskId2TaskData_.AddOrUpdate(taskId,
+    taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                  _ => throw new TaskNotFoundException("The task does not exist."),
                                  (_,
                                   data) =>
@@ -486,7 +486,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<bool> SetTaskErrorAsync(string            taskId,
+  public Task<bool> SetTaskErrorAsync(TaskData          taskData,
                                       string            errorDetail,
                                       CancellationToken cancellationToken = default)
   {
@@ -496,17 +496,17 @@ public class TaskTable : ITaskTable
                                 Success: false);
 
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
+                          taskData.TaskId,
                           TaskStatus.Error,
                           taskOutput);
 
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
     {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
+      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
     }
 
     var updated = true;
-    taskId2TaskData_.AddOrUpdate(taskId,
+    taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                  _ => throw new InvalidOperationException("The task does not exist."),
                                  (_,
                                   data) =>
@@ -539,12 +539,9 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<TaskData> AcquireTask(string            taskId,
-                                    string            ownerPodId,
-                                    string            ownerPodName,
-                                    DateTime          receptionDate,
+  public Task<TaskData> AcquireTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                                     _ => throw new InvalidOperationException("The task does not exist."),
                                                     (_,
                                                      data) =>
@@ -556,26 +553,25 @@ public class TaskTable : ITaskTable
 
                                                       return data with
                                                              {
-                                                               OwnerPodId = ownerPodId,
-                                                               OwnerPodName = ownerPodName,
-                                                               ReceptionDate = receptionDate,
+                                                               OwnerPodId = taskData.OwnerPodId,
+                                                               OwnerPodName = taskData.OwnerPodName,
+                                                               ReceptionDate = taskData.ReceptionDate,
                                                                AcquisitionDate = DateTime.UtcNow,
                                                              };
                                                     }));
 
   /// <inheritdoc />
-  public Task<TaskData> ReleaseTask(string            taskId,
-                                    string            ownerPodId,
+  public Task<TaskData> ReleaseTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                                     _ => throw new InvalidOperationException("The task does not exist."),
                                                     (_,
                                                      data) =>
                                                     {
-                                                      if (data.OwnerPodId != ownerPodId)
+                                                      if (data.OwnerPodId != taskData.OwnerPodId)
                                                       {
                                                         throw new
-                                                          InvalidOperationException($"The task {taskId} is acquired by {data.OwnerPodId}, but release is done by {ownerPodId}.");
+                                                          InvalidOperationException($"The task {taskData.TaskId} is acquired by {data.OwnerPodId}, but release is done by {taskData.OwnerPodId}.");
                                                       }
 
                                                       return data with
@@ -640,6 +636,8 @@ public class TaskTable : ITaskTable
                                    "",
                                    taskData.Options,
                                    DateTime.UtcNow,
+                                   null,
+                                   null,
                                    null,
                                    null,
                                    null,
