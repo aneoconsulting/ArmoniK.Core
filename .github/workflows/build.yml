@@ -135,6 +135,7 @@ jobs:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
+          - Tests/AdapterLoading/tests
       fail-fast: false
     runs-on: windows-latest
     steps:

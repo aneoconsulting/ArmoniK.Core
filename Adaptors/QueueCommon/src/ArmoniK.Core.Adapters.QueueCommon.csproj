@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
-    <PackageReference Include="ArmoniK.Core.Base" Version="0.13.0">
+    <PackageReference Include="ArmoniK.Core.Base" Version="0.13.1">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>

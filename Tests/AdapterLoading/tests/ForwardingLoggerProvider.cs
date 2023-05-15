@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -68,16 +68,16 @@ internal class ForwardingLoggerProvider : ILoggerProvider
     {
       if (state is not Dictionary<string, object> d)
       {
-        return Disposable.Create(() =>
-                                 {
-                                 });
+        return new Deferrer(() =>
+                            {
+                            });
       }
 
       states_.Add(d);
-      return Disposable.Create(() =>
-                               {
-                                 states_.Remove(d);
-                               });
+      return new Deferrer(() =>
+                          {
+                            states_.Remove(d);
+                          });
     }
 
     public void Log<TState>(LogLevel                         logLevel,

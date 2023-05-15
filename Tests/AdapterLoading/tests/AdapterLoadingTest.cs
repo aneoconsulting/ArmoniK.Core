@@ -47,13 +47,6 @@ public class AdapterLoadingTest
   private static readonly string RabbitPath =
     $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}RabbitMQ{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net6.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.RabbitMQ.dll";
 
-  private static readonly string HelloPluginPath =
-    $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}HelloPlugin{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net6.0{Path.DirectorySeparatorChar}HelloPlugin.dll";
-
-  private static readonly string PluginPath =
-    $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}ArmoniK.Contrib.Plugin.QueueSessionEquity{Path.DirectorySeparatorChar}Plugin{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net6.0{Path.DirectorySeparatorChar}Plugin.dll";
-
-
   public static IEnumerable TestCasesQueueLocation
   {
     get
@@ -62,10 +55,6 @@ public class AdapterLoadingTest
                                     "ArmoniK.Core.Adapters.Amqp.QueueBuilder").SetArgDisplayNames("Amqp");
       yield return new TestCaseData($"{SolutionRoot}{RabbitPath}",
                                     "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder").SetArgDisplayNames("RabbitMQ");
-      yield return new TestCaseData($"{SolutionRoot}{HelloPluginPath}",
-                                    "HelloPlugin.HelloWorld").SetArgDisplayNames("HelloPlugin");
-      yield return new TestCaseData($"{SolutionRoot}{PluginPath}",
-                                    "Plugin.QueueBuilder").SetArgDisplayNames("Plugin");
     }
   }
 

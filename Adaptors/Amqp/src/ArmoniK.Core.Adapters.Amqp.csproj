@@ -31,7 +31,7 @@
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.4" />
-    <PackageReference Include="ArmoniK.Core.Base" Version="0.13.0">
+    <PackageReference Include="ArmoniK.Core.Base" Version="0.13.1">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
