@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// ReSharper disable once RedundantUsingDirective
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,22 +24,21 @@ using System.IO;
 
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests.AdapterLoading;
+namespace AdapterLoading.Tests;
 
 [TestFixture]
 public class AdapterLoadingTest
 {
   private static readonly string SolutionRoot =
-    Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(typeof(AdapterLoadingTest)
-                                                                                                                                                                      .Assembly
-                                                                                                                                                                      .Location)))))) ??
+    Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(typeof(AdapterLoadingTest)
+                                                                                                                                                                                            .Assembly
+                                                                                                                                                                                            .Location))))))) ??
                                   string.Empty));
 
   private static readonly string AmqpPath =
@@ -45,6 +46,12 @@ public class AdapterLoadingTest
 
   private static readonly string RabbitPath =
     $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}RabbitMQ{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net6.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.RabbitMQ.dll";
+
+  private static readonly string HelloPluginPath =
+    $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}HelloPlugin{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net6.0{Path.DirectorySeparatorChar}HelloPlugin.dll";
+
+  private static readonly string PluginPath =
+    $"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}ArmoniK.Contrib.Plugin.QueueSessionEquity{Path.DirectorySeparatorChar}Plugin{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net6.0{Path.DirectorySeparatorChar}Plugin.dll";
 
 
   public static IEnumerable TestCasesQueueLocation
@@ -55,6 +62,10 @@ public class AdapterLoadingTest
                                     "ArmoniK.Core.Adapters.Amqp.QueueBuilder").SetArgDisplayNames("Amqp");
       yield return new TestCaseData($"{SolutionRoot}{RabbitPath}",
                                     "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder").SetArgDisplayNames("RabbitMQ");
+      yield return new TestCaseData($"{SolutionRoot}{HelloPluginPath}",
+                                    "HelloPlugin.HelloWorld").SetArgDisplayNames("HelloPlugin");
+      yield return new TestCaseData($"{SolutionRoot}{PluginPath}",
+                                    "Plugin.QueueBuilder").SetArgDisplayNames("Plugin");
     }
   }
 
