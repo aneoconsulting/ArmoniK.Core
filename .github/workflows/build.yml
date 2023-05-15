@@ -40,6 +40,7 @@ jobs:
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
           - Adaptors/S3/tests
+          - Tests/AdapterLoading/tests
         os:
           - ubuntu-latest
       fail-fast: false
@@ -135,7 +136,6 @@ jobs:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
-          - Tests/AdapterLoading/tests
       fail-fast: false
     runs-on: windows-latest
     steps:
