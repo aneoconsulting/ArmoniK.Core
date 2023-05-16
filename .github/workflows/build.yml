@@ -180,8 +180,8 @@ jobs:
       run: dotnet build ArmoniK.Core.sln -c Release
 
     - name : Run tests
-      working-directory: ./Tests/AdapterLoading/tests
       run:
+        cd /Tests/AdapterLoading/tests
         dotnet test --logger "trx;LogFileName=test-results.trx"
       
   publish-nuget:
