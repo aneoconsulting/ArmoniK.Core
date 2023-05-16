@@ -194,12 +194,12 @@ jobs:
         dotnet build
 
     - name: Build Rabbitmq project
-      working-directory: ../../RabbitMQ/src
+      working-directory: ./Adaptors/RabbitMQ/src
       run: 
         dotnet build
 
     - name: Run tests
-      working-directory: ../../../Tests/AdapterLoading/tests
+      working-directory: ./Tests/AdapterLoading/tests
       run: 
         dotnet test --logger "trx;LogFileName=test-results.trx"
 
