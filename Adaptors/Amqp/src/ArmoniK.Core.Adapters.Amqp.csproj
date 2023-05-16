@@ -31,13 +31,13 @@
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.4" />
-    <PackageReference Include="ArmoniK.Core.Base" Version="0.13.1">
-      <Private>false</Private>
-      <ExcludeAssets>runtime</ExcludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Base\src\ArmoniK.Core.Base.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Utils\src\ArmoniK.Core.Utils.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
