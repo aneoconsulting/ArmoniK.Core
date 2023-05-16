@@ -180,24 +180,23 @@ jobs:
       run: dotnet build ArmoniK.Core.sln -c Release
 
   testAdapterLoading :
-    strategy:
-      matrix:
-        projects:
-          - Tests/AdapterLoading/tests
-        os:
-          - ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
     - name: Run tests
-      run: |
-        cd ${{ matrix.projects }}
+      working-directory: ./Tests/AdapterLoading/tests
+      run: 
         dotnet test --logger "trx;LogFileName=test-results.trx"
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Test - ${{ matrix.os }} ${{ matrix.projects }}
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
       
