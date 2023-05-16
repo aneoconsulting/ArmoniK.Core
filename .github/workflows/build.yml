@@ -189,17 +189,17 @@ jobs:
         submodules: true
 
     - name: Build Amqp project
-      working-directory: /Adaptors/Amqp/src
+      working-directory: ./Adaptors/Amqp/src
       run: 
         dotnet build
 
     - name: Build Rabbitmq project
-      working-directory: /Adaptors/RabbitMQ/src
+      working-directory: ../../RabbitMQ/src
       run: 
         dotnet build
 
     - name: Run tests
-      working-directory: /Tests/AdapterLoading/tests
+      working-directory: ../../../Tests/AdapterLoading/tests
       run: 
         dotnet test --logger "trx;LogFileName=test-results.trx"
 
