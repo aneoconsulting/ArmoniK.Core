@@ -202,13 +202,6 @@ jobs:
       working-directory: ./Tests/AdapterLoading/tests
       run: 
         dotnet test --logger "trx;LogFileName=test-results.trx"
-
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
       
   publish-nuget:
     runs-on: ubuntu-latest
