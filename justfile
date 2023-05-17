@@ -5,7 +5,7 @@ set positional-arguments
 set shell := ["bash", "-exc"]
 
 # Default values for the deployment
-tag          := "test"
+tag          := "1.0.0.0-test"
 local_images := "false"
 log_level    := "Information"
 queue        := "activemq"
@@ -87,7 +87,7 @@ _usage:
     usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> local_images=<bool> deploy
             if any of the variables is not set, its default value is used
 
-      tag: The core tag image to use, defaults to test
+      tag: The core tag image to use, defaults to 1.0.0.0-test
 
       queue: allowed values below
         activemq    :  for activemq (1.0.0 protocol) (default)
@@ -201,7 +201,7 @@ buildMetrics: (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")
 buildPartitionMetrics: (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile")
 
 # Build Submitter
-buildSubmimtter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
+buildSubmitter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
 
 # Build Polling Agent
 buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
@@ -216,7 +216,7 @@ buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
-build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent
+build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
