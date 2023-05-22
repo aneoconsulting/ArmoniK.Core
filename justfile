@@ -201,7 +201,7 @@ buildMetrics: (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")
 buildPartitionMetrics: (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile")
 
 # Build Submitter
-buildSubmitter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
+buildSubmimtter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
 
 # Build Polling Agent
 buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
@@ -216,7 +216,7 @@ buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
-build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
+build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmimtter buildPollingAgent
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy
