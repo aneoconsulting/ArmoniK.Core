@@ -5,7 +5,7 @@ set positional-arguments
 set shell := ["bash", "-exc"]
 
 # Default values for the deployment
-tag          := "test"
+tag          := "0.0.0.0-local"
 local_images := "false"
 log_level    := "Information"
 queue        := "activemq"
@@ -87,7 +87,7 @@ _usage:
     usage: just tag=<tag> queue=<queue> worker=<worker> object=<object> replicas=<replicas> partitions=<number of partitions> local_images=<bool> deploy
             if any of the variables is not set, its default value is used
 
-      tag: The core tag image to use, defaults to test
+      tag: The core tag image to use, defaults to 0.0.0.0-local
 
       queue: allowed values below
         activemq    :  for activemq (1.0.0 protocol) (default)
