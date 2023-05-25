@@ -60,15 +60,4 @@ public record SessionData(string        SessionId,
          SessionId = sessionData.SessionId,
          Status    = sessionData.Status,
        };
-
-  public static implicit operator SessionSummary(SessionData sessionData)
-    => new()
-       {
-         CancelledAt = sessionData.CancellationDate is not null
-                         ? FromDateTime(sessionData.CancellationDate.Value)
-                         : null,
-         CreatedAt = FromDateTime(sessionData.CreationDate),
-         SessionId = sessionData.SessionId,
-         Status    = sessionData.Status,
-       };
 }
