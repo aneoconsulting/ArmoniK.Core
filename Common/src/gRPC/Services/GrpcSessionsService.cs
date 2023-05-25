@@ -144,7 +144,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-                 sessionData.sessions.Select(data => new SessionSummary(data)),
+                 sessionData.sessions.Select(data => new SessionRaw(data)),
                },
                Total = sessionData.totalCount,
              };
