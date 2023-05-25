@@ -228,6 +228,7 @@ public record TaskData(string        SessionId,
          ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
                                      ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
                                      : null,
+         InitialTaskId = taskData.InitialTaskId,
        };
 
   /// <summary>
@@ -240,27 +241,46 @@ public record TaskData(string        SessionId,
   public static implicit operator TaskSummary(TaskData taskData)
     => new()
        {
-         SessionId = taskData.SessionId,
-         Status    = taskData.Status,
-         Options   = taskData.Options.ToGrpcTaskOptions(),
-         CreatedAt = FromDateTime(taskData.CreationDate),
+         SessionId  = taskData.SessionId,
+         Status     = taskData.Status,
+         OwnerPodId = taskData.OwnerPodId,
+         Options    = taskData.Options.ToGrpcTaskOptions(),
+         CreatedAt  = FromDateTime(taskData.CreationDate),
          EndedAt = taskData.EndDate is not null
                      ? FromDateTime(taskData.EndDate.Value)
                      : null,
          Id = taskData.TaskId,
-
+         PodTtl = taskData.PodTtl is not null
+                    ? FromDateTime(taskData.PodTtl.Value)
+                    : null,
          StartedAt = taskData.StartDate is not null
                        ? FromDateTime(taskData.StartDate.Value)
                        : null,
          Error = taskData.Status == TaskStatus.Error
                    ? taskData.Output.Error
                    : "",
+         StatusMessage = taskData.StatusMessage,
+         SubmittedAt = taskData.SubmittedDate is not null
+                         ? FromDateTime(taskData.SubmittedDate.Value)
+                         : null,
+         AcquiredAt = taskData.AcquisitionDate is not null
+                        ? FromDateTime(taskData.AcquisitionDate.Value)
+                        : null,
+         ReceivedAt = taskData.ReceptionDate is not null
+                        ? FromDateTime(taskData.ReceptionDate.Value)
+                        : null,
+         PodHostname = taskData.OwnerPodName,
          CreationToEndDuration = taskData.CreationToEndDuration is not null
                                    ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
                                    : null,
          ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
                                      ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
                                      : null,
+         InitialTaskId          = taskData.InitialTaskId,
+         CountDataDependencies  = taskData.DataDependencies.Count,
+         CountExpectedOutputIds = taskData.ExpectedOutputIds.Count,
+         CountParentTaskIds     = taskData.ParentTaskIds.Count,
+         CountRetryOfIds        = taskData.RetryOfIds.Count,
        };
 
   /// <summary>
