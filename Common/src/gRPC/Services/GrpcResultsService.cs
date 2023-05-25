@@ -269,4 +269,20 @@ public class GrpcResultsService : Results.ResultsBase
              Result = resultData,
            };
   }
+
+  [RequiresPermission(typeof(GrpcResultsService),
+                      nameof(GetResult))]
+  public override async Task<GetResultResponse> GetResult(GetResultRequest  request,
+                                                          ServerCallContext context)
+  {
+    var result = await resultTable_.GetResult("",
+                                              request.ResultId,
+                                              context.CancellationToken)
+                                   .ConfigureAwait(false);
+
+    return new GetResultResponse
+           {
+             Result = result,
+           };
+  }
 }
