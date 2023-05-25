@@ -183,6 +183,8 @@ public static class Program
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcPartitionsService>()
          .EnableGrpcWeb();
+      app.MapGrpcService<GrpcVersionsService>()
+         .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",
                           1081,
