@@ -22,28 +22,6 @@ jobs:
       - name: Generate Version
         # Print to the summary
         run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_STEP_SUMMARY
-  # versionning:
-  #   name: Versionning
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     version: ${{ steps.genver.outputs.version }}
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v3
-  #     with:
-  #       ref: ${{ github.ref }}
-  #       fetch-depth: 0
-
-  #   - name: Generate Version
-  #     id: genver
-  #     uses: codacy/git-version@2.7.1
-  #     with:
-  #       minor-identifier: "feat:"
-  #       release-branch: release
-  #       dev-branch: main
-
-  #   - name: Print version
-  #     run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
   tests:
     strategy:
