@@ -9,28 +9,41 @@ on:
     tags-ignore: [ '**' ]
 
 jobs:
-  versionning:
-    name: Versionning
+  version:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.genver.outputs.version }}
+    name: Version
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
-    - name: Generate Version
-      id: genver
-      uses: codacy/git-version@2.7.1
-      with:
-        minor-identifier: "feat:"
-        release-branch: release
-        dev-branch: main
+      - name: Generate Version
+        # Print to the summary
+        run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_STEP_SUMMARY
+  # versionning:
+  #   name: Versionning
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     version: ${{ steps.genver.outputs.version }}
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v3
+  #     with:
+  #       ref: ${{ github.ref }}
+  #       fetch-depth: 0
 
-    - name: Print version
-      run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
+  #   - name: Generate Version
+  #     id: genver
+  #     uses: codacy/git-version@2.7.1
+  #     with:
+  #       minor-identifier: "feat:"
+  #       release-branch: release
+  #       dev-branch: main
+
+  #   - name: Print version
+  #     run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
   tests:
     strategy:
@@ -105,7 +118,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.x
-    
+
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
@@ -182,15 +195,16 @@ jobs:
   publish-nuget:
     runs-on: ubuntu-latest
     needs:
-      - versionning
       - buildProjects
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+
+    - name: Generate Version
+      run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
 
     - name: Build the package
       run: |
@@ -198,18 +212,14 @@ jobs:
 
     - name: Pack the package
       run: |
-        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
 
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
   buildImages:
     runs-on: ubuntu-latest
-    needs:
-      - versionning
       - buildProjects
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
       fail-fast: true
       matrix:
@@ -238,11 +248,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ github.head_ref }}
         submodules: true
+        fetch-depth: 0
 
     - name: login
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+
+    - name: Generate Version
+      run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
 
     - name: Build
       run: docker build --build-arg VERSION=$VERSION -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
@@ -254,10 +268,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
@@ -286,7 +297,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ github.head_ref }}
         submodules: true
 
     - name: Set up QEMU
@@ -305,6 +316,9 @@ jobs:
     - name: platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
 
+    - name: Generate Version
+      run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
+
     - name: Build and push
       uses: docker/build-push-action@v3
       with:
@@ -312,20 +326,17 @@ jobs:
         context: .
         platforms: linux/arm64
         build-args: |
-          VERSION=${{ needs.versionning.outputs.version }}
+          VERSION=${{ env.VERSION }}
         push: true
         tags: |
-            ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm
+            ${{ matrix.img }}:${{ env.VERSION }}-arm
 
     - name: Create multi-arch manifest
       run: docker buildx imagetools create ${{ matrix.img }}:${VERSION} --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-arm
 
   testStreamDC:
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     name: Stream ${{ matrix.queue }} ${{ matrix.log-level }}
     strategy:
@@ -397,10 +408,7 @@ jobs:
 
   testHtcMockDC:
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -420,8 +428,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
           submodules: true
+          fetch-depth: 0
+
+      - name: Generate Version
+        run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -553,10 +565,7 @@ jobs:
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-container-logs.tar.gz
   testConnectivity:
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -626,20 +635,21 @@ jobs:
 
 
 
-  
+
   runBench:
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
           submodules: true
+          fetch-depth: 0
+
+      - name: Generate Version
+        run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -723,17 +733,18 @@ jobs:
 
   defaultPartitionMock:
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
           submodules: true
+          fetch-depth: 0
+
+      - name: Generate Version
+        run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -786,17 +797,18 @@ jobs:
 
   healthCheckTest:
     needs:
-      - versionning
       - buildImages
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
           submodules: true
+          fetch-depth: 0
+
+      - name: Generate Version
+        run: echo "VERSION=$(npx @aneoconsultingfr/generate-next-version@latest --edge)" >> $GITHUB_ENV
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
