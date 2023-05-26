@@ -218,6 +218,26 @@ public class SimpleTaskTable : ITaskTable
                                         "")),
                        }.Select(selector.Invoke));
 
+  public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                             cancellationToken = default)
+    => Task.FromResult(new TaskData(SessionId,
+                                    taskId,
+                                    OwnerPodId,
+                                    PodName,
+                                    PayloadId,
+                                    new List<string>(),
+                                    new List<string>(),
+                                    new List<string>
+                                    {
+                                      OutputId,
+                                    },
+                                    new List<string>(),
+                                    TaskStatus.Completed,
+                                    TaskOptions,
+                                    new Output(true,
+                                               "")));
+
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                              ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                              bool ascOrder,
@@ -232,23 +252,10 @@ public class SimpleTaskTable : ITaskTable
                                                                                                    TaskOptions.ApplicationService),
                                                                                  }, 1));
 
-  public Task SetTaskSuccessAsync(TaskData          taskData,
-                                  CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                    ICollection<string> dependenciesToRemove,
                                                    CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
-
-  public Task SetTaskCanceledAsync(TaskData          taskData,
-                                   CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<bool> SetTaskErrorAsync(TaskData          taskData,
-                                      string            errorDetail,
-                                      CancellationToken cancellationToken = default)
-    => Task.FromResult(false);
 
   public Task<Output> GetTaskOutput(string            taskId,
                                     CancellationToken cancellationToken = default)

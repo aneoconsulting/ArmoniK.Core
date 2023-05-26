@@ -916,6 +916,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                           CancellationToken                 cancellationToken = default)
       => throw new T();
 
+    public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                        ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                        CancellationToken                                                             cancellationToken = default)
+      => throw new T();
+
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                bool ascOrder,
@@ -924,22 +929,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task SetTaskSuccessAsync(TaskData          taskData,
-                                    CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                      ICollection<string> dependenciesToRemove,
                                                      CancellationToken   cancellationToken = default)
-      => throw new T();
-
-    public Task SetTaskCanceledAsync(TaskData          taskData,
-                                     CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<bool> SetTaskErrorAsync(TaskData          taskData,
-                                        string            errorDetail,
-                                        CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task<Storage.Output> GetTaskOutput(string            taskId,
