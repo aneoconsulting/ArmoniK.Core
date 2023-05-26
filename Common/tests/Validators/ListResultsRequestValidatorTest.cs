@@ -18,6 +18,9 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.Results;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
@@ -34,8 +37,11 @@ public class ListResultsRequestValidatorTest
                                     Filter = new ListResultsRequest.Types.Filter(),
                                     Sort = new ListResultsRequest.Types.Sort
                                            {
-                                             Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                                             Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
+                                             Direction = SortDirection.Asc,
+                                             Field = new ResultField
+                                                     {
+                                                       ResultRawField = ResultRawField.CreatedAt,
+                                                     },
                                            },
                                     Page     = 0,
                                     PageSize = 1,
@@ -77,7 +83,7 @@ public class ListResultsRequestValidatorTest
   {
     validListResultsRequest_!.Sort = new ListResultsRequest.Types.Sort
                                      {
-                                       Direction = ListResultsRequest.Types.OrderDirection.Desc,
+                                       Direction = SortDirection.Desc,
                                      };
     foreach (var error in validator_.Validate(validListResultsRequest_)
                                     .Errors)
@@ -94,7 +100,10 @@ public class ListResultsRequestValidatorTest
   {
     validListResultsRequest_!.Sort = new ListResultsRequest.Types.Sort
                                      {
-                                       Field = ListResultsRequest.Types.OrderByField.Name,
+                                       Field = new ResultField
+                                               {
+                                                 ResultRawField = ResultRawField.Name,
+                                               },
                                      };
     foreach (var error in validator_.Validate(validListResultsRequest_)
                                     .Errors)

@@ -34,6 +34,9 @@ using Armonik.Api.Grpc.V1.Partitions;
 
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
@@ -272,8 +275,11 @@ public class AuthenticationIntegrationTest
                             PageSize = 10,
                             Sort = new ListSessionsRequest.Types.Sort
                                    {
-                                     Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                     Field     = ListSessionsRequest.Types.OrderByField.SessionId,
+                                     Direction = SortDirection.Asc,
+                                     Field = new SessionField
+                                             {
+                                               SessionRawField = SessionRawField.SessionId,
+                                             },
                                    },
                           };
 
@@ -293,8 +299,11 @@ public class AuthenticationIntegrationTest
                          PageSize = 10,
                          Sort = new ListTasksRequest.Types.Sort
                                 {
-                                  Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                  Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                                  Direction = SortDirection.Asc,
+                                  Field = new TaskField
+                                          {
+                                            TaskSummaryField = TaskSummaryField.SessionId,
+                                          },
                                 },
                        };
     GetOwnerTaskIdRequest = new GetOwnerTaskIdRequest
@@ -313,10 +322,13 @@ public class AuthenticationIntegrationTest
                                 PageSize = 10,
                                 Sort = new ListApplicationsRequest.Types.Sort
                                        {
-                                         Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                                         Direction = SortDirection.Asc,
                                          Fields =
                                          {
-                                           ListApplicationsRequest.Types.OrderByField.Name,
+                                           new ApplicationField
+                                           {
+                                             ApplicationField_ = ApplicationRawField.Name,
+                                           },
                                          },
                                        },
                               };
@@ -334,8 +346,11 @@ public class AuthenticationIntegrationTest
                            PageSize = 10,
                            Sort = new ListResultsRequest.Types.Sort
                                   {
-                                    Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                                    Field     = ListResultsRequest.Types.OrderByField.Name,
+                                    Direction = SortDirection.Asc,
+                                    Field = new ResultField
+                                            {
+                                              ResultRawField = ResultRawField.Name,
+                                            },
                                   },
                          };
     GetCurrentUserRequest = new GetCurrentUserRequest();
@@ -353,8 +368,11 @@ public class AuthenticationIntegrationTest
                                        },
                               Sort = new ListPartitionsRequest.Types.Sort
                                      {
-                                       Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                                       Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                       Direction = SortDirection.Asc,
+                                       Field = new PartitionField
+                                               {
+                                                 PartitionRawField = PartitionRawField.Id,
+                                               },
                                      },
                               PageSize = 10,
                               Page     = 0,

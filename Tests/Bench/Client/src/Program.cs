@@ -31,6 +31,9 @@ using ArmoniK.Api.gRPC.V1.Events;
 using Armonik.Api.Grpc.V1.Partitions;
 
 using ArmoniK.Api.gRPC.V1.Results;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
@@ -117,8 +120,11 @@ internal static class Program
                                                                            },
                                                                   Sort = new ListPartitionsRequest.Types.Sort
                                                                          {
-                                                                           Direction = ListPartitionsRequest.Types.OrderDirection.Desc,
-                                                                           Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                                                           Direction = SortDirection.Desc,
+                                                                           Field = new PartitionField
+                                                                                   {
+                                                                                     PartitionRawField = PartitionRawField.Id,
+                                                                                   },
                                                                          },
                                                                   PageSize = 10,
                                                                   Page     = 0,

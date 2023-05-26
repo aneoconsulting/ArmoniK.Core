@@ -21,6 +21,9 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -132,7 +135,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       var sessionData = await sessionTable_.ListSessionsAsync(request.Filter.ToSessionDataFilter(),
                                                               request.Sort.ToSessionDataField(),
-                                                              request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc,
+                                                              request.Sort.Direction == SortDirection.Asc,
                                                               request.Page,
                                                               request.PageSize,
                                                               context.CancellationToken)

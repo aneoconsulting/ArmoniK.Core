@@ -18,6 +18,9 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
@@ -34,8 +37,11 @@ public class ListSessionsRequestValidatorTest
                                      Filter = new ListSessionsRequest.Types.Filter(),
                                      Sort = new ListSessionsRequest.Types.Sort
                                             {
-                                              Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                              Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
+                                              Direction = SortDirection.Asc,
+                                              Field = new SessionField
+                                                      {
+                                                        SessionRawField = SessionRawField.CreatedAt,
+                                                      },
                                             },
                                      Page     = 0,
                                      PageSize = 1,
@@ -77,7 +83,7 @@ public class ListSessionsRequestValidatorTest
   {
     validListSessionsRequest_!.Sort = new ListSessionsRequest.Types.Sort
                                       {
-                                        Direction = ListSessionsRequest.Types.OrderDirection.Desc,
+                                        Direction = SortDirection.Desc,
                                       };
     foreach (var error in validator_.Validate(validListSessionsRequest_)
                                     .Errors)
@@ -94,7 +100,10 @@ public class ListSessionsRequestValidatorTest
   {
     validListSessionsRequest_!.Sort = new ListSessionsRequest.Types.Sort
                                       {
-                                        Field = ListSessionsRequest.Types.OrderByField.SessionId,
+                                        Field = new SessionField
+                                                {
+                                                  SessionRawField = SessionRawField.SessionId,
+                                                },
                                       };
     foreach (var error in validator_.Validate(validListSessionsRequest_)
                                     .Errors)

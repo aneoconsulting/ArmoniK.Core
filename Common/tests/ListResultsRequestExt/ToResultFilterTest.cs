@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -41,6 +44,15 @@ public class ToResultFilterTest
                                         DateTime.UtcNow,
                                         Array.Empty<byte>());
 
+  private static readonly ListResultsRequest.Types.Sort Sort = new()
+                                                               {
+                                                                 Field = new ResultField
+                                                                         {
+                                                                           ResultRawField = ResultRawField.CreatedAt,
+                                                                         },
+                                                                 Direction = SortDirection.Asc,
+                                                               };
+
   [Test]
   public void FilterStatusShouldSucceed()
   {
@@ -50,11 +62,7 @@ public class ToResultFilterTest
                           {
                             Status = ResultStatus.Created,
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -70,11 +78,7 @@ public class ToResultFilterTest
                           {
                             Status = ResultStatus.Aborted,
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -90,11 +94,7 @@ public class ToResultFilterTest
                           {
                             SessionId = "SessionId",
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -110,11 +110,7 @@ public class ToResultFilterTest
                           {
                             SessionId = "BadSessionId",
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -130,11 +126,7 @@ public class ToResultFilterTest
                           {
                             Name = "Name",
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -150,11 +142,7 @@ public class ToResultFilterTest
                           {
                             Name = "BadName",
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -170,11 +158,7 @@ public class ToResultFilterTest
                           {
                             OwnerTaskId = "OwnerTaskId",
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -190,11 +174,7 @@ public class ToResultFilterTest
                           {
                             OwnerTaskId = "BadOwnerTaskId",
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -210,11 +190,7 @@ public class ToResultFilterTest
                           {
                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -230,11 +206,7 @@ public class ToResultFilterTest
                           {
                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -253,11 +225,7 @@ public class ToResultFilterTest
                           {
                             CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 
@@ -276,11 +244,7 @@ public class ToResultFilterTest
                           {
                             CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToResultFilter()
                 .Compile();
 

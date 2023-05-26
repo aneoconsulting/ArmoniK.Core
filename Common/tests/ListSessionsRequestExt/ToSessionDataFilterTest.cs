@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -52,6 +55,15 @@ public class ToSessionDataFilterTest
                                                   new List<string>(),
                                                   Options);
 
+  private static readonly ListSessionsRequest.Types.Sort Sort = new()
+                                                                {
+                                                                  Direction = SortDirection.Asc,
+                                                                  Field = new SessionField
+                                                                          {
+                                                                            SessionRawField = SessionRawField.CreatedAt,
+                                                                          },
+                                                                };
+
   [Test]
   public void FilterStatusShouldSucceed()
   {
@@ -61,11 +73,7 @@ public class ToSessionDataFilterTest
                           {
                             Status = SessionStatus.Running,
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -81,11 +89,7 @@ public class ToSessionDataFilterTest
                           {
                             Status = SessionStatus.Cancelled,
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -101,11 +105,7 @@ public class ToSessionDataFilterTest
                           {
                             SessionId = "SessionId",
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -121,11 +121,7 @@ public class ToSessionDataFilterTest
                           {
                             SessionId = "BadSessionId",
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -141,11 +137,7 @@ public class ToSessionDataFilterTest
                           {
                             ApplicationName = "applicationName",
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -161,11 +153,7 @@ public class ToSessionDataFilterTest
                           {
                             ApplicationName = "badname",
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -181,11 +169,7 @@ public class ToSessionDataFilterTest
                           {
                             ApplicationVersion = "applicationVersion",
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -201,11 +185,7 @@ public class ToSessionDataFilterTest
                           {
                             ApplicationVersion = "badname",
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -221,11 +201,7 @@ public class ToSessionDataFilterTest
                           {
                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -241,11 +217,7 @@ public class ToSessionDataFilterTest
                           {
                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -264,11 +236,7 @@ public class ToSessionDataFilterTest
                           {
                             CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -287,11 +255,7 @@ public class ToSessionDataFilterTest
                           {
                             CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -307,11 +271,7 @@ public class ToSessionDataFilterTest
                           {
                             CancelledBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -327,11 +287,7 @@ public class ToSessionDataFilterTest
                           {
                             CancelledBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -350,11 +306,7 @@ public class ToSessionDataFilterTest
                           {
                             CancelledAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 
@@ -373,11 +325,7 @@ public class ToSessionDataFilterTest
                           {
                             CancelledAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToSessionDataFilter()
                 .Compile();
 

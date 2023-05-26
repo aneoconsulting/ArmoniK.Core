@@ -27,23 +27,22 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListApplicationsRequestExt
 {
-  public static Expression<Func<Application, object?>> ToApplicationField(this ListApplicationsRequest.Types.OrderByField field)
+  public static Expression<Func<Application, object?>> ToApplicationField(this ApplicationField field)
   {
-    switch (field)
+    switch (field.FieldCase)
     {
-      case ListApplicationsRequest.Types.OrderByField.Name:
-        return taskData => taskData.Name;
+      case ApplicationField.FieldOneofCase.ApplicationField_:
+        return field.ApplicationField_ switch
+               {
+                 ApplicationRawField.Name        => taskData => taskData.Name,
+                 ApplicationRawField.Version     => taskData => taskData.Version,
+                 ApplicationRawField.Namespace   => taskData => taskData.Namespace,
+                 ApplicationRawField.Service     => taskData => taskData.Service,
+                 ApplicationRawField.Unspecified => throw new ArgumentOutOfRangeException(),
+                 _                               => throw new ArgumentOutOfRangeException(),
+               };
 
-      case ListApplicationsRequest.Types.OrderByField.Version:
-        return taskData => taskData.Version;
-
-      case ListApplicationsRequest.Types.OrderByField.Namespace:
-        return taskData => taskData.Namespace;
-
-      case ListApplicationsRequest.Types.OrderByField.Service:
-        return taskData => taskData.Service;
-
-      case ListApplicationsRequest.Types.OrderByField.Unspecified:
+      case ApplicationField.FieldOneofCase.None:
       default:
         throw new ArgumentOutOfRangeException();
     }

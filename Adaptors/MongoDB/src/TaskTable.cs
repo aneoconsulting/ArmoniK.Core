@@ -418,30 +418,30 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                                  Expression<Func<TaskData, object?>> orderField,
-                                                                                  bool                                ascOrder,
-                                                                                  int                                 page,
-                                                                                  int                                 pageSize,
-                                                                                  CancellationToken                   cancellationToken = default)
+  public async Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                                   Expression<Func<TaskData, object?>> orderField,
+                                                                                   bool                                ascOrder,
+                                                                                   int                                 page,
+                                                                                   int                                 pageSize,
+                                                                                   CancellationToken                   cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = taskCollectionProvider_.Get();
 
-    var queryable = taskCollection.AsQueryable(sessionHandle)
-                                  .Where(filter);
+    var findFluent = taskCollection.Find(sessionHandle,
+                                         filter);
 
     var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+                    ? findFluent.SortBy(orderField)
+                    : findFluent.SortByDescending(orderField);
 
     var taskResult = ordered.Skip(page * pageSize)
-                            .Take(pageSize)
+                            .Limit(pageSize)
                             .ToListAsync(cancellationToken);
 
-    return (await taskResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                                 .ConfigureAwait(false));
+    return (await taskResult.ConfigureAwait(false), await findFluent.CountDocumentsAsync(cancellationToken)
+                                                                    .ConfigureAwait(false));
   }
 
   /// <inheritdoc />
