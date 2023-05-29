@@ -712,7 +712,7 @@ public class TaskTableTestBase
 
       var resStatus = await TaskTable.GetTaskStatus(new[]
                                                     {
-                                                      "TaskProcessingId",
+                                                      taskProcessingData_.TaskId,
                                                     },
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
@@ -720,6 +720,16 @@ public class TaskTableTestBase
       Assert.AreEqual(TaskStatus.Completed,
                       resStatus.Single()
                                .Status);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Completed,
+                      taskData.Status);
+      Assert.IsTrue(taskData.Output.Success);
+      Assert.AreEqual("",
+                      taskData.Output.Error);
     }
   }
 
@@ -728,22 +738,22 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskErrorAsync(taskProcessingData_ with
-                                                {
-                                                  EndDate = DateTime.UtcNow,
-                                                  CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                                  ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                                },
-                                                "Testing SetTaskError",
-                                                CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskErrorAsync(taskProcessingData_ with
+                                         {
+                                           EndDate = DateTime.UtcNow,
+                                           CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                           ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                         },
+                                         "Testing SetTaskError",
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
-                                                    {
-                                                      "TaskProcessingId",
-                                                    },
-                                                    CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
+                                                     {
+                                                       "TaskProcessingId",
+                                                     },
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Error,
                       resStatus.Single()
@@ -755,6 +765,7 @@ public class TaskTableTestBase
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
+      Assert.IsFalse(output.Success);
     }
   }
 
@@ -763,24 +774,32 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskCanceledAsync(taskProcessingData_ with
-                                                   {
-                                                     EndDate = DateTime.UtcNow,
-                                                     CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                                     ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                                   },
-                                                   CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskCanceledAsync(taskProcessingData_ with
+                                            {
+                                              EndDate = DateTime.UtcNow,
+                                              CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                              ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                            },
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
-                                                    {
-                                                      "TaskProcessingId",
-                                                    },
-                                                    CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
+                                                     {
+                                                       "TaskProcessingId",
+                                                     },
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Cancelled);
+      Assert.AreEqual(TaskStatus.Cancelled,
+                      resStatus.Single()
+                               .Status);
+
+      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsEmpty(output.Error);
+      Assert.IsFalse(output.Success);
     }
   }
 
