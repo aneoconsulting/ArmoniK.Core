@@ -30,23 +30,24 @@ public static class ListSessionsRequestExt
 {
   public static Expression<Func<SessionData, object?>> ToSessionDataField(this ListSessionsRequest.Types.Sort sort)
   {
-    switch (sort.Field)
+    switch (sort.Field.FieldCase)
     {
-      case ListSessionsRequest.Types.OrderByField.SessionId:
-        return session => session.SessionId;
-
-      case ListSessionsRequest.Types.OrderByField.Status:
-        return session => session.Status;
-
-      case ListSessionsRequest.Types.OrderByField.CreatedAt:
-        return session => session.CreationDate;
-
-      case ListSessionsRequest.Types.OrderByField.CancelledAt:
-        return session => session.CancellationDate;
-
-      case ListSessionsRequest.Types.OrderByField.Unspecified:
+      case SessionField.FieldOneofCase.SessionRawField:
+        return sort.Field.SessionRawField switch
+               {
+                 SessionRawField.SessionId    => session => session.SessionId,
+                 SessionRawField.Status       => session => session.Status,
+                 SessionRawField.PartitionIds => session => session.PartitionIds,
+                 SessionRawField.Options      => session => session.Options,
+                 SessionRawField.CreatedAt    => session => session.CreationDate,
+                 SessionRawField.CancelledAt  => session => session.CancellationDate,
+                 SessionRawField.Duration     => throw new ArgumentOutOfRangeException(),
+                 SessionRawField.Unspecified  => throw new ArgumentOutOfRangeException(),
+                 _                            => throw new ArgumentOutOfRangeException(),
+               };
+      case SessionField.FieldOneofCase.None:
       default:
-        throw new InvalidOperationException();
+        throw new ArgumentOutOfRangeException();
     }
   }
 

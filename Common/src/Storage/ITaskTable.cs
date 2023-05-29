@@ -225,18 +225,18 @@ public interface ITaskTable : IInitializable
   /// <param name="filter">Filter to select tasks</param>
   /// <param name="orderField">Select the field that will be used to order the tasks</param>
   /// <param name="ascOrder">Is the order ascending</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                     Expression<Func<TaskData, object?>> orderField,
-                                                                     bool                                ascOrder,
-                                                                     int                                 page,
-                                                                     int                                 pageSize,
-                                                                     CancellationToken                   cancellationToken = default);
+  Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                      Expression<Func<TaskData, object?>> orderField,
+                                                                      bool                                ascOrder,
+                                                                      int                                 page,
+                                                                      int                                 pageSize,
+                                                                      CancellationToken                   cancellationToken = default);
 
   /// <summary>
   ///   Find all tasks matching the given filter and ordering

@@ -30,27 +30,22 @@ public static class ListPartitionsRequestExt
 {
   public static Expression<Func<PartitionData, object?>> ToPartitionField(this ListPartitionsRequest.Types.Sort sort)
   {
-    switch (sort.Field)
+    switch (sort.Field.FieldCase)
     {
-      case ListPartitionsRequest.Types.OrderByField.Id:
-        return partitionData => partitionData.PartitionId;
+      case PartitionField.FieldOneofCase.PartitionRawField:
+        return sort.Field.PartitionRawField switch
+               {
+                 PartitionRawField.Id                   => partitionData => partitionData.PartitionId,
+                 PartitionRawField.ParentPartitionIds   => partitionData => partitionData.ParentPartitionIds,
+                 PartitionRawField.PodReserved          => partitionData => partitionData.PodReserved,
+                 PartitionRawField.PodMax               => partitionData => partitionData.PodMax,
+                 PartitionRawField.PreemptionPercentage => partitionData => partitionData.PreemptionPercentage,
+                 PartitionRawField.Priority             => partitionData => partitionData.Priority,
+                 PartitionRawField.Unspecified          => throw new ArgumentOutOfRangeException(),
+                 _                                      => throw new ArgumentOutOfRangeException(),
+               };
 
-      case ListPartitionsRequest.Types.OrderByField.ParentPartitionIds:
-        return partitionData => partitionData.ParentPartitionIds;
-
-      case ListPartitionsRequest.Types.OrderByField.PodReserved:
-        return partitionData => partitionData.PodReserved;
-
-      case ListPartitionsRequest.Types.OrderByField.PodMax:
-        return partitionData => partitionData.PodMax;
-
-      case ListPartitionsRequest.Types.OrderByField.PreemptionPercentage:
-        return partitionData => partitionData.PreemptionPercentage;
-
-      case ListPartitionsRequest.Types.OrderByField.Priority:
-        return partitionData => partitionData.Priority;
-
-      case ListPartitionsRequest.Types.OrderByField.Unspecified:
+      case PartitionField.FieldOneofCase.None:
       default:
         throw new ArgumentOutOfRangeException();
     }

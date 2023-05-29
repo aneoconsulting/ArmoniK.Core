@@ -21,6 +21,9 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -54,7 +57,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
     var tasks = await taskTable_.ListApplicationsAsync(request.Filter.ToApplicationFilter(),
                                                        request.Sort.Fields.Select(field => field.ToApplicationField())
                                                               .ToList(),
-                                                       request.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                       request.Sort.Direction == SortDirection.Asc,
                                                        request.Page,
                                                        request.PageSize,
                                                        context.CancellationToken)

@@ -30,26 +30,24 @@ public static class ListResultsRequestExt
 {
   public static Expression<Func<Result, object?>> ToResultField(this ListResultsRequest.Types.Sort sort)
   {
-    switch (sort.Field)
+    switch (sort.Field.FieldCase)
     {
-      case ListResultsRequest.Types.OrderByField.SessionId:
-        return result => result.SessionId;
-
-      case ListResultsRequest.Types.OrderByField.Name:
-        return result => result.Name;
-
-      case ListResultsRequest.Types.OrderByField.OwnerTaskId:
-        return result => result.OwnerTaskId;
-
-      case ListResultsRequest.Types.OrderByField.Status:
-        return result => result.Status;
-
-      case ListResultsRequest.Types.OrderByField.CreatedAt:
-        return result => result.CreationDate;
-
-      case ListResultsRequest.Types.OrderByField.Unspecified:
+      case ResultField.FieldOneofCase.ResultRawField:
+        return sort.Field.ResultRawField switch
+               {
+                 ResultRawField.SessionId   => result => result.SessionId,
+                 ResultRawField.Name        => result => result.Name,
+                 ResultRawField.OwnerTaskId => result => result.OwnerTaskId,
+                 ResultRawField.Status      => result => result.Status,
+                 ResultRawField.CreatedAt   => result => result.CreationDate,
+                 ResultRawField.ResultId    => result => result.ResultId,
+                 ResultRawField.CompletedAt => throw new ArgumentOutOfRangeException(),
+                 ResultRawField.Unspecified => throw new ArgumentOutOfRangeException(),
+                 _                          => throw new ArgumentOutOfRangeException(),
+               };
+      case ResultField.FieldOneofCase.None:
       default:
-        throw new InvalidOperationException();
+        throw new ArgumentOutOfRangeException();
     }
   }
 

@@ -18,6 +18,9 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.Applications;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
@@ -34,10 +37,13 @@ public class ListApplicationsRequestValidatorTest
                                          Filter = new ListApplicationsRequest.Types.Filter(),
                                          Sort = new ListApplicationsRequest.Types.Sort
                                                 {
-                                                  Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                  Direction = SortDirection.Asc,
                                                   Fields =
                                                   {
-                                                    ListApplicationsRequest.Types.OrderByField.Name,
+                                                    new ApplicationField
+                                                    {
+                                                      ApplicationField_ = ApplicationRawField.Name,
+                                                    },
                                                   },
                                                 },
                                          Page     = 0,
@@ -80,7 +86,7 @@ public class ListApplicationsRequestValidatorTest
   {
     validListApplicationsRequest_!.Sort = new ListApplicationsRequest.Types.Sort
                                           {
-                                            Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                                            Direction = SortDirection.Desc,
                                           };
     foreach (var error in validator_.Validate(validListApplicationsRequest_)
                                     .Errors)
@@ -99,7 +105,10 @@ public class ListApplicationsRequestValidatorTest
                                           {
                                             Fields =
                                             {
-                                              ListApplicationsRequest.Types.OrderByField.Name,
+                                              new ApplicationField
+                                              {
+                                                ApplicationField_ = ApplicationRawField.Name,
+                                              },
                                             },
                                           };
     foreach (var error in validator_.Validate(validListApplicationsRequest_)
