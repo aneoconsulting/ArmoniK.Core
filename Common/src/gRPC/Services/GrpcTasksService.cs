@@ -106,6 +106,12 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
+      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      {
+        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                           request.Sort.Field.TaskOptionGenericField.Field);
+      }
+
       var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
                                                      request.Sort.ToTaskDataField(),
                                                      request.Sort.Direction == SortDirection.Asc,
@@ -260,6 +266,12 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
+      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      {
+        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                           request.Sort.Field.TaskOptionGenericField.Field);
+      }
+
       var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
                                                      request.Sort.ToTaskDataField(),
                                                      request.Sort.Direction == SortDirection.Asc,
