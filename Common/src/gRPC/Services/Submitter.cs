@@ -572,7 +572,7 @@ public class Submitter : ISubmitter
     await TaskLifeCycleHelper.CreateTasks(taskTable_,
                                           resultTable_,
                                           sessionId,
-                                          sessionId,
+                                          parentTaskId,
                                           requests,
                                           logger_,
                                           cancellationToken)
