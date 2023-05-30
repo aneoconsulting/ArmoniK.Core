@@ -155,7 +155,7 @@ public record TaskData(string        SessionId,
   }
 
   /// <summary>
-  ///   Copy a <see cref="TaskData" /> and modify it according to given updates
+  ///   Creates a copy of a <see cref="TaskData" /> and modify it according to given updates
   /// </summary>
   /// <param name="original">The object that will be copied</param>
   /// <param name="updates">A collection of field selector and their new values</param>
