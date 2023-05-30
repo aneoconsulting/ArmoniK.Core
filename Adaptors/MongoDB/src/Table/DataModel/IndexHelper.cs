@@ -136,7 +136,7 @@ public class IndexHelper
   /// <returns> The corresponding generated index</returns>
   /// <exception cref="ArgumentException">Thrown when fields has no expression</exception>
   /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateIndex<T>(params (IndexType, Expression<Func<T, object?>>)[] field)
+  public static CreateIndexModel<T> CreateIndex<T>(params (IndexType type, Expression<Func<T, object?>> expression)[] field)
     => CreateIndex(false,
                    field);
 
@@ -161,7 +161,7 @@ public class IndexHelper
   /// <returns> The corresponding generated index</returns>
   /// <exception cref="ArgumentException">Thrown when fields has no expression</exception>
   /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateUniqueIndex<T>(params (IndexType, Expression<Func<T, object?>>)[] field)
+  public static CreateIndexModel<T> CreateUniqueIndex<T>(params (IndexType type, Expression<Func<T, object?>> expression)[] field)
     => CreateIndex(true,
                    field);
 
@@ -188,8 +188,8 @@ public class IndexHelper
   /// <returns> The corresponding generated index</returns>
   /// <exception cref="ArgumentException">Thrown when fields has no expression</exception>
   /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateIndex<T>(bool                                               unique,
-                                                   params (IndexType, Expression<Func<T, object?>>)[] field)
+  public static CreateIndexModel<T> CreateIndex<T>(bool                                                               unique,
+                                                   params (IndexType type, Expression<Func<T, object?>> expression)[] field)
   {
     if (field.Length == 0)
     {
@@ -199,32 +199,32 @@ public class IndexHelper
     if (field.Length == 1)
     {
       if (unique && field[0]
-            .Item1 == IndexType.Hashed)
+            .type == IndexType.Hashed)
       {
         throw new ArgumentOutOfRangeException(nameof(unique),
                                               "A hashed index cannot be constrained to be unique");
       }
 
       return field[0]
-               .Item1 switch
+               .type switch
              {
                IndexType.Ascending => CreateAscendingIndex(field[0]
-                                                             .Item2,
+                                                             .expression,
                                                            unique),
                IndexType.Descending => CreateAscendingIndex(field[0]
-                                                              .Item2,
+                                                              .expression,
                                                             unique),
                IndexType.Hashed => CreateHashedIndex(field[0]
-                                                       .Item2),
+                                                       .expression),
                IndexType.Text => CreateTextIndex(field[0]
-                                                   .Item2,
+                                                   .expression,
                                                  unique),
                _ => throw new ArgumentOutOfRangeException(nameof(field),
                                                           "Invalid IndexType"),
              };
     }
 
-    if (field.Count(f => f.Item1 == IndexType.Hashed) is var hashedCount && hashedCount > 1)
+    if (field.Count(f => f.type == IndexType.Hashed) is var hashedCount && hashedCount > 1)
     {
       throw new ArgumentOutOfRangeException(nameof(field),
                                             "At most one Hashed index is supported in a compound index");
@@ -236,16 +236,16 @@ public class IndexHelper
                                             "A hashed index cannot be constrained to be unique");
     }
 
-    return new CreateIndexModel<T>(Builders<T>.IndexKeys.Combine(field.Select(f => f.Item1 switch
+    return new CreateIndexModel<T>(Builders<T>.IndexKeys.Combine(field.Select(f => f.type switch
                                                                                    {
                                                                                      IndexType.Ascending =>
-                                                                                       Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(f.Item2)),
+                                                                                       Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(f.expression)),
                                                                                      IndexType.Descending =>
-                                                                                       Builders<T>.IndexKeys.Descending(new ExpressionFieldDefinition<T>(f.Item2)),
+                                                                                       Builders<T>.IndexKeys.Descending(new ExpressionFieldDefinition<T>(f.expression)),
                                                                                      IndexType.Hashed =>
-                                                                                       Builders<T>.IndexKeys.Hashed(new ExpressionFieldDefinition<T>(f.Item2)),
+                                                                                       Builders<T>.IndexKeys.Hashed(new ExpressionFieldDefinition<T>(f.expression)),
                                                                                      IndexType.Text =>
-                                                                                       Builders<T>.IndexKeys.Text(new ExpressionFieldDefinition<T>(f.Item2)),
+                                                                                       Builders<T>.IndexKeys.Text(new ExpressionFieldDefinition<T>(f.expression)),
                                                                                      _ => throw new ArgumentOutOfRangeException(nameof(field),
                                                                                                                                 "Invalid IndexType"),
                                                                                    })
@@ -255,9 +255,9 @@ public class IndexHelper
                                      Name = string.Join('_',
                                                         field.SelectMany(f => new[]
                                                                               {
-                                                                                f.Item2.GetMember()
+                                                                                f.expression.GetMember()
                                                                                  .Name,
-                                                                                f.Item1 switch
+                                                                                f.type switch
                                                                                 {
                                                                                   IndexType.Ascending  => "1",
                                                                                   IndexType.Descending => "-1",
