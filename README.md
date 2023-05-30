@@ -2,7 +2,14 @@
 
 # ArmoniK.Core
 
-## What is ArmoniK.Core?
+| Stable | Edge |
+| ------ | ---- |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_pollingagent?color=fe5001&label=armonik_pollingagent&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_pollingagent) | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_pollingagent?color=fe5001&label=armonik_pollingagent&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_pollingagent) |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_metrics?color=fe5001&label=armonik_control_metrics&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control_metrics) | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_metrics?color=fe5001&label=armonik_control_metrics&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control_metrics) |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_partition_metrics?color=fe5001&label=armonik_control_partition_metrics&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control_partition_metrics) | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_partition_metrics?color=fe5001&label=armonik_control_partition_metrics&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control_partition_metrics) |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control?color=fe5001&label=armonik_control&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control) | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control?color=fe5001&label=armonik_control&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control) |
+
+ ## What is ArmoniK.Core?
 
 This project is part of the [ArmoniK](https://github.com/aneoconsulting/ArmoniK) project. ArmoniK.Core is responsible for the implementation of the services needed for ArmoniK which are defined in [ArmoniK.Api](https://github.com/aneoconsulting/ArmoniK.Api).
 
