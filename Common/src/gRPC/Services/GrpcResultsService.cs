@@ -23,6 +23,9 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
@@ -86,7 +89,7 @@ public class GrpcResultsService : Results.ResultsBase
   {
     var results = await resultTable_.ListResultsAsync(request.Filter.ToResultFilter(),
                                                       request.Sort.ToResultField(),
-                                                      request.Sort.Direction == ListResultsRequest.Types.OrderDirection.Asc,
+                                                      request.Sort.Direction == SortDirection.Asc,
                                                       request.Page,
                                                       request.PageSize,
                                                       context.CancellationToken)

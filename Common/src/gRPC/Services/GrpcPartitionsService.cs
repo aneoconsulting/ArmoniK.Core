@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Armonik.Api.Grpc.V1.Partitions;
+using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
@@ -82,7 +83,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   {
     var partitions = await partitionTable_.ListPartitionsAsync(request.Filter.ToPartitionFilter(),
                                                                request.Sort.ToPartitionField(),
-                                                               request.Sort.Direction == ListPartitionsRequest.Types.OrderDirection.Asc,
+                                                               request.Sort.Direction == SortDirection.Asc,
                                                                request.Page,
                                                                request.PageSize,
                                                                context.CancellationToken)

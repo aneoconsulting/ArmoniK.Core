@@ -72,27 +72,14 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   public async Task InitializeIndexesAsync(IClientSessionHandle     sessionHandle,
                                            IMongoCollection<Result> collection)
   {
-    var sessionIndex   = Builders<Result>.IndexKeys.Hashed(model => model.SessionId);
-    var ownerTaskIndex = Builders<Result>.IndexKeys.Hashed(model => model.OwnerTaskId);
-    var creationIndex  = Builders<Result>.IndexKeys.Ascending(model => model.CreationDate);
-
-    var indexModels = new CreateIndexModel<Result>[]
+    var indexModels = new[]
                       {
-                        new(sessionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
-                        new(ownerTaskIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(ownerTaskIndex),
-                            }),
-                        new(creationIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(creationIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.Name),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.Status),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.ResultId),
+                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

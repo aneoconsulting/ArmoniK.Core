@@ -225,18 +225,18 @@ public interface ITaskTable : IInitializable
   /// <param name="filter">Filter to select tasks</param>
   /// <param name="orderField">Select the field that will be used to order the tasks</param>
   /// <param name="ascOrder">Is the order ascending</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                     Expression<Func<TaskData, object?>> orderField,
-                                                                     bool                                ascOrder,
-                                                                     int                                 page,
-                                                                     int                                 pageSize,
-                                                                     CancellationToken                   cancellationToken = default);
+  Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                      Expression<Func<TaskData, object?>> orderField,
+                                                                      bool                                ascOrder,
+                                                                      int                                 page,
+                                                                      int                                 pageSize,
+                                                                      CancellationToken                   cancellationToken = default);
 
   /// <summary>
   ///   Find all tasks matching the given filter and ordering
@@ -250,6 +250,20 @@ public interface ITaskTable : IInitializable
   Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
                                          Expression<Func<TaskData, T>>    selector,
                                          CancellationToken                cancellationToken = default);
+
+  // TODO Should be compatible with EFCORE : https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete#updating-multiple-properties
+  /// <summary>
+  ///   Update one task with the given new values
+  /// </summary>
+  /// <param name="taskId">Id of the tasks to be updated</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The task metadata before the update
+  /// </returns>
+  Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                               ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                               CancellationToken                                                             cancellationToken = default);
 
   /// <summary>
   ///   List all applications extracted from task metadata matching the given filter and ordering
@@ -270,24 +284,6 @@ public interface ITaskTable : IInitializable
                                                                                       int                                                 pageSize,
                                                                                       CancellationToken                                   cancellationToken = default);
 
-  /// <summary>
-  ///   Change the status of the task to succeeded
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task SetTaskSuccessAsync(TaskData          taskData,
-                           CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Remove data dependencies from remaining data dependencies
@@ -301,47 +297,6 @@ public interface ITaskTable : IInitializable
   Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
                                             ICollection<string> dependenciesToRemove,
                                             CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   Change the status of the task to canceled
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task SetTaskCanceledAsync(TaskData          taskData,
-                            CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Tag a task as errored and populate its output with an
-  ///   error message
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskData">Metadata of the task to mark as errored</param>
-  /// <param name="errorDetail">Error message to be inserted in task's output</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   A boolean representing whether the status has been updated
-  /// </returns>
-  Task<bool> SetTaskErrorAsync(TaskData          taskData,
-                               string            errorDetail,
-                               CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Retrieve a task's output

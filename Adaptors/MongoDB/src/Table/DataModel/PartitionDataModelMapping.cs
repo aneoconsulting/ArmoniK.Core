@@ -80,15 +80,14 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
   public async Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
                                            IMongoCollection<PartitionData> collection)
   {
-    var partitionIndex = Builders<PartitionData>.IndexKeys.Hashed(model => model.PartitionId);
-
-    var indexModels = new CreateIndexModel<PartitionData>[]
+    var indexModels = new[]
                       {
-                        new(partitionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(partitionIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PartitionId),
+                        IndexHelper.CreateAscendingIndex<PartitionData>(model => model.ParentPartitionIds),
+                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.Priority),
+                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PodMax),
+                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PodReserved),
+                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PreemptionPercentage),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

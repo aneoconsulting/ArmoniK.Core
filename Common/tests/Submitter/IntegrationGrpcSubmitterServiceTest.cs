@@ -903,17 +903,22 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                    CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                              Expression<Func<TaskData, object?>> orderField,
-                                                                              bool                                ascOrder,
-                                                                              int                                 page,
-                                                                              int                                 pageSize,
-                                                                              CancellationToken                   cancellationToken = default)
+    public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                               Expression<Func<TaskData, object?>> orderField,
+                                                                               bool                                ascOrder,
+                                                                               int                                 page,
+                                                                               int                                 pageSize,
+                                                                               CancellationToken                   cancellationToken = default)
       => throw new T();
 
     public Task<IEnumerable<TData>> FindTasksAsync<TData>(Expression<Func<TaskData, bool>>  filter,
                                                           Expression<Func<TaskData, TData>> selector,
                                                           CancellationToken                 cancellationToken = default)
+      => throw new T();
+
+    public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                        ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                        CancellationToken                                                             cancellationToken = default)
       => throw new T();
 
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
@@ -924,22 +929,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task SetTaskSuccessAsync(TaskData          taskData,
-                                    CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                      ICollection<string> dependenciesToRemove,
                                                      CancellationToken   cancellationToken = default)
-      => throw new T();
-
-    public Task SetTaskCanceledAsync(TaskData          taskData,
-                                     CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<bool> SetTaskErrorAsync(TaskData          taskData,
-                                        string            errorDetail,
-                                        CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task<Storage.Output> GetTaskOutput(string            taskId,

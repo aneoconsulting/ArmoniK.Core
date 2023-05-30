@@ -20,6 +20,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -103,9 +106,15 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
+      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      {
+        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                           request.Sort.Field.TaskOptionGenericField.Field);
+      }
+
       var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
                                                      request.Sort.ToTaskDataField(),
-                                                     request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc,
+                                                     request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
                                                      context.CancellationToken)
@@ -119,7 +128,7 @@ public class GrpcTasksService : Task.TasksBase
                {
                  taskData.tasks.Select(data => new TaskSummary(data)),
                },
-               Total = taskData.totalCount,
+               Total = (int)taskData.totalCount,
              };
     }
     catch (ArmoniKException e)
@@ -257,9 +266,15 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
+      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      {
+        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                           request.Sort.Field.TaskOptionGenericField.Field);
+      }
+
       var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
                                                      request.Sort.ToTaskDataField(),
-                                                     request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc,
+                                                     request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
                                                      context.CancellationToken)
@@ -273,7 +288,7 @@ public class GrpcTasksService : Task.TasksBase
                {
                  taskData.tasks.Select(data => new TaskRaw(data)),
                },
-               Total = taskData.totalCount,
+               Total = (int)taskData.totalCount,
              };
     }
     catch (ArmoniKException e)

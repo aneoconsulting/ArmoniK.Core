@@ -563,18 +563,56 @@ public class TaskHandlerTest
                                                    CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                              Expression<Func<TaskData, object?>> orderField,
-                                                                              bool                                ascOrder,
-                                                                              int                                 page,
-                                                                              int                                 pageSize,
-                                                                              CancellationToken                   cancellationToken = default)
+    public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                               Expression<Func<TaskData, object?>> orderField,
+                                                                               bool                                ascOrder,
+                                                                               int                                 page,
+                                                                               int                                 pageSize,
+                                                                               CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
                                                   Expression<Func<TaskData, T>>    selector,
                                                   CancellationToken                cancellationToken = default)
       => throw new NotImplementedException();
+
+    public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                        ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                        CancellationToken                                                             cancellationToken = default)
+      => Task.FromResult(new TaskData("SessionId",
+                                      taskId,
+                                      "OwnerPodId",
+                                      "OwnerPodName",
+                                      "payload",
+                                      new List<string>(),
+                                      new List<string>(),
+                                      new Dictionary<string, bool>(),
+                                      new List<string>(),
+                                      "taskId",
+                                      new List<string>(),
+                                      TaskStatus.Dispatched,
+                                      "",
+                                      new TaskOptions(new Dictionary<string, string>(),
+                                                      TimeSpan.FromMinutes(2),
+                                                      2,
+                                                      3,
+                                                      "part",
+                                                      "",
+                                                      "",
+                                                      "",
+                                                      "",
+                                                      ""),
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.UtcNow,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      TimeSpan.FromSeconds(1),
+                                      TimeSpan.FromSeconds(2),
+                                      new Output(false,
+                                                 "")));
 
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
@@ -584,23 +622,10 @@ public class TaskHandlerTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task SetTaskSuccessAsync(TaskData          taskData,
-                                    CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
     public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                      ICollection<string> dependenciesToRemove,
                                                      CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
-
-    public Task SetTaskCanceledAsync(TaskData          taskData,
-                                     CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
-    public Task<bool> SetTaskErrorAsync(TaskData          taskData,
-                                        string            errorDetail,
-                                        CancellationToken cancellationToken)
-      => Task.FromResult(true);
 
     public Task<Output> GetTaskOutput(string            taskId,
                                       CancellationToken cancellationToken = default)

@@ -77,9 +77,9 @@ public class WatchToGrpc
 
     Task.Factory.StartNew(async () =>
                           {
-                            var                                           read = 0;
-                            var                                           page = 0;
-                            (IEnumerable<TaskData> tasks, int totalCount) res;
+                            var                                            read = 0;
+                            var                                            page = 0;
+                            (IEnumerable<TaskData> tasks, long totalCount) res;
                             while ((res = await taskTable_.ListTasksAsync(data => data.SessionId == sessionId,
                                                                           data => data.CreationDate,
                                                                           false,

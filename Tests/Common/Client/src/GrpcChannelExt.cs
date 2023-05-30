@@ -21,6 +21,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Results;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using Google.Protobuf.WellKnownTypes;
@@ -86,8 +89,11 @@ public static class GrpcChannelExt
                                                          },
                                                          new ListTasksRequest.Types.Sort
                                                          {
-                                                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                           Field     = ListTasksRequest.Types.OrderByField.TaskId,
+                                                           Direction = SortDirection.Asc,
+                                                           Field = new TaskField
+                                                                   {
+                                                                     TaskSummaryField = TaskSummaryField.TaskId,
+                                                                   },
                                                          })
                                          .ConfigureAwait(false))
     {
@@ -221,8 +227,11 @@ public static class GrpcChannelExt
                                                    },
                                                    new ListTasksRequest.Types.Sort
                                                    {
-                                                     Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                     Field     = ListTasksRequest.Types.OrderByField.TaskId,
+                                                     Direction = SortDirection.Asc,
+                                                     Field = new TaskField
+                                                             {
+                                                               TaskSummaryField = TaskSummaryField.TaskId,
+                                                             },
                                                    })
                                    .ConfigureAwait(false))
     {

@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Armonik.Api.Grpc.V1.Partitions;
+using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
@@ -41,6 +42,15 @@ public class ToPartitionDataFilterTest
                                                       2,
                                                       new PodConfiguration(new Dictionary<string, string>()));
 
+  private static readonly ListPartitionsRequest.Types.Sort Sort = new()
+                                                                  {
+                                                                    Direction = SortDirection.Asc,
+                                                                    Field = new PartitionField
+                                                                            {
+                                                                              PartitionRawField = PartitionRawField.Id,
+                                                                            },
+                                                                  };
+
   [Test]
   public void FilterIdShouldSucceed()
   {
@@ -50,11 +60,7 @@ public class ToPartitionDataFilterTest
                           {
                             Id = "PartitionId",
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -70,11 +76,7 @@ public class ToPartitionDataFilterTest
                           {
                             Id = "PartitionId",
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -93,11 +95,7 @@ public class ToPartitionDataFilterTest
                           {
                             PodReserved = 1,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -113,11 +111,7 @@ public class ToPartitionDataFilterTest
                           {
                             PodReserved = 1,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -136,11 +130,7 @@ public class ToPartitionDataFilterTest
                           {
                             PodMax = 10,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -156,11 +146,7 @@ public class ToPartitionDataFilterTest
                           {
                             PodMax = 10,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -179,11 +165,7 @@ public class ToPartitionDataFilterTest
                           {
                             PreemptionPercentage = 15,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -199,11 +181,7 @@ public class ToPartitionDataFilterTest
                           {
                             PreemptionPercentage = 15,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -222,11 +200,7 @@ public class ToPartitionDataFilterTest
                           {
                             Priority = 2,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -242,11 +216,7 @@ public class ToPartitionDataFilterTest
                           {
                             Priority = 2,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -265,11 +235,7 @@ public class ToPartitionDataFilterTest
                           {
                             ParentPartitionId = "ParentPartitionId1",
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 
@@ -285,11 +251,7 @@ public class ToPartitionDataFilterTest
                           {
                             ParentPartitionId = "ParentPartitionId1",
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
+                 Sort = Sort,
                }.Filter.ToPartitionFilter()
                 .Compile();
 

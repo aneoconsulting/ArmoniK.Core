@@ -418,30 +418,30 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                                  Expression<Func<TaskData, object?>> orderField,
-                                                                                  bool                                ascOrder,
-                                                                                  int                                 page,
-                                                                                  int                                 pageSize,
-                                                                                  CancellationToken                   cancellationToken = default)
+  public async Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                                   Expression<Func<TaskData, object?>> orderField,
+                                                                                   bool                                ascOrder,
+                                                                                   int                                 page,
+                                                                                   int                                 pageSize,
+                                                                                   CancellationToken                   cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = taskCollectionProvider_.Get();
 
-    var queryable = taskCollection.AsQueryable(sessionHandle)
-                                  .Where(filter);
+    var findFluent = taskCollection.Find(sessionHandle,
+                                         filter);
 
     var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+                    ? findFluent.SortBy(orderField)
+                    : findFluent.SortByDescending(orderField);
 
     var taskResult = ordered.Skip(page * pageSize)
-                            .Take(pageSize)
+                            .Limit(pageSize)
                             .ToListAsync(cancellationToken);
 
-    return (await taskResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                                 .ConfigureAwait(false));
+    return (await taskResult.ConfigureAwait(false), await findFluent.CountDocumentsAsync(cancellationToken)
+                                                                    .ConfigureAwait(false));
   }
 
   /// <inheritdoc />
@@ -492,44 +492,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task SetTaskSuccessAsync(TaskData          taskData,
-                                        CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskSuccessAsync)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    var taskOutput = new Output(Error: "",
-                                Success: true);
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOutput)
-                                                                  .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Completed)
-                                                                  .Set(tdm => tdm.EndDate,
-                                                                       taskData.EndDate)
-                                                                  .Set(tdm => tdm.CreationToEndDuration,
-                                                                       taskData.CreationToEndDuration)
-                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                       taskData.ProcessingToEndDuration);
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskData.TaskId,
-                          TaskStatus.Cancelled,
-                          taskOutput);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskData.TaskId,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-
-    switch (res.MatchedCount)
-    {
-      case 0:
-        throw new TaskNotFoundException($"Task not found {taskData.TaskId}");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
-    }
-  }
-
-  /// <inheritdoc />
   public async Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
                                                          ICollection<string> dependenciesToRemove,
                                                          CancellationToken   cancellationToken = default)
@@ -562,71 +524,23 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task SetTaskCanceledAsync(TaskData          taskData,
-                                         CancellationToken cancellationToken = default)
+  public async Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                            ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                            CancellationToken                                                             cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
-    var taskOutput = new Output(Error: "",
-                                Success: false);
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
 
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOutput)
-                                                                  .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Cancelled)
-                                                                  .Set(tdm => tdm.EndDate,
-                                                                       taskData.EndDate)
-                                                                  .Set(tdm => tdm.CreationToEndDuration,
-                                                                       taskData.CreationToEndDuration)
-                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                       taskData.ProcessingToEndDuration);
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskData.TaskId,
-                          TaskStatus.Cancelled,
-                          taskOutput);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskData.TaskId,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-
-    switch (res.MatchedCount)
+    foreach (var (selector, newValue) in updates)
     {
-      case 0:
-        throw new TaskNotFoundException($"Task not found {taskData.TaskId}");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
+      updateDefinition = updateDefinition.Set(selector,
+                                              newValue);
     }
-  }
 
-  /// <inheritdoc />
-  public async Task<bool> SetTaskErrorAsync(TaskData          taskData,
-                                            string            errorDetail,
-                                            CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskErrorAsync)}");
-    var       taskCollection = taskCollectionProvider_.Get();
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId);
 
-    var taskOutput = new Output(Error: errorDetail,
-                                Success: false);
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOutput)
-                                                                  .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Error)
-                                                                  .Set(tdm => tdm.EndDate,
-                                                                       taskData.EndDate)
-                                                                  .Set(tdm => tdm.CreationToEndDuration,
-                                                                       taskData.CreationToEndDuration)
-                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                       taskData.ProcessingToEndDuration);
-
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskData.TaskId);
-
-    Logger.LogDebug("update task {taskId} to status {status} with {output}",
-                    taskData.TaskId,
-                    TaskStatus.Error,
-                    taskOutput);
     var task = await taskCollection.FindOneAndUpdateAsync(filter,
                                                           updateDefinition,
                                                           new FindOneAndUpdateOptions<TaskData>
@@ -636,12 +550,7 @@ public class TaskTable : ITaskTable
                                                           cancellationToken)
                                    .ConfigureAwait(false);
 
-    if (task == null)
-    {
-      throw new TaskNotFoundException($"Task not found {taskData.TaskId}");
-    }
-
-    return task.Status != TaskStatus.Error;
+    return task ?? throw new TaskNotFoundException($"Task not found {taskId}");
   }
 
   /// <inheritdoc />

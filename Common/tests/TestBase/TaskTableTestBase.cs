@@ -23,7 +23,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
@@ -94,7 +98,7 @@ public class TaskTableTestBase
                                                      },
                                                      Array.Empty<string>(),
                                                      TaskStatus.Submitted,
-                                                     options_ with
+                                                     Options with
                                                      {
                                                        PartitionId = "part2",
                                                      },
@@ -121,7 +125,7 @@ public class TaskTableTestBase
                                                      },
                                                      Array.Empty<string>(),
                                                      TaskStatus.Completed,
-                                                     options_,
+                                                     Options,
                                                      new Output(true,
                                                                 ""));
 
@@ -144,7 +148,7 @@ public class TaskTableTestBase
                                                     },
                                                     Array.Empty<string>(),
                                                     TaskStatus.Creating,
-                                                    options_,
+                                                    Options,
                                                     new Output(false,
                                                                ""));
 
@@ -167,7 +171,7 @@ public class TaskTableTestBase
                                                       },
                                                       Array.Empty<string>(),
                                                       TaskStatus.Processing,
-                                                      options_,
+                                                      Options,
                                                       new Output(false,
                                                                  ""));
 
@@ -190,7 +194,7 @@ public class TaskTableTestBase
                                                        },
                                                        Array.Empty<string>(),
                                                        TaskStatus.Processing,
-                                                       options_,
+                                                       Options,
                                                        new Output(false,
                                                                   ""));
 
@@ -213,7 +217,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   TaskStatus.Error,
-                                                  options_,
+                                                  Options,
                                                   new Output(false,
                                                              "sad task"));
 
@@ -223,24 +227,24 @@ public class TaskTableTestBase
     return category is "SkipSetUp";
   }
 
-  private static readonly TaskOptions options_ = new(new Dictionary<string, string>
-                                                     {
-                                                       {
-                                                         "key1", "val1"
-                                                       },
-                                                       {
-                                                         "key2", "val2"
-                                                       },
-                                                     },
-                                                     TimeSpan.MaxValue,
-                                                     5,
-                                                     1,
-                                                     "part1",
-                                                     "applicationName",
-                                                     "applicationVersion",
-                                                     "applicationNamespace",
-                                                     "applicationService",
-                                                     "engineType");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+                                                    {
+                                                      {
+                                                        "key1", "val1"
+                                                      },
+                                                      {
+                                                        "key2", "val2"
+                                                      },
+                                                    },
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion",
+                                                    "applicationNamespace",
+                                                    "applicationService",
+                                                    "engineType");
 
   /* Interface to test */
   protected ITaskTable? TaskTable;
@@ -309,11 +313,11 @@ public class TaskTableTestBase
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(options_.Options,
+      Assert.AreEqual(Options.Options,
                       result.Options.Options);
 
       var optDic = new Dictionary<string, string>();
-      Assert.AreEqual(options_ with
+      Assert.AreEqual(Options with
                       {
                         Options = optDic,
                       },
@@ -712,7 +716,7 @@ public class TaskTableTestBase
 
       var resStatus = await TaskTable.GetTaskStatus(new[]
                                                     {
-                                                      "TaskProcessingId",
+                                                      taskProcessingData_.TaskId,
                                                     },
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
@@ -720,6 +724,16 @@ public class TaskTableTestBase
       Assert.AreEqual(TaskStatus.Completed,
                       resStatus.Single()
                                .Status);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Completed,
+                      taskData.Status);
+      Assert.IsTrue(taskData.Output.Success);
+      Assert.AreEqual("",
+                      taskData.Output.Error);
     }
   }
 
@@ -728,22 +742,22 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskErrorAsync(taskProcessingData_ with
-                                                {
-                                                  EndDate = DateTime.UtcNow,
-                                                  CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                                  ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                                },
-                                                "Testing SetTaskError",
-                                                CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskErrorAsync(taskProcessingData_ with
+                                         {
+                                           EndDate = DateTime.UtcNow,
+                                           CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                           ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                         },
+                                         "Testing SetTaskError",
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
-                                                    {
-                                                      "TaskProcessingId",
-                                                    },
-                                                    CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
+                                                     {
+                                                       "TaskProcessingId",
+                                                     },
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Error,
                       resStatus.Single()
@@ -755,6 +769,7 @@ public class TaskTableTestBase
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
+      Assert.IsFalse(output.Success);
     }
   }
 
@@ -763,24 +778,32 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskCanceledAsync(taskProcessingData_ with
-                                                   {
-                                                     EndDate = DateTime.UtcNow,
-                                                     CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                                     ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                                   },
-                                                   CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskCanceledAsync(taskProcessingData_ with
+                                            {
+                                              EndDate = DateTime.UtcNow,
+                                              CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                              ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                            },
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
-                                                    {
-                                                      "TaskProcessingId",
-                                                    },
-                                                    CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
+                                                     {
+                                                       "TaskProcessingId",
+                                                     },
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Cancelled);
+      Assert.AreEqual(TaskStatus.Cancelled,
+                      resStatus.Single()
+                               .Status);
+
+      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsEmpty(output.Error);
+      Assert.IsFalse(output.Success);
     }
   }
 
@@ -1278,14 +1301,17 @@ public class TaskTableTestBase
                   PageSize = 4,
                   Filter = new ListApplicationsRequest.Types.Filter
                            {
-                             Name = options_.ApplicationName,
+                             Name = Options.ApplicationName,
                            },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
-                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Direction = SortDirection.Desc,
                            Fields =
                            {
-                             ListApplicationsRequest.Types.OrderByField.Name,
+                             new ApplicationField
+                             {
+                               ApplicationField_ = ApplicationRawField.Name,
+                             },
                            },
                          },
                 };
@@ -1309,10 +1335,10 @@ public class TaskTableTestBase
         Console.WriteLine(task);
       }
 
-      Assert.AreEqual(new Application(options_.ApplicationName,
-                                      options_.ApplicationNamespace,
-                                      options_.ApplicationVersion,
-                                      options_.ApplicationService),
+      Assert.AreEqual(new Application(Options.ApplicationName,
+                                      Options.ApplicationNamespace,
+                                      Options.ApplicationVersion,
+                                      Options.ApplicationService),
                       listTasksResponseTaskData.Single());
     }
   }
@@ -1422,11 +1448,17 @@ public class TaskTableTestBase
                            },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
-                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Direction = SortDirection.Desc,
                            Fields =
                            {
-                             ListApplicationsRequest.Types.OrderByField.Version,
-                             ListApplicationsRequest.Types.OrderByField.Service,
+                             new ApplicationField
+                             {
+                               ApplicationField_ = ApplicationRawField.Version,
+                             },
+                             new ApplicationField
+                             {
+                               ApplicationField_ = ApplicationRawField.Service,
+                             },
                            },
                          },
                 };
@@ -1438,7 +1470,7 @@ public class TaskTableTestBase
       var listTasks = await TaskTable.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
                                                             req.Sort.Fields.Select(sort => sort.ToApplicationField())
                                                                .ToList(),
-                                                            req.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                            req.Sort.Direction == SortDirection.Asc,
                                                             req.Page,
                                                             req.PageSize,
                                                             CancellationToken.None)
@@ -1481,6 +1513,39 @@ public class TaskTableTestBase
     }
   }
 
+
+  [Test]
+  public async Task ListTaskWithRequestOrderByTaskOptionsOptionsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListTasksRequest
+                {
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = SortDirection.Asc,
+                           Field = new TaskField
+                                   {
+                                     TaskOptionGenericField = new TaskOptionGenericField
+                                                              {
+                                                                Field = "test",
+                                                              },
+                                   },
+                         },
+                };
+
+      var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                      req.Sort.ToTaskDataField(),
+                                                      false,
+                                                      0,
+                                                      20,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(6,
+                      listTasks.totalCount);
+    }
+  }
 
   [Test]
   public async Task ListTaskWithListInRequestShouldSucceed()
@@ -1556,7 +1621,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   status,
-                                                  options_,
+                                                  Options,
                                                   new Output(true,
                                                              "")),
                                    })
@@ -1665,7 +1730,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   TaskStatus.Creating,
-                                                  options_,
+                                                  Options,
                                                   new Output(true,
                                                              "")),
                                    })
@@ -1719,7 +1784,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   TaskStatus.Creating,
-                                                  options_,
+                                                  Options,
                                                   new Output(true,
                                                              "")),
                                    })

@@ -18,10 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
+
+using FluentValidation.Internal;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -149,6 +152,24 @@ public record TaskData(string        SessionId,
            null,
            output)
   {
+  }
+
+  /// <summary>
+  ///   Creates a copy of a <see cref="TaskData" /> and modify it according to given updates
+  /// </summary>
+  /// <param name="original">The object that will be copied</param>
+  /// <param name="updates">A collection of field selector and their new values</param>
+  public TaskData(TaskData                                                                      original,
+                  IEnumerable<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates)
+    : this(original)
+  {
+    foreach (var (selector, newValue) in updates)
+    {
+      GetType()
+        .GetProperty(selector.GetMember()
+                             .Name)!.SetValue(this,
+                                              newValue);
+    }
   }
 
   /// <summary>

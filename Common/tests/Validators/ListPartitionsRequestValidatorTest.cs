@@ -18,6 +18,7 @@
 using System;
 
 using Armonik.Api.Grpc.V1.Partitions;
+using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.gRPC.Validators;
 
@@ -35,8 +36,11 @@ public class ListPartitionsRequestValidatorTest
                                        Filter = new ListPartitionsRequest.Types.Filter(),
                                        Sort = new ListPartitionsRequest.Types.Sort
                                               {
-                                                Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                                                Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                                Direction = SortDirection.Asc,
+                                                Field = new PartitionField
+                                                        {
+                                                          PartitionRawField = PartitionRawField.Id,
+                                                        },
                                               },
                                        Page     = 0,
                                        PageSize = 1,
@@ -78,7 +82,7 @@ public class ListPartitionsRequestValidatorTest
   {
     validListPartitionsRequest_!.Sort = new ListPartitionsRequest.Types.Sort
                                         {
-                                          Direction = ListPartitionsRequest.Types.OrderDirection.Desc,
+                                          Direction = SortDirection.Desc,
                                         };
     foreach (var error in validator_.Validate(validListPartitionsRequest_)
                                     .Errors)
@@ -95,7 +99,10 @@ public class ListPartitionsRequestValidatorTest
   {
     validListPartitionsRequest_!.Sort = new ListPartitionsRequest.Types.Sort
                                         {
-                                          Field = ListPartitionsRequest.Types.OrderByField.Id,
+                                          Field = new PartitionField
+                                                  {
+                                                    PartitionRawField = PartitionRawField.Id,
+                                                  },
                                         };
     foreach (var error in validator_.Validate(validListPartitionsRequest_)
                                     .Errors)
