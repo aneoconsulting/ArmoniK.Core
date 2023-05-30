@@ -115,9 +115,44 @@ public static class TaskLifeCycleHelper
                                 cancellationToken)
                    .ConfigureAwait(false);
 
+    var results = taskCreationRequests.SelectMany(r => r.ExpectedOutputKeys);
+
+    // create a dictionary to efficiently access only the results without owners
+    // results with owners will be modified through ownership update in FinalizeTaskCreation
+    var dict = await resultTable.GetResults(sessionId,
+                                            results,
+                                            cancellationToken)
+                                .Where(result => result.OwnerTaskId == "")
+                                .ToDictionaryAsync(result => result.ResultId,
+                                                   _ => "",
+                                                   cancellationToken)
+                                .ConfigureAwait(false);
+
+    foreach (var creationRequest in taskCreationRequests)
+    {
+      foreach (var expectedOutputKey in creationRequest.ExpectedOutputKeys)
+      {
+        if (dict.ContainsKey(expectedOutputKey))
+        {
+          dict[expectedOutputKey] = creationRequest.TaskId;
+        }
+      }
+    }
+
+    if (logger.IsEnabled(LogLevel.Debug))
+    {
+      foreach (var (resultId, taskId) in dict)
+      {
+        logger.LogDebug("Set {taskIdOwner} as owner for {resultId}",
+                        taskId,
+                        resultId);
+      }
+    }
+
     await resultTable.SetTaskOwnership(sessionId,
-                                       taskCreationRequests.SelectMany(r => r.ExpectedOutputKeys.Select(key => (key, r.TaskId)))
-                                                           .AsICollection(),
+                                       dict.Where(pair => pair.Value != "")
+                                           .Select(pair => (pair.Key, pair.Value))
+                                           .AsICollection(),
                                        cancellationToken)
                      .ConfigureAwait(false);
   }

@@ -343,6 +343,11 @@ public class ResultTable : IResultTable
     using var activity         = activitySource_.StartActivity($"{nameof(SetTaskOwnership)}");
     var       resultCollection = resultCollectionProvider_.Get();
 
+    if (!requests.Any())
+    {
+      return;
+    }
+
     var res = await resultCollection.BulkWriteAsync(requests.Select(r => new UpdateOneModel<Result>(Builders<Result>.Filter.Eq(model => model.ResultId,
                                                                                                                                r.resultId),
                                                                                                     Builders<Result>.Update.Set(model => model.OwnerTaskId,
