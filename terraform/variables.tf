@@ -53,15 +53,6 @@ variable "submitter" {
   default = {}
 }
 
-variable "dependency_checker" {
-  type = object({
-    name  = optional(string, "armonik.control.dependency_checker")
-    image = optional(string, "dockerhubaneo/armonik_control_dependency_checker")
-  })
-  default = {}
-}
-
-
 variable "object_storage" {
   type = object({
     name  = optional(string, "local")
