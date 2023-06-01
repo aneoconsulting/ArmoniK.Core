@@ -113,6 +113,14 @@ public class Agent : IAgent
                                           cancellationToken)
                     .ConfigureAwait(false);
 
+    foreach (var result in sentResults_)
+    {
+      await resultTable_.CompleteResult(taskData_.SessionId,
+                                        result,
+                                        cancellationToken)
+                        .ConfigureAwait(false);
+    }
+
     logger_.LogDebug("Submit tasks which new data are available");
 
     // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
@@ -537,15 +545,10 @@ public class Agent : IAgent
           {
             case InitKeyedDataStream.TypeOneofCase.Key:
               fsmResult.InitKey();
-              completionTask = Task.Run(async () =>
-                                        {
-                                          await submitter_.SetResult(sessionData_.SessionId,
-                                                                     taskData_.TaskId,
-                                                                     request.Init.Key,
-                                                                     chunksChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                     cancellationToken)
-                                                          .ConfigureAwait(false);
-                                        },
+              completionTask = Task.Run(async () => await objectStorage_.AddOrUpdateAsync(request.Init.Key,
+                                                                                          chunksChannel.Reader.ReadAllAsync(cancellationToken),
+                                                                                          cancellationToken)
+                                                                        .ConfigureAwait(false),
                                         cancellationToken);
               sentResults_.Add(request.Init.Key);
               break;
@@ -724,14 +727,11 @@ public class Agent : IAgent
                                           cancellationToken)
                         .ConfigureAwait(false);
 
-    var resultData = await resultTable_.CompleteResult(id.SessionId,
-                                                       id.ResultId,
-                                                       cancellationToken)
-                                       .ConfigureAwait(false);
+    sentResults_.Add(id.ResultId);
 
     return new UploadResultDataResponse
            {
-             ResultId           = resultData.ResultId,
+             ResultId           = id.ResultId,
              CommunicationToken = token_,
            };
   }
@@ -769,26 +769,21 @@ public class Agent : IAgent
                               cancellationToken)
                       .ConfigureAwait(false);
 
-    var resultList = await results.Select(async r => await resultTable_.CompleteResult(request.SessionId,
-                                                                                       r.ResultId,
-                                                                                       cancellationToken)
-                                                                       .ConfigureAwait(false))
-                                  .WhenAll()
-                                  .ConfigureAwait(false);
+    sentResults_.AddRange(results.Select(r => r.ResultId));
 
     return new CreateResultsResponse
            {
              CommunicationToken = token_,
              Results =
              {
-               resultList.Select(r => new ResultMetaData
-                                      {
-                                        Status    = r.Status,
-                                        CreatedAt = FromDateTime(r.CreationDate),
-                                        Name      = r.Name,
-                                        ResultId  = r.ResultId,
-                                        SessionId = r.SessionId,
-                                      }),
+               results.Select(r => new ResultMetaData
+                                   {
+                                     Status    = r.Status,
+                                     CreatedAt = FromDateTime(r.CreationDate),
+                                     Name      = r.Name,
+                                     ResultId  = r.ResultId,
+                                     SessionId = r.SessionId,
+                                   }),
              },
            };
   }
