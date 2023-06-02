@@ -84,21 +84,14 @@ jobs:
 
     - name: Build
       run: |
-        just tag=$VERSION platform="linux/arm64,linux/amd64" build-core
+        just tag=$VERSION platform="linux/arm64,linux/amd64" base_image=dockerhubaneo/armonik_base_build build-core
 
-    - name: push
+    - name: Delete temporary image
       run: |
-        while IFS= read -r IMG
-        do
-          docker tag $IMG:${VERSION} $IMG:latest
-          docker push $IMG:${VERSION}
-          docker push $IMG:latest
-        done <<-EOF
-        dockerhubaneo/armonik_control
-        dockerhubaneo/armonik_control_partition_metrics
-        dockerhubaneo/armonik_control_metrics
-        dockerhubaneo/armonik_pollingagent
-        EOF
+        curl -u ${{ secrets.DOCKER_HUB_LOGIN }}:${{ secrets.DOCKER_HUB_TOKEN }} \
+          -X "DELETE" https://cloud.docker.com/v2/repositories/dockerhubaneo/armonik_base_build/tags/${VERSION}-arm/
+
+
 
   buildImages:
     runs-on: ubuntu-latest

@@ -198,7 +198,7 @@ build imageTag dockerFile:
       docker build --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
       ;; \
     buildx) \
-      docker buildx build --load --platform {{platform}} --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
+      docker buildx build --push --progress=plain --platform {{platform}} --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
       ;; \
     *) \
       echo wrong builder \
