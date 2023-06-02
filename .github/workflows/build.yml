@@ -263,7 +263,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - versionning
-      - imagesCore
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
@@ -273,24 +272,29 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - uses: pguyot/arm-runner-action@v2
+    - uses: uraimo/run-on-arch-action@v2
       with:
-        commands: |
-          sudo snap install --edge --classic just
+        arch: aarch64
+        distro: ubuntu22.04
+
+        # Set an output parameter `uname` for use in subsequent steps
+        run: |
+          apt-get install snapd
+          snap install --edge --classic just
           echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
           just tag=${VERSION}-arm build-core
 
-          while IFS= read -r IMG
-          do
-            docker push $IMG:${VERSION}-arm
-            docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
-          done <<-EOF
-          dockerhubaneo/armonik_control
-          dockerhubaneo/armonik_control_partition_metrics
-          dockerhubaneo/armonik_control_metrics
-          dockerhubaneo/armonik_pollingagent
-          EOF
+          # while IFS= read -r IMG
+          # do
+          #   docker push $IMG:${VERSION}-arm
+          #   docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
+          # done <<-EOF
+          # dockerhubaneo/armonik_control
+          # dockerhubaneo/armonik_control_partition_metrics
+          # dockerhubaneo/armonik_control_metrics
+          # dockerhubaneo/armonik_pollingagent
+          # EOF
 
   imagesReC:
     if: github.ref == 'refs/heads/main'
