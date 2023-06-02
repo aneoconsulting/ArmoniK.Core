@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
 using EphemeralMongo;
@@ -130,6 +131,8 @@ internal class IndexTest
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.PodTtl),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.Options.MaxDuration),
+                        IndexHelper.CreateDescendingIndex<TaskData>(model => model.CreationDate),
+                        IndexHelper.CreateTextIndex<TaskData>(model => model.OwnerPodId),
                       };
 
     collection.Indexes.CreateMany(indexModels);
@@ -158,6 +161,35 @@ internal class IndexTest
                                                                   model => model.SessionId),
                         IndexHelper.CreateCombinedIndex<TaskData>(model => model.TaskId,
                                                                   model => model.Status),
+                      };
+
+    collection.Indexes.CreateMany(indexModels);
+    foreach (var index in collection.Indexes.List()
+                                    .ToList())
+    {
+      Console.WriteLine(index);
+    }
+
+    Assert.AreEqual(indexModels.Length + 1,
+                    collection.Indexes.List()
+                              .ToList()
+                              .Count);
+  }
+
+  [Test]
+  public void GenericIndexCreationShouldSucceed()
+  {
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<AuthData>("Test");
+
+    var indexModels = new[]
+                      {
+                        IndexHelper.CreateIndex<AuthData>(IndexType.Hashed,
+                                                          model => model.Fingerprint),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Ascending, model => model.CN),
+                                                                (IndexType.Descending, model => model.Fingerprint)),
+                        IndexHelper.CreateIndex<AuthData>((IndexType.Hashed, model => model.UserId)),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Text, model => model.CN)),
                       };
 
     collection.Indexes.CreateMany(indexModels);
