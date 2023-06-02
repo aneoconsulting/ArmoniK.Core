@@ -51,11 +51,6 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
@@ -100,11 +95,6 @@ jobs:
       with:
         ref: ${{ github.ref }}
         submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
     
     - name: Setup just
       run: |
@@ -144,11 +134,6 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
@@ -170,11 +155,6 @@ jobs:
       with:
         ref: ${{ github.ref }}
         submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
 
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release
