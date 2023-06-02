@@ -19,16 +19,19 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcEventsService : Events.EventsBase
 {
   private readonly ILogger<GrpcEventsService> logger_;

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -43,15 +44,18 @@ public class GrpcSubmitterServiceHelper : IDisposable
   private readonly WebApplication      app_;
   private readonly ILoggerFactory      loggerFactory_;
   private          ChannelBase?        channel_;
+  private          Mutex               channelMutex_;
   private          HttpMessageHandler? handler_;
   private          ILogger             logger_;
+  private          int                 nChannels;
   private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
                                     List<MockIdentity>          authIdentities,
                                     AuthenticatorOptions        authOptions,
                                     LogLevel                    loglevel,
-                                    Action<IServiceCollection>? serviceConfigurator = null)
+                                    Action<IServiceCollection>? serviceConfigurator  = null,
+                                    bool                        validateGrpcRequests = true)
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
@@ -75,9 +79,13 @@ public class GrpcSubmitterServiceHelper : IDisposable
                                                            {
                                                            });
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
-           .AddAuthorization()
-           .ValidateGrpcRequests()
-           .AddGrpc();
+           .AddAuthorization();
+    if (validateGrpcRequests)
+    {
+      builder.Services.ValidateGrpcRequests();
+    }
+
+    builder.Services.AddGrpc();
 
     serviceConfigurator?.Invoke(builder.Services);
 
@@ -95,6 +103,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcAuthService>();
     app_.MapGrpcService<GrpcEventsService>();
     app_.MapGrpcService<GrpcPartitionsService>();
+    app_.MapGrpcService<GrpcVersionsService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
@@ -134,32 +143,43 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
   public async Task<ChannelBase> CreateChannel()
   {
-    if (handler_ == null)
+    using (channelMutex_)
     {
-      await StartServer()
-        .ConfigureAwait(false);
-    }
+      if (handler_ == null)
+      {
+        await StartServer()
+          .ConfigureAwait(false);
+      }
 
-    channel_ = GrpcChannel.ForAddress("http://localhost",
-                                      new GrpcChannelOptions
-                                      {
-                                        LoggerFactory = loggerFactory_,
-                                        HttpHandler   = handler_,
-                                      });
+      channel_ ??= GrpcChannel.ForAddress("http://localhost",
+                                          new GrpcChannelOptions
+                                          {
+                                            LoggerFactory = loggerFactory_,
+                                            HttpHandler   = handler_,
+                                          });
+      nChannels += 1;
+    }
 
     return channel_;
   }
 
   public async Task DeleteChannel()
   {
-    if (channel_ == null)
+    using (channelMutex_)
     {
-      return;
-    }
+      if (channel_ == null)
+      {
+        return;
+      }
 
-    await channel_.ShutdownAsync()
-                  .ConfigureAwait(false);
-    channel_ = null;
+      nChannels -= 1;
+      if (nChannels == 0)
+      {
+        await channel_.ShutdownAsync()
+                      .ConfigureAwait(false);
+        channel_ = null;
+      }
+    }
   }
 
   public async Task StopServer()
