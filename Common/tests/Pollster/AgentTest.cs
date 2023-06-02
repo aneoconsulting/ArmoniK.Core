@@ -860,7 +860,7 @@ public class AgentTest
 
       Assert.AreEqual(result.Name,
                       resultMetadata.Name);
-      Assert.AreEqual(ResultStatus.Completed,
+      Assert.AreEqual(ResultStatus.Created,
                       resultMetadata.Status);
 
       var bytes = (await holder.ObjectStorage.GetValuesAsync(result.ResultId)
@@ -870,6 +870,24 @@ public class AgentTest
       Assert.AreEqual(ByteString.CopyFromUtf8(result.Name)
                                 .ToByteArray(),
                       bytes);
+    }
+
+    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+                .ConfigureAwait(false);
+
+    foreach (var result in results.Results)
+    {
+      Console.WriteLine(result);
+
+      var resultMetadata = await holder.ResultTable.GetResult(holder.Session,
+                                                              result.ResultId,
+                                                              CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+      Assert.AreEqual(result.Name,
+                      resultMetadata.Name);
+      Assert.AreEqual(ResultStatus.Completed,
+                      resultMetadata.Status);
     }
   }
 
@@ -1070,6 +1088,14 @@ public class AgentTest
                            .ExpectedOutputIds);
     }
 
+    var uploadedResultData = await holder.ResultTable.GetResult(holder.Session,
+                                                                eok.Results.Last()
+                                                                   .ResultId)
+                                         .ConfigureAwait(false);
+
+    Assert.AreEqual(ResultStatus.Created,
+                    uploadedResultData.Status);
+
     var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
                                                              .TaskId,
                                                         CancellationToken.None)
@@ -1080,6 +1106,14 @@ public class AgentTest
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
+
+    uploadedResultData = await holder.ResultTable.GetResult(holder.Session,
+                                                            eok.Results.Last()
+                                                               .ResultId)
+                                     .ConfigureAwait(false);
+
+    Assert.AreEqual(ResultStatus.Completed,
+                    uploadedResultData.Status);
 
     taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
                                                          .TaskId,
