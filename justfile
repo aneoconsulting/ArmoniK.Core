@@ -13,6 +13,9 @@ worker       := "htcmock"
 object       := "redis"
 replicas     := "3"
 partitions   := "2"
+base_image   := "armonik_base_build"
+builder      := "regular"
+platform     := "linux/arm64"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag        := tag
@@ -187,24 +190,39 @@ start serviceName: (container "start" serviceName)
 # Custom command to restart the given service
 restart serviceName: (container "restart" serviceName)
 
+
 # Custom command to build a single image
-build $imageTag $dockerFile:
-  docker build --build-arg VERSION={{tag}} -t "$imageTag" -f "$dockerFile" ./
+build imageTag dockerFile:
+  case "{{builder}}" in \
+    regular) \
+      docker build --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
+      ;; \
+    buildx) \
+      docker buildx build --load --platform {{platform}} --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
+      ;; \
+    *) \
+      echo wrong builder \
+      exit 1 \
+      ;; \
+  esac \
 
 # Build Worker
 buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" )
 
+# Build Base
+buildBase: (build base_image + ":" + tag "./Dockerfile")
+
 # Build Metrics
-buildMetrics: (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")
+buildMetrics: buildBase (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")
 
 # Build Partition Metrics
-buildPartitionMetrics: (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile")
+buildPartitionMetrics: buildBase (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile")
 
 # Build Submitter
-buildSubmitter: (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
+buildSubmitter: buildBase (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
 
 # Build Polling Agent
-buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
+buildPollingAgent: buildBase (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
 
 # Build Htcmock Client
 buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
@@ -216,7 +234,10 @@ buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
-build-all: buildWorker buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
+build-core: buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
+
+# Build all images necessary for the deployment and the worker
+build-all: buildWorker build-core
 
 # Build and Deploy ArmoniK Core; this recipe should only be used with local_images=false
 build-deploy: build-all deploy

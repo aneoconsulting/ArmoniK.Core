@@ -183,7 +183,44 @@ jobs:
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
-  buildImages:
+  imagesCore:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: login
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+
+    - name: Build
+      run: |
+        just tag=$VERSION build-core
+
+    - name: push
+      run: |
+        while IFS= read -r IMG
+        do
+          docker push $IMG:${VERSION}
+        done <<-EOF
+        dockerhubaneo/armonik_control
+        dockerhubaneo/armonik_control_partition_metrics
+        dockerhubaneo/armonik_control_metrics
+        dockerhubaneo/armonik_pollingagent
+        EOF
+
+  imagesRe:
     runs-on: ubuntu-latest
     needs:
       - versionning
@@ -194,14 +231,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -230,26 +259,66 @@ jobs:
     - name: push
       run: docker push ${{ matrix.img }}:$VERSION
 
-  buildImagesCross:
+  imagesCoreC:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Build
+      run: just tag=${VERSION}-arm builder=buildx build-core
+
+    - name: push
+      run: |
+        while IFS= read -r IMG
+        do
+          docker push $IMG:${VERSION}-arm
+          docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
+        done <<-EOF
+        dockerhubaneo/armonik_control
+        dockerhubaneo/armonik_control_partition_metrics
+        dockerhubaneo/armonik_control_metrics
+        dockerhubaneo/armonik_pollingagent
+        EOF
+
+  imagesReC:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -303,7 +372,8 @@ jobs:
   testStreamDC:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -378,7 +448,8 @@ jobs:
   testHtcMockDC:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -534,7 +605,8 @@ jobs:
   testConnectivity:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -610,7 +682,8 @@ jobs:
   runBench:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -704,7 +777,8 @@ jobs:
   defaultPartitionMock:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -767,7 +841,8 @@ jobs:
   healthCheckTest:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -900,7 +975,8 @@ jobs:
       - testHtcMockDC
       - defaultPartitionMock
       - testStreamDC
-      - buildImages
+      - imagesCore
+      - imagesRe
       - runBench
       - healthCheckTest
       - testConnectivity
