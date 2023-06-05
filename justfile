@@ -30,8 +30,10 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
 } else if queue == "artemis" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
-} else {
+} else if queue == "activemq" {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
+} else {
+  '{ name = "none" }'
 }
 
 # Sets the object storage

@@ -85,6 +85,11 @@ module "queue_artemis" {
   network    = docker_network.armonik.name
 }
 
+module "queue_none" {
+  source = "./modules/storage/queue/none"
+  count  = var.queue_storage.name == "none" ? 1 : 0
+}
+
 module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
