@@ -150,37 +150,20 @@ public class GrpcSubmitterServiceHelper : IDisposable
         await StartServer()
           .ConfigureAwait(false);
       }
-
-      channel_ ??= GrpcChannel.ForAddress("http://localhost",
-                                          new GrpcChannelOptions
-                                          {
-                                            LoggerFactory = loggerFactory_,
-                                            HttpHandler   = handler_,
-                                          });
-      nChannels += 1;
     }
 
-    return channel_;
+    return GrpcChannel.ForAddress("http://localhost",
+                                  new GrpcChannelOptions
+                                  {
+                                    LoggerFactory = loggerFactory_,
+                                    HttpHandler   = handler_,
+                                  });
+    ;
   }
 
-  public async Task DeleteChannel()
-  {
-    using (channelMutex_)
-    {
-      if (channel_ == null)
-      {
-        return;
-      }
-
-      nChannels -= 1;
-      if (nChannels == 0)
-      {
-        await channel_.ShutdownAsync()
-                      .ConfigureAwait(false);
-        channel_ = null;
-      }
-    }
-  }
+  public async Task DeleteChannel(ChannelBase channel)
+    => await channel.ShutdownAsync()
+                    .ConfigureAwait(false);
 
   public async Task StopServer()
   {

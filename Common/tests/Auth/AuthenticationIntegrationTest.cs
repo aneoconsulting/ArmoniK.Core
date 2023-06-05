@@ -80,7 +80,7 @@ public class AuthenticationIntegrationTest
     helper_ = new GrpcSubmitterServiceHelper(submitter,
                                              Identities.ToList(),
                                              options_!,
-                                             LogLevel.Debug,
+                                             LogLevel.Warning,
                                              s =>
                                              {
                                                s.AddSingleton<ITaskTable>(new SimpleTaskTable())
@@ -1161,7 +1161,7 @@ public class AuthenticationIntegrationTest
                       ((RpcException)finalException!).StatusCode);
     }
 
-    helper_.DeleteChannel()
+    helper_.DeleteChannel(channel)
            .Wait();
   }
 
@@ -1263,7 +1263,7 @@ public class AuthenticationIntegrationTest
                       ((RpcException)exception.InnerException!).StatusCode);
     }
 
-    await helper_.DeleteChannel()
+    await helper_.DeleteChannel(channel)
                  .ConfigureAwait(false);
   }
 }
