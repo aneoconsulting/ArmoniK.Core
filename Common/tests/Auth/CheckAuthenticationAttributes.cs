@@ -29,7 +29,7 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
 
-public class CheckAuthenticationIgnore
+public class CheckAuthenticationAttributes
 {
   public static List<TestCaseData> GetAllServices()
     => new(typeof(GrpcAuthService).Assembly.GetTypes()
@@ -39,12 +39,7 @@ public class CheckAuthenticationIgnore
                                   .Where(t => t.BaseType?.Namespace?.ToUpperInvariant()
                                                .StartsWith("ArmoniK.Api.gRPC".ToUpperInvariant()) == true)
                                   .Where(t => t.DeclaringType == null)
-                                  .Select(t =>
-                                          {
-                                            var tcd = new TestCaseData(t);
-                                            tcd.SetName("{m}" + $"({t.Name})");
-                                            return tcd;
-                                          }));
+                                  .Select(t => new TestCaseData(t).SetName("{m}" + $"({t.Name})")));
 
   public static IEnumerable<TestCaseData> GetAllMethods()
   {
@@ -63,13 +58,8 @@ public class CheckAuthenticationIgnore
                          return (service.Arguments[0] as Type)!.GetMethods()
                                                                .Where(m => m.DeclaringType == service.Arguments[0] as Type && !objectMethods.Contains(m.Name) &&
                                                                            serviceBaseMethods.Contains(m.Name))
-                                                               .Select(m =>
-                                                                       {
-                                                                         var tcd = new TestCaseData(service.Arguments[0],
-                                                                                                    m);
-                                                                         tcd.SetName("{m}" + $"({(service.Arguments[0] as Type)?.Name}, {m.Name})");
-                                                                         return tcd;
-                                                                       });
+                                                               .Select(m => new TestCaseData(service.Arguments[0],
+                                                                                             m).SetName("{m}" + $"({(service.Arguments[0] as Type)?.Name}, {m.Name})"));
                        })
            .ToList();
   }

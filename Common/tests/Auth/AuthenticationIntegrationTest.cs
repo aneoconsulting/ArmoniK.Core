@@ -752,30 +752,29 @@ public class AuthenticationIntegrationTest
       var impersonationType = (ImpersonationType)parameters[4];
       foreach (var caseConfig in casesConfigs)
       {
-        var tcd = new TestCaseData(new CaseParameters(caseConfig.ClientType,
-                                                      caseConfig.Method,
-                                                      GetArgs(caseConfig.Args,
-                                                              identityIndex,
-                                                              impersonationType,
-                                                              impersonate),
-                                                      caseConfig.IsAsync,
-                                                      caseConfig.ClientStream,
-                                                      caseConfig.ServerStream,
-                                                      statusCode,
-                                                      shouldSucceed,
-                                                      identityIndex,
-                                                      impersonationType,
-                                                      impersonate),
-                                   Activator.CreateInstance(caseConfig.RequestType),
-                                   Activator.CreateInstance(caseConfig.ReplyType));
-        tcd.SetName((caseConfig.IsAsync
-                       ? "Async"
-                       : "") + (caseConfig.ClientStream
-                                  ? "ClientStream"
-                                  : "") + (caseConfig.ServerStream
-                                             ? "ServerStream"
-                                             : "") + $"AuthShouldMatch({tcd.Arguments[0]})");
-        yield return tcd;
+        var caseParams = new CaseParameters(caseConfig.ClientType,
+                                            caseConfig.Method,
+                                            GetArgs(caseConfig.Args,
+                                                    identityIndex,
+                                                    impersonationType,
+                                                    impersonate),
+                                            caseConfig.IsAsync,
+                                            caseConfig.ClientStream,
+                                            caseConfig.ServerStream,
+                                            statusCode,
+                                            shouldSucceed,
+                                            identityIndex,
+                                            impersonationType,
+                                            impersonate);
+        yield return new TestCaseData(caseParams,
+                                      Activator.CreateInstance(caseConfig.RequestType),
+                                      Activator.CreateInstance(caseConfig.ReplyType)).SetName((caseConfig.IsAsync
+                                                                                                 ? "Async"
+                                                                                                 : "") + (caseConfig.ClientStream
+                                                                                                            ? "ClientStream"
+                                                                                                            : "") + (caseConfig.ServerStream
+                                                                                                                       ? "ServerStream"
+                                                                                                                       : "") + $"AuthShouldMatch({caseParams})");
       }
     }
   }
