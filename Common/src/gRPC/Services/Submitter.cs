@@ -395,19 +395,19 @@ public class Submitter : ISubmitter
     }
     else
     {
-      // not done means that another pod put this task in error so we do not need to do it a second time
-      // so nothing to do
-      if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
-                                              cOutput.Error,
-                                              cancellationToken)
-                           .ConfigureAwait(false))
-      {
-        return;
-      }
-
       // TODO FIXME: nothing will resubmit the task if there is a crash there
       if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
       {
+        // not done means that another pod put this task in retry so we do not need to do it a second time
+        // so nothing to do
+        if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
+                                                cOutput.Error,
+                                                cancellationToken)
+                             .ConfigureAwait(false))
+        {
+          return;
+        }
+
         logger_.LogWarning("Resubmit {task}",
                            taskData.TaskId);
 
@@ -430,6 +430,16 @@ public class Submitter : ISubmitter
       }
       else
       {
+        // not done means that another pod put this task in error so we do not need to do it a second time
+        // so nothing to do
+        if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
+                                                cOutput.Error,
+                                                cancellationToken)
+                             .ConfigureAwait(false))
+        {
+          return;
+        }
+
         await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
                                                         resultTable_,
                                                         taskData.TaskId,
