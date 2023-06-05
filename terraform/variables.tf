@@ -84,8 +84,8 @@ variable "queue_storage" {
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq|artemis)$", var.queue_storage.name))
-    error_message = "Must be activemq, rabbitmq or artemis"
+    condition     = can(regex("^(activemq|rabbitmq|artemis|none)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq, artemis or none"
   }
   default = {}
 }
@@ -218,4 +218,10 @@ variable "ingress" {
         mtls = true
       }
   } }
+}
+
+variable "custom_env_vars" {
+  type = map(string)
+  default = {
+  }
 }
