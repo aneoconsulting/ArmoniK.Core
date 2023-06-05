@@ -43,4 +43,10 @@ resource "docker_container" "queue" {
     target = "/etc/rabbitmq/enabled_plugins"
     source = abspath("${local_file.plugins.filename}")
   }
+
+  mounts {
+    type   = "bind"
+    target = "/etc/rabbitmq/conf.d/10-defaults.conf"
+    source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
+  }
 }
