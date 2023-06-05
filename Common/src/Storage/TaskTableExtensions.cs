@@ -139,4 +139,44 @@ public static class TaskTableExtensions
                                  (tdm => tdm.ProcessingToEndDuration, taskData.ProcessingToEndDuration),
                                },
                                cancellationToken);
+
+
+  /// <summary>
+  ///   Change the status of the task to retry
+  /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
+  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
+  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
+  ///   - <see cref="TaskData.Output" />: Output of the task
+  /// </remarks>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
+  /// <param name="errorDetail">Error message to be inserted in task's output</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task<bool> SetTaskRetryAsync(this ITaskTable   taskTable,
+                                                   TaskData          taskData,
+                                                   string            errorDetail,
+                                                   CancellationToken cancellationToken = default)
+  {
+    var task = await taskTable.UpdateOneTask(taskData.TaskId,
+                                             new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                             {
+                                               (data => data.Output, new Output(Error: errorDetail,
+                                                                                Success: false)),
+                                               (data => data.Status, TaskStatus.Retried),
+                                               (tdm => tdm.EndDate, taskData.EndDate),
+                                               (tdm => tdm.CreationToEndDuration, taskData.CreationToEndDuration),
+                                               (tdm => tdm.ProcessingToEndDuration, taskData.ProcessingToEndDuration),
+                                             },
+                                             cancellationToken)
+                              .ConfigureAwait(false);
+
+    return task.Status != TaskStatus.Retried;
+  }
 }

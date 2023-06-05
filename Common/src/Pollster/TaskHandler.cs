@@ -246,6 +246,9 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Processing:
           logger_.LogInformation("Task is processing elsewhere ; taking over here");
           break;
+        case TaskStatus.Retried:
+          logger_.LogInformation("Task is in retry ; retry task should be executed");
+          return false;
         case TaskStatus.Unspecified:
         default:
           logger_.LogCritical("Task was in an unknown state {state}",
