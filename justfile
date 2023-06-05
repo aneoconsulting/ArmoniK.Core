@@ -13,7 +13,6 @@ worker       := "htcmock"
 object       := "redis"
 replicas     := "3"
 partitions   := "2"
-base_image   := "armonik_base_build"
 builder      := "regular"
 platform     := "linux/arm64"
 
@@ -45,7 +44,7 @@ export TF_VAR_object_storage := if object == "redis" {
 }
 
 # Defines worker and environment variables for deployment
-defaultWorkerImage := if worker == "stream" {
+image_worker := if worker == "stream" {
   "dockerhubaneo/armonik_core_stream_test_worker"
 } else if worker == "bench" {
   "dockerhubaneo/armonik_core_bench_test_worker"
@@ -53,7 +52,7 @@ defaultWorkerImage := if worker == "stream" {
   "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 # The path is given relative to ArmoniK.Core's root directory
-defaultWorkerDockerFilePath := if worker == "stream" {
+dockerfile_worker := if worker == "stream" {
   "./Tests/Stream/Server/"
 } else if worker == "bench" {
   "./Tests/Bench/Server/src/"
@@ -61,20 +60,33 @@ defaultWorkerDockerFilePath := if worker == "stream" {
   "./Tests/HtcMock/Server/src/"
 }
 
-export TF_VAR_worker_image            := env_var_or_default('WORKER_IMAGE', defaultWorkerImage)
-export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE_PATH', defaultWorkerDockerFilePath)
+export TF_VAR_worker_image            := env_var_or_default('WORKER_IMAGE', image_worker)
+export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE_PATH', dockerfile_worker)
 
-# This env vars will be used only for the build-all recipe
-export ARMONIK_METRICS            := "dockerhubaneo/armonik_control_metrics:" + tag
-export ARMONIK_PARTITIONMETRICS   := "dockerhubaneo/armonik_control_partition_metrics:" + tag
-export ARMONIK_SUBMITTER          := "dockerhubaneo/armonik_control:" + tag
-export ARMONIK_POLLINGAGENT       := "dockerhubaneo/armonik_pollingagent:" + tag
+# Armonik docker image names
+image_metrics           := env_var_or_default('METRICS_IMAGE', "dockerhubaneo/armonik_control_metrics")
+image_partition_metrics := env_var_or_default('PARTITION_METRICS_IMAGE', "dockerhubaneo/armonik_control_partition_metrics")
+image_submitter         := env_var_or_default('SUBMITTER_IMAGE', "dockerhubaneo/armonik_control")
+image_polling_agent     := env_var_or_default('POLLING_AGENT_IMAGE', "dockerhubaneo/armonik_pollingagent")
+image_build_base        := env_var_or_default('BUILD_BASE_IMAGE', "dockerhubaneo/armonik_build_base")
+image_client_mock       := env_var_or_default('MOCK_CLIENT_IMAGE', "dockerhubaneo/armonik_core_htcmock_test_client")
+image_client_bench      := env_var_or_default('BENCH_CLIENT_IMAGE', "dockerhubaneo/armonik_core_bench_test_client")
+image_client_stream     := env_var_or_default('STREAM_CLIENT_IMAGE', "dockerhubaneo/armonik_core_stream_test_client")
 
-# Environment variables used to build client images of htcmock, stream and bench
-export HTCMOCK_CLIENT_IMAGE := "dockerhubaneo/armonik_core_htcmock_test_client:" + tag
-export STREAM_CLIENT_IMAGE := "dockerhubaneo/armonik_core_stream_test_client:" + tag
-export BENCH_CLIENT_IMAGE := "dockerhubaneo/armonik_core_bench_test_client:" + tag
+# Armonik docker images full name (image + tag)
+export ARMONIK_METRICS          := image_metrics + ":" + tag
+export ARMONIK_PARTITIONMETRICS := image_partition_metrics + ":" + tag
+export ARMONIK_SUBMITTER        := image_submitter + ":" + tag
+export ARMONIK_POLLINGAGENT     := image_polling_agent + ":" + tag
+export BUILD_BASE               := image_build_base + ":" + tag
+export HTCMOCK_CLIENT_IMAGE     := image_client_mock + ":" + tag
+export STREAM_CLIENT_IMAGE      := image_client_stream + ":" + tag
+export BENCH_CLIENT_IMAGE       := image_client_bench + ":" + tag
 
+export TF_VAR_submitter                       := '{ image = "' + image_submitter + '" }'
+export TF_VAR_compute_plane                   := '{ polling_agent = { image = "' + image_polling_agent + '" }, worker = {}}'
+export TF_VAR_armonik_metrics_image           := image_metrics
+export TF_VAR_armonik_partition_metrics_image := image_partition_metrics
 
 # List recipes and their usage
 @default:
@@ -195,10 +207,10 @@ restart serviceName: (container "restart" serviceName)
 build imageTag dockerFile:
   case "{{builder}}" in \
     regular) \
-      docker build --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
+      docker build --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{image_build_base}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
       ;; \
     buildx) \
-      docker buildx build --push --progress=plain --platform {{platform}} --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{base_image}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
+      docker buildx build --push --progress=plain --platform {{platform}} --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{image_build_base}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
       ;; \
     *) \
       echo wrong builder \
@@ -210,7 +222,7 @@ build imageTag dockerFile:
 buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" )
 
 # Build Base
-buildBase: (build base_image + ":" + tag "./Dockerfile")
+buildBase: (build BUILD_BASE "./Dockerfile")
 
 # Build Metrics
 buildMetrics: buildBase (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")

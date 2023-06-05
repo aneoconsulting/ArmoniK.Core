@@ -84,7 +84,7 @@ jobs:
 
     - name: Build
       run: |
-        just tag=$VERSION platform="linux/arm64,linux/amd64" base_image=dockerhubaneo/armonik_base_build build-core
+        just tag=$VERSION platform="linux/arm64,linux/amd64" build-core
 
     - name: Delete temporary image
       run: |

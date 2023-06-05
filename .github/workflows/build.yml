@@ -292,7 +292,7 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Build
-      run: just tag=${VERSION}-arm base_image=dockerhubaneo/armonik_base_build builder=buildx build-core
+      run: just tag=${VERSION}-arm builder=buildx build-core
 
     - name: Rename
       run: |
