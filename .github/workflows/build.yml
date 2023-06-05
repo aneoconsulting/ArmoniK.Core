@@ -292,13 +292,15 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
     - name: Build
-      run: just tag=${VERSION}-arm builder=buildx build-core
+      run: just tag=${VERSION}-arm base_image=dockerhubaneo/armonik_base_build builder=buildx build-core
 
-    - name: push
+    - name: Rename
       run: |
+        curl -u ${{ secrets.DOCKER_HUB_LOGIN }}:${{ secrets.DOCKER_HUB_TOKEN }} \
+          -X "DELETE" https://cloud.docker.com/v2/repositories/dockerhubaneo/armonik_base_build/tags/${VERSION}-arm/
+
         while IFS= read -r IMG
         do
-          docker push $IMG:${VERSION}-arm
           docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
         done <<-EOF
         dockerhubaneo/armonik_control
