@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="ArmoniK.Api.Worker" Version="3.9.0-SNAPSHOT.14.74bbbc4" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="Htc.Mock" Version="3.0.0-alpha11" />
   </ItemGroup>
 
