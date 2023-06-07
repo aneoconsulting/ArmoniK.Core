@@ -18,6 +18,10 @@
     {
       "groupName": "nuget packages",
       "groupSlug": "nuget",
+      "excludePackagePatterns": [
+        "ArmoniK.Api.*",
+        "ArmoniK.Utils"
+      ],
       "matchDatasources": [
         "nuget"
       ]
@@ -30,6 +34,13 @@
       ],
       "matchDatasources": [
         "nuget"
+      ]
+    },
+    {
+      "groupName": "docker images",
+      "groupSlug": "docker",
+      "matchDatasources": [
+        "docker"
       ]
     },
     {
