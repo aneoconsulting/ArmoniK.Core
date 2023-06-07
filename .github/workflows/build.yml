@@ -9,52 +9,6 @@ on:
     tags-ignore: [ '**' ]
 
 jobs:
-  sonarCloud:
-    runs-on: windows-latest
-    steps:
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 11
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-          submodules: true
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: .\.sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v3
-        with:
-          path: .\.sonar\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-      - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          New-Item -Path .\.sonar\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-      - name: Install dotnet-coverage tool
-        run: |
-          dotnet tool install --global dotnet-coverage
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
-        run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"aneoconsulting_ArmoniK.Core" /o:"aneoconsulting" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
-          dotnet build --no-incremental ArmoniK.Core.sln
-          dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml" --settings "dotnet-coverage.runsettings.xml"
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-
   versionning:
     name: Versionning
     runs-on: ubuntu-latest
@@ -78,60 +32,6 @@ jobs:
     - name: Print version
       run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
-  format:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        fetch-depth: 0
-        submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
-    - name: Install ReSharper
-      run: |
-        dotnet tool install -g JetBrains.ReSharper.GlobalTools --version 2022.2.2
-
-    - name: Restore
-      run: |
-        dotnet restore ArmoniK.Core.sln
-
-    - name: Reformat
-      run: |
-        jb cleanupcode ArmoniK.Core.sln
-
-    - name: Check Diff
-      id: check-diff
-      run: |
-        DIFF="$(git diff --name-only)"
-
-        if [ -z "$DIFF" ]; then
-          echo "OK: Format is clean"
-        else
-          echo "Error: Format was not clean"
-          echo "List of files:"
-          echo "$DIFF"
-          git diff
-          exit 1
-        fi
-
-    - name: Generate patch
-      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
-      run: |
-        git diff > patch.diff
-
-    - uses: actions/upload-artifact@v3
-      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
-      with:
-        name: patch
-        path: ./patch.diff
-
   tests:
     strategy:
       matrix:
@@ -151,15 +51,14 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
 
     - name: Minio Server UP
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/S3/docker-compose-minio.yml"
+      if: ${{ matrix.projects }} == "Adaptors/S3/tests"
+      run: |
+          just object=minio deployTargetObject
 
     - name: Run tests
       run: |
@@ -174,57 +73,20 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
-  testsQueueProto100:
+  testsQueueProtos:
     strategy:
       matrix:
-        projects:
-          - Adaptors/Amqp/tests
         queue:
           - activemq
           - rabbitmq
-        os:
-          - ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
-    - name: Setup queue
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
-
-    - name: Run tests
-      run: |
-        cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
-
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
-
-  testsQueueProto091:
-    strategy:
-      matrix:
         projects:
-          - Adaptors/RabbitMQ/tests
-        queue:
-          - rabbitmq-0.9.1
+          - Adaptors/Amqp/tests
         os:
           - ubuntu-latest
+        include:
+          - queue: rabbitmq091
+            projects: Adaptors/RabbitMQ/tests
+            os: ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -233,16 +95,14 @@ jobs:
       with:
         ref: ${{ github.ref }}
         submodules: true
+    
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
-    - name: Setup queue
-      uses: isbang/compose-action@v1.4.0
-      with:
-        compose-file: "./docker-compose/queue-standalone/docker-compose.queue-${{ matrix.queue }}.yml"
+    - name: Set up queue
+      run: |
+          just queue=${{ matrix.queue }} deployTargetQueue
 
     - name: Run tests
       run: |
@@ -274,11 +134,6 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
@@ -301,16 +156,71 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release
 
+  publish-nuget:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
 
-  buildImages:
+    - name: Build the package
+      run: |
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+
+    - name: Pack the package
+      run: |
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+    - name: Push the package
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+  imagesCore:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: login
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+
+    - name: Build
+      run: |
+        just tag=$VERSION build-core
+
+    - name: push
+      run: |
+        while IFS= read -r IMG
+        do
+          docker push $IMG:${VERSION}
+        done <<-EOF
+        dockerhubaneo/armonik_control
+        dockerhubaneo/armonik_control_partition_metrics
+        dockerhubaneo/armonik_control_metrics
+        dockerhubaneo/armonik_pollingagent
+        EOF
+
+  imagesRe:
     runs-on: ubuntu-latest
     needs:
       - versionning
@@ -321,14 +231,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -352,30 +254,73 @@ jobs:
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Build
-      run: docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
+      run: docker build --build-arg VERSION=$VERSION -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
 
     - name: push
       run: docker push ${{ matrix.img }}:$VERSION
 
-  buildImagesCross:
+  imagesCoreC:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Build
+      run: just tag=${VERSION}-arm builder=buildx build-core
+
+    - name: Rename
+      run: |
+        curl -u ${{ secrets.DOCKER_HUB_LOGIN }}:${{ secrets.DOCKER_HUB_TOKEN }} \
+          -X "DELETE" https://cloud.docker.com/v2/repositories/dockerhubaneo/armonik_base_build/tags/${VERSION}-arm/
+
+        while IFS= read -r IMG
+        do
+          docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
+        done <<-EOF
+        dockerhubaneo/armonik_control
+        dockerhubaneo/armonik_control_partition_metrics
+        dockerhubaneo/armonik_control_metrics
+        dockerhubaneo/armonik_pollingagent
+        EOF
+
+  imagesReC:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -417,6 +362,8 @@ jobs:
         file: ${{ matrix.path }}
         context: .
         platforms: linux/arm64
+        build-args: |
+          VERSION=${{ needs.versionning.outputs.version }}
         push: true
         tags: |
             ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm
@@ -427,7 +374,8 @@ jobs:
   testStreamDC:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -437,7 +385,6 @@ jobs:
       matrix:
         queue:
           - activemq
-          - artemis
           - rabbitmq
           - rabbitmq091
         log-level:
@@ -450,18 +397,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -472,7 +414,7 @@ jobs:
           sleep 10
 
       - name: Run Stream Test
-        timeout-minutes: 3
+        timeout-minutes: 4
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
@@ -492,23 +434,24 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
 
   testHtcMockDC:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -533,18 +476,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -583,6 +521,34 @@ jobs:
             -e HtcMock__MemorySize=1 \
             -e HtcMock__SubTasksLevels=4 \
             -e HtcMock__Partition=TestPartition0 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Run HtcMock test 100 tasks 4 levels with retries
+        timeout-minutes: 3
+        run: |
+          docker run --net armonik_network --rm \
+            -e HtcMock__NTasks=100 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=4 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e HtcMock__TaskRpcException=a \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Run HtcMock test 100 tasks 4 levels with errors
+        timeout-minutes: 3
+        run: |
+          ! docker run --net armonik_network --rm \
+            -e HtcMock__NTasks=100 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
+            -e HtcMock__DataSize=1 \
+            -e HtcMock__MemorySize=1 \
+            -e HtcMock__SubTasksLevels=4 \
+            -e HtcMock__Partition=TestPartition0 \
+            -e HtcMock__TaskError=a \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
@@ -625,24 +591,101 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.tar.gz
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.tar.gz
 
-      - name: Collect docker compose logs
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-container-logs.tar.gz
+  testConnectivity:
+    needs:
+      - versionning
+      - imagesCore
+      - imagesRe
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ca: [true, false]
+    name: "Test connectivity - Ca installed ${{ matrix.ca }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
 
+      - name: Install AWSCLI (the one in the Github runner does not work)
+        run: |
+          pip install awscli
+
+      - name: Setup just
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Deploy Core
+        run: |
+          just tag=${VERSION} deploy
+          sleep 10
+
+      - name: Add CA to store
+        if: ${{ matrix.ca }}
+        run: |
+         sudo apt install ca-certificates
+         sudo mkdir -p /usr/local/share/ca-certificates/
+         sudo cp terraform/generated/ingress_tls/server/ca.crt /usr/local/share/ca-certificates/ca_tls.crt
+         sudo cp terraform/generated/ingress_mtls/server/ca.crt /usr/local/share/ca-certificates/ca_mtls.crt
+         sudo update-ca-certificates
+
+      - name: Run connection test
+        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test - Connectivity CA ${{ matrix.ca }}
+          path: ./Tests/Common/Client/src/TestResults/test-results.trx
+          reporter: dotnet-trx
+
+      - name: Show logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.tar.gz
+      - name: Collect docker container logs
+        uses: jwalton/gh-docker-logs@v2
+        if: always()
+        with:
+          dest: './container-logs'
+      - name: Upload docker container logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz
+
+
+
+  
   runBench:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -653,18 +696,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -725,23 +763,24 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
 
   defaultPartitionMock:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -752,18 +791,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -792,24 +826,25 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
 
 
   healthCheckTest:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -820,18 +855,13 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install dependencies
+      - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release jq python3 python-is-python3 python3-pip
           pip install awscli
 
       - name: Setup just
         run: |
-          curl -q 'https://proget.makedeb.org/debian-feeds/prebuilt-mpr.pub' | gpg --dearmor | sudo tee /usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg 1> /dev/null
-          echo "deb [signed-by=/usr/share/keyrings/prebuilt-mpr-archive-keyring.gpg] https://proget.makedeb.org prebuilt-mpr $(lsb_release -cs)" | sudo tee /etc/apt/sources.list.d/prebuilt-mpr.list
-          sudo apt-get update
-          sudo apt-get install just
+          sudo snap install --edge --classic just
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -926,32 +956,32 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
-      - name: Collect docker compose logs
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
+      - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@v2
         if: always()
         with:
           dest: './container-logs'
-      - name: Upload docker compose logs
+      - name: Upload docker container logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
 
   canMerge:
     needs:
-      - format
       - tests
-      - testsQueueProto091
-      - testsQueueProto100
+      - testsQueueProtos
       - testsWinOnly
       - testHtcMockDC
       - defaultPartitionMock
       - testStreamDC
-      - buildImages
+      - imagesCore
+      - imagesRe
       - runBench
       - healthCheckTest
+      - testConnectivity
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK

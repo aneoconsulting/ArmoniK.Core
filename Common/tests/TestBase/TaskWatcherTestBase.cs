@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -35,153 +36,28 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 public class TaskWatcherTestBase
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     GetInstance();
 
-    if (RunTests)
+    if (!RunTests || CheckForSkipSetup())
     {
-      TaskTable!.CreateTasks(new[]
-                             {
-                               new TaskData("SessionId",
-                                            "TaskCompletedId",
-                                            "OwnerPodId",
-                                            "OwnerPodName",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                              "output2",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Completed,
-                                            Options,
-                                            new Output(true,
-                                                       "")),
-                               new TaskData("SessionId",
-                                            "TaskCreatingId",
-                                            "OwnerPodId",
-                                            "OwnerPodName",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Creating,
-                                            Options,
-                                            new Output(false,
-                                                       "")),
-                               new TaskData("SessionId",
-                                            "TaskProcessingId",
-                                            "OwnerPodId",
-                                            "OwnerPodName",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Processing,
-                                            Options,
-                                            new Output(false,
-                                                       "")),
-                               new TaskData("SessionId",
-                                            "TaskAnotherProcessingId",
-                                            "OwnerPodId",
-                                            "OwnerPodName",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Processing,
-                                            Options,
-                                            new Output(false,
-                                                       "")),
-                               new TaskData("SessionId",
-                                            "TaskSubmittedId",
-                                            "",
-                                            "",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Submitted,
-                                            Options with
-                                            {
-                                              PartitionId = "part2",
-                                            },
-                                            new Output(false,
-                                                       "")),
-                               new TaskData("SessionId",
-                                            "TaskFailedId",
-                                            "OwnerPodId",
-                                            "OwnerPodName",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Error,
-                                            Options,
-                                            new Output(false,
-                                                       "sad task")),
-                             })
-                .Wait();
+      return;
     }
+
+    await TaskTable!.Init(CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    await TaskTable!.CreateTasks(new[]
+                                 {
+                                   taskCompletedData_,
+                                   taskCreatingData_,
+                                   TaskProcessingData,
+                                   taskProcessingData2_,
+                                   TaskSubmittedData,
+                                   taskFailedData_,
+                                 })
+                    .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -211,6 +87,155 @@ public class TaskWatcherTestBase
                                                     "applicationService",
                                                     "engineType");
 
+  private static readonly TaskData TaskSubmittedData = new("SessionId",
+                                                           "TaskSubmittedId",
+                                                           "",
+                                                           "",
+                                                           "PayloadId",
+                                                           new[]
+                                                           {
+                                                             "parent1",
+                                                           },
+                                                           new[]
+                                                           {
+                                                             "dependency1",
+                                                           },
+                                                           new[]
+                                                           {
+                                                             "output1",
+                                                           },
+                                                           Array.Empty<string>(),
+                                                           TaskStatus.Submitted,
+                                                           Options with
+                                                           {
+                                                             PartitionId = "part2",
+                                                           },
+                                                           new Output(false,
+                                                                      ""));
+
+  private readonly TaskData taskCompletedData_ = new("SessionId",
+                                                     "TaskCompletedId",
+                                                     "OwnerPodId",
+                                                     "OwnerPodName",
+                                                     "PayloadId",
+                                                     new[]
+                                                     {
+                                                       "parent1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "dependency1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "output1",
+                                                       "output2",
+                                                     },
+                                                     Array.Empty<string>(),
+                                                     TaskStatus.Completed,
+                                                     Options,
+                                                     new Output(true,
+                                                                ""));
+
+  private readonly TaskData taskCreatingData_ = new("SessionId",
+                                                    "TaskCreatingId",
+                                                    "OwnerPodId",
+                                                    "OwnerPodName",
+                                                    "PayloadId",
+                                                    new[]
+                                                    {
+                                                      "parent1",
+                                                    },
+                                                    new[]
+                                                    {
+                                                      "dependency1",
+                                                    },
+                                                    new[]
+                                                    {
+                                                      "output1",
+                                                    },
+                                                    Array.Empty<string>(),
+                                                    TaskStatus.Creating,
+                                                    Options,
+                                                    new Output(false,
+                                                               ""));
+
+  private static readonly TaskData TaskProcessingData = new("SessionId",
+                                                            "TaskProcessingId",
+                                                            "OwnerPodId",
+                                                            "OwnerPodName",
+                                                            "PayloadId",
+                                                            new[]
+                                                            {
+                                                              "parent1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "dependency1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "output1",
+                                                            },
+                                                            Array.Empty<string>(),
+                                                            TaskStatus.Processing,
+                                                            Options,
+                                                            new Output(false,
+                                                                       ""));
+
+  private readonly TaskData taskProcessingData2_ = new("SessionId",
+                                                       "TaskAnotherProcessingId",
+                                                       "OwnerPodId",
+                                                       "OwnerPodName",
+                                                       "PayloadId",
+                                                       new[]
+                                                       {
+                                                         "parent1",
+                                                       },
+                                                       new[]
+                                                       {
+                                                         "dependency1",
+                                                       },
+                                                       new[]
+                                                       {
+                                                         "output1",
+                                                       },
+                                                       Array.Empty<string>(),
+                                                       TaskStatus.Processing,
+                                                       Options,
+                                                       new Output(false,
+                                                                  ""));
+
+  private readonly TaskData taskFailedData_ = new("SessionId",
+                                                  "TaskFailedId",
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Error,
+                                                  Options,
+                                                  new Output(false,
+                                                             "sad task"));
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
+  }
+
+
   /* Interface to test */
   protected ITaskTable?   TaskTable;
   protected ITaskWatcher? TaskWatcher;
@@ -226,6 +251,7 @@ public class TaskWatcherTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)
@@ -319,12 +345,12 @@ public class TaskWatcherTestBase
                                 cancellationToken)
                    .ConfigureAwait(false);
 
-    await taskTable.SetTaskErrorAsync("TaskProcessingId",
+    await taskTable.SetTaskErrorAsync(TaskProcessingData,
                                       "Testing SetTaskError",
                                       CancellationToken.None)
                    .ConfigureAwait(false);
 
-    await taskTable.StartTask("TaskSubmittedId",
+    await taskTable.StartTask(TaskSubmittedData,
                               CancellationToken.None)
                    .ConfigureAwait(false);
 

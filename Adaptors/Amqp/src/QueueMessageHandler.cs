@@ -22,8 +22,7 @@ using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
 
-using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.Logging;
 
@@ -71,8 +70,6 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    using var _ = logger_.LogFunction(MessageId,
-                                      functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
     switch (Status)
     {
       case QueueMessageStatus.Postponed:

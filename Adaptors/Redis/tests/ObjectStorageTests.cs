@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,15 +51,15 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                                                           2000)));
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
-                                                 },
-                                                 {
-                                                   "Redis:MaxRetry", "5"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
+                                                  },
+                                                  {
+                                                    "Redis:MaxRetry", "5"
+                                                  },
+                                                };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
@@ -80,7 +80,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                              TextWriter.Null)
                                                                     .GetDatabase());
-    services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+    services.AddSingleton<IObjectStorage, ObjectStorage>();
 
     services.AddOption(configuration,
                        Options.Redis.SettingSection,
@@ -91,8 +91,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                    ValidateOnBuild = true,
                                                  });
 
-    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
-    RunTests             = true;
+    ObjectStorage = provider.GetRequiredService<IObjectStorage>();
+    RunTests      = true;
   }
 }

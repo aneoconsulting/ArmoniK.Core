@@ -112,7 +112,7 @@ public class QueueStorageTests : QueueStorageTestsBase
   }
 
   [TestCaseSource(nameof(TestCasesBadOptions))]
-  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Common.Injection.Options.Amqp options)
+  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(QueueCommon.Amqp options)
   {
     await using var client = new SimpleAmqpClient();
 

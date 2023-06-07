@@ -27,9 +27,14 @@ variable "generated_env_vars" {
   type = map(string)
 }
 
+variable "volumes" {
+  type = map(string)
+}
+
 variable "log_driver" {
   type = object({
     name    = string,
     address = string,
   })
 }
+

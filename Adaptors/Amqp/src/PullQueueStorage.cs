@@ -25,11 +25,8 @@ using System.Threading.Tasks;
 
 using Amqp;
 
-using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Base;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -43,16 +40,16 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   private AsyncLazy<IReceiverLink>[] receivers_;
   private AsyncLazy<ISenderLink>[]   senders_;
 
-  public PullQueueStorage(Common.Injection.Options.Amqp options,
-                          IConnectionAmqp               connectionAmqp,
-                          ILogger<PullQueueStorage>     logger)
+  public PullQueueStorage(QueueCommon.Amqp          options,
+                          IConnectionAmqp           connectionAmqp,
+                          ILogger<PullQueueStorage> logger)
     : base(options,
            connectionAmqp)
   {
     if (string.IsNullOrEmpty(options.PartitionId))
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.PartitionId)} is not defined.");
+                                            $"{nameof(QueueCommon.Amqp.PartitionId)} is not defined.");
     }
 
     logger_    = logger;
@@ -97,8 +94,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                         $"{Options.PartitionId}###q{i}")))
                            .ToArray();
 
-      var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
-      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
+      var senders = senders_.Select(lazy => lazy.Value)
+                            .WhenAll();
+      var receivers = receivers_.Select(lazy => lazy.Value)
+                                .WhenAll();
       await Task.WhenAll(senders,
                          receivers)
                 .ConfigureAwait(false);
@@ -110,12 +109,11 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _               = logger_.LogFunction();
-    var       nbPulledMessage = 0;
+    var nbPulledMessage = 0;
 
     if (!IsInitialized)
     {
-      throw new ArmoniKException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
+      throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
     while (nbPulledMessage < nbMessages)

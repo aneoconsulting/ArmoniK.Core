@@ -22,10 +22,12 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Control.PartitionMetrics.Options;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -63,18 +65,20 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddOpenTelemetryMetrics(b =>
-                                      {
-                                        b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
-                                        b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                                                                            .AddService("armonik-service"));
-                                        b.AddMeter(nameof(ArmoniKMeter));
-                                      })
              .AddOption<MetricsExporter>(builder.Configuration,
                                          MetricsExporter.SettingSection)
              .AddHostedService<ArmoniKMeter>()
              .AddHttpClient()
              .AddControllers();
+
+      builder.Services.AddOpenTelemetry()
+             .WithMetrics(b =>
+                          {
+                            b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
+                            b.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                                                                .AddService("armonik-service"));
+                            b.AddMeter(nameof(ArmoniKMeter));
+                          });
 
       var app = builder.Build();
 
@@ -106,10 +110,13 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
+      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
+
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
-
+      await partitionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
       await app.RunAsync()
                .ConfigureAwait(false);
 

@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
@@ -77,6 +78,34 @@ public interface IResultTable : IInitializable
   /// </returns>
   Task Create(IEnumerable<Result> results,
               CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  ///   Add the tasks Ids to the list of reverse dependencies of the given results
+  /// </summary>
+  /// <param name="sessionId">Id of the session containing the result</param>
+  /// <param name="resultIds">List of result Id to update</param>
+  /// <param name="taskIds">List of task Id to add to each result dependents</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task AddTaskDependency(string              sessionId,
+                         ICollection<string> resultIds,
+                         ICollection<string> taskIds,
+                         CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  ///   Get the list of task that depends on the result
+  /// </summary>
+  /// <param name="sessionId">Id of the session containing the result</param>
+  /// <param name="resultId">Id of the result</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Ids of the task dependent on this result
+  /// </returns>
+  Task<IEnumerable<string>> GetDependents(string            sessionId,
+                                          string            resultId,
+                                          CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Delete the results from the database
@@ -178,6 +207,19 @@ public interface IResultTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
+  ///   Complete result
+  /// </summary>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="resultId">Id of the result to complete</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The new version of the result metadata
+  /// </returns>
+  Task<Result> CompleteResult(string            sessionId,
+                              string            resultId,
+                              CancellationToken cancellationToken = default);
+
+  /// <summary>
   ///   Get the status of the given results
   /// </summary>
   /// <param name="ids">ids of the results</param>
@@ -189,6 +231,19 @@ public interface IResultTable : IInitializable
   Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                          string              sessionId,
                                                                          CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  ///   Set Task that should produce the result
+  /// </summary>
+  /// <param name="sessionId"></param>
+  /// <param name="requests">Results to update with the associated task id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task SetTaskOwnership(string                                        sessionId,
+                        ICollection<(string resultId, string taskId)> requests,
+                        CancellationToken                             cancellationToken = default);
 
   /// <summary>
   ///   Abort the results of the given task

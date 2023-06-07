@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -70,6 +70,8 @@ public class PartitionTable : IPartitionTable
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+      await partitionCollectionProvider_.Init(cancellationToken)
+                                        .ConfigureAwait(false);
       partitionCollectionProvider_.Get();
       isInitialized_ = true;
     }

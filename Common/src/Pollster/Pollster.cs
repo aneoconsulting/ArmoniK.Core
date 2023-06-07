@@ -25,11 +25,13 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -47,7 +49,7 @@ public class Pollster : IInitializable
   private readonly IHostApplicationLifetime   lifeTime_;
   private readonly ILogger<Pollster>          logger_;
   private readonly int                        messageBatchSize_;
-  private readonly IObjectStorageFactory      objectStorageFactory_;
+  private readonly IObjectStorage             objectStorage_;
   private readonly string                     ownerPodId_;
   private readonly string                     ownerPodName_;
   private readonly Injection.Options.Pollster pollsterOptions_;
@@ -70,7 +72,7 @@ public class Pollster : IInitializable
                   IHostApplicationLifetime   lifeTime,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
-                  IObjectStorageFactory      objectStorageFactory,
+                  IObjectStorage             objectStorage,
                   IResultTable               resultTable,
                   ISubmitter                 submitter,
                   ISessionTable              sessionTable,
@@ -92,7 +94,7 @@ public class Pollster : IInitializable
     dataPrefetcher_        = dataPrefetcher;
     pollsterOptions_       = pollsterOptions;
     messageBatchSize_      = options.MessageBatchSize;
-    objectStorageFactory_  = objectStorageFactory;
+    objectStorage_         = objectStorage;
     resultTable_           = resultTable;
     submitter_             = submitter;
     sessionTable_          = sessionTable;
@@ -113,22 +115,14 @@ public class Pollster : IInitializable
   public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
-  {
-    await pullQueueStorage_.Init(cancellationToken)
-                           .ConfigureAwait(false);
-    await dataPrefetcher_.Init(cancellationToken)
-                         .ConfigureAwait(false);
-    await workerStreamHandler_.Init(cancellationToken)
-                              .ConfigureAwait(false);
-    await objectStorageFactory_.Init(cancellationToken)
-                               .ConfigureAwait(false);
-    await resultTable_.Init(cancellationToken)
-                      .ConfigureAwait(false);
-    await sessionTable_.Init(cancellationToken)
-                       .ConfigureAwait(false);
-    await taskTable_.Init(cancellationToken)
-                    .ConfigureAwait(false);
-  }
+    => await Task.WhenAll(pullQueueStorage_.Init(cancellationToken),
+                          dataPrefetcher_.Init(cancellationToken),
+                          workerStreamHandler_.Init(cancellationToken),
+                          objectStorage_.Init(cancellationToken),
+                          resultTable_.Init(cancellationToken),
+                          sessionTable_.Init(cancellationToken),
+                          taskTable_.Init(cancellationToken))
+                 .ConfigureAwait(false);
 
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
@@ -147,7 +141,7 @@ public class Pollster : IInitializable
                    pullQueueStorage_.Check(tag),
                    dataPrefetcher_.Check(tag),
                    workerStreamHandler_.Check(tag),
-                   objectStorageFactory_.Check(tag),
+                   objectStorage_.Check(tag),
                    resultTable_.Check(tag),
                    sessionTable_.Check(tag),
                    taskTable_.Check(tag),

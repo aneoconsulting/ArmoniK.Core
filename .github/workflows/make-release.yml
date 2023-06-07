@@ -62,27 +62,12 @@ jobs:
       run : git push origin -d ${{ github.ref_name }}
 
 
-  tagImagesRelease:
+  imagesCore:
     runs-on: ubuntu-latest
     needs:
       - versionning
     env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-      RELEASE: ${{ needs.versionning.outputs.release }}
-    strategy:
-      fail-fast: true
-      matrix:
-        image:
-        - dockerhubaneo/armonik_pollingagent
-        - dockerhubaneo/armonik_control_metrics
-        - dockerhubaneo/armonik_control_partition_metrics
-        - dockerhubaneo/armonik_control
-        - dockerhubaneo/armonik_core_stream_test_worker
-        - dockerhubaneo/armonik_core_stream_test_client
-        - dockerhubaneo/armonik_core_htcmock_test_worker
-        - dockerhubaneo/armonik_core_htcmock_test_client
-        - dockerhubaneo/armonik_core_bench_test_worker
-        - dockerhubaneo/armonik_core_bench_test_client
+      VERSION: ${{ needs.versionning.outputs.release }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -90,14 +75,103 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
     - name: login
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
-    - name: ReTag release
-      run: docker buildx imagetools create ${{ matrix.image }}:${VERSION} --tag ${{ matrix.image }}:${RELEASE}
+    - name: Build
+      run: |
+        just tag=$VERSION platform="linux/arm64,linux/amd64" build-core
 
-    - name: ReTag latest
-      run: docker buildx imagetools create ${{ matrix.image }}:${VERSION} --tag ${{ matrix.image }}:latest
+    - name: Delete temporary image
+      run: |
+        curl -u ${{ secrets.DOCKER_HUB_LOGIN }}:${{ secrets.DOCKER_HUB_TOKEN }} \
+          -X "DELETE" https://cloud.docker.com/v2/repositories/dockerhubaneo/armonik_base_build/tags/${VERSION}-arm/
+
+
+
+  buildImages:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        -  img : dockerhubaneo/armonik_core_stream_test_worker
+           path: ./Tests/Stream/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_client
+           path: ./Tests/Stream/Client/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
+           path: ./Tests/HtcMock/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_client
+           path: ./Tests/HtcMock/Client/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_worker
+           path: ./Tests/Bench/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_bench_test_client
+           path: ./Tests/Bench/Client/src/Dockerfile
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: platforms
+      run: echo ${{ steps.buildx.outputs.platforms }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v3
+      with:
+        file: ${{ matrix.path }}
+        context: .
+        platforms: |
+          linux/arm64
+          linux/amd64
+        build-args: |
+          VERSION=${{ needs.versionning.outputs.release }}
+        push: true
+        tags: |
+            ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
+
+  publish-nuget:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+    env:
+      VERSION: ${{ needs.versionning.outputs.release }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Build the package
+      run: |
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+
+    - name: Pack the package
+      run: |
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+    - name: Push the package
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
 
   update-changelog:

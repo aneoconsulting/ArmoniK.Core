@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
@@ -118,12 +119,18 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Update a task status to TaskStatus.Processing
   /// </summary>
-  /// <param name="taskId">Id of the task to start</param>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.StartDate" />: Date when the task starts
+  ///   - <see cref="TaskData.PodTtl" />: Date TTL on the pod
+  /// </remarks>
+  /// <param name="taskData">Metadata of the task to start</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task StartTask(string            taskId,
+  Task StartTask(TaskData          taskData,
                  CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -218,18 +225,45 @@ public interface ITaskTable : IInitializable
   /// <param name="filter">Filter to select tasks</param>
   /// <param name="orderField">Select the field that will be used to order the tasks</param>
   /// <param name="ascOrder">Is the order ascending</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                     Expression<Func<TaskData, object?>> orderField,
-                                                                     bool                                ascOrder,
-                                                                     int                                 page,
-                                                                     int                                 pageSize,
-                                                                     CancellationToken                   cancellationToken = default);
+  Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                      Expression<Func<TaskData, object?>> orderField,
+                                                                      bool                                ascOrder,
+                                                                      int                                 page,
+                                                                      int                                 pageSize,
+                                                                      CancellationToken                   cancellationToken = default);
+
+  /// <summary>
+  ///   Find all tasks matching the given filter and ordering
+  /// </summary>
+  /// <param name="filter">Filter to select tasks</param>
+  /// <param name="selector">Expression to select part of the returned task data</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of task metadata matching the request and total number of results without paging
+  /// </returns>
+  Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                         Expression<Func<TaskData, T>>    selector,
+                                         CancellationToken                cancellationToken = default);
+
+  // TODO Should be compatible with EFCORE : https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete#updating-multiple-properties
+  /// <summary>
+  ///   Update one task with the given new values
+  /// </summary>
+  /// <param name="taskId">Id of the tasks to be updated</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The task metadata before the update
+  /// </returns>
+  Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                               ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                               CancellationToken                                                             cancellationToken = default);
 
   /// <summary>
   ///   List all applications extracted from task metadata matching the given filter and ordering
@@ -250,41 +284,19 @@ public interface ITaskTable : IInitializable
                                                                                       int                                                 pageSize,
                                                                                       CancellationToken                                   cancellationToken = default);
 
+
   /// <summary>
-  ///   Change the status of the task to succeeded
+  ///   Remove data dependencies from remaining data dependencies
   /// </summary>
-  /// <param name="taskId">Id of the task to tag as succeeded</param>
+  /// <param name="taskIds">Tasks</param>
+  /// <param name="dependenciesToRemove">Dependencies</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task SetTaskSuccessAsync(string            taskId,
-                           CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Change the status of the task to canceled
-  /// </summary>
-  /// <param name="taskId">Id of the task to tag as canceled</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task SetTaskCanceledAsync(string            taskId,
-                            CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Tag a task as errored and populate its output with an
-  ///   error message
-  /// </summary>
-  /// <param name="taskId">Id of the task to mark as errored</param>
-  /// <param name="errorDetail">Error message to be inserted in task's output</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   A boolean representing whether the status has been updated
-  /// </returns>
-  Task<bool> SetTaskErrorAsync(string            taskId,
-                               string            errorDetail,
-                               CancellationToken cancellationToken = default);
+  Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
+                                            ICollection<string> dependenciesToRemove,
+                                            CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Retrieve a task's output
@@ -300,31 +312,41 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Acquire the task to process it on the current agent
   /// </summary>
-  /// <param name="taskId">Id of the task to acquire</param>
-  /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
-  /// <param name="ownerPodName">Hostname of the pollster</param>
-  /// <param name="receptionDate">Date when the message from the queue storage is received</param>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
+  ///   acquire the task
+  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
+  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
+  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
+  /// </remarks>
+  /// <param name="taskData">Metadata of the task to acquire</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to acquire
   /// </returns>
-  Task<TaskData> AcquireTask(string            taskId,
-                             string            ownerPodId,
-                             string            ownerPodName,
-                             DateTime          receptionDate,
+  Task<TaskData> AcquireTask(TaskData          taskData,
                              CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Release the task from the current agent
   /// </summary>
-  /// <param name="taskId">Id of the task to release</param>
-  /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
+  ///   acquire the task
+  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
+  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
+  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
+  /// </remarks>
+  /// <param name="taskData">Metadata of the task to release</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to release
   /// </returns>
-  Task<TaskData> ReleaseTask(string            taskId,
-                             string            ownerPodId,
+  Task<TaskData> ReleaseTask(TaskData          taskData,
                              CancellationToken cancellationToken = default);
 
   /// <summary>

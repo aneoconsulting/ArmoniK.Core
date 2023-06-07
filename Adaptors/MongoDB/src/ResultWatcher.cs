@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -76,6 +76,8 @@ public class ResultWatcher : IResultWatcher
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+      await resultCollectionProvider_.Init(cancellationToken)
+                                     .ConfigureAwait(false);
       resultCollectionProvider_.Get();
       isInitialized_ = true;
     }
@@ -106,7 +108,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<NewResult, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                         resultUpdate => new NewResult(resultUpdate.FullDocument.SessionId,
-                                                                                                      resultUpdate.FullDocument.Name,
+                                                                                                      resultUpdate.FullDocument.ResultId,
                                                                                                       resultUpdate.FullDocument.OwnerTaskId,
                                                                                                       resultUpdate.FullDocument.Status));
   }
@@ -132,7 +134,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<ResultOwnerUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                 doc => new ResultOwnerUpdate(doc.FullDocument.SessionId,
-                                                                                                             doc.FullDocument.Name,
+                                                                                                             doc.FullDocument.ResultId,
                                                                                                              "",
                                                                                                              doc.FullDocument.OwnerTaskId));
   }
@@ -158,7 +160,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<ResultStatusUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                  doc => new ResultStatusUpdate(doc.FullDocument.SessionId,
-                                                                                                               doc.FullDocument.Name,
+                                                                                                               doc.FullDocument.ResultId,
                                                                                                                doc.FullDocument.Status));
   }
 }

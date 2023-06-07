@@ -23,6 +23,7 @@ using System.Threading;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Storage;
 
 using EphemeralMongo;
 
@@ -56,41 +57,51 @@ public class TestDatabaseProvider : IDisposable
                     StandardErrorLogger     = line => logger.LogError(line),
                   };
 
+    var loggerProvider = new ConsoleForwardingLoggerProvider();
+    var loggerDB       = loggerProvider.CreateLogger("db commands");
+
     runner_ = MongoRunner.Run(options);
-    client_ = new MongoClient(runner_.ConnectionString);
+    var settings = MongoClientSettings.FromConnectionString(runner_.ConnectionString);
+    //settings.ClusterConfigurator = cb =>
+    //                               {
+    //                                 cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
+    //                                                                                          e.CommandName,
+    //                                                                                          e.Command.ToJson()));
+    //                               };
+    client_ = new MongoClient(settings);
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                 },
-                                                 {
-                                                   "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                   DatabaseName
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
-                                                   "00:00:10"
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                   "14000"
-                                                 },
-                                                 {
-                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
-                                                   "DefaultPartition"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                  },
+                                                  {
+                                                    "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
+                                                    DatabaseName
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
+                                                    "00:00:10"
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
+                                                    "14000"
+                                                  },
+                                                  {
+                                                    $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
+                                                    "DefaultPartition"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                  },
+                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
 
@@ -99,10 +110,13 @@ public class TestDatabaseProvider : IDisposable
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
     builder.Logging.ClearProviders();
-    builder.Logging.AddProvider(new ConsoleForwardingLoggerProvider());
+
+    builder.Logging.AddProvider(loggerProvider);
 
     builder.Services.AddMongoStorages(builder.Configuration,
                                       NullLogger.Instance)
+           .AddLogging()
+           .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);
     configurator?.Invoke(builder.Services);
@@ -112,6 +126,26 @@ public class TestDatabaseProvider : IDisposable
     var sessionProvider = app_.Services.GetRequiredService<SessionProvider>();
     sessionProvider.Init(CancellationToken.None)
                    .Wait();
+
+    app_.Services.GetRequiredService<IResultTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<ITaskTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<ISessionTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<IPartitionTable>()
+        .Init(CancellationToken.None)
+        .Wait();
+
+    app_.Services.GetRequiredService<IObjectStorage>()
+        .Init(CancellationToken.None)
+        .Wait();
   }
 
   public void Dispose()

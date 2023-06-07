@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -30,11 +31,16 @@ internal class ConsoleForwardingLoggerProvider : ILoggerProvider
                                                  category,
                                                  _,
                                                  message,
+                                                 states,
                                                  exception) =>
                                                 {
                                                   if (logLevel >= minLogLevel)
                                                   {
-                                                    Console.WriteLine($"{logLevel} : {DateTime.Now}  =>  {category} \n {message} \n {exception}");
+                                                    var keyValuePairs = states.SelectMany(objects => objects.AsEnumerable())
+                                                                              .Select(pair => $"{pair.Key}:{pair.Value}");
+                                                    var str = string.Join(", ",
+                                                                          keyValuePairs);
+                                                    Console.WriteLine($"{logLevel} : {DateTime.Now}  =>  {category} \n Properties : {str} \n {message} \n {exception}");
                                                   }
                                                 });
 

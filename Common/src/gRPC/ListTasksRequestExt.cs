@@ -30,29 +30,50 @@ public static class ListTasksRequestExt
 {
   public static Expression<Func<TaskData, object?>> ToTaskDataField(this ListTasksRequest.Types.Sort sort)
   {
-    switch (sort.Field)
+    switch (sort.Field.FieldCase)
     {
-      case ListTasksRequest.Types.OrderByField.TaskId:
-        return data => data.TaskId;
-
-      case ListTasksRequest.Types.OrderByField.SessionId:
-        return data => data.SessionId;
-
-      case ListTasksRequest.Types.OrderByField.Status:
-        return data => data.Status;
-
-      case ListTasksRequest.Types.OrderByField.CreatedAt:
-        return data => data.CreationDate;
-
-      case ListTasksRequest.Types.OrderByField.StartedAt:
-        return data => data.StartDate;
-
-      case ListTasksRequest.Types.OrderByField.EndedAt:
-        return data => data.EndDate;
-
-      case ListTasksRequest.Types.OrderByField.Unspecified:
+      case TaskField.FieldOneofCase.TaskSummaryField:
+        return sort.Field.TaskSummaryField switch
+               {
+                 TaskSummaryField.TaskId                  => data => data.TaskId,
+                 TaskSummaryField.SessionId               => data => data.SessionId,
+                 TaskSummaryField.OwnerPodId              => data => data.OwnerPodId,
+                 TaskSummaryField.InitialTaskId           => data => data.InitialTaskId,
+                 TaskSummaryField.Status                  => data => data.Status,
+                 TaskSummaryField.CreatedAt               => data => data.CreationDate,
+                 TaskSummaryField.SubmittedAt             => data => data.SubmittedDate,
+                 TaskSummaryField.StartedAt               => data => data.StartDate,
+                 TaskSummaryField.EndedAt                 => data => data.EndDate,
+                 TaskSummaryField.CreationToEndDuration   => data => data.CreationToEndDuration,
+                 TaskSummaryField.ProcessingToEndDuration => data => data.ProcessingToEndDuration,
+                 TaskSummaryField.PodTtl                  => data => data.PodTtl,
+                 TaskSummaryField.PodHostname             => data => data.OwnerPodName,
+                 TaskSummaryField.ReceivedAt              => data => data.ReceptionDate,
+                 TaskSummaryField.AcquiredAt              => data => data.AcquisitionDate,
+                 TaskSummaryField.Error                   => data => data.Output.Error,
+                 TaskSummaryField.Unspecified             => throw new ArgumentOutOfRangeException(),
+                 _                                        => throw new ArgumentOutOfRangeException(),
+               };
+      case TaskField.FieldOneofCase.TaskOptionField:
+        return sort.Field.TaskOptionField switch
+               {
+                 TaskOptionField.MaxDuration          => data => data.Options.MaxDuration,
+                 TaskOptionField.MaxRetries           => data => data.Options.MaxRetries,
+                 TaskOptionField.Priority             => data => data.Options.Priority,
+                 TaskOptionField.PartitionId          => data => data.Options.PartitionId,
+                 TaskOptionField.ApplicationName      => data => data.Options.ApplicationName,
+                 TaskOptionField.ApplicationVersion   => data => data.Options.ApplicationVersion,
+                 TaskOptionField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
+                 TaskOptionField.ApplicationService   => data => data.Options.ApplicationService,
+                 TaskOptionField.EngineType           => data => data.Options.EngineType,
+                 TaskOptionField.Unspecified          => throw new ArgumentOutOfRangeException(),
+                 _                                    => throw new ArgumentOutOfRangeException(),
+               };
+      case TaskField.FieldOneofCase.TaskOptionGenericField:
+        return data => data.Options.Options[sort.Field.TaskOptionGenericField.Field];
+      case TaskField.FieldOneofCase.None:
       default:
-        throw new InvalidOperationException();
+        throw new ArgumentOutOfRangeException();
     }
   }
 

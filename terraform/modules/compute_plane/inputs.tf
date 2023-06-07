@@ -27,6 +27,10 @@ variable "generated_env_vars" {
   type = map(string)
 }
 
+variable "volumes" {
+  type = map(string)
+}
+
 variable "replica_counter" {
   type = number
 }

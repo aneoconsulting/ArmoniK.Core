@@ -1,16 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Company>ANEO</Company>
-		<Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
-		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Company>ANEO</Company>
+    <Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IsPackable>true</IsPackable>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
-	</PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugType>Embedded</DebugType>
@@ -26,7 +26,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Core" Version="3.5.2" />
+    <PackageReference Include="ArmoniK.Api.Core" Version="3.9.0-edge.89.b9b77a3" />
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="6.2.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.50.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
@@ -38,8 +38,15 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Base\src\ArmoniK.Core.Base.csproj" />
+    <ProjectReference Include="..\..\Utils\src\ArmoniK.Core.Utils.csproj" />
+  </ItemGroup>
 
 
 </Project>

@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -35,71 +36,88 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 public class ResultWatcherTestBase
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     GetInstance();
 
-    if (RunTests)
+    if (!RunTests || CheckForSkipSetup())
     {
-      ResultTable!.Create(new[]
-                          {
-                            new Result("SessionId",
-                                       "ResultIsAvailable",
-                                       "OwnerId",
-                                       ResultStatus.Completed,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsNotAvailable",
-                                       "OwnerId",
-                                       ResultStatus.Aborted,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsCreated",
-                                       "OwnerId2",
-                                       ResultStatus.Created,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsCreated2",
-                                       "OwnerId2",
-                                       ResultStatus.Created,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId",
-                                       "ResultIsCreated3",
-                                       "OwnerId2",
-                                       ResultStatus.Created,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                            new Result("SessionId2",
-                                       "ResultIsCreated3",
-                                       "OwnerId3",
-                                       ResultStatus.Created,
-                                       DateTime.Today,
-                                       new[]
-                                       {
-                                         (byte)1,
-                                       }),
-                          })
-                  .Wait();
+      return;
     }
+
+    await ResultTable!.Init(CancellationToken.None)
+                      .ConfigureAwait(false);
+
+    await ResultTable!.Create(new[]
+                              {
+                                new Result("SessionId",
+                                           "ResultIsAvailable",
+                                           "",
+                                           "OwnerId",
+                                           ResultStatus.Completed,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsNotAvailable",
+                                           "",
+                                           "OwnerId",
+                                           ResultStatus.Aborted,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsCreated",
+                                           "",
+                                           "OwnerId2",
+                                           ResultStatus.Created,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsCreated2",
+                                           "",
+                                           "OwnerId2",
+                                           ResultStatus.Created,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId",
+                                           "ResultIsCreated3",
+                                           "",
+                                           "OwnerId2",
+                                           ResultStatus.Created,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                                new Result("SessionId2",
+                                           "ResultIsCreated4",
+                                           "",
+                                           "OwnerId3",
+                                           ResultStatus.Created,
+                                           new List<string>(),
+                                           DateTime.Today,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                           }),
+                              })
+                      .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -108,6 +126,12 @@ public class ResultWatcherTestBase
     ResultTable   = null;
     ResultWatcher = null;
     RunTests      = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */
@@ -125,6 +149,7 @@ public class ResultWatcherTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)
@@ -170,8 +195,10 @@ public class ResultWatcherTestBase
                              {
                                new Result("SessionId",
                                           "NewResult",
+                                          "",
                                           "OwnerId",
                                           ResultStatus.Created,
+                                          new List<string>(),
                                           DateTime.Today,
                                           new[]
                                           {
@@ -185,8 +212,10 @@ public class ResultWatcherTestBase
                              {
                                new Result("SessionId",
                                           "NewResult2",
+                                          "",
                                           "OwnerId",
                                           ResultStatus.Created,
+                                          new List<string>(),
                                           DateTime.Today,
                                           new[]
                                           {
@@ -194,9 +223,11 @@ public class ResultWatcherTestBase
                                           }),
                                // we also create results in another session to check if the filter works
                                new Result("SessionId2",
-                                          "NewResult2",
+                                          "NewResult3",
+                                          "",
                                           "OwnerId",
                                           ResultStatus.Created,
+                                          new List<string>(),
                                           DateTime.Today,
                                           new[]
                                           {

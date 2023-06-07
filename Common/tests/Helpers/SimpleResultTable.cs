@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -51,11 +52,11 @@ public class SimpleResultTable : IResultTable
   public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
                                                                        IEnumerable<string> keys,
                                                                        CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<ResultStatusCount>>(new ResultStatusCount[]
-                                                       {
-                                                         new(ResultStatus.Completed,
-                                                             1),
-                                                       });
+    => Task.FromResult(new List<ResultStatusCount>
+                       {
+                         new(ResultStatus.Completed,
+                             1),
+                       }.AsEnumerable());
 
   public Task ChangeResultOwnership(string                                                 sessionId,
                                     string                                                 oldTaskId,
@@ -66,6 +67,17 @@ public class SimpleResultTable : IResultTable
   public Task Create(IEnumerable<Result> results,
                      CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
+
+  public Task AddTaskDependency(string              sessionId,
+                                ICollection<string> resultIds,
+                                ICollection<string> taskIds,
+                                CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
+
+  public Task<IEnumerable<string>> GetDependents(string            sessionId,
+                                                 string            resultId,
+                                                 CancellationToken cancellationToken = default)
+    => Task.FromResult(Enumerable.Empty<string>());
 
   public Task DeleteResult(string            session,
                            string            key,
@@ -83,8 +95,10 @@ public class SimpleResultTable : IResultTable
        {
          new(SessionId,
              OutputId,
+             "",
              TaskId,
              ResultStatus.Completed,
+             new List<string>(),
              DateTime.Now.ToUniversalTime(),
              new byte[]
              {
@@ -109,8 +123,10 @@ public class SimpleResultTable : IResultTable
                         {
                           new(SessionId,
                               "ResultName",
+                              "",
                               TaskId,
                               ResultStatus.Completed,
+                              new List<string>(),
                               DateTime.UtcNow,
                               new byte[]
                               {
@@ -131,6 +147,21 @@ public class SimpleResultTable : IResultTable
                         CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task<Result> CompleteResult(string            sessionId,
+                                     string            resultId,
+                                     CancellationToken cancellationToken = default)
+    => Task.FromResult(new Result(SessionId,
+                                  OutputId,
+                                  "",
+                                  TaskId,
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.Now.ToUniversalTime(),
+                                  new byte[]
+                                  {
+                                    42,
+                                  }));
+
   public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                                 string              sessionId,
                                                                                 CancellationToken   cancellationToken = default)
@@ -142,6 +173,11 @@ public class SimpleResultTable : IResultTable
                                                                              Status   = ResultStatus.Completed,
                                                                            },
                                                                          });
+
+  public Task SetTaskOwnership(string                                        sessionId,
+                               ICollection<(string resultId, string taskId)> requests,
+                               CancellationToken                             cancellationToken = default)
+    => Task.CompletedTask;
 
   public Task AbortTaskResults(string            sessionId,
                                string            ownerTaskId,

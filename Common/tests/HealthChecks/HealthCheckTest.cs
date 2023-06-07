@@ -20,7 +20,7 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Base;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;

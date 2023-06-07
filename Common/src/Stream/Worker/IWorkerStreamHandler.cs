@@ -19,6 +19,7 @@ using System;
 using System.Threading;
 
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 

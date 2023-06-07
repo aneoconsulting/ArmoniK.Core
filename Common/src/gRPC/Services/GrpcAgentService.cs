@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -118,5 +118,65 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
            {
              Error = "No task is accepting request",
            };
+  }
+
+  public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                                  ServerCallContext            context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.CreateResultsMetaData(request,
+                                                context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                                              ServerCallContext  context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.SubmitTasks(request,
+                                      context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
+                                                                        ServerCallContext                           context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.UploadResultData(requestStream,
+                                           context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
+                                                                  ServerCallContext    context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.CreateResults(request,
+                                        context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
   }
 }

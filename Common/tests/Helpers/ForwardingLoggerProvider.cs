@@ -16,18 +16,20 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public delegate void LogMessage(LogLevel   logLevel,
-                                string     categoryName,
-                                EventId    eventId,
-                                string     message,
-                                Exception? exception);
+public delegate void LogMessage(LogLevel                                logLevel,
+                                string                                  categoryName,
+                                EventId                                 eventId,
+                                string                                  message,
+                                ICollection<Dictionary<string, object>> states,
+                                Exception?                              exception);
 
 internal class ForwardingLoggerProvider : ILoggerProvider
 {
@@ -46,14 +48,16 @@ internal class ForwardingLoggerProvider : ILoggerProvider
 
   internal class ForwardingLogger : ILogger
   {
-    private readonly string     categoryName_;
-    private readonly LogMessage logAction_;
+    private readonly string                           categoryName_;
+    private readonly LogMessage                       logAction_;
+    private readonly List<Dictionary<string, object>> states_;
 
     public ForwardingLogger(string     categoryName,
                             LogMessage logAction)
     {
       categoryName_ = categoryName;
       logAction_    = logAction;
+      states_       = new List<Dictionary<string, object>>();
     }
 
     public bool IsEnabled(LogLevel logLevel)
@@ -61,9 +65,20 @@ internal class ForwardingLoggerProvider : ILoggerProvider
 
     public IDisposable BeginScope<TState>(TState state)
       where TState : notnull
-      => Disposable.Create(() =>
-                           {
-                           });
+    {
+      if (state is not Dictionary<string, object> d)
+      {
+        return new Deferrer(() =>
+                            {
+                            });
+      }
+
+      states_.Add(d);
+      return new Deferrer(() =>
+                          {
+                            states_.Remove(d);
+                          });
+    }
 
     public void Log<TState>(LogLevel                         logLevel,
                             EventId                          eventId,
@@ -75,6 +90,7 @@ internal class ForwardingLoggerProvider : ILoggerProvider
                     eventId,
                     formatter(state,
                               exception),
+                    states_,
                     exception);
   }
 }

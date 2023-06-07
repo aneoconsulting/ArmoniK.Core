@@ -25,9 +25,11 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 
@@ -35,7 +37,11 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -44,34 +50,48 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public class Agent : IAgent
 {
-  private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
-  private readonly ILogger                                                                             logger_;
-  private readonly IObjectStorage                                                                      resourcesStorage_;
-  private readonly SessionData                                                                         sessionData_;
-  private readonly ISubmitter                                                                          submitter_;
-  private readonly TaskData                                                                            taskData_;
-  private readonly string                                                                              token_;
+  private readonly List<TaskCreationRequest> createdTasks_;
+  private readonly ILogger                   logger_;
+  private readonly IObjectStorage            objectStorage_;
+  private readonly IPushQueueStorage         pushQueueStorage_;
+  private readonly IResultTable              resultTable_;
+  private readonly List<string>              sentResults_;
+  private readonly SessionData               sessionData_;
+  private readonly ISubmitter                submitter_;
+  private readonly TaskData                  taskData_;
+  private readonly ITaskTable                taskTable_;
+  private readonly string                    token_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
-  /// <param name="objectStorageFactory">Interface class to create object storage</param>
+  /// <param name="objectStorage">Interface class to manage tasks data</param>
+  /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public Agent(ISubmitter            submitter,
-               IObjectStorageFactory objectStorageFactory,
-               SessionData           sessionData,
-               TaskData              taskData,
-               string                token,
-               ILogger               logger)
+  public Agent(ISubmitter        submitter,
+               IObjectStorage    objectStorage,
+               IPushQueueStorage pushQueueStorage,
+               IResultTable      resultTable,
+               ITaskTable        taskTable,
+               SessionData       sessionData,
+               TaskData          taskData,
+               string            token,
+               ILogger           logger)
   {
     submitter_        = submitter;
+    objectStorage_    = objectStorage;
+    pushQueueStorage_ = pushQueueStorage;
+    resultTable_      = resultTable;
+    taskTable_        = taskTable;
     logger_           = logger;
-    resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
+    createdTasks_     = new List<TaskCreationRequest>();
+    sentResults_      = new List<string>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     token_            = token;
@@ -87,13 +107,74 @@ public class Agent : IAgent
 
     logger_.LogDebug("Finalize child task creation");
 
-    foreach (var createdTask in createdTasks_)
+    await submitter_.FinalizeTaskCreation(createdTasks_,
+                                          sessionData_.SessionId,
+                                          taskData_.TaskId,
+                                          cancellationToken)
+                    .ConfigureAwait(false);
+
+    foreach (var result in sentResults_)
     {
-      await submitter_.FinalizeTaskCreation(createdTask.requests,
-                                            createdTask.priority,
-                                            taskData_.Options.PartitionId,
-                                            sessionData_.SessionId,
-                                            taskData_.TaskId,
+      await resultTable_.CompleteResult(taskData_.SessionId,
+                                        result,
+                                        cancellationToken)
+                        .ConfigureAwait(false);
+    }
+
+    logger_.LogDebug("Submit tasks which new data are available");
+
+    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
+    var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
+                                                       sentResults_,
+                                                       cancellationToken)
+                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
+                                           .ToHashSetAsync(cancellationToken)
+                                           .ConfigureAwait(false);
+
+    if (!dependentTasks.Any())
+    {
+      return;
+    }
+
+    if (logger_.IsEnabled(LogLevel.Debug))
+    {
+      logger_.LogDebug("Dependent Tasks Dictionary {@dependents}",
+                       dependentTasks);
+    }
+
+    // Remove all results that were completed by the current task from their dependents.
+    // This will try to remove more results than strictly necessary.
+    // This is completely safe and should be optimized by the DB.
+    await taskTable_.RemoveRemainingDataDependenciesAsync(dependentTasks,
+                                                          sentResults_,
+                                                          cancellationToken)
+                    .ConfigureAwait(false);
+
+    // Find all tasks whose dependencies are now complete in order to start them.
+    // Multiple agents can see the same task as ready and will try to start it multiple times.
+    // This is benign as it will be handled during dequeue with message deduplication.
+    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+                                                          data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+                                                  data => new
+                                                          {
+                                                            data.TaskId,
+                                                            data.Options.PartitionId,
+                                                            data.Options.Priority,
+                                                          },
+                                                  cancellationToken)
+                                  .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
+
+    foreach (var group in groups)
+    {
+      var ids = group.Select(data => data.TaskId)
+                     .ToList();
+      await pushQueueStorage_.PushMessagesAsync(ids,
+                                                group.Key.PartitionId,
+                                                group.Key.Priority,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
+
+      await taskTable_.FinalizeTaskCreation(ids,
                                             cancellationToken)
                       .ConfigureAwait(false);
     }
@@ -103,12 +184,11 @@ public class Agent : IAgent
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
-    var                                                                           fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
-    Task?                                                                         completionTask      = null;
-    Channel<ReadOnlyMemory<byte>>?                                                payloadsChannel     = null;
-    var                                                                           taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
-    (IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId) currentTasks;
-    currentTasks.requests = new List<Storage.TaskRequest>();
+    var                               fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
+    Task?                             completionTask      = null;
+    Channel<ReadOnlyMemory<byte>>?    payloadsChannel     = null;
+    var                               taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
+    ICollection<TaskCreationRequest>? currentTasks        = null;
 
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
                                           ("taskId", taskData_.TaskId),
@@ -144,11 +224,11 @@ public class Agent : IAgent
                                     {
                                       currentTasks = await submitter_.CreateTasks(sessionData_.SessionId,
                                                                                   taskData_.TaskId,
-                                                                                  request.InitRequest.TaskOptions,
+                                                                                  request.InitRequest.TaskOptions.ToNullableTaskOptions(),
                                                                                   taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
                                                                                   cancellationToken)
                                                                      .ConfigureAwait(false);
-                                      createdTasks_.Add(currentTasks);
+                                      createdTasks_.AddRange(currentTasks);
                                     },
                                     cancellationToken);
 
@@ -190,21 +270,22 @@ public class Agent : IAgent
                                               {
                                                 CreationStatuses =
                                                 {
-                                                  currentTasks.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
-                                                                                              {
-                                                                                                TaskInfo = new CreateTaskReply.Types.TaskInfo
-                                                                                                           {
-                                                                                                             TaskId = taskRequest.Id,
-                                                                                                             DataDependencies =
-                                                                                                             {
-                                                                                                               taskRequest.DataDependencies,
-                                                                                                             },
-                                                                                                             ExpectedOutputKeys =
-                                                                                                             {
-                                                                                                               taskRequest.ExpectedOutputKeys,
-                                                                                                             },
-                                                                                                           },
-                                                                                              }),
+                                                  currentTasks!.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                                      {
+                                                                                        TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                                   {
+                                                                                                     TaskId = taskRequest.TaskId,
+                                                                                                     DataDependencies =
+                                                                                                     {
+                                                                                                       taskRequest.DataDependencies,
+                                                                                                     },
+                                                                                                     ExpectedOutputKeys =
+                                                                                                     {
+                                                                                                       taskRequest.ExpectedOutputKeys,
+                                                                                                     },
+                                                                                                     PayloadId = taskRequest.PayloadId,
+                                                                                                   },
+                                                                                      }),
                                                 },
                                               },
                        };
@@ -219,10 +300,10 @@ public class Agent : IAgent
                                               {
                                                 CreationStatuses =
                                                 {
-                                                  currentTasks.requests.Select(_ => new CreateTaskReply.Types.CreationStatus
-                                                                                    {
-                                                                                      Error = "An error occured during task creation",
-                                                                                    }),
+                                                  currentTasks!.Select(_ => new CreateTaskReply.Types.CreationStatus
+                                                                            {
+                                                                              Error = "An error occured during task creation",
+                                                                            }),
                                                 },
                                               },
                        };
@@ -380,9 +461,9 @@ public class Agent : IAgent
 
     try
     {
-      await foreach (var data in resourcesStorage_.GetValuesAsync(request.Key,
-                                                                  cancellationToken)
-                                                  .ConfigureAwait(false))
+      await foreach (var data in objectStorage_.GetValuesAsync(request.Key,
+                                                               cancellationToken)
+                                               .ConfigureAwait(false))
       {
         await responseStream.WriteAsync(new DataReply
                                         {
@@ -428,8 +509,8 @@ public class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    Task? completionTask = null;
-    var   fsmResult      = new ProcessReplyResultStateMachine(logger_);
+    var completionTask = Task.CompletedTask;
+    var fsmResult      = new ProcessReplyResultStateMachine(logger_);
     var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                       {
                                                                         SingleWriter = true,
@@ -464,24 +545,20 @@ public class Agent : IAgent
           {
             case InitKeyedDataStream.TypeOneofCase.Key:
               fsmResult.InitKey();
-              completionTask = Task.Run(async () =>
-                                        {
-                                          await submitter_.SetResult(sessionData_.SessionId,
-                                                                     taskData_.TaskId,
-                                                                     request.Init.Key,
-                                                                     chunksChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                     cancellationToken)
-                                                          .ConfigureAwait(false);
-                                        },
+              completionTask = Task.Run(async () => await objectStorage_.AddOrUpdateAsync(request.Init.Key,
+                                                                                          chunksChannel.Reader.ReadAllAsync(cancellationToken),
+                                                                                          cancellationToken)
+                                                                        .ConfigureAwait(false),
                                         cancellationToken);
+              sentResults_.Add(request.Init.Key);
               break;
             case InitKeyedDataStream.TypeOneofCase.LastResult:
               fsmResult.CompleteRequest();
 
               try
               {
-                await completionTask!.WaitAsync(cancellationToken)
-                                     .ConfigureAwait(false);
+                await completionTask.WaitAsync(cancellationToken)
+                                    .ConfigureAwait(false);
                 return new ResultReply
                        {
                          Ok = new Empty(),
@@ -530,6 +607,185 @@ public class Agent : IAgent
     }
 
     return new ResultReply();
+  }
+
+  /// <inheritdoc />
+  public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                         CancellationToken            cancellationToken)
+  {
+    var results = request.Results.Select(rc => new Storage.Result(request.SessionId,
+                                                                  Guid.NewGuid()
+                                                                      .ToString(),
+                                                                  rc.Name,
+                                                                  "",
+                                                                  ResultStatus.Created,
+                                                                  new List<string>(),
+                                                                  DateTime.UtcNow,
+                                                                  Array.Empty<byte>()))
+                         .ToList();
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    return new CreateResultsMetaDataResponse
+           {
+             Results =
+             {
+               results.Select(result => new ResultMetaData
+                                        {
+                                          CreatedAt = FromDateTime(result.CreationDate),
+                                          Name      = result.Name,
+                                          SessionId = result.SessionId,
+                                          Status    = result.Status,
+                                          ResultId  = result.ResultId,
+                                        }),
+             },
+           };
+  }
+
+  /// <inheritdoc />
+  public async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                                     CancellationToken  cancellationToken)
+  {
+    var options = TaskLifeCycleHelper.ValidateSession(sessionData_,
+                                                      request.TaskOptions.ToNullableTaskOptions(),
+                                                      taskData_.TaskId,
+                                                      pushQueueStorage_.MaxPriority,
+                                                      logger_,
+                                                      cancellationToken);
+
+    var createdTasks = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
+                                                                                            .ToString(),
+                                                                                        creation.PayloadId,
+                                                                                        TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                          options),
+                                                                                        creation.ExpectedOutputKeys.ToList(),
+                                                                                        creation.DataDependencies.ToList()))
+                              .ToList();
+
+    await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                          resultTable_,
+                                          request.SessionId,
+                                          taskData_.TaskId,
+                                          createdTasks,
+                                          logger_,
+                                          cancellationToken)
+                             .ConfigureAwait(false);
+
+    createdTasks_.AddRange(createdTasks);
+
+    return new SubmitTasksResponse
+           {
+             CommunicationToken = token_,
+             TaskInfos =
+             {
+               createdTasks.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
+                                                      {
+                                                        DataDependencies =
+                                                        {
+                                                          creationRequest.DataDependencies,
+                                                        },
+                                                        ExpectedOutputIds =
+                                                        {
+                                                          creationRequest.ExpectedOutputKeys,
+                                                        },
+                                                        PayloadId = creationRequest.PayloadId,
+                                                        TaskId    = creationRequest.TaskId,
+                                                      }),
+             },
+           };
+  }
+
+  /// <inheritdoc />
+  public async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
+                                                               CancellationToken                           cancellationToken)
+  {
+    if (!await requestStream.MoveNext(cancellationToken)
+                            .ConfigureAwait(false))
+    {
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Missing result metadata"),
+                             "Missing result metadata");
+    }
+
+    var current = requestStream.Current;
+
+    if (current.TypeCase != UploadResultDataRequest.TypeOneofCase.Id)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Message should be an Id"),
+                             "Message should be an Id");
+    }
+
+    var id = current.Id;
+
+
+    await objectStorage_.AddOrUpdateAsync(id.ResultId,
+                                          requestStream.ReadAllAsync(cancellationToken)
+                                                       .Select(r => r.DataChunk.Memory),
+                                          cancellationToken)
+                        .ConfigureAwait(false);
+
+    sentResults_.Add(id.ResultId);
+
+    return new UploadResultDataResponse
+           {
+             ResultId           = id.ResultId,
+             CommunicationToken = token_,
+           };
+  }
+
+  /// <inheritdoc />
+  public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
+                                                         CancellationToken    cancellationToken)
+  {
+    var results = await request.Results.Select(async rc =>
+                                               {
+                                                 var result = new Storage.Result(request.SessionId,
+                                                                                 Guid.NewGuid()
+                                                                                     .ToString(),
+                                                                                 rc.Name,
+                                                                                 "",
+                                                                                 ResultStatus.Created,
+                                                                                 new List<string>(),
+                                                                                 DateTime.UtcNow,
+                                                                                 Array.Empty<byte>());
+
+                                                 await objectStorage_.AddOrUpdateAsync(result.ResultId,
+                                                                                       new List<ReadOnlyMemory<byte>>
+                                                                                       {
+                                                                                         rc.Data.Memory,
+                                                                                       }.ToAsyncEnumerable(),
+                                                                                       cancellationToken)
+                                                                     .ConfigureAwait(false);
+
+                                                 return result;
+                                               })
+                               .WhenAll()
+                               .ConfigureAwait(false);
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    sentResults_.AddRange(results.Select(r => r.ResultId));
+
+    return new CreateResultsResponse
+           {
+             CommunicationToken = token_,
+             Results =
+             {
+               results.Select(r => new ResultMetaData
+                                   {
+                                     Status    = r.Status,
+                                     CreatedAt = FromDateTime(r.CreationDate),
+                                     Name      = r.Name,
+                                     ResultId  = r.ResultId,
+                                     SessionId = r.SessionId,
+                                   }),
+             },
+           };
   }
 
   /// <inheritdoc />

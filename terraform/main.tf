@@ -16,6 +16,18 @@ module "zipkin" {
   network = docker_network.armonik.name
 }
 
+module "grafana" {
+  source  = "./modules/monitoring/grafana"
+  image   = var.grafana_image
+  network = docker_network.armonik.name
+}
+
+module "prometheus" {
+  source  = "./modules/monitoring/prometheus"
+  image   = var.prometheus_image
+  network = docker_network.armonik.name
+}
+
 module "database" {
   source         = "./modules/storage/database/mongo"
   image          = var.database_image
@@ -73,6 +85,11 @@ module "queue_artemis" {
   network    = docker_network.armonik.name
 }
 
+module "queue_none" {
+  source = "./modules/storage/queue/none"
+  count  = var.queue_storage.name == "none" ? 1 : 0
+}
+
 module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
@@ -83,6 +100,7 @@ module "submitter" {
   generated_env_vars = local.environment
   zipkin_uri         = module.zipkin.zipkin_uri
   log_driver         = module.fluenbit.log_driver
+  volumes            = local.volumes
 }
 
 module "compute_plane" {
@@ -95,6 +113,7 @@ module "compute_plane" {
   polling_agent      = local.compute_plane.polling_agent
   worker             = local.compute_plane.worker
   generated_env_vars = local.environment
+  volumes            = local.volumes
   network            = docker_network.armonik.name
   zipkin_uri         = module.zipkin.zipkin_uri
   log_driver         = module.fluenbit.log_driver
@@ -119,4 +138,20 @@ module "partition_metrics_exporter" {
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
+}
+
+module "ingress" {
+  source   = "./modules/ingress"
+  for_each = var.ingress.configs
+  container = {
+    name  = each.key,
+    image = var.ingress.image
+    tag   = var.ingress.tag
+  }
+  tls        = each.value.tls
+  mtls       = each.value.mtls
+  port       = each.value.port
+  network    = docker_network.armonik.name
+  submitter  = module.submitter
+  log_driver = module.fluenbit.log_driver
 }

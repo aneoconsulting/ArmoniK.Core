@@ -24,8 +24,8 @@ using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
 
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Base;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -37,13 +37,13 @@ namespace ArmoniK.Core.Adapters.Amqp;
 [UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly AsyncLazy                     connectionTask_;
-  private readonly ILogger<ConnectionAmqp>       logger_;
-  private readonly Common.Injection.Options.Amqp options_;
-  private          bool                          isInitialized_;
+  private readonly AsyncLazy               connectionTask_;
+  private readonly ILogger<ConnectionAmqp> logger_;
+  private readonly QueueCommon.Amqp        options_;
+  private          bool                    isInitialized_;
 
-  public ConnectionAmqp(Common.Injection.Options.Amqp options,
-                        ILogger<ConnectionAmqp>       logger)
+  public ConnectionAmqp(QueueCommon.Amqp        options,
+                        ILogger<ConnectionAmqp> logger)
   {
     options_        = options;
     logger_         = logger;

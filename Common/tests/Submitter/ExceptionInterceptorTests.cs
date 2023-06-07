@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -23,9 +23,11 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
@@ -41,6 +43,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
 // ReSharper disable AccessToModifiedClosure
@@ -89,7 +92,7 @@ internal class ExceptionInterceptorTests
                     DefaultTaskOption = new TaskOptions
                                         {
                                           Priority    = 1,
-                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.MaxValue),
+                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                                           MaxRetries  = 1,
                                         },
                   };
@@ -99,7 +102,7 @@ internal class ExceptionInterceptorTests
                        };
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<TaskOptions>(),
+                                                             It.IsAny<Storage.TaskOptions>(),
                                                              It.IsAny<CancellationToken>()))
                  .Returns(() => ex is null
                                   ? Task.FromResult(noErrorReply)
@@ -172,12 +175,12 @@ internal class ExceptionInterceptorTests
     var        mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<TaskOptions>(),
+                                                           It.IsAny<Storage.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            It.IsAny<CancellationToken>()))
                  .Returns(async (string                        _,
                                  string                        _,
-                                 TaskOptions                   _,
+                                 Storage.TaskOptions           _,
                                  IAsyncEnumerable<TaskRequest> requests,
                                  CancellationToken             cancellationToken) =>
                           {
@@ -203,15 +206,26 @@ internal class ExceptionInterceptorTests
                               throw ex;
                             }
 
-                            return (new List<Storage.TaskRequest>
-                                    {
-                                      new("taskId",
-                                          new[]
-                                          {
-                                            "output",
-                                          },
-                                          Array.Empty<string>()),
-                                    }, new int(), string.Empty);
+                            return new List<TaskCreationRequest>
+                                   {
+                                     new("taskId",
+                                         "taskId",
+                                         new Storage.TaskOptions(new Dictionary<string, string>(),
+                                                                 TimeSpan.FromSeconds(2),
+                                                                 5,
+                                                                 1,
+                                                                 "Partition",
+                                                                 "",
+                                                                 "",
+                                                                 "",
+                                                                 "",
+                                                                 ""),
+                                         new[]
+                                         {
+                                           "output",
+                                         },
+                                         Array.Empty<string>()),
+                                   };
                           });
 
     var interceptor = new ExceptionInterceptor(new Injection.Options.Submitter
@@ -244,6 +258,7 @@ internal class ExceptionInterceptorTests
                                                                  {
                                                                    "output",
                                                                  },
+                                                                 PayloadId = "taskId",
                                                                },
                                                   },
                                                 },
@@ -262,7 +277,7 @@ internal class ExceptionInterceptorTests
                                                                      SessionId = "SessionId",
                                                                      TaskOptions = new TaskOptions
                                                                                    {
-                                                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.MaxValue),
+                                                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
                                                                                      MaxRetries  = 1,
                                                                                      PartitionId = "Part",
                                                                                      Priority    = 1,

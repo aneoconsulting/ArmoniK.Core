@@ -34,8 +34,12 @@ using Armonik.Api.Grpc.V1.Partitions;
 
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
@@ -85,6 +89,9 @@ public class AuthenticationIntegrationTest
                                                 .AddSingleton<IResultTable>(new SimpleResultTable())
                                                 .AddSingleton<IPartitionTable>(new SimplePartitionTable())
                                                 .AddSingleton<ITaskWatcher>(new SimpleTaskWatcher())
+                                                .AddSingleton<IPushQueueStorage>(new SimplePushQueueStorage())
+                                                .AddSingleton<IPullQueueStorage>(new SimplePullQueueStorage())
+                                                .AddSingleton<IObjectStorage>(new SimpleObjectStorage())
                                                 .AddSingleton<IResultWatcher>(new SimpleResultWatcher());
                                              });
   }
@@ -140,6 +147,7 @@ public class AuthenticationIntegrationTest
   private static readonly CountTasksByStatusRequest                      CountTasksByStatusRequestApplications;
   private static readonly Api.gRPC.V1.Sessions.CountTasksByStatusRequest CountTasksByStatusRequestSessions;
   private static readonly Api.gRPC.V1.Tasks.CountTasksByStatusRequest    CountTasksByStatusRequestTasks;
+  private static readonly CreateResultsMetaDataRequest                   CreateResultsMetaDataRequest;
 
   static AuthenticationIntegrationTest()
   {
@@ -267,8 +275,11 @@ public class AuthenticationIntegrationTest
                             PageSize = 10,
                             Sort = new ListSessionsRequest.Types.Sort
                                    {
-                                     Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                     Field     = ListSessionsRequest.Types.OrderByField.SessionId,
+                                     Direction = SortDirection.Asc,
+                                     Field = new SessionField
+                                             {
+                                               SessionRawField = SessionRawField.SessionId,
+                                             },
                                    },
                           };
 
@@ -288,8 +299,11 @@ public class AuthenticationIntegrationTest
                          PageSize = 10,
                          Sort = new ListTasksRequest.Types.Sort
                                 {
-                                  Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                  Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                                  Direction = SortDirection.Asc,
+                                  Field = new TaskField
+                                          {
+                                            TaskSummaryField = TaskSummaryField.SessionId,
+                                          },
                                 },
                        };
     GetOwnerTaskIdRequest = new GetOwnerTaskIdRequest
@@ -308,10 +322,13 @@ public class AuthenticationIntegrationTest
                                 PageSize = 10,
                                 Sort = new ListApplicationsRequest.Types.Sort
                                        {
-                                         Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                                         Direction = SortDirection.Asc,
                                          Fields =
                                          {
-                                           ListApplicationsRequest.Types.OrderByField.Name,
+                                           new ApplicationField
+                                           {
+                                             ApplicationField_ = ApplicationRawField.Name,
+                                           },
                                          },
                                        },
                               };
@@ -329,8 +346,11 @@ public class AuthenticationIntegrationTest
                            PageSize = 10,
                            Sort = new ListResultsRequest.Types.Sort
                                   {
-                                    Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                                    Field     = ListResultsRequest.Types.OrderByField.Name,
+                                    Direction = SortDirection.Asc,
+                                    Field = new ResultField
+                                            {
+                                              ResultRawField = ResultRawField.Name,
+                                            },
                                   },
                          };
     GetCurrentUserRequest = new GetCurrentUserRequest();
@@ -348,8 +368,11 @@ public class AuthenticationIntegrationTest
                                        },
                               Sort = new ListPartitionsRequest.Types.Sort
                                      {
-                                       Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                                       Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                       Direction = SortDirection.Asc,
+                                       Field = new PartitionField
+                                               {
+                                                 PartitionRawField = PartitionRawField.Id,
+                                               },
                                      },
                               PageSize = 10,
                               Page     = 0,
@@ -372,6 +395,8 @@ public class AuthenticationIntegrationTest
                                         };
 
     CountTasksByStatusRequestTasks = new Api.gRPC.V1.Tasks.CountTasksByStatusRequest();
+
+    CreateResultsMetaDataRequest = new CreateResultsMetaDataRequest();
   }
 
   public enum AuthenticationType
@@ -827,6 +852,8 @@ public class AuthenticationIntegrationTest
                                                        (typeof(Tasks.TasksClient), nameof(Tasks.TasksClient.CountTasksByStatus), CountTasksByStatusRequestTasks),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.GetOwnerTaskId), GetOwnerTaskIdRequest),
                                                        (typeof(Results.ResultsClient), nameof(Results.ResultsClient.ListResults), ListResultsRequest),
+                                                       (typeof(Results.ResultsClient), nameof(Results.ResultsClient.CreateResultsMetaData),
+                                                        CreateResultsMetaDataRequest),
                                                        (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.GetPartition), GetPartitionRequest),
                                                        (typeof(Partitions.PartitionsClient), nameof(Partitions.PartitionsClient.ListPartitions), ListPartitionsRequest),
                                                      };

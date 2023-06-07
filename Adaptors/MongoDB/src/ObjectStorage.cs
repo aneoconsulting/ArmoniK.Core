@@ -25,12 +25,14 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Object;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -45,10 +47,10 @@ public class ObjectStorage : IObjectStorage
   private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
   private readonly string                                                                  objectStorageName_;
   private readonly SessionProvider                                                         sessionProvider_;
+  private          bool                                                                    isInitialized_;
 
   public ObjectStorage(SessionProvider                                                         sessionProvider,
                        MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider,
-                       string                                                                  objectStorageName,
                        ILogger<ObjectStorage>                                                  logger,
                        Options.ObjectStorage                                                   options)
   {
@@ -60,13 +62,35 @@ public class ObjectStorage : IObjectStorage
 
     sessionProvider_          = sessionProvider;
     objectCollectionProvider_ = objectCollectionProvider;
-    objectStorageName_        = objectStorageName;
+    objectStorageName_        = "storage/";
     ChunkSize                 = options.ChunkSize;
     logger_                   = logger;
   }
 
   public int ChunkSize { get; }
 
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      await sessionProvider_.Init(cancellationToken)
+                            .ConfigureAwait(false);
+      sessionProvider_.Get();
+
+      await objectCollectionProvider_.Init(cancellationToken)
+                                     .ConfigureAwait(false);
+      objectCollectionProvider_.Get();
+    }
+
+    isInitialized_ = true;
+  }
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                   key,

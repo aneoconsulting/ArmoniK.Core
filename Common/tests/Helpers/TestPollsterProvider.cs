@@ -23,12 +23,13 @@ using System.Threading;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
 
@@ -49,13 +50,14 @@ public class TestPollsterProvider : IDisposable
   private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   private readonly        WebApplication           app_;
   private readonly        IMongoClient             client_;
+  private readonly        IObjectStorage           objectStorage_;
   public readonly         IPartitionTable          PartitionTable;
-  private readonly        IResultTable             resultTable_;
+  public readonly         Common.Pollster.Pollster Pollster;
+  public readonly         IResultTable             ResultTable;
   private readonly        IMongoRunner             runner_;
   private readonly        ISessionTable            sessionTable_;
   public readonly         ISubmitter               Submitter;
   public readonly         ITaskTable               TaskTable;
-  public                  Common.Pollster.Pollster Pollster;
 
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
@@ -74,37 +76,37 @@ public class TestPollsterProvider : IDisposable
     client_ = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                 },
-                                                 {
-                                                   "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                   DatabaseName
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
-                                                   "00:00:10"
-                                                 },
-                                                 {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                   "14000"
-                                                 },
-                                                 {
-                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
-                                                   "DefaultPartition"
-                                                 },
-                                                 {
-                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                  },
+                                                  {
+                                                    "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
+                                                    DatabaseName
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
+                                                    "00:00:10"
+                                                  },
+                                                  {
+                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
+                                                    "14000"
+                                                  },
+                                                  {
+                                                    $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
+                                                    "DefaultPartition"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                  },
+                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
 
@@ -133,21 +135,27 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton(agentHandler)
            .AddSingleton(pullQueueStorage);
 
-
-    var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
-    var computePlanOptions   = computePlanComponent.Get<ComputePlane>();
-
+    var computePlanOptions = builder.Configuration.GetRequiredValue<ComputePlane>(ComputePlane.SettingSection);
     builder.Services.AddSingleton(computePlanOptions);
 
     app_ = builder.Build();
 
-    resultTable_   = app_.Services.GetRequiredService<IResultTable>();
+    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
     TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
     PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
     sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
     Submitter      = app_.Services.GetRequiredService<ISubmitter>();
     Pollster       = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
+    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
 
+    ResultTable.Init(CancellationToken.None)
+               .Wait();
+    TaskTable.Init(CancellationToken.None)
+             .Wait();
+    objectStorage_.Init(CancellationToken.None)
+                  .Wait();
+    PartitionTable.Init(CancellationToken.None)
+                  .Wait();
     sessionTable_.Init(CancellationToken.None)
                  .Wait();
   }

@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -35,48 +36,61 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 public class ObjectStorageTestBase
 {
   [SetUp]
-  public void SetUp()
+  public async Task SetUp()
   {
     GetObjectStorageInstance();
 
-    if (!RunTests)
+    if (!RunTests || CheckForSkipSetup())
     {
       return;
     }
 
-    var dataBytesList = new List<byte[]>();
-    dataBytesList.Add(Encoding.ASCII.GetBytes("AAAA"));
-    dataBytesList.Add(Encoding.ASCII.GetBytes("BBBB"));
-    dataBytesList.Add(Encoding.ASCII.GetBytes("CCCC"));
-    dataBytesList.Add(Encoding.ASCII.GetBytes("DDDD"));
-    ObjectStorage!.AddOrUpdateAsync("dataKey1",
-                                    dataBytesList.ToAsyncEnumerable())
-                  .Wait();
+    await ObjectStorage!.Init(CancellationToken.None)
+                        .ConfigureAwait(false);
 
-    dataBytesList = new List<byte[]>();
-    dataBytesList.Add(Encoding.ASCII.GetBytes("AAAABBBB"));
-    ObjectStorage.AddOrUpdateAsync("dataKey2",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .Wait();
+    var dataBytesList = new List<byte[]>
+                        {
+                          Encoding.ASCII.GetBytes("AAAA"),
+                          Encoding.ASCII.GetBytes("BBBB"),
+                          Encoding.ASCII.GetBytes("CCCC"),
+                          Encoding.ASCII.GetBytes("DDDD"),
+                        };
+    await ObjectStorage!.AddOrUpdateAsync("dataKey1",
+                                          dataBytesList.ToAsyncEnumerable())
+                        .ConfigureAwait(false);
 
-    dataBytesList = new List<byte[]>();
-    dataBytesList.Add(Array.Empty<byte>());
-    ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .Wait();
+    dataBytesList = new List<byte[]>
+                    {
+                      Encoding.ASCII.GetBytes("AAAABBBB"),
+                    };
+    await ObjectStorage.AddOrUpdateAsync("dataKey2",
+                                         dataBytesList.ToAsyncEnumerable())
+                       .ConfigureAwait(false);
+
+    dataBytesList = new List<byte[]>
+                    {
+                      Array.Empty<byte>(),
+                    };
+    await ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
+                                         dataBytesList.ToAsyncEnumerable())
+                       .ConfigureAwait(false);
   }
 
   [TearDown]
   public virtual void TearDown()
   {
-    ObjectStorage        = null;
-    ObjectStorageFactory = null;
-    RunTests             = false;
+    ObjectStorage = null;
+    RunTests      = false;
+  }
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
   /* Interface to test */
-  protected IObjectStorage?        ObjectStorage;
-  protected IObjectStorageFactory? ObjectStorageFactory;
+  protected IObjectStorage? ObjectStorage;
 
   /* Boolean to control that tests are executed in
    * an instance of this class */
@@ -89,32 +103,33 @@ public class ObjectStorageTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)
     {
       Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorageFactory!.Check(HealthCheckTag.Liveness)
-                                                     .ConfigureAwait(false)).Status);
+                         (await ObjectStorage!.Check(HealthCheckTag.Liveness)
+                                              .ConfigureAwait(false)).Status);
       Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
-                                                    .ConfigureAwait(false)).Status);
+                         (await ObjectStorage.Check(HealthCheckTag.Readiness)
+                                             .ConfigureAwait(false)).Status);
       Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
-                                                    .ConfigureAwait(false)).Status);
+                         (await ObjectStorage.Check(HealthCheckTag.Startup)
+                                             .ConfigureAwait(false)).Status);
 
-      await ObjectStorageFactory.Init(CancellationToken.None)
-                                .ConfigureAwait(false);
+      await ObjectStorage.Init(CancellationToken.None)
+                         .ConfigureAwait(false);
 
       Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorageFactory.Check(HealthCheckTag.Liveness)
-                                                 .ConfigureAwait(false)).Status);
+                      (await ObjectStorage.Check(HealthCheckTag.Liveness)
+                                          .ConfigureAwait(false)).Status);
       Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorageFactory.Check(HealthCheckTag.Readiness)
-                                                 .ConfigureAwait(false)).Status);
+                      (await ObjectStorage.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false)).Status);
       Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorageFactory.Check(HealthCheckTag.Startup)
-                                                 .ConfigureAwait(false)).Status);
+                      (await ObjectStorage.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false)).Status);
     }
   }
 
@@ -225,9 +240,6 @@ public class ObjectStorageTestBase
       var res = await ObjectStorage!.GetValuesAsync("dataKey")
                                     .ToListAsync()
                                     .ConfigureAwait(false);
-
-      Assert.AreEqual(listChunks.Count,
-                      res.Count);
 
       Assert.AreEqual(string.Join("",
                                   listChunks.Select(chunk => Encoding.ASCII.GetString(chunk))),

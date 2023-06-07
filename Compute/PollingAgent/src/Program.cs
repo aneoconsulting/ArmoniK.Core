@@ -21,19 +21,17 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -68,6 +66,13 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       var pollsterOptions = builder.Configuration.GetSection(Pollster.SettingSection)
@@ -80,10 +85,8 @@ public static class Program
              .AddArmoniKWorkerConnection(builder.Configuration)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
-             .AddRabbit(builder.Configuration,
-                        logger.GetLogger())
+             .AddQueue(builder.Configuration,
+                       logger.GetLogger())
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddS3(builder.Configuration,
@@ -119,13 +122,16 @@ public static class Program
                                            });
 
         builder.Services.AddSingleton(ActivitySource)
-               .AddOpenTelemetryTracing(b =>
-                                        {
-                                          b.AddSource(ActivitySource.Name);
-                                          b.AddAspNetCoreInstrumentation();
-                                          b.AddMongoDBInstrumentation();
-                                          b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
-                                        });
+               .AddOpenTelemetry()
+               .WithTracing(b =>
+                            {
+                              b.AddSource(ActivitySource.Name);
+                              b.AddAspNetCoreInstrumentation();
+                              b.AddMongoDBInstrumentation();
+                              b.AddZipkinExporter(options => options.Endpoint =
+                                                               new Uri(builder.Configuration["Zipkin:Uri"] ??
+                                                                       throw new InvalidOperationException("Zipkin uri should not be null")));
+                            });
       }
 
       builder.Services.AddHealthChecks();

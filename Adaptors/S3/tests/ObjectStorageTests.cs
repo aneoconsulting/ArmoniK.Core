@@ -37,27 +37,27 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
   public override void GetObjectStorageInstance()
   {
-    Dictionary<string, string> minimalConfig = new()
-                                               {
-                                                 {
-                                                   "Components:ObjectStorage", "ArmoniK.Adapters.S3.ObjectStorage"
-                                                 },
-                                                 {
-                                                   "S3:BucketName", "miniobucket"
-                                                 },
-                                                 {
-                                                   "S3:EndpointUrl", "http://127.0.0.1:9000"
-                                                 },
-                                                 {
-                                                   "S3:Login", "minioadmin"
-                                                 },
-                                                 {
-                                                   "S3:Password", "minioadmin"
-                                                 },
-                                                 {
-                                                   "S3:MustForcePathStyle", "true"
-                                                 },
-                                               };
+    Dictionary<string, string?> minimalConfig = new()
+                                                {
+                                                  {
+                                                    "Components:ObjectStorage", "ArmoniK.Adapters.S3.ObjectStorage"
+                                                  },
+                                                  {
+                                                    "S3:BucketName", "miniobucket"
+                                                  },
+                                                  {
+                                                    "S3:EndpointUrl", "http://127.0.0.1:9000"
+                                                  },
+                                                  {
+                                                    "S3:Login", "minioadmin"
+                                                  },
+                                                  {
+                                                    "S3:Password", "minioadmin"
+                                                  },
+                                                  {
+                                                    "S3:MustForcePathStyle", "true"
+                                                  },
+                                                };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
@@ -69,15 +69,14 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddS3(configuration,
                    logger.GetLogger());
 
-    services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+    services.AddSingleton<IObjectStorage, ObjectStorage>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {
                                                    ValidateOnBuild = true,
                                                  });
 
-    ObjectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
-    ObjectStorage        = ObjectStorageFactory.CreateObjectStorage("storage");
-    RunTests             = true;
+    ObjectStorage = provider.GetRequiredService<IObjectStorage>();
+    RunTests      = true;
   }
 }

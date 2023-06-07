@@ -25,10 +25,10 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -74,7 +74,7 @@ public class SessionTable : ISessionTable
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
                                     SessionStatus.Running,
-                                    partitionIds.ToIList(),
+                                    partitionIds.AsIList(),
                                     defaultOptions));
     return Task.FromResult(rootSessionId);
   }

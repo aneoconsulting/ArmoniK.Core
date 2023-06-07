@@ -17,9 +17,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
+
+using FluentValidation.Internal;
+
+using Google.Protobuf.WellKnownTypes;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
@@ -37,6 +44,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   represents a submission from the client
 /// </param>
 /// <param name="DataDependencies">Unique identifiers of the results the task depends on</param>
+/// <param name="RemainingDataDependencies">List of dependencies that are not yet satisfied</param>
 /// <param name="ExpectedOutputIds">
 ///   Identifiers of the outputs the task should produce or should transmit the
 ///   responsibility to produce
@@ -52,6 +60,8 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="EndDate">Date when the task ends</param>
 /// <param name="ReceptionDate">Date when the task is received by the polling agent</param>
 /// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
+/// <param name="ProcessingToEndDuration">Duration between the start of processing and the end of the task</param>
+/// <param name="CreationToEndDuration">Duration between the creation and the end of the task</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
 public record TaskData(string        SessionId,
@@ -61,20 +71,27 @@ public record TaskData(string        SessionId,
                        string        PayloadId,
                        IList<string> ParentTaskIds,
                        IList<string> DataDependencies,
-                       IList<string> ExpectedOutputIds,
-                       string        InitialTaskId,
-                       IList<string> RetryOfIds,
-                       TaskStatus    Status,
-                       string        StatusMessage,
-                       TaskOptions   Options,
-                       DateTime      CreationDate,
-                       DateTime?     SubmittedDate,
-                       DateTime?     StartDate,
-                       DateTime?     EndDate,
-                       DateTime?     ReceptionDate,
-                       DateTime?     AcquisitionDate,
-                       DateTime?     PodTtl,
-                       Output        Output)
+                       // FIXME: RemainingDataDependencies should be a HashSet, but there is no HashSet in MongoDB.
+                       // List would also work but would make dependency management *much* slower when there is many dependencies on a single task.
+                       // (Removing elements from a list is linear time, but removing from an object in constant time)
+                       // Ideal solution would most likely be to put HashSet here, and have a custom Serializer/Deserializer in MongoDB "schema".
+                       IDictionary<string, bool> RemainingDataDependencies,
+                       IList<string>             ExpectedOutputIds,
+                       string                    InitialTaskId,
+                       IList<string>             RetryOfIds,
+                       TaskStatus                Status,
+                       string                    StatusMessage,
+                       TaskOptions               Options,
+                       DateTime                  CreationDate,
+                       DateTime?                 SubmittedDate,
+                       DateTime?                 StartDate,
+                       DateTime?                 EndDate,
+                       DateTime?                 ReceptionDate,
+                       DateTime?                 AcquisitionDate,
+                       DateTime?                 PodTtl,
+                       TimeSpan?                 ProcessingToEndDuration,
+                       TimeSpan?                 CreationToEndDuration,
+                       Output                    Output)
 {
   /// <summary>
   ///   Initializes task metadata with specified fields
@@ -116,6 +133,8 @@ public record TaskData(string        SessionId,
            payloadId,
            parentTaskIds,
            dataDependencies,
+           dataDependencies.ToDictionary(EscapeKey,
+                                         _ => true),
            expectedOutputIds,
            taskId,
            retryOfIds,
@@ -129,9 +148,46 @@ public record TaskData(string        SessionId,
            null,
            null,
            null,
+           null,
+           null,
            output)
   {
   }
+
+  /// <summary>
+  ///   Creates a copy of a <see cref="TaskData" /> and modify it according to given updates
+  /// </summary>
+  /// <param name="original">The object that will be copied</param>
+  /// <param name="updates">A collection of field selector and their new values</param>
+  public TaskData(TaskData                                                                      original,
+                  IEnumerable<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates)
+    : this(original)
+  {
+    foreach (var (selector, newValue) in updates)
+    {
+      GetType()
+        .GetProperty(selector.GetMember()
+                             .Name)!.SetValue(this,
+                                              newValue);
+    }
+  }
+
+  /// <summary>
+  ///   ResultIds could contain dots (eg: it is the case in htcmock),
+  ///   but MongoDB does not support well dots in keys.
+  ///   This escapes the key to replace dots with something else.
+  ///   Escaped keys are guaranteed to have neither dots nor dollars
+  /// </summary>
+  /// <param name="key">Key string</param>
+  /// <returns>Escaped key</returns>
+  public static string EscapeKey(string key)
+    => new StringBuilder(key).Replace("@",
+                                      "@at@")
+                             .Replace(".",
+                                      "@dot@")
+                             .Replace("$",
+                                      "@dollar@")
+                             .ToString();
 
 
   /// <summary>
@@ -148,7 +204,7 @@ public record TaskData(string        SessionId,
          Status     = taskData.Status,
          Output     = taskData.Output,
          OwnerPodId = taskData.OwnerPodId,
-         Options    = taskData.Options,
+         Options    = taskData.Options.ToGrpcTaskOptions(),
          DataDependencies =
          {
            taskData.DataDependencies,
@@ -187,6 +243,13 @@ public record TaskData(string        SessionId,
                         ? FromDateTime(taskData.ReceptionDate.Value)
                         : null,
          PodHostname = taskData.OwnerPodName,
+         CreationToEndDuration = taskData.CreationToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
+                                   : null,
+         ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
+                                     ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
+                                     : null,
+         InitialTaskId = taskData.InitialTaskId,
        };
 
   /// <summary>
@@ -199,21 +262,46 @@ public record TaskData(string        SessionId,
   public static implicit operator TaskSummary(TaskData taskData)
     => new()
        {
-         SessionId = taskData.SessionId,
-         Status    = taskData.Status,
-         Options   = taskData.Options,
-         CreatedAt = FromDateTime(taskData.CreationDate),
+         SessionId  = taskData.SessionId,
+         Status     = taskData.Status,
+         OwnerPodId = taskData.OwnerPodId,
+         Options    = taskData.Options.ToGrpcTaskOptions(),
+         CreatedAt  = FromDateTime(taskData.CreationDate),
          EndedAt = taskData.EndDate is not null
                      ? FromDateTime(taskData.EndDate.Value)
                      : null,
          Id = taskData.TaskId,
-
+         PodTtl = taskData.PodTtl is not null
+                    ? FromDateTime(taskData.PodTtl.Value)
+                    : null,
          StartedAt = taskData.StartDate is not null
                        ? FromDateTime(taskData.StartDate.Value)
                        : null,
          Error = taskData.Status == TaskStatus.Error
                    ? taskData.Output.Error
                    : "",
+         StatusMessage = taskData.StatusMessage,
+         SubmittedAt = taskData.SubmittedDate is not null
+                         ? FromDateTime(taskData.SubmittedDate.Value)
+                         : null,
+         AcquiredAt = taskData.AcquisitionDate is not null
+                        ? FromDateTime(taskData.AcquisitionDate.Value)
+                        : null,
+         ReceivedAt = taskData.ReceptionDate is not null
+                        ? FromDateTime(taskData.ReceptionDate.Value)
+                        : null,
+         PodHostname = taskData.OwnerPodName,
+         CreationToEndDuration = taskData.CreationToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
+                                   : null,
+         ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
+                                     ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
+                                     : null,
+         InitialTaskId          = taskData.InitialTaskId,
+         CountDataDependencies  = taskData.DataDependencies.Count,
+         CountExpectedOutputIds = taskData.ExpectedOutputIds.Count,
+         CountParentTaskIds     = taskData.ParentTaskIds.Count,
+         CountRetryOfIds        = taskData.RetryOfIds.Count,
        };
 
   /// <summary>

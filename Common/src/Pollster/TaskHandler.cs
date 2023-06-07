@@ -18,13 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -195,13 +195,20 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelling:
           logger_.LogInformation("Task is being cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+          taskData_ = taskData_ with
+                      {
+                        EndDate = DateTime.UtcNow,
+                        CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                      };
+          await taskTable_.SetTaskCanceledAsync(taskData_,
                                                 CancellationToken.None)
                           .ConfigureAwait(false);
-          await resultTable_.AbortTaskResults(taskData_.SessionId,
-                                              taskData_.TaskId,
-                                              CancellationToken.None)
-                            .ConfigureAwait(false);
+          await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                          resultTable_,
+                                                          messageHandler_.TaskId,
+                                                          CancellationToken.None)
+                                     .ConfigureAwait(false);
+
           return false;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
@@ -218,10 +225,11 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await resultTable_.AbortTaskResults(taskData_.SessionId,
-                                              taskData_.TaskId,
-                                              CancellationToken.None)
-                            .ConfigureAwait(false);
+          await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                          resultTable_,
+                                                          messageHandler_.TaskId,
+                                                          CancellationToken.None)
+                                     .ConfigureAwait(false);
           return false;
         case TaskStatus.Timeout:
           logger_.LogInformation("Task was timeout elsewhere ; taking over here");
@@ -229,14 +237,18 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelled:
           logger_.LogInformation("Task has been cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await resultTable_.AbortTaskResults(taskData_.SessionId,
-                                              taskData_.TaskId,
-                                              CancellationToken.None)
-                            .ConfigureAwait(false);
+          await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                          resultTable_,
+                                                          messageHandler_.TaskId,
+                                                          CancellationToken.None)
+                                     .ConfigureAwait(false);
           return false;
         case TaskStatus.Processing:
           logger_.LogInformation("Task is processing elsewhere ; taking over here");
           break;
+        case TaskStatus.Retried:
+          logger_.LogInformation("Task is in retry ; retry task should be executed");
+          return false;
         case TaskStatus.Unspecified:
         default:
           logger_.LogCritical("Task was in an unknown state {state}",
@@ -254,13 +266,21 @@ public class TaskHandler : IAsyncDisposable
         logger_.LogInformation("Task is being cancelled because its session is cancelled");
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
-        await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+        taskData_ = taskData_ with
+                    {
+                      EndDate = DateTime.UtcNow,
+                      CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                    };
+        await taskTable_.SetTaskCanceledAsync(taskData_,
                                               CancellationToken.None)
                         .ConfigureAwait(false);
-        await resultTable_.AbortTaskResults(taskData_.SessionId,
-                                            taskData_.TaskId,
-                                            CancellationToken.None)
-                          .ConfigureAwait(false);
+
+        await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                        resultTable_,
+                                                        messageHandler_.TaskId,
+                                                        CancellationToken.None)
+                                   .ConfigureAwait(false);
+
         return false;
       }
 
@@ -271,56 +291,6 @@ public class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      if (taskData_.DataDependencies.Any())
-      {
-        var dependencies = await resultTable_.AreResultsAvailableAsync(taskData_.SessionId,
-                                                                       taskData_.DataDependencies,
-                                                                       cancellationTokenSource_.Token)
-                                             .ConfigureAwait(false);
-
-        if (!dependencies.Any())
-        {
-          logger_.LogDebug("Dependencies are not ready yet.");
-          messageHandler_.Status = QueueMessageStatus.Postponed;
-          return false;
-        }
-
-        if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
-                                         new ResultStatusCount(ResultStatus.Completed,
-                                                               0))
-                        .Count != taskData_.DataDependencies.Count)
-        {
-          logger_.LogDebug("Dependencies are not complete yet. Checking the status of the results");
-          messageHandler_.Status = QueueMessageStatus.Postponed;
-
-          if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
-                                           new ResultStatusCount(ResultStatus.Aborted,
-                                                                 0))
-                          .Count == 0)
-          {
-            logger_.LogDebug("No results aborted. Waiting for the remaining uncompleted results.");
-            return false;
-          }
-
-          logger_.LogInformation("One of the input data is aborted. Removing task from the queue");
-
-          await submitter_.CompleteTaskAsync(taskData_,
-                                             false,
-                                             new Output
-                                             {
-                                               Error = new Output.Types.Error
-                                                       {
-                                                         Details = "One of the input data is aborted.",
-                                                       },
-                                             },
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
-          messageHandler_.Status = QueueMessageStatus.Cancelled;
-
-          return false;
-        }
-      }
-
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -329,18 +299,21 @@ public class TaskHandler : IAsyncDisposable
       }
 
       logger_.LogDebug("Trying to acquire task");
-      taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
-                                               ownerPodId_,
-                                               ownerPodName_,
-                                               messageHandler_.ReceptionDateTime,
+      taskData_ = taskData_ with
+                  {
+                    OwnerPodId = ownerPodId_,
+                    OwnerPodName = ownerPodName_,
+                    AcquisitionDate = DateTime.UtcNow,
+                    ReceptionDate = messageHandler_.ReceptionDateTime,
+                  };
+      taskData_ = await taskTable_.AcquireTask(taskData_,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         logger_.LogDebug("Task acquired but execution cancellation requested");
-        await taskTable_.ReleaseTask(taskData_.TaskId,
-                                     ownerPodId_,
+        await taskTable_.ReleaseTask(taskData_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -396,13 +369,19 @@ public class TaskHandler : IAsyncDisposable
           if (taskData_.Status is TaskStatus.Cancelling)
           {
             messageHandler_.Status = QueueMessageStatus.Cancelled;
-            await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+            taskData_ = taskData_ with
+                        {
+                          EndDate = DateTime.UtcNow,
+                          CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                        };
+            await taskTable_.SetTaskCanceledAsync(taskData_,
                                                   CancellationToken.None)
                             .ConfigureAwait(false);
-            await resultTable_.AbortTaskResults(taskData_.SessionId,
-                                                taskData_.TaskId,
-                                                CancellationToken.None)
-                              .ConfigureAwait(false);
+            await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                            resultTable_,
+                                                            messageHandler_.TaskId,
+                                                            CancellationToken.None)
+                                       .ConfigureAwait(false);
             return false;
           }
         }
@@ -416,8 +395,7 @@ public class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         logger_.LogDebug("Task preconditions ok but execution cancellation requested");
-        await taskTable_.ReleaseTask(taskData_.TaskId,
-                                     ownerPodId_,
+        await taskTable_.ReleaseTask(taskData_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -510,7 +488,12 @@ public class TaskHandler : IAsyncDisposable
                                   .ConfigureAwait(false);
 
       logger_.LogInformation("Start processing task");
-      await taskTable_.StartTask(taskData_.TaskId,
+      taskData_ = taskData_ with
+                  {
+                    StartDate = DateTime.UtcNow,
+                    PodTtl = DateTime.UtcNow,
+                  };
+      await taskTable_.StartTask(taskData_,
                                  cancellationTokenSource_.Token)
                       .ConfigureAwait(false);
 
@@ -651,8 +634,7 @@ public class TaskHandler : IAsyncDisposable
                            ? "Cancellation triggered, task cancelled here and re executed elsewhere"
                            : "Worker not available, task cancelled here and re executed elsewhere");
 
-      await taskTable_.ReleaseTask(taskData.TaskId,
-                                   ownerPodId_,
+      await taskTable_.ReleaseTask(taskData,
                                    CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Postponed;

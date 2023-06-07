@@ -33,39 +33,14 @@ public record TaskOptions(IDictionary<string, string> Options,
                           string                      ApplicationService,
                           string                      EngineType)
 {
-  public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
-    => new()
-       {
-         MaxDuration = Duration.FromTimeSpan(taskOption.MaxDuration),
-         MaxRetries  = taskOption.MaxRetries,
-         Priority    = taskOption.Priority,
-         PartitionId = taskOption.PartitionId,
-         Options =
-         {
-           taskOption.Options,
-         },
-         ApplicationName      = taskOption.ApplicationName,
-         ApplicationVersion   = taskOption.ApplicationVersion,
-         ApplicationNamespace = taskOption.ApplicationNamespace,
-         ApplicationService   = taskOption.ApplicationService,
-         EngineType           = taskOption.EngineType,
-       };
-
-  public static implicit operator TaskOptions(Api.gRPC.V1.TaskOptions taskOption)
-    => new(taskOption.Options,
-           taskOption.MaxDuration.ToTimeSpan(),
-           taskOption.MaxRetries,
-           taskOption.Priority,
-           taskOption.PartitionId,
-           taskOption.ApplicationName,
-           taskOption.ApplicationVersion,
-           taskOption.ApplicationNamespace,
-           taskOption.ApplicationService,
-           taskOption.EngineType);
-
-  public static TaskOptions Merge(TaskOptions taskOption,
-                                  TaskOptions defaultOption)
+  public static TaskOptions Merge(TaskOptions? taskOption,
+                                  TaskOptions  defaultOption)
   {
+    if (taskOption is null)
+    {
+      return defaultOption;
+    }
+
     var options = new Dictionary<string, string>(defaultOption.Options);
     foreach (var option in taskOption.Options)
     {
@@ -99,4 +74,43 @@ public record TaskOptions(IDictionary<string, string> Options,
                              ? taskOption.EngineType
                              : defaultOption.EngineType);
   }
+}
+
+public static class GrpcTaskOptionsExt
+{
+  public static TaskOptions ToTaskOptions(this Api.gRPC.V1.TaskOptions taskOption)
+    => new(taskOption.Options,
+           taskOption.MaxDuration.ToTimeSpan(),
+           taskOption.MaxRetries,
+           taskOption.Priority,
+           taskOption.PartitionId,
+           taskOption.ApplicationName,
+           taskOption.ApplicationVersion,
+           taskOption.ApplicationNamespace,
+           taskOption.ApplicationService,
+           taskOption.EngineType);
+
+  public static TaskOptions? ToNullableTaskOptions(this Api.gRPC.V1.TaskOptions? taskOption)
+    => taskOption?.ToTaskOptions();
+}
+
+public static class TaskOptionsExt
+{
+  public static Api.gRPC.V1.TaskOptions ToGrpcTaskOptions(this TaskOptions taskOption)
+    => new()
+       {
+         MaxDuration          = Duration.FromTimeSpan(taskOption.MaxDuration),
+         ApplicationName      = taskOption.ApplicationName,
+         ApplicationVersion   = taskOption.ApplicationVersion,
+         ApplicationNamespace = taskOption.ApplicationNamespace,
+         ApplicationService   = taskOption.ApplicationService,
+         EngineType           = taskOption.EngineType,
+         MaxRetries           = taskOption.MaxRetries,
+         Options =
+         {
+           taskOption.Options,
+         },
+         Priority    = taskOption.Priority,
+         PartitionId = taskOption.PartitionId,
+       };
 }

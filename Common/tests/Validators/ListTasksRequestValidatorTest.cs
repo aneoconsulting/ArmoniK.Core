@@ -17,6 +17,8 @@
 
 using System;
 
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Validators;
 
@@ -34,8 +36,11 @@ public class ListTasksRequestValidatorTest
                                   Filter = new ListTasksRequest.Types.Filter(),
                                   Sort = new ListTasksRequest.Types.Sort
                                          {
-                                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                           Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
+                                           Direction = SortDirection.Asc,
+                                           Field = new TaskField
+                                                   {
+                                                     TaskSummaryField = TaskSummaryField.CreatedAt,
+                                                   },
                                          },
                                   Page     = 0,
                                   PageSize = 1,
@@ -77,7 +82,7 @@ public class ListTasksRequestValidatorTest
   {
     validListTasksRequest_!.Sort = new ListTasksRequest.Types.Sort
                                    {
-                                     Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                                     Direction = SortDirection.Desc,
                                    };
     foreach (var error in validator_.Validate(validListTasksRequest_)
                                     .Errors)
@@ -94,7 +99,10 @@ public class ListTasksRequestValidatorTest
   {
     validListTasksRequest_!.Sort = new ListTasksRequest.Types.Sort
                                    {
-                                     Field = ListTasksRequest.Types.OrderByField.SessionId,
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = TaskSummaryField.SessionId,
+                                             },
                                    };
     foreach (var error in validator_.Validate(validListTasksRequest_)
                                     .Errors)

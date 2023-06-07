@@ -1,7 +1,3 @@
-module "local_storage" {
-  source = "../storage/object/local"
-}
-
 resource "docker_image" "submitter" {
   count        = var.use_local_image ? 0 : 1
   name         = "${var.docker_image}:${var.core_tag}"
@@ -43,9 +39,12 @@ resource "docker_container" "submitter" {
     external = 5011
   }
 
-  mounts {
-    type   = "volume"
-    target = "/local_storage"
-    source = module.local_storage.object_volume
+  dynamic "mounts" {
+    for_each = var.volumes
+    content {
+      type   = "volume"
+      target = mounts.value
+      source = mounts.key
+    }
   }
 }

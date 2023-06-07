@@ -21,19 +21,19 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.RabbitMQ;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -68,6 +68,13 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Common.gRPC.Services.Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       builder.Host.UseSerilog(logger.GetSerilogConf());
@@ -75,10 +82,8 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddRabbit(builder.Configuration,
-                        logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
+             .AddQueue(builder.Configuration,
+                       logger.GetLogger())
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddLocalStorage(builder.Configuration,
@@ -112,12 +117,15 @@ public static class Program
                                            });
 
         builder.Services.AddSingleton(ActivitySource)
-               .AddOpenTelemetryTracing(b =>
-                                        {
-                                          b.AddSource(ActivitySource.Name);
-                                          b.AddAspNetCoreInstrumentation();
-                                          b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
-                                        });
+               .AddOpenTelemetry()
+               .WithTracing(b =>
+                            {
+                              b.AddSource(ActivitySource.Name);
+                              b.AddAspNetCoreInstrumentation();
+                              b.AddZipkinExporter(options => options.Endpoint =
+                                                               new Uri(builder.Configuration["Zipkin:Uri"] ??
+                                                                       throw new InvalidOperationException("Zipkin uri should not be null")));
+                            });
       }
 
       builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
@@ -175,6 +183,8 @@ public static class Program
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcPartitionsService>()
          .EnableGrpcWeb();
+      app.MapGrpcService<GrpcVersionsService>()
+         .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",
                           1081,
@@ -196,14 +206,27 @@ public static class Program
         app.MapGrpcReflectionService();
       }
 
-      var sessionProvider      = app.Services.GetRequiredService<SessionProvider>();
-      var objectFactory        = app.Services.GetRequiredService<IObjectStorageFactory>();
-      var pushQueueStorage     = app.Services.GetRequiredService<IPushQueueStorage>();
-      var taskObjectFactory    = objectFactory.Init(CancellationToken.None);
-      var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
+      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
+      var objectStorage               = app.Services.GetRequiredService<IObjectStorage>();
+      var pushQueueStorage            = app.Services.GetRequiredService<IPushQueueStorage>();
+      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
+      var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+      var sessionCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<SessionData, SessionDataModelMapping>>();
+      var resultCollectionProvider    = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
+      var taskObjectFactory           = objectStorage.Init(CancellationToken.None);
+      var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
+      await partitionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
+      await taskCollectionProvider.Init(CancellationToken.None)
+                                  .ConfigureAwait(false);
+      await sessionCollectionProvider.Init(CancellationToken.None)
+                                     .ConfigureAwait(false);
+      await resultCollectionProvider.Init(CancellationToken.None)
+                                    .ConfigureAwait(false);
+
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
 

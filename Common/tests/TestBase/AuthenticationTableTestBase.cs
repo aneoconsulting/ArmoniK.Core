@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
@@ -34,19 +35,29 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class AuthenticationTableTestBase
 {
-  [OneTimeSetUp]
-  public void SetUp()
+  private static bool CheckForSkipSetup()
   {
-    GetAuthSource();
-    if (RunTests)
-    {
-      AuthenticationTable!.AddRoles(Roles);
-      AuthenticationTable!.AddUsers(Users);
-      AuthenticationTable!.AddCertificates(Auths);
-    }
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
   }
 
-  [OneTimeTearDown]
+  public async Task SetUp()
+  {
+    GetAuthSource();
+
+    if (!RunTests || CheckForSkipSetup())
+    {
+      return;
+    }
+
+    await AuthenticationTable!.Init(CancellationToken.None)
+                              .ConfigureAwait(false);
+
+    AuthenticationTable!.AddRoles(Roles);
+    AuthenticationTable!.AddUsers(Users);
+    AuthenticationTable!.AddCertificates(Auths);
+  }
+
   public virtual void TearDown()
     => RunTests = false;
 

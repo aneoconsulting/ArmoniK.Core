@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging.Abstractions;
 

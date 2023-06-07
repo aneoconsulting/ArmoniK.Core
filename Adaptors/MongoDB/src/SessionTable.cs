@@ -30,10 +30,10 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -82,7 +82,7 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
-                           partitionIds.ToIList(),
+                           partitionIds.AsIList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
@@ -105,8 +105,7 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
+      return await sessionCollection.Find(session => session.SessionId == sessionId)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
@@ -144,9 +143,8 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Options)
+      return await sessionCollection.Find(sdm => sdm.SessionId == sessionId)
+                                    .Project(sdm => sdm.Options)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
@@ -267,6 +265,8 @@ public class SessionTable : ISessionTable
     {
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
+      await sessionCollectionProvider_.Init(cancellationToken)
+                                      .ConfigureAwait(false);
       sessionCollectionProvider_.Get();
       sessionProvider_.Get();
     }

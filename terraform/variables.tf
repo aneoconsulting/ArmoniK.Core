@@ -62,7 +62,7 @@ variable "object_storage" {
     port        = optional(number, 9000)
     login       = optional(string, "minioadmin")
     password    = optional(string, "minioadmin")
-    bucket_name = optional(string, "minioBucket")
+    bucket_name = optional(string, "miniobucket")
 
   })
   validation {
@@ -84,8 +84,8 @@ variable "queue_storage" {
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq|artemis)$", var.queue_storage.name))
-    error_message = "Must be activemq, rabbitmq or artemis"
+    condition     = can(regex("^(activemq|rabbitmq|artemis|none)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq, artemis or none"
   }
   default = {}
 }
@@ -129,7 +129,7 @@ variable "compute_plane" {
       port                 = optional(number, 9980)
       max_error_allowed    = optional(number, -1)
       worker_check_retries = optional(number, 10)
-      worker_check_delay   = optional(string, "00:00:10")
+      worker_check_delay   = optional(string, "00:00:01")
     })
   })
   default = {
@@ -179,7 +179,49 @@ variable "zipkin_image" {
   default = "openzipkin/zipkin:latest"
 }
 
+variable "grafana_image" {
+  type    = string
+  default = "grafana/grafana:latest"
+}
+
+variable "prometheus_image" {
+  type    = string
+  default = "prom/prometheus:latest"
+}
+
 variable "database_image" {
   type    = string
   default = "mongo"
+}
+
+variable "ingress" {
+  type = object({
+    image = optional(string, "nginxinc/nginx-unprivileged"),
+    tag   = optional(string, "1.23.3"),
+    configs = map(object({
+      port = number,
+      tls  = optional(bool, false),
+      mtls = optional(bool, false),
+  })) })
+  default = {
+    configs = {
+      ingress = {
+        port = 5201
+      },
+      ingress_tls = {
+        port = 5202,
+        tls  = true
+      },
+      ingress_mtls = {
+        port = 5203,
+        tls  = true,
+        mtls = true
+      }
+  } }
+}
+
+variable "custom_env_vars" {
+  type = map(string)
+  default = {
+  }
 }

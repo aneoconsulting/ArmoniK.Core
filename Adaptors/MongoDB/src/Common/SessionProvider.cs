@@ -19,7 +19,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Base;
 
 using JetBrains.Annotations;
 
@@ -62,12 +62,14 @@ public class SessionProvider : IInitializable
 
   public Task Init(CancellationToken cancellationToken)
   {
-    if (clientSessionHandle_ is null)
+    if (clientSessionHandle_ is not null)
     {
-      lock (lockObj_)
-      {
-        clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
-      }
+      return Task.CompletedTask;
+    }
+
+    lock (lockObj_)
+    {
+      clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
     }
 
     return Task.CompletedTask;
