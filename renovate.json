@@ -19,7 +19,7 @@
       "groupName": "nuget packages",
       "groupSlug": "nuget",
       "excludePackagePatterns": [
-        "ArmoniK.Api.*",
+        "ArmoniK.Api",
         "ArmoniK.Utils"
       ],
       "matchDatasources": [
@@ -30,7 +30,7 @@
       "groupName": "ArmoniK.Api",
       "groupSlug": "nuget",
       "matchPackagePatterns": [
-        "ArmoniK.Api.*"
+        "ArmoniK.Api"
       ],
       "matchDatasources": [
         "nuget"
