@@ -37,6 +37,16 @@
       ]
     },
     {
+      "groupName": "ArmoniK.Utils",
+      "groupSlug": "nuget",
+      "matchPackagePatterns": [
+        "ArmoniK.Utils"
+      ],
+      "matchDatasources": [
+        "nuget"
+      ]
+    },
+    {
       "groupName": "docker images",
       "groupSlug": "docker",
       "matchDatasources": [
