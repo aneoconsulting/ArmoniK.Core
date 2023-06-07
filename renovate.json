@@ -28,7 +28,7 @@
     },
     {
       "groupName": "ArmoniK.Api",
-      "groupSlug": "nuget",
+      "groupSlug": "nuget-armonik-api",
       "matchPackagePatterns": [
         "ArmoniK.Api"
       ],
@@ -38,7 +38,7 @@
     },
     {
       "groupName": "ArmoniK.Utils",
-      "groupSlug": "nuget",
+      "groupSlug": "nuget-armonik-utils",
       "matchPackagePatterns": [
         "ArmoniK.Utils"
       ],
