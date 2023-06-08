@@ -22,6 +22,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -29,12 +31,13 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class TaskTableExtensions
 {
-  public static Task<int> CancelTasks(this ITaskTable   taskTable,
-                                      TaskFilter        filter,
-                                      CancellationToken cancellationToken = default)
-    => taskTable.UpdateAllTaskStatusAsync(filter,
-                                          TaskStatus.Cancelling,
-                                          cancellationToken);
+  public static async Task<int> CancelTasks(this ITaskTable   taskTable,
+                                            TaskFilter        filter,
+                                            CancellationToken cancellationToken = default)
+    => (int)await taskTable.UpdateAllTaskStatusAsync(filter,
+                                                     TaskStatus.Cancelling,
+                                                     cancellationToken)
+                           .ConfigureAwait(false);
 
   /// <summary>
   ///   Change the status of the task to canceled
@@ -179,4 +182,100 @@ public static class TaskTableExtensions
 
     return task.Status != TaskStatus.Retried;
   }
+
+  /// <summary>
+  ///   Update the statuses of all tasks matching a given filter
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="filter">Task Filter describing the tasks whose status should be updated</param>
+  /// <param name="status">The new task status</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of updated tasks
+  /// </returns>
+  public static async Task<long> UpdateAllTaskStatusAsync(this ITaskTable   taskTable,
+                                                          TaskFilter        filter,
+                                                          TaskStatus        status,
+                                                          CancellationToken cancellationToken = default)
+  {
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled) ||
+                                    filter.Included.Statuses.Contains(TaskStatus.Error)))
+    {
+      throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
+    }
+
+    return await taskTable.UpdateManyTasks(filter.ToFilterExpression(),
+                                           new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                           {
+                                             (tdm => tdm.Status, status),
+                                           },
+                                           cancellationToken)
+                          .ConfigureAwait(false);
+  }
+
+  /// <summary>
+  ///   Cancels all tasks in a given session
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="sessionId">Id of the target session</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task CancelSessionAsync(this ITaskTable   taskTable,
+                                              string            sessionId,
+                                              CancellationToken cancellationToken = default)
+    => await taskTable.UpdateManyTasks(data => data.SessionId == sessionId,
+                                       new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                       {
+                                         (tdm => tdm.Status, TaskStatus.Cancelling),
+                                         (tdm => tdm.EndDate, DateTime.UtcNow),
+                                       },
+                                       cancellationToken)
+                      .ConfigureAwait(false);
+
+
+  /// <summary>
+  ///   Cancels all the given tasks that are not in a final status
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskIds">Collection of task ids</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of task matched
+  /// </returns>
+  public static async Task<long> CancelTaskAsync(this ITaskTable     taskTable,
+                                                 ICollection<string> taskIds,
+                                                 CancellationToken   cancellationToken = default)
+    => await taskTable.UpdateManyTasks(data => taskIds.Contains(data.TaskId) &&
+                                               !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
+                                                 data.Status == TaskStatus.Completed),
+                                       new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                       {
+                                         (tdm => tdm.Status, TaskStatus.Cancelling),
+                                         (tdm => tdm.EndDate, DateTime.UtcNow),
+                                       },
+                                       cancellationToken)
+                      .ConfigureAwait(false);
+
+  /// <summary>
+  ///   Tag a collection of tasks as submitted
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskIds">Task ids whose creation will be finalized</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of tagged tasks by the function
+  /// </returns>
+  public static async Task<long> FinalizeTaskCreation(this ITaskTable     taskTable,
+                                                      ICollection<string> taskIds,
+                                                      CancellationToken   cancellationToken = default)
+    => await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Creating,
+                                       new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                       {
+                                         (tdm => tdm.Status, TaskStatus.Submitted),
+                                         (tdm => tdm.SubmittedDate, DateTime.UtcNow),
+                                       },
+                                       cancellationToken)
+                      .ConfigureAwait(false);
 }

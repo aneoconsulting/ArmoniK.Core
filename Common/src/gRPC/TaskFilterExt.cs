@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -16,21 +16,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
+namespace ArmoniK.Core.Common.gRPC;
 
 public static class TaskFilterExt
 {
-  public static IQueryable<TaskData> FilterQuery(this IQueryable<TaskData> taskQueryable,
-                                                 TaskFilter                filter)
-    => taskQueryable.Where(filter.ToFilterExpression());
-
   public static Expression<Func<TaskData, bool>> ToFilterExpression(this TaskFilter filter)
   {
     var x = Expression.Parameter(typeof(TaskData),

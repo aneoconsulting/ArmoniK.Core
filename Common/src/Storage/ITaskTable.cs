@@ -80,19 +80,6 @@ public interface ITaskTable : IInitializable
                                CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Update the statuses of all tasks matching a given filter
-  /// </summary>
-  /// <param name="filter">Task Filter describing the tasks whose status should be updated</param>
-  /// <param name="status">The new task status</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The number of updated tasks
-  /// </returns>
-  Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                     TaskStatus        status,
-                                     CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Query a task status to check for cancellation
   /// </summary>
   /// <param name="taskId">Id of the task to check</param>
@@ -119,28 +106,6 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task StartTask(TaskData          taskData,
                  CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Cancels all tasks in a given session
-  /// </summary>
-  /// <param name="sessionId">Id of the target session</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task CancelSessionAsync(string            sessionId,
-                          CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Cancels all the given tasks that are not in a final status
-  /// </summary>
-  /// <param name="taskIds">Collection of task ids</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Collection of task metadata of the input tasks if tasks exists
-  /// </returns>
-  Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                        CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Count tasks matching a given filter
@@ -251,6 +216,19 @@ public interface ITaskTable : IInitializable
   Task<TaskData> UpdateOneTask(string                                                                        taskId,
                                ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
                                CancellationToken                                                             cancellationToken = default);
+
+  /// <summary>
+  ///   Update the tasks matching the filter with the given new values
+  /// </summary>
+  /// <param name="filter">Filter to select the tasks to update</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of task matched
+  /// </returns>
+  Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                             ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                             CancellationToken                                                             cancellationToken = default);
 
   /// <summary>
   ///   List all applications extracted from task metadata matching the given filter and ordering
@@ -407,15 +385,4 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<string> RetryTask(TaskData          taskData,
                          CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Tag a collection of tasks as submitted
-  /// </summary>
-  /// <param name="taskIds">Task ids whose creation will be finalised</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The number of tagged tasks by the function
-  /// </returns>
-  Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                 CancellationToken   cancellationToken = default);
 }

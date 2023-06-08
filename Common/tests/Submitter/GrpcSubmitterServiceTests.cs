@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -659,10 +660,10 @@ public class GrpcSubmitterServiceTests
   public async Task CancelTasksShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.UpdateAllTaskStatusAsync(It.IsAny<TaskFilter>(),
-                                                               TaskStatus.Cancelling,
-                                                               CancellationToken.None))
-        .Returns(() => Task.FromResult(1));
+    mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<CancellationToken>()))
+        .Returns(() => Task.FromResult<long>(1));
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
                                            mock.Object,
@@ -691,9 +692,9 @@ public class GrpcSubmitterServiceTests
   public async Task CancelTasksArmonikExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.UpdateAllTaskStatusAsync(It.IsAny<TaskFilter>(),
-                                                               TaskStatus.Cancelling,
-                                                               CancellationToken.None))
+    mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<CancellationToken>()))
         .Throws<ArmoniKException>();
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -730,9 +731,9 @@ public class GrpcSubmitterServiceTests
   public async Task CancelTasksInvalidExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.UpdateAllTaskStatusAsync(It.IsAny<TaskFilter>(),
-                                                               TaskStatus.Cancelling,
-                                                               CancellationToken.None))
+    mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new InvalidAsynchronousStateException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,

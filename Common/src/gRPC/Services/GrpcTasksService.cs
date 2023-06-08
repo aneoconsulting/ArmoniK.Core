@@ -196,13 +196,17 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
+      await taskTable_.CancelTaskAsync(request.TaskIds,
+                                       context.CancellationToken)
+                      .ConfigureAwait(false);
+
       return new CancelTasksResponse
              {
                Tasks =
                {
-                 (await taskTable_.CancelTaskAsync(request.TaskIds,
-                                                   context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(data => new TaskSummary(data)),
+                 await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                 data => new TaskSummary(data))
+                                 .ConfigureAwait(false),
                },
              };
     }

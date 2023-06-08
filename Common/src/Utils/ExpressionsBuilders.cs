@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -21,7 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
+namespace ArmoniK.Core.Common.Utils;
 
 public static class ExpressionsBuilders
 {
