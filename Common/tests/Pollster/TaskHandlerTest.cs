@@ -597,11 +597,6 @@ public class TaskHandlerTest
                                      ""));
     }
 
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                               TaskStatus        status,
                                               CancellationToken cancellationToken = default)

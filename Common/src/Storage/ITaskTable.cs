@@ -80,19 +80,6 @@ public interface ITaskTable : IInitializable
                                CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Update the task status in the data base
-  /// </summary>
-  /// <param name="id">Id of the task whose status should be updated</param>
-  /// <param name="status">The new task status</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task UpdateTaskStatusAsync(string            id,
-                             TaskStatus        status,
-                             CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Update the statuses of all tasks matching a given filter
   /// </summary>
   /// <param name="filter">Task Filter describing the tasks whose status should be updated</param>
