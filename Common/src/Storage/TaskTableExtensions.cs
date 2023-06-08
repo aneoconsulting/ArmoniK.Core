@@ -199,7 +199,7 @@ public static class TaskTableExtensions
                                                           CancellationToken cancellationToken = default)
   {
     if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Error)))
+                                    filter.Included.Statuses.Contains(TaskStatus.Error)     || filter.Included.Statuses.Contains(TaskStatus.Retried)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }
@@ -249,7 +249,7 @@ public static class TaskTableExtensions
                                                  CancellationToken   cancellationToken = default)
     => await taskTable.UpdateManyTasks(data => taskIds.Contains(data.TaskId) &&
                                                !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
-                                                 data.Status == TaskStatus.Completed),
+                                                 data.Status == TaskStatus.Completed || data.Status == TaskStatus.Retried),
                                        new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
                                        {
                                          (tdm => tdm.Status, TaskStatus.Cancelling),
