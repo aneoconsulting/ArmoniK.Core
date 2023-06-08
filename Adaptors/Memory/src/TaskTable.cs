@@ -90,13 +90,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task UpdateTaskStatusAsync(string            id,
-                                    TaskStatus        status,
-                                    CancellationToken cancellationToken = default)
-    => Task.FromResult(UpdateAndCheckTaskStatus(id,
-                                                status));
-
-  /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)

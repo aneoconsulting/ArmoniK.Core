@@ -339,43 +339,6 @@ public class TaskTableTestBase
     }
   }
 
-
-  [Test]
-  public async Task UpdateTaskStatusAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      await TaskTable!.UpdateTaskStatusAsync("TaskProcessingId",
-                                             TaskStatus.Processed,
-                                             CancellationToken.None)
-                      .ConfigureAwait(false);
-      var result = await TaskTable.GetTaskStatus(new[]
-                                                 {
-                                                   "TaskProcessingId",
-                                                 },
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.IsTrue(result.Single()
-                          .Status == TaskStatus.Processed);
-    }
-  }
-
-  [Test(Description = "Forbidden update: Task on final status")]
-  public void UpdateTaskStatusAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable!.UpdateTaskStatusAsync("TaskCompletedId",
-                                                                                    TaskStatus.Unspecified,
-                                                                                    CancellationToken.None)
-                                                             .ConfigureAwait(false);
-                                           });
-    }
-  }
-
   [Test]
   public async Task UpdateAllTaskStatusAsyncShouldSucceed()
   {

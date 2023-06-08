@@ -854,11 +854,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                         CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                               TaskStatus        status,
                                               CancellationToken cancellationToken = default)

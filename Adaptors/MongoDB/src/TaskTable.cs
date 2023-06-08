@@ -105,43 +105,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task UpdateTaskStatusAsync(string            id,
-                                          TaskStatus        status,
-                                          CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
-    activity?.SetTag($"{nameof(UpdateTaskStatusAsync)}_TaskId",
-                     id);
-    activity?.SetTag($"{nameof(UpdateTaskStatusAsync)}_Status",
-                     status);
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                       status);
-    Logger.LogInformation("update task {taskId} to status {status}",
-                          id,
-                          status);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-
-    switch (res.MatchedCount)
-    {
-      case 0:
-        var taskStatus = await GetTaskStatus(new[]
-                                             {
-                                               id,
-                                             },
-                                             cancellationToken)
-                           .ConfigureAwait(false);
-        throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus.Single()} to {status}");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
-    }
-  }
-
-  /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)

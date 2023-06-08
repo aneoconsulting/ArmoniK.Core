@@ -91,11 +91,6 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public Task UpdateTaskStatusAsync(string            id,
-                                    TaskStatus        status,
-                                    CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                             TaskStatus        status,
                                             CancellationToken cancellationToken = default)
