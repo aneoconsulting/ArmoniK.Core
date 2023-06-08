@@ -97,7 +97,7 @@ public static class GrpcChannelExt
                                                          })
                                          .ConfigureAwait(false))
     {
-      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error)
+      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
       {
         var useRatio = (taskRaw.EndedAt - taskRaw.StartedAt).ToTimeSpan()
                                                             .TotalMilliseconds / (taskRaw.EndedAt - taskRaw.ReceivedAt).ToTimeSpan()
@@ -206,7 +206,7 @@ public static class GrpcChannelExt
     var sessionEnd = taskDependencies.Values.Where(raw => raw.EndedAt is not null)
                                      .Max(raw => raw.EndedAt);
     var sessionDuration = (sessionEnd - sessionStart).ToTimeSpan();
-    var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error);
+    var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried);
 
     logger.LogInformation("Throughput for session {session} : {sessionThroughput} task/s (completed {nTasks}, total {total} tasks in {timespan})",
                           sessionId,
@@ -223,6 +223,7 @@ public static class GrpcChannelExt
                                                      {
                                                        TaskStatus.Completed,
                                                        TaskStatus.Error,
+                                                       TaskStatus.Retried,
                                                      },
                                                    },
                                                    new ListTasksRequest.Types.Sort
