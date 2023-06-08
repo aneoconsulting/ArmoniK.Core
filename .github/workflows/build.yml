@@ -296,9 +296,6 @@ jobs:
 
     - name: Rename
       run: |
-        curl -u ${{ secrets.DOCKER_HUB_LOGIN }}:${{ secrets.DOCKER_HUB_TOKEN }} \
-          -X "DELETE" https://cloud.docker.com/v2/repositories/dockerhubaneo/armonik_base_build/tags/${VERSION}-arm/
-
         while IFS= read -r IMG
         do
           docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm

@@ -86,12 +86,6 @@ jobs:
       run: |
         just tag=$VERSION platform="linux/arm64,linux/amd64" build-core
 
-    - name: Delete temporary image
-      run: |
-        curl -u ${{ secrets.DOCKER_HUB_LOGIN }}:${{ secrets.DOCKER_HUB_TOKEN }} \
-          -X "DELETE" https://cloud.docker.com/v2/repositories/dockerhubaneo/armonik_base_build/tags/${VERSION}-arm/
-
-
 
   buildImages:
     runs-on: ubuntu-latest

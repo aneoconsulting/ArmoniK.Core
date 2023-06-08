@@ -70,7 +70,6 @@ image_metrics           := env_var_or_default('METRICS_IMAGE', "dockerhubaneo/ar
 image_partition_metrics := env_var_or_default('PARTITION_METRICS_IMAGE', "dockerhubaneo/armonik_control_partition_metrics")
 image_submitter         := env_var_or_default('SUBMITTER_IMAGE', "dockerhubaneo/armonik_control")
 image_polling_agent     := env_var_or_default('POLLING_AGENT_IMAGE', "dockerhubaneo/armonik_pollingagent")
-image_build_base        := env_var_or_default('BUILD_BASE_IMAGE', "dockerhubaneo/armonik_build_base")
 image_client_mock       := env_var_or_default('MOCK_CLIENT_IMAGE', "dockerhubaneo/armonik_core_htcmock_test_client")
 image_client_bench      := env_var_or_default('BENCH_CLIENT_IMAGE', "dockerhubaneo/armonik_core_bench_test_client")
 image_client_stream     := env_var_or_default('STREAM_CLIENT_IMAGE', "dockerhubaneo/armonik_core_stream_test_client")
@@ -80,7 +79,6 @@ export ARMONIK_METRICS          := image_metrics + ":" + tag
 export ARMONIK_PARTITIONMETRICS := image_partition_metrics + ":" + tag
 export ARMONIK_SUBMITTER        := image_submitter + ":" + tag
 export ARMONIK_POLLINGAGENT     := image_polling_agent + ":" + tag
-export BUILD_BASE               := image_build_base + ":" + tag
 export HTCMOCK_CLIENT_IMAGE     := image_client_mock + ":" + tag
 export STREAM_CLIENT_IMAGE      := image_client_stream + ":" + tag
 export BENCH_CLIENT_IMAGE       := image_client_bench + ":" + tag
@@ -206,46 +204,51 @@ restart serviceName: (container "restart" serviceName)
 
 
 # Custom command to build a single image
-build imageTag dockerFile:
-  case "{{builder}}" in \
-    regular) \
-      docker build --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{image_build_base}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
-      ;; \
-    buildx) \
-      docker buildx build --push --progress=plain --platform {{platform}} --build-arg VERSION={{tag}} --build-arg BASE_IMAGE={{image_build_base}} -t "{{imageTag}}" -f "{{dockerFile}}" ./ \
-      ;; \
-    *) \
-      echo wrong builder \
-      exit 1 \
-      ;; \
-  esac \
+build imageTag dockerFile target:
+  #!/usr/bin/env bash
+
+  target_parameter=""
+  if [ "{{target}}" != "" ]; then
+    target_parameter="--target {{target}}"
+  fi
+
+  set -x
+  case "{{builder}}" in
+    regular)
+      docker build --build-arg VERSION={{tag}} $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
+      ;;
+    buildx)
+      docker buildx build --push --progress=plain --platform {{platform}} --build-arg VERSION={{tag}} $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
+      ;;
+    *)
+      echo wrong builder
+      exit 1
+      ;;
+  esac
 
 # Build Worker
-buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" )
-
-# Build Base
-buildBase: (build BUILD_BASE "./Dockerfile")
+buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" "")
 
 # Build Metrics
-buildMetrics: buildBase (build ARMONIK_METRICS "./Control/Metrics/src/Dockerfile")
+buildMetrics: (build ARMONIK_METRICS "./Dockerfile" "metrics")
 
 # Build Partition Metrics
-buildPartitionMetrics: buildBase (build ARMONIK_PARTITIONMETRICS "./Control/PartitionMetrics/src/Dockerfile")
+buildPartitionMetrics: (build ARMONIK_PARTITIONMETRICS "./Dockerfile" "partition_metrics")
 
 # Build Submitter
-buildSubmitter: buildBase (build ARMONIK_SUBMITTER "./Control/Submitter/src/Dockerfile")
+buildSubmitter: (build ARMONIK_SUBMITTER "./Dockerfile" "submitter")
 
 # Build Polling Agent
-buildPollingAgent: buildBase (build ARMONIK_POLLINGAGENT "./Compute/PollingAgent/src/Dockerfile")
+buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Dockerfile" "polling_agent")
 
 # Build Htcmock Client
-buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
+buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile" "")
 
 # Build Stream Client
-buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile")
+buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile" "")
 
 # Build Bench Client
-buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
+buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile" "")
 
 # Build all images necessary for the deployment
 build-core: buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
