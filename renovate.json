@@ -19,6 +19,7 @@
       "groupName": "nuget packages",
       "groupSlug": "nuget",
       "excludePackagePrefixes": [
+        "Htc.Mock",
         "ArmoniK.Api",
         "ArmoniK.Utils"
       ],
@@ -41,6 +42,16 @@
       "groupSlug": "nuget-armonik-utils",
       "matchPackagePrefixes": [
         "ArmoniK.Utils"
+      ],
+      "matchDatasources": [
+        "nuget"
+      ]
+    },
+    {
+      "groupName": "Htc.Mock",
+      "groupSlug": "nuget-htc-mock",
+      "matchPackagePrefixes": [
+        "Htc.Mock"
       ],
       "matchDatasources": [
         "nuget"
