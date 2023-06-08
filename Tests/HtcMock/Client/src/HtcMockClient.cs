@@ -48,8 +48,19 @@ public class HtcMockClient : IDisposable
 
   public bool Start(RunConfiguration runConfiguration)
   {
-    logger_.LogInformation("Start new run with {configuration}",
-                           runConfiguration.ToString());
+    logger_.LogInformation("Start new run with {@configuration}",
+                           new
+                           {
+                             runConfiguration.Data,
+                             runConfiguration.Memory,
+                             runConfiguration.AvgDurationMs,
+                             runConfiguration.MaxDurationMs,
+                             runConfiguration.MinDurationMs,
+                             runConfiguration.Seed,
+                             runConfiguration.TotalCalculationTime,
+                             runConfiguration.TotalNbSubTasks,
+                             runConfiguration.SubTasksLevels,
+                           });
     var watch = Stopwatch.StartNew();
 
     sessionClient_ = gridClient_.CreateSession();
