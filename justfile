@@ -204,7 +204,7 @@ restart serviceName: (container "restart" serviceName)
 
 
 # Custom command to build a single image
-build imageTag dockerFile target:
+build imageTag dockerFile target="":
   #!/usr/bin/env bash
 
   target_parameter=""
@@ -227,7 +227,7 @@ build imageTag dockerFile target:
   esac
 
 # Build Worker
-buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile" "")
+buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile")
 
 # Build Metrics
 buildMetrics: (build ARMONIK_METRICS "./Dockerfile" "metrics")
@@ -242,13 +242,13 @@ buildSubmitter: (build ARMONIK_SUBMITTER "./Dockerfile" "submitter")
 buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Dockerfile" "polling_agent")
 
 # Build Htcmock Client
-buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile" "")
+buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
 
 # Build Stream Client
-buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile" "")
+buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile")
 
 # Build Bench Client
-buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile" "")
+buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
 build-core: buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
