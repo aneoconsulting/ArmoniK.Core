@@ -19,8 +19,8 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 

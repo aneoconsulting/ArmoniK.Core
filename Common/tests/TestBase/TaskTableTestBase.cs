@@ -555,20 +555,6 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public void CancelSessionAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await TaskTable!.CancelSessionAsync("NonExistingSessionId",
-                                                                                         CancellationToken.None)
-                                                                     .ConfigureAwait(false);
-                                                   });
-    }
-  }
-
-  [Test]
   public async Task CountPartitionTasksAsyncShouldSucceed()
   {
     if (RunTests)
@@ -1597,13 +1583,13 @@ public class TaskTableTestBase
                                                            CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Console.WriteLine(cancelledTasks.Single());
+      Assert.AreEqual(0,
+                      cancelledTasks);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskId)
+                                    .ConfigureAwait(false);
       Assert.AreEqual(status,
-                      cancelledTasks.Single()
-                                    .Status);
-      Assert.AreEqual(taskId,
-                      cancelledTasks.Single()
-                                    .TaskId);
+                      taskData.Status);
     }
   }
 
@@ -1617,7 +1603,7 @@ public class TaskTableTestBase
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(0,
-                      cancelledTasks.Count);
+                      cancelledTasks);
     }
   }
 
