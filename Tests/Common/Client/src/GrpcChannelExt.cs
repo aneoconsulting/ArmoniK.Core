@@ -132,7 +132,7 @@ public static class GrpcChannelExt
       var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key) && pair.Value.EndedAt is not null)
                                                    .Select(pair => pair.Value)
                                                    .MaxBy(pair => pair.EndedAt);
-      if (lastDependencyFinished is not null)
+      if (agg.StartedAt is not null && lastDependencyFinished is not null)
       {
         var diff = agg.StartedAt - lastDependencyFinished.EndedAt;
         timediff.Add(diff.ToTimeSpan()
