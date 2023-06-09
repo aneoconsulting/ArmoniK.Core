@@ -8,7 +8,8 @@ WORKDIR /src
 COPY ["Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj", "Tests/HtcMock/Server/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj"
-COPY . .
+COPY ["Tests/HtcMock/Server/src", "Tests/HtcMock/Server/src"]
+COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Server/src"
 RUN dotnet build "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/build
 

@@ -9,7 +9,9 @@ COPY ["Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj", "Tests/H
 COPY ["Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj", "Tests/Common/Client/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj"
-COPY . .
+COPY ["Tests/HtcMock/Client/src", "Tests/HtcMock/Client/src"]
+COPY ["Tests/Common/Client/src", "Tests/Common/Client/src"]
+COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Client/src"
 RUN dotnet build "ArmoniK.Samples.HtcMock.Client.csproj" -c Release -o /app/build
 
