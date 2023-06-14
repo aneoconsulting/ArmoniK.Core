@@ -100,13 +100,15 @@ public class AdapterLoadingTest
   {
     get
     {
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
                                       },
                                     }).SetArgDisplayNames("No components");
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -115,7 +117,8 @@ public class AdapterLoadingTest
                                         $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}", ""
                                       },
                                     }).SetArgDisplayNames("Empty class");
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -128,7 +131,8 @@ public class AdapterLoadingTest
                                         "path"
                                       },
                                     }).SetArgDisplayNames("Empty path");
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new FileNotFoundException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -143,7 +147,8 @@ public class AdapterLoadingTest
                                       },
                                     }).SetArgDisplayNames("invalid path");
 
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -162,8 +167,10 @@ public class AdapterLoadingTest
 
   [Test]
   [TestCaseSource(nameof(ConfInvalidOperationException))]
-  public void InvalidConfShouldFail(Dictionary<string, string?> config)
-    => Assert.Throws<InvalidOperationException>(() => Setup(config));
+  public void InvalidConfShouldFail<TEx>(TEx                         ex,
+                                         Dictionary<string, string?> config)
+    where TEx : Exception
+    => Assert.Throws<TEx>(() => Setup(config));
 
   public static IEnumerable ConfTypeLoadException
   {
