@@ -28,7 +28,7 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 

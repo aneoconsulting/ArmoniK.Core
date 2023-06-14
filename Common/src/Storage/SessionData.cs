@@ -23,6 +23,8 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using TaskOptions = ArmoniK.Core.Base.TaskOptions;
+
 namespace ArmoniK.Core.Common.Storage;
 
 public record SessionData(string        SessionId,

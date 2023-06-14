@@ -33,7 +33,7 @@ using ArmoniK.Utils;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.Memory;
 

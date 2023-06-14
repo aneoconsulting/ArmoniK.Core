@@ -17,14 +17,13 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.Collections;
 
 using NUnit.Framework;
-
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -33,24 +32,24 @@ public class TaskOptionsTests
 {
   private readonly TaskOptions? options_ = null;
 
-  private readonly Storage.TaskOptions completeOptions_ = new(new MapField<string, string>
-                                                              {
-                                                                {
-                                                                  "key1", "val1"
-                                                                },
-                                                                {
-                                                                  "key2", "val2"
-                                                                },
-                                                              },
-                                                              TimeSpan.FromSeconds(1),
-                                                              5,
-                                                              1,
-                                                              "PartitionId",
-                                                              "ApplicationName",
-                                                              "ApplicationVersion",
-                                                              "ApplicationNamespace",
-                                                              "ApplicationService",
-                                                              "EngineType");
+  private readonly Base.TaskOptions completeOptions_ = new(new MapField<string, string>
+                                                           {
+                                                             {
+                                                               "key1", "val1"
+                                                             },
+                                                             {
+                                                               "key2", "val2"
+                                                             },
+                                                           },
+                                                           TimeSpan.FromSeconds(1),
+                                                           5,
+                                                           1,
+                                                           "PartitionId",
+                                                           "ApplicationName",
+                                                           "ApplicationVersion",
+                                                           "ApplicationNamespace",
+                                                           "ApplicationService",
+                                                           "EngineType");
 
 
   [Test]

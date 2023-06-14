@@ -102,7 +102,7 @@ internal class ExceptionInterceptorTests
                        };
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<Storage.TaskOptions>(),
+                                                             It.IsAny<Base.TaskOptions>(),
                                                              It.IsAny<CancellationToken>()))
                  .Returns(() => ex is null
                                   ? Task.FromResult(noErrorReply)
@@ -175,12 +175,12 @@ internal class ExceptionInterceptorTests
     var        mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            It.IsAny<CancellationToken>()))
                  .Returns(async (string                        _,
                                  string                        _,
-                                 Storage.TaskOptions           _,
+                                 Base.TaskOptions              _,
                                  IAsyncEnumerable<TaskRequest> requests,
                                  CancellationToken             cancellationToken) =>
                           {
@@ -210,16 +210,16 @@ internal class ExceptionInterceptorTests
                                    {
                                      new("taskId",
                                          "taskId",
-                                         new Storage.TaskOptions(new Dictionary<string, string>(),
-                                                                 TimeSpan.FromSeconds(2),
-                                                                 5,
-                                                                 1,
-                                                                 "Partition",
-                                                                 "",
-                                                                 "",
-                                                                 "",
-                                                                 "",
-                                                                 ""),
+                                         new Base.TaskOptions(new Dictionary<string, string>(),
+                                                              TimeSpan.FromSeconds(2),
+                                                              5,
+                                                              1,
+                                                              "Partition",
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              ""),
                                          new[]
                                          {
                                            "output",

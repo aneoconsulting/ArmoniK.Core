@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using ArmoniK.Core.Base;
+
 namespace ArmoniK.Core.Common.Storage;
 
 public record TaskCreationRequest(string              TaskId,

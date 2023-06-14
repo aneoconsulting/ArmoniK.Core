@@ -31,6 +31,7 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
+using TaskOptions = ArmoniK.Core.Base.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Storage;
