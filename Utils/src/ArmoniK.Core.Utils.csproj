@@ -34,4 +34,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Base\src\ArmoniK.Core.Base.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
