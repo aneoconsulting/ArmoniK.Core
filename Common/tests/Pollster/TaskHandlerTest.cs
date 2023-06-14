@@ -46,7 +46,7 @@ using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Core.Common.Storage.Result;
-using TaskOptions = ArmoniK.Core.Base.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -997,7 +997,7 @@ public class TaskHandlerTest
     {
     }
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
 
     public void StartTaskProcessing(TaskData          taskData,
                                     CancellationToken cancellationToken)

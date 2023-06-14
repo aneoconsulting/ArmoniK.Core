@@ -43,7 +43,6 @@ using Moq;
 
 using NUnit.Framework;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
 // ReSharper disable AccessToModifiedClosure
@@ -102,7 +101,7 @@ internal class ExceptionInterceptorTests
                        };
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<Base.TaskOptions>(),
+                                                             It.IsAny<Base.DataStructures.TaskOptions>(),
                                                              It.IsAny<CancellationToken>()))
                  .Returns(() => ex is null
                                   ? Task.FromResult(noErrorReply)
@@ -175,14 +174,14 @@ internal class ExceptionInterceptorTests
     var        mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Base.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            It.IsAny<CancellationToken>()))
-                 .Returns(async (string                        _,
-                                 string                        _,
-                                 Base.TaskOptions              _,
-                                 IAsyncEnumerable<TaskRequest> requests,
-                                 CancellationToken             cancellationToken) =>
+                 .Returns(async (string                          _,
+                                 string                          _,
+                                 Base.DataStructures.TaskOptions _,
+                                 IAsyncEnumerable<TaskRequest>   requests,
+                                 CancellationToken               cancellationToken) =>
                           {
                             var i = 0;
                             if (failAfter == 0 && ex is not null)
@@ -210,16 +209,16 @@ internal class ExceptionInterceptorTests
                                    {
                                      new("taskId",
                                          "taskId",
-                                         new Base.TaskOptions(new Dictionary<string, string>(),
-                                                              TimeSpan.FromSeconds(2),
-                                                              5,
-                                                              1,
-                                                              "Partition",
-                                                              "",
-                                                              "",
-                                                              "",
-                                                              "",
-                                                              ""),
+                                         new Base.DataStructures.TaskOptions(new Dictionary<string, string>(),
+                                                                             TimeSpan.FromSeconds(2),
+                                                                             5,
+                                                                             1,
+                                                                             "Partition",
+                                                                             "",
+                                                                             "",
+                                                                             "",
+                                                                             "",
+                                                                             ""),
                                          new[]
                                          {
                                            "output",

@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
 

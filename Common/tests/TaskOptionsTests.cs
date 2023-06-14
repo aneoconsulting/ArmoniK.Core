@@ -32,24 +32,24 @@ public class TaskOptionsTests
 {
   private readonly TaskOptions? options_ = null;
 
-  private readonly Base.TaskOptions completeOptions_ = new(new MapField<string, string>
-                                                           {
-                                                             {
-                                                               "key1", "val1"
-                                                             },
-                                                             {
-                                                               "key2", "val2"
-                                                             },
-                                                           },
-                                                           TimeSpan.FromSeconds(1),
-                                                           5,
-                                                           1,
-                                                           "PartitionId",
-                                                           "ApplicationName",
-                                                           "ApplicationVersion",
-                                                           "ApplicationNamespace",
-                                                           "ApplicationService",
-                                                           "EngineType");
+  private readonly Base.DataStructures.TaskOptions completeOptions_ = new(new MapField<string, string>
+                                                                          {
+                                                                            {
+                                                                              "key1", "val1"
+                                                                            },
+                                                                            {
+                                                                              "key2", "val2"
+                                                                            },
+                                                                          },
+                                                                          TimeSpan.FromSeconds(1),
+                                                                          5,
+                                                                          1,
+                                                                          "PartitionId",
+                                                                          "ApplicationName",
+                                                                          "ApplicationVersion",
+                                                                          "ApplicationNamespace",
+                                                                          "ApplicationService",
+                                                                          "EngineType");
 
 
   [Test]

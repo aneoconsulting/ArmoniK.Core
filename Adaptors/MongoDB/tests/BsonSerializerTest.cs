@@ -31,7 +31,7 @@ using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Base.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 

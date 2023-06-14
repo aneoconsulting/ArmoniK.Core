@@ -30,7 +30,7 @@ using ArmoniK.Core.Common.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Core.Base.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 

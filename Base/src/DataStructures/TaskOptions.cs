@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ArmoniK.Core.Base;
+namespace ArmoniK.Core.Base.DataStructures;
 
 public record TaskOptions(IDictionary<string, string> Options,
                           TimeSpan                    MaxDuration,

@@ -31,7 +31,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-using TaskOptions = ArmoniK.Core.Base.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
 
