@@ -31,7 +31,7 @@ using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
-using Grpc.Net.Client;
+using Grpc.Core;
 
 using Microsoft.Extensions.Configuration;
 
@@ -74,12 +74,13 @@ internal class StreamWrapperTests
   {
     partition_ = null;
     client_    = null;
-    channel_?.Dispose();
+    channel_?.ShutdownAsync()
+            .Wait();
   }
 
   private Submitter.SubmitterClient? client_;
   private string?                    partition_;
-  private GrpcChannel?               channel_;
+  private ChannelBase?               channel_;
 
   [TestCase(2,
             ExpectedResult = 4)]
