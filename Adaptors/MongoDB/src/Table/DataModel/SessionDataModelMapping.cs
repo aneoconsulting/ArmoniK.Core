@@ -18,6 +18,7 @@
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;

@@ -36,7 +36,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 using Task = ArmoniK.Api.gRPC.V1.Tasks.Tasks;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 

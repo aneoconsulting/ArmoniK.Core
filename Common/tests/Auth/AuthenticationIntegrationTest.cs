@@ -60,7 +60,6 @@ using NUnit.Framework;
 
 using CountTasksByStatusRequest = ArmoniK.Api.gRPC.V1.Applications.CountTasksByStatusRequest;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 using Type = System.Type;
 

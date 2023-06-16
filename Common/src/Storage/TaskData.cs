@@ -30,6 +30,8 @@ using Google.Protobuf.WellKnownTypes;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
