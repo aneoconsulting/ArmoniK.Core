@@ -18,6 +18,7 @@
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Core.Common.Auth.Authorization;
 
 using Grpc.Core;
 
@@ -25,6 +26,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[IgnoreAuthentication]
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
   private readonly ILogger<GrpcAgentService> logger_;

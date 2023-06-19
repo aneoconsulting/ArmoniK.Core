@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -47,6 +48,7 @@ public class GrpcAuthService : Authentication.AuthenticationBase
     requireAuthorization_  = requireAuthentication_ && options.CurrentValue.RequireAuthorization;
   }
 
+  [IgnoreAuthorization]
   public override Task<GetCurrentUserResponse> GetCurrentUser(GetCurrentUserRequest request,
                                                               ServerCallContext     context)
   {

@@ -58,3 +58,19 @@ public class RequiresPermissionAttribute : AuthorizeAttribute
     }
   }
 }
+
+/// <summary>
+///   Attribute saying that the method can be executed without any permission check
+/// </summary>
+[AttributeUsage(AttributeTargets.Method)]
+public class IgnoreAuthorizationAttribute : Attribute
+{
+}
+
+/// <summary>
+///   Attribute saying that the class can be executed without any authentication check
+/// </summary>
+[AttributeUsage(AttributeTargets.Class)]
+public class IgnoreAuthenticationAttribute : Attribute
+{
+}
