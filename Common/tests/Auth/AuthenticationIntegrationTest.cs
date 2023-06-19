@@ -1300,48 +1300,49 @@ public class AuthenticationIntegrationTest
                     out var finalUserIndex,
                     out var shouldSucceed,
                     out var expectedError);
-    var channel = helper_!.CreateChannel()
-                          .Result;
-    var client = Activator.CreateInstance(parameters.ClientType,
-                                          channel);
-    Assert.IsNotNull(client);
-    Assert.IsInstanceOf<ClientBase>(client);
-
-    async Task TestFunction()
-    {
-      if (parameters.IsAsync)
-      {
-        await AsyncTestFunction(parameters.Method,
-                                (ClientBase)client!,
-                                parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else if (parameters.ClientStream)
-      {
-        await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
-                                                         (ClientBase)client!,
-                                                         parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else if (parameters.ServerStream)
-      {
-        await ServerStreamTestFunction<TReply>(parameters.Method,
-                                               (ClientBase)client!,
-                                               parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else
-      {
-        await SyncTestFunction(parameters.Method,
-                               (ClientBase)client!,
-                               parameters.Args)
-          .ConfigureAwait(false);
-      }
-    }
-
-    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
     using (singleThreadSemaphore)
     {
+      var channel = helper_!.CreateChannel()
+                            .Result;
+      var client = Activator.CreateInstance(parameters.ClientType,
+                                            channel);
+      Assert.IsNotNull(client);
+      Assert.IsInstanceOf<ClientBase>(client);
+
+      async Task TestFunction()
+      {
+        if (parameters.IsAsync)
+        {
+          await AsyncTestFunction(parameters.Method,
+                                  (ClientBase)client!,
+                                  parameters.Args)
+            .ConfigureAwait(false);
+        }
+        else if (parameters.ClientStream)
+        {
+          await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
+                                                           (ClientBase)client!,
+                                                           parameters.Args)
+            .ConfigureAwait(false);
+        }
+        else if (parameters.ServerStream)
+        {
+          await ServerStreamTestFunction<TReply>(parameters.Method,
+                                                 (ClientBase)client!,
+                                                 parameters.Args)
+            .ConfigureAwait(false);
+        }
+        else
+        {
+          await SyncTestFunction(parameters.Method,
+                                 (ClientBase)client!,
+                                 parameters.Args)
+            .ConfigureAwait(false);
+        }
+      }
+
+      var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
+
       if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
                                                                                                       .Permissions.Any(p => p.Service == serviceName && p.Name +
                                                                                                                             (parameters.IsAsync
@@ -1362,10 +1363,10 @@ public class AuthenticationIntegrationTest
         Assert.AreEqual(expectedError,
                         ((RpcException)finalException!).StatusCode);
       }
-    }
 
-    helper_.DeleteChannel(channel)
-           .Wait();
+      helper_.DeleteChannel(channel)
+             .Wait();
+    }
   }
 
   /// <summary>
