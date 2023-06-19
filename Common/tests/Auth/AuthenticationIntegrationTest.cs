@@ -60,7 +60,6 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
@@ -772,6 +771,20 @@ public class AuthenticationIntegrationTest
                                                                                                                          DataChunk = ByteString.Empty,
                                                                                                                        },
                                                                                                                      }
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                     typeof(TaskFilter), new TaskFilter
+                                                                                                                                         {
+                                                                                                                                           Session =
+                                                                                                                                             new TaskFilter.Types.
+                                                                                                                                             IdsRequest
+                                                                                                                                             {
+                                                                                                                                               Ids =
+                                                                                                                                               {
+                                                                                                                                                 SessionId,
+                                                                                                                                               },
+                                                                                                                                             },
+                                                                                                                                         }
                                                                                                                    },
                                                                                                                  });
 
