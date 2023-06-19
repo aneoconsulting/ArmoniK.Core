@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,7 +44,6 @@ using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -659,10 +659,10 @@ public class GrpcSubmitterServiceTests
   public async Task CancelTasksShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.UpdateAllTaskStatusAsync(It.IsAny<TaskFilter>(),
-                                                               TaskStatus.Cancelling,
-                                                               CancellationToken.None))
-        .Returns(() => Task.FromResult(1));
+    mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<CancellationToken>()))
+        .Returns(() => Task.FromResult<long>(1));
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
                                            mock.Object,
@@ -691,9 +691,9 @@ public class GrpcSubmitterServiceTests
   public async Task CancelTasksArmonikExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.UpdateAllTaskStatusAsync(It.IsAny<TaskFilter>(),
-                                                               TaskStatus.Cancelling,
-                                                               CancellationToken.None))
+    mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<CancellationToken>()))
         .Throws<ArmoniKException>();
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -730,9 +730,9 @@ public class GrpcSubmitterServiceTests
   public async Task CancelTasksInvalidExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.UpdateAllTaskStatusAsync(It.IsAny<TaskFilter>(),
-                                                               TaskStatus.Cancelling,
-                                                               CancellationToken.None))
+    mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new InvalidAsynchronousStateException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -770,7 +770,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<Storage.TaskOptions>(),
+                                                             It.IsAny<Base.DataStructures.TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => Task.FromResult(new CreateSessionReply
                                                 {
@@ -804,7 +804,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<Storage.TaskOptions>(),
+                                                             It.IsAny<Base.DataStructures.TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
@@ -842,7 +842,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
-                                                             It.IsAny<Storage.TaskOptions>(),
+                                                             It.IsAny<Base.DataStructures.TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
@@ -887,7 +887,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
@@ -934,7 +934,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
@@ -987,7 +987,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
@@ -1040,7 +1040,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
@@ -1081,7 +1081,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
@@ -1119,7 +1119,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions?>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions?>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
@@ -1167,7 +1167,7 @@ public class GrpcSubmitterServiceTests
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
-                                                           It.IsAny<Storage.TaskOptions>(),
+                                                           It.IsAny<Base.DataStructures.TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());

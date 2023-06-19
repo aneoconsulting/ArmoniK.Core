@@ -105,68 +105,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task UpdateTaskStatusAsync(string            id,
-                                          TaskStatus        status,
-                                          CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
-    activity?.SetTag($"{nameof(UpdateTaskStatusAsync)}_TaskId",
-                     id);
-    activity?.SetTag($"{nameof(UpdateTaskStatusAsync)}_Status",
-                     status);
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                       status);
-    Logger.LogInformation("update task {taskId} to status {status}",
-                          id,
-                          status);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-
-    switch (res.MatchedCount)
-    {
-      case 0:
-        var taskStatus = await GetTaskStatus(new[]
-                                             {
-                                               id,
-                                             },
-                                             cancellationToken)
-                           .ConfigureAwait(false);
-        throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus.Single()} to {status}");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
-    }
-  }
-
-  /// <inheritdoc />
-  public async Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                                  TaskStatus        status,
-                                                  CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Error)))
-    {
-      throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
-    }
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                       status);
-    Logger.LogInformation("update all tasks to statuses to status {status}",
-                          status);
-    var res = await taskCollection.UpdateManyAsync(filter.ToFilterExpression(),
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-    return (int)res.MatchedCount;
-  }
-
-  /// <inheritdoc />
   public async Task<bool> IsTaskCancelledAsync(string            taskId,
                                                CancellationToken cancellationToken = default)
   {
@@ -232,66 +170,6 @@ public class TaskTable : ITaskTable
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
-  }
-
-  /// <inheritdoc />
-  public async Task CancelSessionAsync(string            sessionId,
-                                       CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
-    activity?.SetTag($"{nameof(CancelSessionAsync)}_sessionId",
-                     sessionId);
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var taskCount = await CountTasksAsync(new TaskFilter
-                                          {
-                                            Session = new TaskFilter.Types.IdsRequest
-                                                      {
-                                                        Ids =
-                                                        {
-                                                          sessionId,
-                                                        },
-                                                      },
-                                          },
-                                          cancellationToken)
-                      .ConfigureAwait(false);
-
-    if (!taskCount.Any())
-    {
-      throw new SessionNotFoundException($"Session '{sessionId}' not found");
-    }
-
-    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId && model.Status != TaskStatus.Completed && model.Status != TaskStatus.Cancelled,
-                                         Builders<TaskData>.Update.Set(model => model.Status,
-                                                                       TaskStatus.Cancelling),
-                                         cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                                     CancellationToken   cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(CancelTaskAsync)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(data => data.Status,
-                                                                       TaskStatus.Cancelling)
-                                                                  .Set(data => data.EndDate,
-                                                                       DateTime.UtcNow);
-
-    await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId) &&
-                                                 !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
-                                                   data.Status == TaskStatus.Completed),
-                                         updateDefinition,
-                                         cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-
-    var tasks = await taskCollection.FindAsync(data => taskIds.Contains(data.TaskId),
-                                               cancellationToken: cancellationToken)
-                                    .ConfigureAwait(false);
-
-    return tasks.ToList();
   }
 
   /// <inheritdoc />
@@ -458,6 +336,30 @@ public class TaskTable : ITaskTable
                                .Select(selector)
                                .ToListAsync(cancellationToken)
                                .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                          ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                          CancellationToken                                                             cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
+
+    foreach (var (selector, newValue) in updates)
+    {
+      updateDefinition = updateDefinition.Set(selector,
+                                              newValue);
+    }
+
+    var result = await taskCollection.UpdateManyAsync(filter,
+                                                      updateDefinition,
+                                                      cancellationToken: cancellationToken)
+                                     .ConfigureAwait(false);
+
+    return result.MatchedCount;
   }
 
   /// <inheritdoc />
@@ -787,25 +689,6 @@ public class TaskTable : ITaskTable
                                         cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
     return newTaskId;
-  }
-
-  public async Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                              CancellationToken   cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(FinalizeTaskCreation)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                       TaskStatus.Submitted)
-                                                                  .Set(tdm => tdm.SubmittedDate,
-                                                                       DateTime.UtcNow);
-    Logger.LogInformation("update all tasks to status {status}",
-                          TaskStatus.Submitted);
-    var res = await taskCollection.UpdateManyAsync(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Creating,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-    return (int)res.MatchedCount;
   }
 
   /// <inheritdoc />

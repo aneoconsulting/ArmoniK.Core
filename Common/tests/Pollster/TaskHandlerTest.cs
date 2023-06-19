@@ -46,7 +46,7 @@ using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Core.Common.Storage.Result;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -597,30 +597,12 @@ public class TaskHandlerTest
                                      ""));
     }
 
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                              TaskStatus        status,
-                                              CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public Task<bool> IsTaskCancelledAsync(string            taskId,
                                            CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task CancelSessionAsync(string            sessionId,
-                                   CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                                 CancellationToken   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
@@ -696,6 +678,11 @@ public class TaskHandlerTest
                                       TimeSpan.FromSeconds(2),
                                       new Output(false,
                                                  "")));
+
+    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                             cancellationToken = default)
+      => Task.FromResult<long>(1);
 
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
@@ -816,10 +803,6 @@ public class TaskHandlerTest
                                   CancellationToken cancellationToken)
       => Task.FromResult(Guid.NewGuid()
                              .ToString());
-
-    public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                          CancellationToken   cancellationToken = default)
-      => Task.FromResult(1);
   }
 
   public class WaitSessionTable : ISessionTable

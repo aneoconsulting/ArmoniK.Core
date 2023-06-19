@@ -40,7 +40,7 @@ using Microsoft.Extensions.Logging;
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;

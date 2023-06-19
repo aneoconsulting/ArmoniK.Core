@@ -44,7 +44,6 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Base\src\ArmoniK.Core.Base.csproj" />
     <ProjectReference Include="..\..\Utils\src\ArmoniK.Core.Utils.csproj" />
   </ItemGroup>
 

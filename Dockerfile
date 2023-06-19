@@ -1,3 +1,6 @@
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 as base
+RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG VERSION=1.0.0.0
 
@@ -64,3 +67,57 @@ RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -c Release -o 
 WORKDIR /src/Control/Submitter/src
 RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.Submitter.csproj"
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -c Release -o /app/publish/submitter /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+FROM base as polling_agent
+WORKDIR /adapters/queue/amqp
+COPY --from=build /app/publish/amqp .
+WORKDIR /adapters/queue/rabbit
+COPY --from=build /app/publish/rabbit .
+WORKDIR /app
+COPY --from=build /app/publish/polling_agent .
+RUN mkdir /cache /local_storage && chown armonikuser: /cache /local_storage
+USER armonikuser
+
+ENV ASPNETCORE_URLS http://+:1080
+EXPOSE 1080
+
+ENTRYPOINT ["dotnet", "ArmoniK.Core.Compute.PollingAgent.dll"]
+
+
+FROM base as metrics
+WORKDIR /app
+COPY --from=build /app/publish/metrics .
+USER armonikuser
+
+ENV ASPNETCORE_URLS http://+:1080
+EXPOSE 1080
+
+ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Metrics.dll"]
+
+
+FROM base as partition_metrics
+WORKDIR /app
+COPY --from=build /app/publish/partition_metrics .
+USER armonikuser
+
+ENV ASPNETCORE_URLS http://+:1080
+EXPOSE 1080
+
+ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.PartitionMetrics.dll"]
+
+
+FROM base as submitter
+WORKDIR /adapters/queue/amqp
+COPY --from=build /app/publish/amqp .
+WORKDIR /adapters/queue/rabbit
+COPY --from=build /app/publish/rabbit .
+WORKDIR /app
+COPY --from=build /app/publish/submitter .
+RUN mkdir /local_storage && chown armonikuser: /local_storage
+USER armonikuser
+
+ENV ASPNETCORE_URLS http://+:1080, http://+:1081
+EXPOSE 1080
+EXPOSE 1081
+
+ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Submitter.dll"]

@@ -29,6 +29,7 @@ using Armonik.Api.Grpc.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -339,43 +340,6 @@ public class TaskTableTestBase
     }
   }
 
-
-  [Test]
-  public async Task UpdateTaskStatusAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      await TaskTable!.UpdateTaskStatusAsync("TaskProcessingId",
-                                             TaskStatus.Processed,
-                                             CancellationToken.None)
-                      .ConfigureAwait(false);
-      var result = await TaskTable.GetTaskStatus(new[]
-                                                 {
-                                                   "TaskProcessingId",
-                                                 },
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.IsTrue(result.Single()
-                          .Status == TaskStatus.Processed);
-    }
-  }
-
-  [Test(Description = "Forbidden update: Task on final status")]
-  public void UpdateTaskStatusAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable!.UpdateTaskStatusAsync("TaskCompletedId",
-                                                                                    TaskStatus.Unspecified,
-                                                                                    CancellationToken.None)
-                                                             .ConfigureAwait(false);
-                                           });
-    }
-  }
-
   [Test]
   public async Task UpdateAllTaskStatusAsyncShouldSucceed()
   {
@@ -588,20 +552,6 @@ public class TaskTableTestBase
       await result.ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully);
-    }
-  }
-
-  [Test]
-  public void CancelSessionAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await TaskTable!.CancelSessionAsync("NonExistingSessionId",
-                                                                                         CancellationToken.None)
-                                                                     .ConfigureAwait(false);
-                                                   });
     }
   }
 
@@ -1634,13 +1584,13 @@ public class TaskTableTestBase
                                                            CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Console.WriteLine(cancelledTasks.Single());
+      Assert.AreEqual(0,
+                      cancelledTasks);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskId)
+                                    .ConfigureAwait(false);
       Assert.AreEqual(status,
-                      cancelledTasks.Single()
-                                    .Status);
-      Assert.AreEqual(taskId,
-                      cancelledTasks.Single()
-                                    .TaskId);
+                      taskData.Status);
     }
   }
 
@@ -1654,7 +1604,7 @@ public class TaskTableTestBase
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(0,
-                      cancelledTasks.Count);
+                      cancelledTasks);
     }
   }
 

@@ -30,7 +30,7 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 

@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
 using LinqKit;
@@ -91,16 +92,6 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public Task UpdateTaskStatusAsync(string            id,
-                                    TaskStatus        status,
-                                    CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                            TaskStatus        status,
-                                            CancellationToken cancellationToken = default)
-    => Task.FromResult(42);
-
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
     => Task.FromResult(false);
@@ -108,27 +99,6 @@ public class SimpleTaskTable : ITaskTable
   public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
     => Task.CompletedTask;
-
-  public Task CancelSessionAsync(string            sessionId,
-                                 CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                               CancellationToken   cancellationToken = default)
-    => Task.FromResult<IList<TaskData>>(taskIds.Select(s => new TaskData(SessionId,
-                                                                         s,
-                                                                         OwnerPodId,
-                                                                         PodName,
-                                                                         PayloadId,
-                                                                         new List<string>(),
-                                                                         new List<string>(),
-                                                                         new List<string>(),
-                                                                         new List<string>(),
-                                                                         TaskStatus.Cancelled,
-                                                                         TaskOptions,
-                                                                         new Output(false,
-                                                                                    "Cancelled")))
-                                               .ToList());
 
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                             CancellationToken cancellationToken = default)
@@ -238,6 +208,11 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
+  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                    CancellationToken                                                             cancellationToken = default)
+    => Task.FromResult<long>(1);
+
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                              ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                              bool ascOrder,
@@ -324,8 +299,4 @@ public class SimpleTaskTable : ITaskTable
   public Task<string> RetryTask(TaskData          taskData,
                                 CancellationToken cancellationToken = default)
     => Task.FromResult(TaskId);
-
-  public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                        CancellationToken   cancellationToken = default)
-    => Task.FromResult(42);
 }

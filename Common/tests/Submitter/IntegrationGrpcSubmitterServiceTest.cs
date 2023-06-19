@@ -48,7 +48,7 @@ using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -854,30 +854,12 @@ internal class IntegrationGrpcSubmitterServiceTest
                                         CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                              TaskStatus        status,
-                                              CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task<bool> IsTaskCancelledAsync(string            taskId,
                                            CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task CancelSessionAsync(string            sessionId,
-                                   CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                                 CancellationToken   cancellationToken = default)
       => throw new T();
 
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
@@ -921,6 +903,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                         CancellationToken                                                             cancellationToken = default)
       => throw new T();
 
+    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                             cancellationToken = default)
+      => throw new T();
+
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                bool ascOrder,
@@ -960,10 +947,6 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     public Task<string> RetryTask(TaskData          taskData,
                                   CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                          CancellationToken   cancellationToken = default)
       => throw new T();
   }
 

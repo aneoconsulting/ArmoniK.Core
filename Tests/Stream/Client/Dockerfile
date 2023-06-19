@@ -8,7 +8,9 @@ COPY ["Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.
 COPY ["Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj", "Tests/Stream/Common/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj"
-COPY . .
+COPY ["Tests/Stream/Client", "Tests/Stream/Client"]
+COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
+COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/Stream/Client"
 RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build
 

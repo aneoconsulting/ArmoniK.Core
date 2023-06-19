@@ -97,7 +97,7 @@ public static class GrpcChannelExt
                                                          })
                                          .ConfigureAwait(false))
     {
-      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error)
+      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
       {
         var useRatio = (taskRaw.EndedAt - taskRaw.StartedAt).ToTimeSpan()
                                                             .TotalMilliseconds / (taskRaw.EndedAt - taskRaw.ReceivedAt).ToTimeSpan()
@@ -132,7 +132,7 @@ public static class GrpcChannelExt
       var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key) && pair.Value.EndedAt is not null)
                                                    .Select(pair => pair.Value)
                                                    .MaxBy(pair => pair.EndedAt);
-      if (lastDependencyFinished is not null)
+      if (agg.StartedAt is not null && lastDependencyFinished is not null)
       {
         var diff = agg.StartedAt - lastDependencyFinished.EndedAt;
         timediff.Add(diff.ToTimeSpan()
@@ -206,7 +206,7 @@ public static class GrpcChannelExt
     var sessionEnd = taskDependencies.Values.Where(raw => raw.EndedAt is not null)
                                      .Max(raw => raw.EndedAt);
     var sessionDuration = (sessionEnd - sessionStart).ToTimeSpan();
-    var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error);
+    var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried);
 
     logger.LogInformation("Throughput for session {session} : {sessionThroughput} task/s (completed {nTasks}, total {total} tasks in {timespan})",
                           sessionId,
@@ -223,6 +223,7 @@ public static class GrpcChannelExt
                                                      {
                                                        TaskStatus.Completed,
                                                        TaskStatus.Error,
+                                                       TaskStatus.Retried,
                                                      },
                                                    },
                                                    new ListTasksRequest.Types.Sort

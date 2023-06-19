@@ -20,15 +20,15 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Adapters.MongoDB.Table;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Tests;
+namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture(TestOf = typeof(TaskFilterExt))]
 internal class TaskFilterExtTests

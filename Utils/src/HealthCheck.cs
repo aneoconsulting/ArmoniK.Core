@@ -19,11 +19,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
+
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core.Base;
+namespace ArmoniK.Core.Utils;
 
 /// <summary>
 ///   Implementation of <see cref="IHealthCheck" /> that manages FailureStatus and simplifies the implementation of Health
