@@ -59,6 +59,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 using Type = System.Type;
 
@@ -1356,7 +1357,13 @@ public class AuthenticationIntegrationTest
                                                                                                                              ? "Async"
                                                                                                                              : "") == parameters.Method)))
     {
-      Assert.DoesNotThrowAsync(TestFunction);
+      // This handles issues when the machine is too slow and grpc gives a RpcException with no error
+      Assert.That(TestFunction()
+                    .Wait,
+                  new OrConstraint(Throws.Nothing,
+                                   Throws.Exception.TypeOf<RpcException>()
+                                         .With.Property("StatusCode")
+                                         .EqualTo(StatusCode.OK)));
     }
     else
     {

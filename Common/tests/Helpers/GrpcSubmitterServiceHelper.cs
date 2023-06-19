@@ -152,7 +152,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
       }
     }
 
-    return GrpcChannel.ForAddress("http://localhost",
+    return GrpcChannel.ForAddress("http://localhost:9999",
                                   new GrpcChannelOptions
                                   {
                                     LoggerFactory = loggerFactory_,
