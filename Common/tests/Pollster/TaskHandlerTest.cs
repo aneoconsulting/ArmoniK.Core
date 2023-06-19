@@ -34,8 +34,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
-using Google.Protobuf.WellKnownTypes;
-
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -48,7 +46,7 @@ using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Core.Common.Storage.Result;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -98,46 +96,9 @@ public class TaskHandlerTest
     Assert.IsFalse(acquired);
   }
 
-  private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string sessionId)> InitProviderRunnableTask(
+  private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string taskRetriedId, string sessionId)> InitProviderRunnableTask(
     TestTaskHandlerProvider testServiceProvider)
   {
-    var taskRequests = new List<TaskRequest>();
-    taskRequests.Add(new TaskRequest(new List<string>
-                                     {
-                                       "ExpectedOutput0",
-                                     },
-                                     new List<string>(),
-                                     new List<ReadOnlyMemory<byte>>
-                                     {
-                                       ReadOnlyMemory<byte>.Empty,
-                                     }.ToAsyncEnumerable()));
-
-    taskRequests.Add(new TaskRequest(new List<string>
-                                     {
-                                       "ExpectedOutput1",
-                                     },
-                                     new List<string>
-                                     {
-                                       "DataDep",
-                                     },
-                                     new List<ReadOnlyMemory<byte>>
-                                     {
-                                       ReadOnlyMemory<byte>.Empty,
-                                     }.ToAsyncEnumerable()));
-
-    taskRequests.Add(new TaskRequest(new List<string>
-                                     {
-                                       "ExpectedOutput2",
-                                     },
-                                     new List<string>
-                                     {
-                                       "DataDep",
-                                     },
-                                     new List<ReadOnlyMemory<byte>>
-                                     {
-                                       ReadOnlyMemory<byte>.Empty,
-                                     }.ToAsyncEnumerable()));
-
     await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
                                                                    {
                                                                      new PartitionData("part1",
@@ -162,67 +123,170 @@ public class TaskHandlerTest
                                                                          "part1",
                                                                          "part2",
                                                                        },
-                                                                       new Api.gRPC.V1.TaskOptions
-                                                                       {
-                                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                         MaxRetries  = 2,
-                                                                         Priority    = 1,
-                                                                         PartitionId = "part1",
-                                                                       },
+                                                                       new TaskOptions(new Dictionary<string, string>(),
+                                                                                       TimeSpan.FromSeconds(1),
+                                                                                       5,
+                                                                                       1,
+                                                                                       "part1",
+                                                                                       "",
+                                                                                       "",
+                                                                                       "",
+                                                                                       "",
+                                                                                       ""),
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).SessionId;
 
     await testServiceProvider.ResultTable.Create(new[]
                                                  {
                                                    new Result(sessionId,
-                                                              "DataDep",
+                                                              "ExpectedOutput0",
+                                                              "",
                                                               "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
                                                               Array.Empty<byte>()),
-                                                 })
+                                                   new Result(sessionId,
+                                                              "DataDep",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                   new Result(sessionId,
+                                                              "ExpectedOutput1",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                   new Result(sessionId,
+                                                              "ExpectedOutput2",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                   new Result(sessionId,
+                                                              "ExpectedOutput3",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              Array.Empty<byte>()),
+                                                 },
+                                                 CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requestsIEnumerable, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
-                                                                                                            sessionId,
-                                                                                                            new Api.gRPC.V1.TaskOptions
-                                                                                                            {
-                                                                                                              MaxDuration =
-                                                                                                                Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                                              MaxRetries  = 2,
-                                                                                                              Priority    = 1,
-                                                                                                              PartitionId = "part1",
-                                                                                                            },
-                                                                                                            taskRequests.ToAsyncEnumerable(),
-                                                                                                            CancellationToken.None)
-                                                                                     .ConfigureAwait(false);
-    var requests = requestsIEnumerable.ToList();
+    var taskRequests = new List<TaskRequest>
+                       {
+                         new(new List<string>
+                             {
+                               "ExpectedOutput0",
+                             },
+                             new List<string>(),
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+
+                         new(new List<string>
+                             {
+                               "ExpectedOutput1",
+                             },
+                             new List<string>
+                             {
+                               "DataDep",
+                             },
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+
+                         new(new List<string>
+                             {
+                               "ExpectedOutput2",
+                             },
+                             new List<string>
+                             {
+                               "DataDep",
+                             },
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+                         new(new List<string>
+                             {
+                               "ExpectedOutput3",
+                             },
+                             new List<string>
+                             {
+                               "DataDep",
+                             },
+                             new List<ReadOnlyMemory<byte>>
+                             {
+                               ReadOnlyMemory<byte>.Empty,
+                             }.ToAsyncEnumerable()),
+                       };
+
+    var requests = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                   sessionId,
+                                                                   new TaskOptions(new Dictionary<string, string>(),
+                                                                                   TimeSpan.FromSeconds(1),
+                                                                                   5,
+                                                                                   1,
+                                                                                   "part1",
+                                                                                   "",
+                                                                                   "",
+                                                                                   "",
+                                                                                   "",
+                                                                                   ""),
+                                                                   taskRequests.ToAsyncEnumerable(),
+                                                                   CancellationToken.None)
+                                            .ConfigureAwait(false);
+
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
-                                                             priority,
-                                                             whichPartitionId,
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var taskId = requests.First()
-                         .Id;
-    requests.RemoveAt(0);
+    var taskId = requests.ElementAt(0)
+                         .TaskId;
 
+    var taskUnresolvedDepId = requests.ElementAt(1)
+                                      .TaskId;
 
-    var taskUnresolvedDepId = requests.First()
-                                      .Id;
-    requests.RemoveAt(0);
+    var taskErrorId = requests.ElementAt(2)
+                              .TaskId;
 
-    var taskErrorId = requests.First()
-                              .Id;
+    var taskRetriedId = requests.ElementAt(3)
+                                .TaskId;
 
     var taskErrorData = await testServiceProvider.TaskTable.ReadTaskAsync(taskErrorId,
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskErrorData,
+                                                          false,
+                                                          new Api.gRPC.V1.Output
+                                                          {
+                                                            Error = new Api.gRPC.V1.Output.Types.Error
+                                                                    {
+                                                                      Details = "Created for testing tasks in error",
+                                                                    },
+                                                          })
+                             .ConfigureAwait(false);
+
+    var taskRetriedData = await testServiceProvider.TaskTable.ReadTaskAsync(taskRetriedId,
+                                                                            CancellationToken.None)
+                                                   .ConfigureAwait(false);
+
+    await testServiceProvider.Submitter.CompleteTaskAsync(taskRetriedData,
                                                           true,
                                                           new Api.gRPC.V1.Output
                                                           {
@@ -233,7 +297,7 @@ public class TaskHandlerTest
                                                           })
                              .ConfigureAwait(false);
 
-    return (taskId, taskUnresolvedDepId, taskErrorId, sessionId);
+    return (taskId, taskUnresolvedDepId, taskErrorId, taskRetriedId, sessionId);
   }
 
   [Test]
@@ -254,8 +318,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -285,8 +349,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                      .ConfigureAwait(false);
+    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                         .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CancelSession(sessionId,
                                                       CancellationToken.None)
@@ -320,8 +384,53 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (_, _, taskId, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (_, _, taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Error,
+                    taskData.Status);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.IsFalse(acquired);
+    Assert.AreEqual(taskId,
+                    testServiceProvider.TaskHandler.GetAcquiredTask());
+  }
+
+  [Test]
+  public async Task AcquireRetriedTaskShouldFail()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh,
+                                                                new CancellationTokenSource());
+
+    var (_, _, _, taskId, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Retried,
+                    taskData.Status);
 
     sqmh.TaskId = taskId;
 
@@ -354,8 +463,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (_, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
+    var (_, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                    .ConfigureAwait(false);
 
     var taskData = new TaskData(sessionId,
                                 Guid.NewGuid()
@@ -382,6 +491,8 @@ public class TaskHandlerTest
                                                 "",
                                                 ""),
                                 DateTime.Now,
+                                null,
+                                null,
                                 null,
                                 null,
                                 null,
@@ -480,34 +591,18 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
+                          TimeSpan.FromSeconds(1),
+                          TimeSpan.FromSeconds(2),
                           new Output(false,
                                      ""));
     }
-
-    public Task UpdateTaskStatusAsync(string            id,
-                                      TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                              TaskStatus        status,
-                                              CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
 
     public Task<bool> IsTaskCancelledAsync(string            taskId,
                                            CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task StartTask(string            taskId,
+    public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task CancelSessionAsync(string            sessionId,
-                                   CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                                 CancellationToken   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
@@ -533,18 +628,61 @@ public class TaskHandlerTest
                                                    CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                              Expression<Func<TaskData, object?>> orderField,
-                                                                              bool                                ascOrder,
-                                                                              int                                 page,
-                                                                              int                                 pageSize,
-                                                                              CancellationToken                   cancellationToken = default)
+    public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                               Expression<Func<TaskData, object?>> orderField,
+                                                                               bool                                ascOrder,
+                                                                               int                                 page,
+                                                                               int                                 pageSize,
+                                                                               CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
                                                   Expression<Func<TaskData, T>>    selector,
                                                   CancellationToken                cancellationToken = default)
       => throw new NotImplementedException();
+
+    public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                        ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                        CancellationToken                                                             cancellationToken = default)
+      => Task.FromResult(new TaskData("SessionId",
+                                      taskId,
+                                      "OwnerPodId",
+                                      "OwnerPodName",
+                                      "payload",
+                                      new List<string>(),
+                                      new List<string>(),
+                                      new Dictionary<string, bool>(),
+                                      new List<string>(),
+                                      "taskId",
+                                      new List<string>(),
+                                      TaskStatus.Dispatched,
+                                      "",
+                                      new TaskOptions(new Dictionary<string, string>(),
+                                                      TimeSpan.FromMinutes(2),
+                                                      2,
+                                                      3,
+                                                      "part",
+                                                      "",
+                                                      "",
+                                                      "",
+                                                      "",
+                                                      ""),
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      DateTime.UtcNow,
+                                      DateTime.Now,
+                                      DateTime.Now,
+                                      TimeSpan.FromSeconds(1),
+                                      TimeSpan.FromSeconds(2),
+                                      new Output(false,
+                                                 "")));
+
+    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                             cancellationToken = default)
+      => Task.FromResult<long>(1);
 
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                ICollection<Expression<Func<Application, object?>>> orderFields,
@@ -554,32 +692,16 @@ public class TaskHandlerTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task SetTaskSuccessAsync(string            taskId,
-                                    CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
     public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                      ICollection<string> dependenciesToRemove,
                                                      CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
 
-    public Task SetTaskCanceledAsync(string            taskId,
-                                     CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
-    public Task<bool> SetTaskErrorAsync(string            taskId,
-                                        string            errorDetail,
-                                        CancellationToken cancellationToken)
-      => Task.FromResult(true);
-
     public Task<Output> GetTaskOutput(string            taskId,
                                       CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public async Task<TaskData> AcquireTask(string            taskId,
-                                            string            ownerPodId,
-                                            string            ownerPodName,
-                                            DateTime          receptionDate,
+    public async Task<TaskData> AcquireTask(TaskData          taskData,
                                             CancellationToken cancellationToken = default)
     {
       if (waitMethod_ == WaitMethod.Acquire)
@@ -589,9 +711,9 @@ public class TaskHandlerTest
       }
 
       return new TaskData("SessionId",
-                          taskId,
-                          ownerPodId,
-                          ownerPodName,
+                          taskData.TaskId,
+                          taskData.OwnerPodId,
+                          taskData.OwnerPodName,
                           "payload",
                           new List<string>(),
                           new List<string>(),
@@ -615,20 +737,21 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
-                          receptionDate,
+                          taskData.ReceptionDate,
                           DateTime.Now,
                           DateTime.Now,
+                          TimeSpan.FromSeconds(1),
+                          TimeSpan.FromSeconds(2),
                           new Output(false,
                                      ""));
     }
 
-    public Task<TaskData> ReleaseTask(string            taskId,
-                                      string            ownerPodId,
+    public Task<TaskData> ReleaseTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
       => Task.FromResult(new TaskData("SessionId",
-                                      taskId,
-                                      ownerPodId,
-                                      ownerPodId,
+                                      taskData.TaskId,
+                                      taskData.OwnerPodId,
+                                      taskData.OwnerPodName,
                                       "payload",
                                       new List<string>(),
                                       new List<string>(),
@@ -655,6 +778,8 @@ public class TaskHandlerTest
                                       DateTime.Now,
                                       DateTime.Now,
                                       DateTime.Now,
+                                      TimeSpan.FromSeconds(1),
+                                      TimeSpan.FromSeconds(2),
                                       new Output(false,
                                                  "")));
 
@@ -678,10 +803,6 @@ public class TaskHandlerTest
                                   CancellationToken cancellationToken)
       => Task.FromResult(Guid.NewGuid()
                              .ToString());
-
-    public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                          CancellationToken   cancellationToken = default)
-      => Task.FromResult(1);
   }
 
   public class WaitSessionTable : ISessionTable
@@ -787,8 +908,8 @@ public class TaskHandlerTest
                                                                                   delayTaskTable),
                                                                 new WaitSessionTable(delaySessionTable));
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -817,8 +938,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                      .ConfigureAwait(false);
+    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                         .ConfigureAwait(false);
 
     await testServiceProvider.SessionTable.CancelSessionAsync(sessionId,
                                                               CancellationToken.None)
@@ -852,8 +973,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (_, unresolvedDependenciesTask, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                                                  .ConfigureAwait(false);
+    var (_, unresolvedDependenciesTask, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                                     .ConfigureAwait(false);
 
     sqmh.TaskId = unresolvedDependenciesTask;
 
@@ -920,9 +1041,9 @@ public class TaskHandlerTest
     get
     {
       // trigger error before cancellation so it is a legitimate error and therefor should be considered as such
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns((TaskStatus.Error, QueueMessageStatus.Cancelled))
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
                                                                                    .SetArgDisplayNames("ExceptionError"); // error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns((TaskStatus.Error, QueueMessageStatus.Cancelled))
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
                                                                                           .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
 
       // trigger error after cancellation and therefore should be considered as cancelled task and resend into queue
@@ -932,7 +1053,7 @@ public class TaskHandlerTest
                                                                                              .SetArgDisplayNames("RpcExceptionTaskCancellation");
 
       // Worker unavailable during execution should put the task in error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Error, QueueMessageStatus.Cancelled))
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
                                                                                                      .SetArgDisplayNames("UnavailableBeforeCancellation");
 
       // If the worker becomes unavailable during the task execution after cancellation, the task should be resubmitted
@@ -962,8 +1083,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 cancellationTokenSource);
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -1009,8 +1130,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -1028,16 +1149,109 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PostProcessing()
                              .ConfigureAwait(false);
 
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
     Assert.AreEqual(TaskStatus.Completed,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskId,
-                                                                       })
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+                    taskData.Status);
+    Assert.IsNotNull(taskData.StartDate);
+    Assert.IsNotNull(taskData.EndDate);
+    Assert.IsNotNull(taskData.ProcessingToEndDuration);
+    Assert.IsNotNull(taskData.CreationToEndDuration);
+    Assert.Greater(taskData.CreationToEndDuration,
+                   taskData.ProcessingToEndDuration);
 
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
+  }
+
+
+  [Test]
+  public async Task ExecuteTaskUntilErrorShouldSucceed()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new ExceptionWorkerStreamHandler<TestRpcException>(0);
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                new CancellationTokenSource());
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    var maxRetries    = taskData.Options.MaxRetries;
+    var initialTaskId = taskId;
+
+    for (var i = 0; i < maxRetries + 1; i++)
+    {
+      sqmh.TaskId = taskId;
+
+      var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                              .ConfigureAwait(false);
+
+      Assert.IsTrue(acquired);
+
+      await testServiceProvider.TaskHandler.PreProcessing()
+                               .ConfigureAwait(false);
+
+      await testServiceProvider.TaskHandler.ExecuteTask()
+                               .ConfigureAwait(false);
+
+      Assert.ThrowsAsync<TestRpcException>(async () => await testServiceProvider.TaskHandler.PostProcessing()
+                                                                                .ConfigureAwait(false));
+
+
+      taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                   CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+      Console.WriteLine(taskData);
+
+      Assert.AreEqual(i != maxRetries
+                        ? TaskStatus.Retried
+                        : TaskStatus.Error,
+                      taskData.Status);
+      Assert.Greater(taskData.CreationToEndDuration,
+                     taskData.ProcessingToEndDuration);
+
+      Assert.AreEqual(QueueMessageStatus.Cancelled,
+                      sqmh.Status);
+
+      var retries = await testServiceProvider.TaskTable.FindTasksAsync(data => data.InitialTaskId == initialTaskId,
+                                                                       data => new
+                                                                               {
+                                                                                 data.RetryOfIds,
+                                                                                 data.TaskId,
+                                                                               })
+                                             .ConfigureAwait(false);
+
+      var lastRetry = retries.MaxBy(arg => arg.RetryOfIds.Count)!;
+
+      // i == maxRetries means we are running the task that will be in error
+      // therefore there is no new task that can be retry
+      Assert.AreEqual(i != maxRetries
+                        ? i + 1
+                        : i,
+                      lastRetry.RetryOfIds.Count);
+
+      taskId = lastRetry.TaskId;
+    }
   }
 
   public static IEnumerable TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
@@ -1074,8 +1288,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -1129,8 +1343,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -1152,7 +1366,7 @@ public class TaskHandlerTest
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Error,
+    Assert.AreEqual(TaskStatus.Retried,
                     taskData.Status);
 
     Assert.AreEqual(QueueMessageStatus.Cancelled,
@@ -1184,8 +1398,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 
@@ -1254,8 +1468,8 @@ public class TaskHandlerTest
                                                                 sqmh,
                                                                 new CancellationTokenSource());
 
-    var (taskId, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                              .ConfigureAwait(false);
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
 

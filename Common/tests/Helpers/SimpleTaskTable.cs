@@ -24,16 +24,14 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
-
-using Google.Protobuf.WellKnownTypes;
 
 using LinqKit;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
@@ -50,13 +48,16 @@ public class SimpleTaskTable : ITaskTable
   public static readonly TaskOptions TaskOptions;
 
   static SimpleTaskTable()
-    => TaskOptions = new TaskOptions
-                     {
-                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                       MaxRetries  = 4,
-                       Priority    = 2,
-                       PartitionId = PartitionId,
-                     };
+    => TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                     TimeSpan.FromSeconds(1),
+                                     5,
+                                     1,
+                                     PartitionId,
+                                     "",
+                                     "",
+                                     "",
+                                     "",
+                                     "");
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
@@ -91,44 +92,13 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public Task UpdateTaskStatusAsync(string            id,
-                                    TaskStatus        status,
-                                    CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                            TaskStatus        status,
-                                            CancellationToken cancellationToken = default)
-    => Task.FromResult(42);
-
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
     => Task.FromResult(false);
 
-  public Task StartTask(string            taskId,
+  public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
     => Task.CompletedTask;
-
-  public Task CancelSessionAsync(string            sessionId,
-                                 CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                               CancellationToken   cancellationToken = default)
-    => Task.FromResult<IList<TaskData>>(taskIds.Select(s => new TaskData(SessionId,
-                                                                         s,
-                                                                         OwnerPodId,
-                                                                         PodName,
-                                                                         PayloadId,
-                                                                         new List<string>(),
-                                                                         new List<string>(),
-                                                                         new List<string>(),
-                                                                         new List<string>(),
-                                                                         TaskStatus.Cancelled,
-                                                                         TaskOptions,
-                                                                         new Output(false,
-                                                                                    "Cancelled")))
-                                               .ToList());
 
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                             CancellationToken cancellationToken = default)
@@ -169,31 +139,31 @@ public class SimpleTaskTable : ITaskTable
          TaskId,
        }.ToAsyncEnumerable();
 
-  public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                            Expression<Func<TaskData, object?>> orderField,
-                                                                            bool                                ascOrder,
-                                                                            int                                 page,
-                                                                            int                                 pageSize,
-                                                                            CancellationToken                   cancellationToken = default)
-    => Task.FromResult<(IEnumerable<TaskData> tasks, int totalCount)>((new[]
-                                                                       {
-                                                                         new TaskData(SessionId,
-                                                                                      TaskId,
-                                                                                      OwnerPodId,
-                                                                                      PodName,
-                                                                                      PayloadId,
-                                                                                      new List<string>(),
-                                                                                      new List<string>(),
-                                                                                      new List<string>
-                                                                                      {
-                                                                                        OutputId,
-                                                                                      },
-                                                                                      new List<string>(),
-                                                                                      TaskStatus.Completed,
-                                                                                      TaskOptions,
-                                                                                      new Output(true,
-                                                                                                 "")),
-                                                                       }, 1));
+  public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                             Expression<Func<TaskData, object?>> orderField,
+                                                                             bool                                ascOrder,
+                                                                             int                                 page,
+                                                                             int                                 pageSize,
+                                                                             CancellationToken                   cancellationToken = default)
+    => Task.FromResult<(IEnumerable<TaskData> tasks, long totalCount)>((new[]
+                                                                        {
+                                                                          new TaskData(SessionId,
+                                                                                       TaskId,
+                                                                                       OwnerPodId,
+                                                                                       PodName,
+                                                                                       PayloadId,
+                                                                                       new List<string>(),
+                                                                                       new List<string>(),
+                                                                                       new List<string>
+                                                                                       {
+                                                                                         OutputId,
+                                                                                       },
+                                                                                       new List<string>(),
+                                                                                       TaskStatus.Completed,
+                                                                                       TaskOptions,
+                                                                                       new Output(true,
+                                                                                                  "")),
+                                                                        }, 1));
 
   public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
                                                 Expression<Func<TaskData, T>>    selector,
@@ -218,6 +188,31 @@ public class SimpleTaskTable : ITaskTable
                                         "")),
                        }.Select(selector.Invoke));
 
+  public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                             cancellationToken = default)
+    => Task.FromResult(new TaskData(SessionId,
+                                    taskId,
+                                    OwnerPodId,
+                                    PodName,
+                                    PayloadId,
+                                    new List<string>(),
+                                    new List<string>(),
+                                    new List<string>
+                                    {
+                                      OutputId,
+                                    },
+                                    new List<string>(),
+                                    TaskStatus.Completed,
+                                    TaskOptions,
+                                    new Output(true,
+                                               "")));
+
+  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                    CancellationToken                                                             cancellationToken = default)
+    => Task.FromResult<long>(1);
+
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                              ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                              bool ascOrder,
@@ -232,38 +227,22 @@ public class SimpleTaskTable : ITaskTable
                                                                                                    TaskOptions.ApplicationService),
                                                                                  }, 1));
 
-  public Task SetTaskSuccessAsync(string            taskId,
-                                  CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                    ICollection<string> dependenciesToRemove,
                                                    CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
-
-  public Task SetTaskCanceledAsync(string            taskId,
-                                   CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<bool> SetTaskErrorAsync(string            taskId,
-                                      string            errorDetail,
-                                      CancellationToken cancellationToken = default)
-    => Task.FromResult(false);
 
   public Task<Output> GetTaskOutput(string            taskId,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new Output(true,
                                   ""));
 
-  public Task<TaskData> AcquireTask(string            taskId,
-                                    string            ownerPodId,
-                                    string            ownerPodName,
-                                    DateTime          receptionDate,
+  public Task<TaskData> AcquireTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new TaskData(SessionId,
-                                    taskId,
-                                    ownerPodId,
-                                    ownerPodName,
+                                    taskData.TaskId,
+                                    taskData.OwnerPodId,
+                                    taskData.OwnerPodName,
                                     PayloadId,
                                     new List<string>(),
                                     new List<string>(),
@@ -277,12 +256,11 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public Task<TaskData> ReleaseTask(string            taskId,
-                                    string            ownerPodId,
+  public Task<TaskData> ReleaseTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new TaskData(SessionId,
-                                    taskId,
-                                    ownerPodId,
+                                    taskData.TaskId,
+                                    taskData.OwnerPodId,
                                     PodName,
                                     PayloadId,
                                     new List<string>(),
@@ -321,8 +299,4 @@ public class SimpleTaskTable : ITaskTable
   public Task<string> RetryTask(TaskData          taskData,
                                 CancellationToken cancellationToken = default)
     => Task.FromResult(TaskId);
-
-  public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                        CancellationToken   cancellationToken = default)
-    => Task.FromResult(42);
 }

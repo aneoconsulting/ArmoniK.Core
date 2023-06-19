@@ -28,7 +28,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 
@@ -39,7 +39,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
@@ -109,94 +109,19 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
-                                         int                              priority,
-                                         string                           partitionId,
+  public async Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
                                          string                           sessionId,
                                          string                           parentTaskId,
                                          CancellationToken                cancellationToken)
-  {
-    var taskRequests = requests.ToList();
-
-    await ChangeResultOwnership(sessionId,
-                                parentTaskId,
-                                taskRequests,
-                                cancellationToken)
-      .ConfigureAwait(false);
-
-    var readyTasks = new List<string>();
-
-    foreach (var request in taskRequests)
-    {
-      var dependencies = request.DataDependencies.ToList();
-
-      logger_.LogDebug("Process task request {request}",
-                       request);
-
-      if (dependencies.Any())
-      {
-        // If there is dependencies, we need to register the current task as a dependant of its dependencies.
-        // This should be done *before* verifying if the dependencies are satisfied in order to avoid missing
-        // any result completion.
-        // If a result is completed at the same time, either the submitter will see the result has been completed,
-        // Or the Agent will remove the result from the remaining dependencies of the task.
-        await resultTable_.AddTaskDependency(sessionId,
-                                             dependencies,
-                                             new List<string>
-                                             {
-                                               request.Id,
-                                             },
-                                             cancellationToken)
-                          .ConfigureAwait(false);
-
-        // Get the dependencies that are already completed in order to remove them from the remaining dependencies.
-        var completedDependencies = await resultTable_.GetResults(sessionId,
-                                                                  dependencies,
-                                                                  cancellationToken)
-                                                      .Where(result => result.Status == ResultStatus.Completed)
-                                                      .Select(result => result.Name)
-                                                      .ToListAsync(cancellationToken)
-                                                      .ConfigureAwait(false);
-
-        // Remove all the dependencies that are already completed from the task.
-        // If an Agent has completed one of the dependencies between the GetResults and this remove,
-        // One will succeed removing the dependency, the other will silently fail.
-        // In either case, the task will be submitted without error by the Agent.
-        // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
-        // and both will queue the task.
-        // This is benign as it will be handled during dequeue with message deduplication.
-        await taskTable_.RemoveRemainingDataDependenciesAsync(new[]
-                                                              {
-                                                                request.Id,
-                                                              },
-                                                              completedDependencies,
-                                                              cancellationToken)
-                        .ConfigureAwait(false);
-
-        // If all dependencies were already completed, the task is ready to be started.
-        if (dependencies.Count == completedDependencies.Count)
-        {
-          readyTasks.Add(request.Id);
-        }
-      }
-      else
-      {
-        readyTasks.Add(request.Id);
-      }
-    }
-
-    if (readyTasks.Any())
-    {
-      await pushQueueStorage_.PushMessagesAsync(readyTasks,
-                                                partitionId,
-                                                priority,
-                                                cancellationToken)
-                             .ConfigureAwait(false);
-      await taskTable_.FinalizeTaskCreation(readyTasks,
-                                            cancellationToken)
-                      .ConfigureAwait(false);
-    }
-  }
+    => await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                      resultTable_,
+                                                      pushQueueStorage_,
+                                                      requests.ToList(),
+                                                      sessionId,
+                                                      parentTaskId,
+                                                      logger_,
+                                                      cancellationToken)
+                                .ConfigureAwait(false);
 
   /// <inheritdoc />
   public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
@@ -224,7 +149,10 @@ public class Submitter : ISubmitter
 
     if (string.IsNullOrEmpty(defaultTaskOptions.PartitionId))
     {
-      defaultTaskOptions.PartitionId = submitterOptions_.DefaultPartition;
+      defaultTaskOptions = defaultTaskOptions with
+                           {
+                             PartitionId = submitterOptions_.DefaultPartition,
+                           };
     }
 
     if (!await partitionTable_.ArePartitionsExistingAsync(new[]
@@ -443,10 +371,16 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
     Storage.Output cOutput = output;
+    var taskDataEnd = taskData with
+                      {
+                        EndDate = DateTime.UtcNow,
+                        CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
+                        ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
+                      };
 
     if (cOutput.Success)
     {
-      await taskTable_.SetTaskSuccessAsync(taskData.TaskId,
+      await taskTable_.SetTaskSuccessAsync(taskDataEnd,
                                            cancellationToken)
                       .ConfigureAwait(false);
 
@@ -461,19 +395,19 @@ public class Submitter : ISubmitter
     }
     else
     {
-      // not done means that another pod put this task in error so we do not need to do it a second time
-      // so nothing to do
-      if (!await taskTable_.SetTaskErrorAsync(taskData.TaskId,
-                                              cOutput.Error,
-                                              cancellationToken)
-                           .ConfigureAwait(false))
-      {
-        return;
-      }
-
       // TODO FIXME: nothing will resubmit the task if there is a crash there
       if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
       {
+        // not done means that another pod put this task in retry so we do not need to do it a second time
+        // so nothing to do
+        if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
+                                                cOutput.Error,
+                                                cancellationToken)
+                             .ConfigureAwait(false))
+        {
+          return;
+        }
+
         logger_.LogWarning("Resubmit {task}",
                            taskData.TaskId);
 
@@ -481,14 +415,14 @@ public class Submitter : ISubmitter
                                                    cancellationToken)
                                         .ConfigureAwait(false);
 
-        await FinalizeTaskCreation(new List<Storage.TaskRequest>
+        await FinalizeTaskCreation(new List<TaskCreationRequest>
                                    {
                                      new(newTaskId,
+                                         taskData.PayloadId,
+                                         taskData.Options,
                                          taskData.ExpectedOutputIds,
                                          taskData.DataDependencies),
                                    },
-                                   taskData.Options.Priority,
-                                   taskData.Options.PartitionId,
                                    taskData.SessionId,
                                    taskData.TaskId,
                                    cancellationToken)
@@ -496,6 +430,16 @@ public class Submitter : ISubmitter
       }
       else
       {
+        // not done means that another pod put this task in error so we do not need to do it a second time
+        // so nothing to do
+        if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
+                                                cOutput.Error,
+                                                cancellationToken)
+                             .ConfigureAwait(false))
+        {
+          return;
+        }
+
         await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
                                                         resultTable_,
                                                         taskData.TaskId,
@@ -590,19 +534,22 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                               string                        parentTaskId,
-                                                                                                               TaskOptions                   options,
-                                                                                                               IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                               CancellationToken             cancellationToken)
+  public async Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                                  string                        parentTaskId,
+                                                                  TaskOptions?                  options,
+                                                                  IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                  CancellationToken             cancellationToken)
   {
     var sessionData = await sessionTable_.GetSessionAsync(sessionId,
                                                           cancellationToken)
                                          .ConfigureAwait(false);
-    options = options != null
-                ? Storage.TaskOptions.Merge(options,
-                                            sessionData.Options)
-                : sessionData.Options;
+
+    options = TaskLifeCycleHelper.ValidateSession(sessionData,
+                                                  options,
+                                                  sessionId,
+                                                  pushQueueStorage_.MaxPriority,
+                                                  logger_,
+                                                  cancellationToken);
 
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
@@ -610,29 +557,7 @@ public class Submitter : ISubmitter
                                                         ("TaskId", parentTaskId),
                                                         ("PartitionId", options.PartitionId));
 
-    if (logger_.IsEnabled(LogLevel.Trace))
-    {
-      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
-    }
-
-    var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
-    if (!availablePartitionIds.Contains(options.PartitionId))
-    {
-      throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
-                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {options.PartitionId}");
-    }
-
-    if (options.Priority >= pushQueueStorage_.MaxPriority)
-    {
-      var exception = new RpcException(new Status(StatusCode.InvalidArgument,
-                                                  $"Max priority is {pushQueueStorage_.MaxPriority}"));
-      logger_.LogError(exception,
-                       "Invalid Argument");
-      throw exception;
-    }
-
-
-    var requests           = new List<Storage.TaskRequest>();
+    var requests           = new List<TaskCreationRequest>();
     var payloadUploadTasks = new List<Task>();
 
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
@@ -640,95 +565,29 @@ public class Submitter : ISubmitter
     {
       var taskId = Guid.NewGuid()
                        .ToString();
-      requests.Add(new Storage.TaskRequest(taskId,
-                                           taskRequest.ExpectedOutputKeys,
-                                           taskRequest.DataDependencies));
+
+      requests.Add(new TaskCreationRequest(taskId,
+                                           taskId,
+                                           options,
+                                           taskRequest.ExpectedOutputKeys.ToList(),
+                                           taskRequest.DataDependencies.ToList()));
       payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(taskId,
                                                              taskRequest.PayloadChunks,
                                                              cancellationToken));
     }
 
-    var parentTaskIds = new List<string>();
-
-    if (!parentTaskId.Equals(sessionData.SessionId))
-    {
-      var res = await taskTable_.GetParentTaskIds(parentTaskId,
-                                                  cancellationToken)
-                                .ConfigureAwait(false);
-      parentTaskIds.AddRange(res);
-    }
-
-    parentTaskIds.Add(parentTaskId);
-
     await payloadUploadTasks.WhenAll()
                             .ConfigureAwait(false);
 
-    await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionData.SessionId,
-                                                                         request.Id,
-                                                                         "",
-                                                                         "",
-                                                                         request.Id,
-                                                                         parentTaskIds,
-                                                                         request.DataDependencies.ToList(),
-                                                                         request.ExpectedOutputKeys.ToList(),
-                                                                         Array.Empty<string>(),
-                                                                         TaskStatus.Creating,
-                                                                         options,
-                                                                         new Storage.Output(false,
-                                                                                            ""))),
-                                 cancellationToken)
-                    .ConfigureAwait(false);
+    await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                          resultTable_,
+                                          sessionId,
+                                          parentTaskId,
+                                          requests,
+                                          logger_,
+                                          cancellationToken)
+                             .ConfigureAwait(false);
 
-    return (requests, options.Priority, options.PartitionId);
-  }
-
-  private async Task ChangeResultOwnership(string                           session,
-                                           string                           parentTaskId,
-                                           IEnumerable<Storage.TaskRequest> requests,
-                                           CancellationToken                cancellationToken = default)
-  {
-    using var _        = logger_.LogFunction($"{session}.{parentTaskId}");
-    using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
-    activity?.AddTag("sessionId",
-                     session);
-    activity?.AddTag("parentTaskId",
-                     parentTaskId);
-
-    var parentExpectedOutputKeys = new List<string>();
-
-    if (!parentTaskId.Equals(session))
-    {
-      parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                   cancellationToken)
-                                                        .ConfigureAwait(false));
-    }
-
-    var taskDataModels = requests.Select(request =>
-                                         {
-                                           var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
-                                                                                   .ToList();
-
-                                           var resultModel = request.ExpectedOutputKeys.Except(intersect)
-                                                                    .Select(key => new Result(session,
-                                                                                              key,
-                                                                                              request.Id,
-                                                                                              ResultStatus.Created,
-                                                                                              new List<string>(),
-                                                                                              DateTime.UtcNow,
-                                                                                              Array.Empty<byte>()));
-
-                                           return (Result: resultModel, Req: new IResultTable.ChangeResultOwnershipRequest(intersect,
-                                                                                                                           request.Id));
-                                         });
-
-    await resultTable_.ChangeResultOwnership(session,
-                                             parentTaskId,
-                                             taskDataModels.Select(tuple => tuple.Req),
-                                             cancellationToken)
-                      .ConfigureAwait(false);
-
-    await resultTable_.Create(taskDataModels.SelectMany(task => task.Result),
-                              cancellationToken)
-                      .ConfigureAwait(false);
+    return requests;
   }
 }

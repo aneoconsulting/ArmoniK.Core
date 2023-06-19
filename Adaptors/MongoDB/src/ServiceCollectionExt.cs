@@ -21,7 +21,6 @@ using System.Security.Cryptography.X509Certificates;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection.Options;
@@ -70,27 +69,27 @@ public static class ServiceCollectionExt
     {
       services.AddOption<TableStorage>(configuration,
                                        TableStorage.SettingSection)
-              .AddTransient<ITaskTable, TaskTable>()
-              .AddTransient<ISessionTable, SessionTable>()
-              .AddTransient<IResultTable, ResultTable>()
-              .AddTransient<IPartitionTable, PartitionTable>()
-              .AddTransient<ITaskWatcher, TaskWatcher>()
-              .AddTransient<IResultWatcher, ResultWatcher>();
+              .AddSingleton<ITaskTable, TaskTable>()
+              .AddSingleton<ISessionTable, SessionTable>()
+              .AddSingleton<IResultTable, ResultTable>()
+              .AddSingleton<IPartitionTable, PartitionTable>()
+              .AddSingleton<ITaskWatcher, TaskWatcher>()
+              .AddSingleton<IResultWatcher, ResultWatcher>();
     }
 
     if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
     {
       services.AddOption<Options.ObjectStorage>(configuration,
                                                 Options.ObjectStorage.SettingSection)
-              .AddTransient<ObjectStorage>()
-              .AddTransient<IObjectStorage, ObjectStorage>();
+              .AddSingleton<ObjectStorage>()
+              .AddSingleton<IObjectStorage, ObjectStorage>();
     }
 
     services.AddOption<Options.MongoDB>(configuration,
                                         Options.MongoDB.SettingSection,
                                         out var mongoOptions);
 
-    services.AddTransient(provider => provider.GetRequiredService<IMongoClient>()
+    services.AddSingleton(provider => provider.GetRequiredService<IMongoClient>()
                                               .GetDatabase(mongoOptions.DatabaseName))
             .AddSingleton(typeof(MongoCollectionProvider<,>))
             .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
@@ -233,7 +232,7 @@ public static class ServiceCollectionExt
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
     {
       services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
-      services.AddTransient<IAuthenticationTable, AuthenticationTable>();
+      services.AddSingleton<IAuthenticationTable, AuthenticationTable>();
     }
 
     return services;

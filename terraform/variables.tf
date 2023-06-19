@@ -53,15 +53,6 @@ variable "submitter" {
   default = {}
 }
 
-variable "dependency_checker" {
-  type = object({
-    name  = optional(string, "armonik.control.dependency_checker")
-    image = optional(string, "dockerhubaneo/armonik_control_dependency_checker")
-  })
-  default = {}
-}
-
-
 variable "object_storage" {
   type = object({
     name  = optional(string, "local")
@@ -93,8 +84,8 @@ variable "queue_storage" {
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq|artemis)$", var.queue_storage.name))
-    error_message = "Must be activemq, rabbitmq or artemis"
+    condition     = can(regex("^(activemq|rabbitmq|artemis|none)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq, artemis or none"
   }
   default = {}
 }
@@ -201,4 +192,36 @@ variable "prometheus_image" {
 variable "database_image" {
   type    = string
   default = "mongo"
+}
+
+variable "ingress" {
+  type = object({
+    image = optional(string, "nginxinc/nginx-unprivileged"),
+    tag   = optional(string, "1.23.3"),
+    configs = map(object({
+      port = number,
+      tls  = optional(bool, false),
+      mtls = optional(bool, false),
+  })) })
+  default = {
+    configs = {
+      ingress = {
+        port = 5201
+      },
+      ingress_tls = {
+        port = 5202,
+        tls  = true
+      },
+      ingress_mtls = {
+        port = 5203,
+        tls  = true,
+        mtls = true
+      }
+  } }
+}
+
+variable "custom_env_vars" {
+  type = map(string)
+  default = {
+  }
 }

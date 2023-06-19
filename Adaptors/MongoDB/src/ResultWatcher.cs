@@ -108,7 +108,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<NewResult, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                         resultUpdate => new NewResult(resultUpdate.FullDocument.SessionId,
-                                                                                                      resultUpdate.FullDocument.Name,
+                                                                                                      resultUpdate.FullDocument.ResultId,
                                                                                                       resultUpdate.FullDocument.OwnerTaskId,
                                                                                                       resultUpdate.FullDocument.Status));
   }
@@ -134,7 +134,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<ResultOwnerUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                 doc => new ResultOwnerUpdate(doc.FullDocument.SessionId,
-                                                                                                             doc.FullDocument.Name,
+                                                                                                             doc.FullDocument.ResultId,
                                                                                                              "",
                                                                                                              doc.FullDocument.OwnerTaskId));
   }
@@ -160,7 +160,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<ResultStatusUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                  doc => new ResultStatusUpdate(doc.FullDocument.SessionId,
-                                                                                                               doc.FullDocument.Name,
+                                                                                                               doc.FullDocument.ResultId,
                                                                                                                doc.FullDocument.Status));
   }
 }

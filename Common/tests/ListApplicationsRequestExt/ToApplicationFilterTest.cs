@@ -20,13 +20,16 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListApplicationsRequestExt;
 
@@ -72,6 +75,18 @@ public class ToApplicationFilterTest
                                             new Output(true,
                                                        ""));
 
+  private static readonly ListApplicationsRequest.Types.Sort Sort = new()
+                                                                    {
+                                                                      Fields =
+                                                                      {
+                                                                        new ApplicationField
+                                                                        {
+                                                                          ApplicationField_ = ApplicationRawField.Name,
+                                                                        },
+                                                                      },
+                                                                      Direction = SortDirection.Asc,
+                                                                    };
+
   [Test]
   public void FilterNameShouldSucceed()
   {
@@ -81,14 +96,7 @@ public class ToApplicationFilterTest
                           {
                             Name = ApplicationName,
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -104,14 +112,7 @@ public class ToApplicationFilterTest
                           {
                             Name = ApplicationName + "bad",
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -127,14 +128,7 @@ public class ToApplicationFilterTest
                           {
                             Namespace = ApplicationNamespace,
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -150,14 +144,7 @@ public class ToApplicationFilterTest
                           {
                             Namespace = ApplicationNamespace + "bad",
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -173,14 +160,7 @@ public class ToApplicationFilterTest
                           {
                             Version = ApplicationVersion,
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -196,14 +176,7 @@ public class ToApplicationFilterTest
                           {
                             Version = ApplicationVersion + "bad",
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -219,14 +192,7 @@ public class ToApplicationFilterTest
                           {
                             Service = ApplicationService,
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 
@@ -242,14 +208,7 @@ public class ToApplicationFilterTest
                           {
                             Service = ApplicationService + "bad",
                           },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
+                 Sort = Sort,
                }.Filter.ToApplicationFilter()
                 .Compile();
 

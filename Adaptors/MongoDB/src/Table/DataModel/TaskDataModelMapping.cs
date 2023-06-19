@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
@@ -79,6 +80,10 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.PodTtl))
                                                   .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.ProcessingToEndDuration))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.CreationToEndDuration))
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Output))
                                                   .SetIsRequired(true);
                                                 cm.SetIgnoreExtraElements(true);
@@ -103,6 +108,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                     model.ReceptionDate,
                                                                                     model.AcquisitionDate,
                                                                                     model.PodTtl,
+                                                                                    model.ProcessingToEndDuration,
+                                                                                    model.CreationToEndDuration,
                                                                                     model.Output));
                                               });
     }
@@ -168,57 +175,32 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<TaskData> collection)
   {
-    var sessionIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
-    var ownerIndex     = Builders<TaskData>.IndexKeys.Hashed(model => model.OwnerPodId);
-    var creationIndex  = Builders<TaskData>.IndexKeys.Ascending(model => model.CreationDate);
-    var submittedIndex = Builders<TaskData>.IndexKeys.Ascending(model => model.SubmittedDate);
-    var startIndex     = Builders<TaskData>.IndexKeys.Ascending(model => model.StartDate);
-    var endIndex       = Builders<TaskData>.IndexKeys.Ascending(model => model.EndDate);
-    var partitionIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.Options.PartitionId);
-    var statusIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
-
-    var indexModels = new CreateIndexModel<TaskData>[]
+    var indexModels = new[]
                       {
-                        new(sessionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
-                        new(ownerIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(ownerIndex),
-                            }),
-                        new(creationIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(creationIndex),
-                            }),
-                        new(submittedIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(submittedIndex),
-                            }),
-                        new(startIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(startIndex),
-                            }),
-                        new(endIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(endIndex),
-                            }),
-                        new(partitionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(partitionIndex),
-                            }),
-                        new(statusIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(statusIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Status),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.PartitionId),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.Priority),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.MaxRetries),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.ApplicationName),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.ApplicationVersion),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.ApplicationNamespace),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.ApplicationService),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Options.EngineType),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.SessionId),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.OwnerPodId),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.OwnerPodName),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.InitialTaskId),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.Output.Error),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.SubmittedDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.StartDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.EndDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.PodTtl),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.ReceptionDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.AcquisitionDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationToEndDuration),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.ProcessingToEndDuration),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.Options.MaxDuration),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

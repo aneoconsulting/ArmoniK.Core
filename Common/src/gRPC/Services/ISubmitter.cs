@@ -27,7 +27,7 @@ using ArmoniK.Core.Common.Storage;
 using Grpc.Core;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -44,15 +44,13 @@ public interface ISubmitter
                                          TaskOptions       defaultTaskOptions,
                                          CancellationToken cancellationToken);
 
-  Task<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                        sessionId,
-                                                                                                  string                        parentTaskId,
-                                                                                                  TaskOptions                   options,
-                                                                                                  IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                                                  CancellationToken             cancellationToken);
+  Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                     string                        parentTaskId,
+                                                     TaskOptions?                  options,
+                                                     IAsyncEnumerable<TaskRequest> taskRequests,
+                                                     CancellationToken             cancellationToken);
 
-  Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
-                            int                              priority,
-                            string                           partitionId,
+  Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
                             string                           sessionId,
                             string                           parentTaskId,
                             CancellationToken                cancellationToken);

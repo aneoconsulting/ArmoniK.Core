@@ -33,7 +33,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -43,7 +43,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -82,7 +82,7 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
-                           partitionIds.ToIList(),
+                           partitionIds.AsIList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
@@ -105,8 +105,7 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
+      return await sessionCollection.Find(session => session.SessionId == sessionId)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
@@ -144,9 +143,8 @@ public class SessionTable : ISessionTable
 
     try
     {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Options)
+      return await sessionCollection.Find(sdm => sdm.SessionId == sessionId)
+                                    .Project(sdm => sdm.Options)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }

@@ -207,6 +207,19 @@ public interface IResultTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
+  ///   Complete result
+  /// </summary>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="resultId">Id of the result to complete</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The new version of the result metadata
+  /// </returns>
+  Task<Result> CompleteResult(string            sessionId,
+                              string            resultId,
+                              CancellationToken cancellationToken = default);
+
+  /// <summary>
   ///   Get the status of the given results
   /// </summary>
   /// <param name="ids">ids of the results</param>
@@ -218,6 +231,19 @@ public interface IResultTable : IInitializable
   Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                          string              sessionId,
                                                                          CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  ///   Set Task that should produce the result
+  /// </summary>
+  /// <param name="sessionId"></param>
+  /// <param name="requests">Results to update with the associated task id</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task SetTaskOwnership(string                                        sessionId,
+                        ICollection<(string resultId, string taskId)> requests,
+                        CancellationToken                             cancellationToken = default);
 
   /// <summary>
   ///   Abort the results of the given task

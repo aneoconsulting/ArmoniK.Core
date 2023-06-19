@@ -85,6 +85,11 @@ module "queue_artemis" {
   network    = docker_network.armonik.name
 }
 
+module "queue_none" {
+  source = "./modules/storage/queue/none"
+  count  = var.queue_storage.name == "none" ? 1 : 0
+}
+
 module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
@@ -133,4 +138,20 @@ module "partition_metrics_exporter" {
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
+}
+
+module "ingress" {
+  source   = "./modules/ingress"
+  for_each = var.ingress.configs
+  container = {
+    name  = each.key,
+    image = var.ingress.image
+    tag   = var.ingress.tag
+  }
+  tls        = each.value.tls
+  mtls       = each.value.mtls
+  port       = each.value.port
+  network    = docker_network.armonik.name
+  submitter  = module.submitter
+  log_driver = module.fluenbit.log_driver
 }

@@ -25,13 +25,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.8.2" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.9.0-edge.115.5d51a95" />
   </ItemGroup>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
-	
+
   <ItemGroup>
     <ProjectReference Include="..\Common\ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj" />
   </ItemGroup>

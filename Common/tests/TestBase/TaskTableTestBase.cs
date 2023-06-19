@@ -23,14 +23,19 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -58,142 +63,12 @@ public class TaskTableTestBase
 
     await TaskTable!.CreateTasks(new[]
                                  {
-                                   new TaskData("SessionId",
-                                                "TaskCompletedId",
-                                                "OwnerPodId",
-                                                "OwnerPodName",
-                                                "PayloadId",
-                                                new[]
-                                                {
-                                                  "parent1",
-                                                },
-                                                new[]
-                                                {
-                                                  "dependency1",
-                                                },
-                                                new[]
-                                                {
-                                                  "output1",
-                                                  "output2",
-                                                },
-                                                Array.Empty<string>(),
-                                                TaskStatus.Completed,
-                                                options_,
-                                                new Output(true,
-                                                           "")),
-                                   new TaskData("SessionId",
-                                                "TaskCreatingId",
-                                                "OwnerPodId",
-                                                "OwnerPodName",
-                                                "PayloadId",
-                                                new[]
-                                                {
-                                                  "parent1",
-                                                },
-                                                new[]
-                                                {
-                                                  "dependency1",
-                                                },
-                                                new[]
-                                                {
-                                                  "output1",
-                                                },
-                                                Array.Empty<string>(),
-                                                TaskStatus.Creating,
-                                                options_,
-                                                new Output(false,
-                                                           "")),
-                                   new TaskData("SessionId",
-                                                "TaskProcessingId",
-                                                "OwnerPodId",
-                                                "OwnerPodName",
-                                                "PayloadId",
-                                                new[]
-                                                {
-                                                  "parent1",
-                                                },
-                                                new[]
-                                                {
-                                                  "dependency1",
-                                                },
-                                                new[]
-                                                {
-                                                  "output1",
-                                                },
-                                                Array.Empty<string>(),
-                                                TaskStatus.Processing,
-                                                options_,
-                                                new Output(false,
-                                                           "")),
-                                   new TaskData("SessionId",
-                                                "TaskAnotherProcessingId",
-                                                "OwnerPodId",
-                                                "OwnerPodName",
-                                                "PayloadId",
-                                                new[]
-                                                {
-                                                  "parent1",
-                                                },
-                                                new[]
-                                                {
-                                                  "dependency1",
-                                                },
-                                                new[]
-                                                {
-                                                  "output1",
-                                                },
-                                                Array.Empty<string>(),
-                                                TaskStatus.Processing,
-                                                options_,
-                                                new Output(false,
-                                                           "")),
-                                   new TaskData("SessionId",
-                                                "TaskSubmittedId",
-                                                "",
-                                                "",
-                                                "PayloadId",
-                                                new[]
-                                                {
-                                                  "parent1",
-                                                },
-                                                new[]
-                                                {
-                                                  "dependency1",
-                                                },
-                                                new[]
-                                                {
-                                                  "output1",
-                                                },
-                                                Array.Empty<string>(),
-                                                TaskStatus.Submitted,
-                                                options_ with
-                                                {
-                                                  PartitionId = "part2",
-                                                },
-                                                new Output(false,
-                                                           "")),
-                                   new TaskData("SessionId",
-                                                "TaskFailedId",
-                                                "OwnerPodId",
-                                                "OwnerPodName",
-                                                "PayloadId",
-                                                new[]
-                                                {
-                                                  "parent1",
-                                                },
-                                                new[]
-                                                {
-                                                  "dependency1",
-                                                },
-                                                new[]
-                                                {
-                                                  "output1",
-                                                },
-                                                Array.Empty<string>(),
-                                                TaskStatus.Error,
-                                                options_,
-                                                new Output(false,
-                                                           "sad task")),
+                                   taskCompletedData_,
+                                   taskCreatingData_,
+                                   taskProcessingData_,
+                                   taskProcessingData2_,
+                                   taskSubmittedData_,
+                                   taskFailedData_,
                                  })
                     .ConfigureAwait(false);
   }
@@ -205,30 +80,172 @@ public class TaskTableTestBase
     RunTests  = false;
   }
 
+  private readonly TaskData taskSubmittedData_ = new("SessionId",
+                                                     "TaskSubmittedId",
+                                                     "",
+                                                     "",
+                                                     "PayloadId",
+                                                     new[]
+                                                     {
+                                                       "parent1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "dependency1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "output1",
+                                                     },
+                                                     Array.Empty<string>(),
+                                                     TaskStatus.Submitted,
+                                                     Options with
+                                                     {
+                                                       PartitionId = "part2",
+                                                     },
+                                                     new Output(false,
+                                                                ""));
+
+  private readonly TaskData taskCompletedData_ = new("SessionId",
+                                                     "TaskCompletedId",
+                                                     "OwnerPodId",
+                                                     "OwnerPodName",
+                                                     "PayloadId",
+                                                     new[]
+                                                     {
+                                                       "parent1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "dependency1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "output1",
+                                                       "output2",
+                                                     },
+                                                     Array.Empty<string>(),
+                                                     TaskStatus.Completed,
+                                                     Options,
+                                                     new Output(true,
+                                                                ""));
+
+  private readonly TaskData taskCreatingData_ = new("SessionId",
+                                                    "TaskCreatingId",
+                                                    "OwnerPodId",
+                                                    "OwnerPodName",
+                                                    "PayloadId",
+                                                    new[]
+                                                    {
+                                                      "parent1",
+                                                    },
+                                                    new[]
+                                                    {
+                                                      "dependency1",
+                                                    },
+                                                    new[]
+                                                    {
+                                                      "output1",
+                                                    },
+                                                    Array.Empty<string>(),
+                                                    TaskStatus.Creating,
+                                                    Options,
+                                                    new Output(false,
+                                                               ""));
+
+  private readonly TaskData taskProcessingData_ = new("SessionId",
+                                                      "TaskProcessingId",
+                                                      "OwnerPodId",
+                                                      "OwnerPodName",
+                                                      "PayloadId",
+                                                      new[]
+                                                      {
+                                                        "parent1",
+                                                      },
+                                                      new[]
+                                                      {
+                                                        "dependency1",
+                                                      },
+                                                      new[]
+                                                      {
+                                                        "output1",
+                                                      },
+                                                      Array.Empty<string>(),
+                                                      TaskStatus.Processing,
+                                                      Options,
+                                                      new Output(false,
+                                                                 ""));
+
+  private readonly TaskData taskProcessingData2_ = new("SessionId",
+                                                       "TaskAnotherProcessingId",
+                                                       "OwnerPodId",
+                                                       "OwnerPodName",
+                                                       "PayloadId",
+                                                       new[]
+                                                       {
+                                                         "parent1",
+                                                       },
+                                                       new[]
+                                                       {
+                                                         "dependency1",
+                                                       },
+                                                       new[]
+                                                       {
+                                                         "output1",
+                                                       },
+                                                       Array.Empty<string>(),
+                                                       TaskStatus.Processing,
+                                                       Options,
+                                                       new Output(false,
+                                                                  ""));
+
+  private readonly TaskData taskFailedData_ = new("SessionId",
+                                                  "TaskFailedId",
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Error,
+                                                  Options,
+                                                  new Output(false,
+                                                             "sad task"));
+
   private static bool CheckForSkipSetup()
   {
     var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
     return category is "SkipSetUp";
   }
 
-  private readonly TaskOptions options_ = new(new Dictionary<string, string>
-                                              {
-                                                {
-                                                  "key1", "val1"
-                                                },
-                                                {
-                                                  "key2", "val2"
-                                                },
-                                              },
-                                              TimeSpan.MaxValue,
-                                              5,
-                                              1,
-                                              "part1",
-                                              "applicationName",
-                                              "applicationVersion",
-                                              "applicationNamespace",
-                                              "applicationService",
-                                              "engineType");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+                                                    {
+                                                      {
+                                                        "key1", "val1"
+                                                      },
+                                                      {
+                                                        "key2", "val2"
+                                                      },
+                                                    },
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion",
+                                                    "applicationNamespace",
+                                                    "applicationService",
+                                                    "engineType");
 
   /* Interface to test */
   protected ITaskTable? TaskTable;
@@ -297,11 +314,11 @@ public class TaskTableTestBase
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(options_.Options,
+      Assert.AreEqual(Options.Options,
                       result.Options.Options);
 
       var optDic = new Dictionary<string, string>();
-      Assert.AreEqual(options_ with
+      Assert.AreEqual(Options with
                       {
                         Options = optDic,
                       },
@@ -320,43 +337,6 @@ public class TaskTableTestBase
       Assert.ThrowsAsync<TaskNotFoundException>(async () => await TaskTable!.ReadTaskAsync("TaskDoNotExists",
                                                                                            CancellationToken.None)
                                                                             .ConfigureAwait(false));
-    }
-  }
-
-
-  [Test]
-  public async Task UpdateTaskStatusAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      await TaskTable!.UpdateTaskStatusAsync("TaskProcessingId",
-                                             TaskStatus.Processed,
-                                             CancellationToken.None)
-                      .ConfigureAwait(false);
-      var result = await TaskTable.GetTaskStatus(new[]
-                                                 {
-                                                   "TaskProcessingId",
-                                                 },
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.IsTrue(result.Single()
-                          .Status == TaskStatus.Processed);
-    }
-  }
-
-  [Test(Description = "Forbidden update: Task on final status")]
-  public void UpdateTaskStatusAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable!.UpdateTaskStatusAsync("TaskCompletedId",
-                                                                                    TaskStatus.Unspecified,
-                                                                                    CancellationToken.None)
-                                                             .ConfigureAwait(false);
-                                           });
     }
   }
 
@@ -576,20 +556,6 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public void CancelSessionAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await TaskTable!.CancelSessionAsync("NonExistingSessionId",
-                                                                                         CancellationToken.None)
-                                                                     .ConfigureAwait(false);
-                                                   });
-    }
-  }
-
-  [Test]
   public async Task CountPartitionTasksAsyncShouldSucceed()
   {
     if (RunTests)
@@ -597,7 +563,7 @@ public class TaskTableTestBase
       var result = (await TaskTable!.CountPartitionTasksAsync(CancellationToken.None)
                                     .ConfigureAwait(false)).OrderBy(r => r.Status)
                                                            .ThenBy(r => r.PartitionId)
-                                                           .ToIList();
+                                                           .AsIList();
 
       Assert.AreEqual(5,
                       result.Count);
@@ -689,19 +655,35 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskSuccessAsync("TaskProcessingId",
-                                                  CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskSuccessAsync(taskProcessingData_ with
+                                           {
+                                             EndDate = DateTime.UtcNow,
+                                             CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                             ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                           },
+                                           CancellationToken.None)
+                      .ConfigureAwait(false);
 
       var resStatus = await TaskTable.GetTaskStatus(new[]
                                                     {
-                                                      "TaskProcessingId",
+                                                      taskProcessingData_.TaskId,
                                                     },
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Completed);
+      Assert.AreEqual(TaskStatus.Completed,
+                      resStatus.Single()
+                               .Status);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Completed,
+                      taskData.Status);
+      Assert.IsTrue(taskData.Output.Success);
+      Assert.AreEqual("",
+                      taskData.Output.Error);
     }
   }
 
@@ -710,17 +692,22 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskErrorAsync("TaskProcessingId",
-                                                "Testing SetTaskError",
-                                                CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskErrorAsync(taskProcessingData_ with
+                                         {
+                                           EndDate = DateTime.UtcNow,
+                                           CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                           ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                         },
+                                         "Testing SetTaskError",
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
-                                                    {
-                                                      "TaskProcessingId",
-                                                    },
-                                                    CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
+                                                     {
+                                                       "TaskProcessingId",
+                                                     },
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Error,
                       resStatus.Single()
@@ -732,6 +719,7 @@ public class TaskTableTestBase
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
+      Assert.IsFalse(output.Success);
     }
   }
 
@@ -740,19 +728,32 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = TaskTable!.SetTaskCanceledAsync("TaskProcessingId",
-                                                   CancellationToken.None);
-      await result.ConfigureAwait(false);
+      await TaskTable!.SetTaskCanceledAsync(taskProcessingData_ with
+                                            {
+                                              EndDate = DateTime.UtcNow,
+                                              CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
+                                              ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
+                                            },
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
-                                                    {
-                                                      "TaskProcessingId",
-                                                    },
-                                                    CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
+                                                     {
+                                                       "TaskProcessingId",
+                                                     },
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Cancelled);
+      Assert.AreEqual(TaskStatus.Cancelled,
+                      resStatus.Single()
+                               .Status);
+
+      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsEmpty(output.Error);
+      Assert.IsFalse(output.Success);
     }
   }
 
@@ -884,10 +885,13 @@ public class TaskTableTestBase
       var ownerpodname  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
 
-      var result = await TaskTable!.AcquireTask("TaskSubmittedId",
-                                                ownerpodid,
-                                                ownerpodname,
-                                                receptionDate,
+      var result = await TaskTable!.AcquireTask(taskSubmittedData_ with
+                                                {
+                                                  OwnerPodId = ownerpodid,
+                                                  OwnerPodName = ownerpodname,
+                                                  ReceptionDate = receptionDate,
+                                                  AcquisitionDate = DateTime.UtcNow,
+                                                },
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -914,11 +918,15 @@ public class TaskTableTestBase
       var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
       var ownerpodname  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
+      var taskSubmitted = taskSubmittedData_ with
+                          {
+                            OwnerPodId = ownerpodid,
+                            OwnerPodName = ownerpodname,
+                            ReceptionDate = receptionDate,
+                            AcquisitionDate = DateTime.UtcNow,
+                          };
 
-      var result = await TaskTable!.AcquireTask("TaskSubmittedId",
-                                                ownerpodid,
-                                                ownerpodname,
-                                                receptionDate,
+      var result = await TaskTable!.AcquireTask(taskSubmitted,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -935,8 +943,7 @@ public class TaskTableTestBase
       Assert.Greater(result.AcquisitionDate,
                      result.ReceptionDate);
 
-      var resultRelease = await TaskTable!.ReleaseTask("TaskSubmittedId",
-                                                       ownerpodid,
+      var resultRelease = await TaskTable!.ReleaseTask(taskSubmitted,
                                                        CancellationToken.None)
                                           .ConfigureAwait(false);
       Assert.AreEqual("TaskSubmittedId",
@@ -959,10 +966,15 @@ public class TaskTableTestBase
     {
       var hostname = LocalIPv4.GetLocalIPv4Ethernet();
 
-      var result1 = await TaskTable!.AcquireTask("TaskSubmittedId",
-                                                 hostname,
-                                                 hostname,
-                                                 DateTime.UtcNow,
+      var taskSubmitted = taskSubmittedData_ with
+                          {
+                            OwnerPodId = hostname,
+                            OwnerPodName = hostname,
+                            ReceptionDate = DateTime.UtcNow,
+                            AcquisitionDate = DateTime.UtcNow,
+                          };
+
+      var result1 = await TaskTable!.AcquireTask(taskSubmitted,
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -971,10 +983,7 @@ public class TaskTableTestBase
       Assert.AreEqual(hostname,
                       result1.OwnerPodId);
 
-      var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
-                                                hostname,
-                                                hostname,
-                                                DateTime.UtcNow,
+      var result2 = await TaskTable.AcquireTask(taskSubmitted,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.AreEqual(result1.Status,
@@ -999,10 +1008,15 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = await TaskTable!.AcquireTask("TaskFailedId",
-                                                LocalIPv4.GetLocalIPv4Ethernet(),
-                                                Dns.GetHostName(),
-                                                DateTime.UtcNow,
+      var task = taskFailedData_ with
+                 {
+                   OwnerPodId = LocalIPv4.GetLocalIPv4Ethernet(),
+                   OwnerPodName = Dns.GetHostName(),
+                   ReceptionDate = DateTime.UtcNow,
+                   AcquisitionDate = DateTime.UtcNow,
+                 };
+
+      var result = await TaskTable!.AcquireTask(task,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -1019,10 +1033,15 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = await TaskTable!.AcquireTask("TaskCreatingId",
-                                                LocalIPv4.GetLocalIPv4Ethernet(),
-                                                Dns.GetHostName(),
-                                                DateTime.UtcNow,
+      var task = taskCreatingData_ with
+                 {
+                   OwnerPodId = LocalIPv4.GetLocalIPv4Ethernet(),
+                   OwnerPodName = Dns.GetHostName(),
+                   ReceptionDate = DateTime.UtcNow,
+                   AcquisitionDate = DateTime.UtcNow,
+                 };
+
+      var result = await TaskTable!.AcquireTask(task,
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -1082,7 +1101,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      await TaskTable!.StartTask("TaskSubmittedId",
+      await TaskTable!.StartTask(taskSubmittedData_,
                                  CancellationToken.None)
                       .ConfigureAwait(false);
 
@@ -1102,7 +1121,10 @@ public class TaskTableTestBase
     {
       Assert.ThrowsAsync<TaskNotFoundException>(async () =>
                                                 {
-                                                  await TaskTable!.StartTask("NonExistingTaskId",
+                                                  await TaskTable!.StartTask(taskSubmittedData_ with
+                                                                             {
+                                                                               TaskId = "NotExistingTask",
+                                                                             },
                                                                              CancellationToken.None)
                                                                   .ConfigureAwait(false);
                                                 });
@@ -1229,14 +1251,17 @@ public class TaskTableTestBase
                   PageSize = 4,
                   Filter = new ListApplicationsRequest.Types.Filter
                            {
-                             Name = options_.ApplicationName,
+                             Name = Options.ApplicationName,
                            },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
-                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Direction = SortDirection.Desc,
                            Fields =
                            {
-                             ListApplicationsRequest.Types.OrderByField.Name,
+                             new ApplicationField
+                             {
+                               ApplicationField_ = ApplicationRawField.Name,
+                             },
                            },
                          },
                 };
@@ -1260,10 +1285,10 @@ public class TaskTableTestBase
         Console.WriteLine(task);
       }
 
-      Assert.AreEqual(new Application(options_.ApplicationName,
-                                      options_.ApplicationNamespace,
-                                      options_.ApplicationVersion,
-                                      options_.ApplicationService),
+      Assert.AreEqual(new Application(Options.ApplicationName,
+                                      Options.ApplicationNamespace,
+                                      Options.ApplicationVersion,
+                                      Options.ApplicationService),
                       listTasksResponseTaskData.Single());
     }
   }
@@ -1373,11 +1398,17 @@ public class TaskTableTestBase
                            },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
-                           Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                           Direction = SortDirection.Desc,
                            Fields =
                            {
-                             ListApplicationsRequest.Types.OrderByField.Version,
-                             ListApplicationsRequest.Types.OrderByField.Service,
+                             new ApplicationField
+                             {
+                               ApplicationField_ = ApplicationRawField.Version,
+                             },
+                             new ApplicationField
+                             {
+                               ApplicationField_ = ApplicationRawField.Service,
+                             },
                            },
                          },
                 };
@@ -1389,7 +1420,7 @@ public class TaskTableTestBase
       var listTasks = await TaskTable.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
                                                             req.Sort.Fields.Select(sort => sort.ToApplicationField())
                                                                .ToList(),
-                                                            req.Sort.Direction == ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                            req.Sort.Direction == SortDirection.Asc,
                                                             req.Page,
                                                             req.PageSize,
                                                             CancellationToken.None)
@@ -1432,6 +1463,39 @@ public class TaskTableTestBase
     }
   }
 
+
+  [Test]
+  public async Task ListTaskWithRequestOrderByTaskOptionsOptionsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListTasksRequest
+                {
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = SortDirection.Asc,
+                           Field = new TaskField
+                                   {
+                                     TaskOptionGenericField = new TaskOptionGenericField
+                                                              {
+                                                                Field = "test",
+                                                              },
+                                   },
+                         },
+                };
+
+      var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                      req.Sort.ToTaskDataField(),
+                                                      false,
+                                                      0,
+                                                      20,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(6,
+                      listTasks.totalCount);
+    }
+  }
 
   [Test]
   public async Task ListTaskWithListInRequestShouldSucceed()
@@ -1507,7 +1571,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   status,
-                                                  options_,
+                                                  Options,
                                                   new Output(true,
                                                              "")),
                                    })
@@ -1520,13 +1584,13 @@ public class TaskTableTestBase
                                                            CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Console.WriteLine(cancelledTasks.Single());
+      Assert.AreEqual(0,
+                      cancelledTasks);
+
+      var taskData = await TaskTable.ReadTaskAsync(taskId)
+                                    .ConfigureAwait(false);
       Assert.AreEqual(status,
-                      cancelledTasks.Single()
-                                    .Status);
-      Assert.AreEqual(taskId,
-                      cancelledTasks.Single()
-                                    .TaskId);
+                      taskData.Status);
     }
   }
 
@@ -1540,7 +1604,7 @@ public class TaskTableTestBase
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(0,
-                      cancelledTasks.Count);
+                      cancelledTasks);
     }
   }
 
@@ -1616,7 +1680,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   TaskStatus.Creating,
-                                                  options_,
+                                                  Options,
                                                   new Output(true,
                                                              "")),
                                    })
@@ -1670,7 +1734,7 @@ public class TaskTableTestBase
                                                   },
                                                   Array.Empty<string>(),
                                                   TaskStatus.Creating,
-                                                  options_,
+                                                  Options,
                                                   new Output(true,
                                                              "")),
                                    })

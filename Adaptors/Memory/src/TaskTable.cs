@@ -90,34 +90,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task UpdateTaskStatusAsync(string            id,
-                                    TaskStatus        status,
-                                    CancellationToken cancellationToken = default)
-    => Task.FromResult(UpdateAndCheckTaskStatus(id,
-                                                status));
-
-  /// <inheritdoc />
-  public async Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
-                                                  TaskStatus        status,
-                                                  CancellationToken cancellationToken = default)
-  {
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled)))
-    {
-      throw new ArmoniKException("The given TaskFilter contains a terminal state or isn't initialized properly");
-    }
-
-    var result = await ListTasksAsync(filter,
-                                      cancellationToken)
-                       .Select(taskId => UpdateAndCheckTaskStatus(taskId,
-                                                                  status))
-                       .CountAsync(checkTask => checkTask,
-                                   cancellationToken)
-                       .ConfigureAwait(false);
-
-    return result;
-  }
-
-  /// <inheritdoc />
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
@@ -131,82 +103,24 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task StartTask(string            taskId,
+  public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
     {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
+      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
     }
 
-    taskId2TaskData_.AddOrUpdate(taskId,
+    taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                  _ => throw new InvalidOperationException("The task does not exist."),
                                  (_,
                                   data) => data with
                                            {
                                              Status = TaskStatus.Processing,
-                                             StartDate = DateTime.UtcNow,
-                                             PodTtl = DateTime.UtcNow,
+                                             StartDate = taskData.StartDate,
+                                             PodTtl = taskData.PodTtl,
                                            });
     return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public async Task CancelSessionAsync(string            sessionId,
-                                       CancellationToken cancellationToken = default)
-  {
-    if (!session2TaskIds_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    var sessionFilter = new TaskFilter
-                        {
-                          Session = new TaskFilter.Types.IdsRequest
-                                    {
-                                      Ids =
-                                      {
-                                        sessionId,
-                                      },
-                                    },
-                        };
-
-    await UpdateAllTaskStatusAsync(sessionFilter,
-                                   TaskStatus.Cancelling,
-                                   cancellationToken)
-      .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public Task<IList<TaskData>> CancelTaskAsync(ICollection<string> taskIds,
-                                               CancellationToken   cancellationToken = default)
-  {
-    foreach (var taskId in taskIds)
-    {
-      if (!taskId2TaskData_.TryGetValue(taskId,
-                                        out var taskData))
-      {
-        continue;
-      }
-
-      if (taskData.Status is TaskStatus.Completed or TaskStatus.Cancelled or TaskStatus.Cancelling or TaskStatus.Error)
-      {
-        continue;
-      }
-
-      taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new InvalidOperationException("The task does not exist."),
-                                   (_,
-                                    data) => data with
-                                             {
-                                               Status = TaskStatus.Cancelling,
-                                               EndDate = DateTime.UtcNow,
-                                             });
-    }
-
-    return Task.FromResult(taskId2TaskData_.Where(pair => taskIds.Contains(pair.Key))
-                                           .Select(pair => pair.Value)
-                                           .ToList() as IList<TaskData>);
   }
 
   /// <inheritdoc />
@@ -326,12 +240,12 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<(IEnumerable<TaskData> tasks, int totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                            Expression<Func<TaskData, object?>> orderField,
-                                                                            bool                                ascOrder,
-                                                                            int                                 page,
-                                                                            int                                 pageSize,
-                                                                            CancellationToken                   cancellationToken = default)
+  public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
+                                                                             Expression<Func<TaskData, object?>> orderField,
+                                                                             bool                                ascOrder,
+                                                                             int                                 page,
+                                                                             int                                 pageSize,
+                                                                             CancellationToken                   cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
@@ -341,8 +255,8 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<(IEnumerable<TaskData> tasks, int totalCount)>((ordered.Skip(page * pageSize)
-                                                                                  .Take(pageSize), ordered.Count()));
+    return Task.FromResult<(IEnumerable<TaskData> tasks, long totalCount)>((ordered.Skip(page * pageSize)
+                                                                                   .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />
@@ -354,6 +268,35 @@ public class TaskTable : ITaskTable
                                        .Where(filter)
                                        .Select(selector)
                                        .AsEnumerable());
+
+  public Task<TaskData> UpdateOneTask(string                                                                        taskId,
+                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                             cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+                                                    _ => throw new TaskNotFoundException($"Key '{taskId}' not found"),
+                                                    (_,
+                                                     data) => new TaskData(data,
+                                                                           updates)));
+
+  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
+                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                    CancellationToken                                                             cancellationToken = default)
+  {
+    long i = 0;
+    foreach (var id in taskId2TaskData_.Values.AsQueryable()
+                                       .Where(filter)
+                                       .Select(data => data.TaskId))
+    {
+      i++;
+      taskId2TaskData_.AddOrUpdate(id,
+                                   _ => throw new TaskNotFoundException("Task not found"),
+                                   (_,
+                                    data) => new TaskData(data,
+                                                          updates));
+    }
+
+    return Task.FromResult(i);
+  }
 
   /// <inheritdoc />
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
@@ -377,44 +320,6 @@ public class TaskTable : ITaskTable
 
     return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((ordered.Skip(page * pageSize)
                                                                                      .Take(pageSize), ordered.Count()));
-  }
-
-  /// <inheritdoc />
-  public Task SetTaskSuccessAsync(string            taskId,
-                                  CancellationToken cancellationToken = default)
-  {
-    using var _ = Logger.LogFunction();
-
-    var taskOutput = new Output(Error: "",
-                                Success: true);
-
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
-                          TaskStatus.Completed,
-                          taskOutput);
-
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    taskId2TaskData_.AddOrUpdate(taskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
-                                   {
-                                     throw new ArmoniKException("Task already in a final status");
-                                   }
-
-                                   return data with
-                                          {
-                                            Status = TaskStatus.Completed,
-                                            Output = taskOutput,
-                                          };
-                                 });
-    return Task.CompletedTask;
   }
 
   public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
@@ -448,84 +353,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task SetTaskCanceledAsync(string            taskId,
-                                   CancellationToken cancellationToken = default)
-  {
-    using var _ = Logger.LogFunction();
-
-    var taskOutput = new Output(Error: "",
-                                Success: false);
-
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
-                          TaskStatus.Cancelled,
-                          taskOutput);
-
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    taskId2TaskData_.AddOrUpdate(taskId,
-                                 _ => throw new TaskNotFoundException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
-                                   {
-                                     throw new ArmoniKException("Task already in a final status");
-                                   }
-
-                                   return data with
-                                          {
-                                            Status = TaskStatus.Cancelled,
-                                            Output = taskOutput,
-                                          };
-                                 });
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task<bool> SetTaskErrorAsync(string            taskId,
-                                      string            errorDetail,
-                                      CancellationToken cancellationToken = default)
-  {
-    using var _ = Logger.LogFunction();
-
-    var taskOutput = new Output(Error: errorDetail,
-                                Success: false);
-
-    Logger.LogInformation("update task {taskId} to status {status} with {output}",
-                          taskId,
-                          TaskStatus.Error,
-                          taskOutput);
-
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    var updated = true;
-    taskId2TaskData_.AddOrUpdate(taskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.Status is TaskStatus.Cancelled or TaskStatus.Completed)
-                                   {
-                                     updated = false;
-                                   }
-
-                                   return data with
-                                          {
-                                            Status = TaskStatus.Error,
-                                            Output = taskOutput,
-                                          };
-                                 });
-    return Task.FromResult(updated);
-  }
-
-  /// <inheritdoc />
   public Task<Output> GetTaskOutput(string            taskId,
                                     CancellationToken cancellationToken = default)
   {
@@ -539,12 +366,9 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<TaskData> AcquireTask(string            taskId,
-                                    string            ownerPodId,
-                                    string            ownerPodName,
-                                    DateTime          receptionDate,
+  public Task<TaskData> AcquireTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                                     _ => throw new InvalidOperationException("The task does not exist."),
                                                     (_,
                                                      data) =>
@@ -556,26 +380,25 @@ public class TaskTable : ITaskTable
 
                                                       return data with
                                                              {
-                                                               OwnerPodId = ownerPodId,
-                                                               OwnerPodName = ownerPodName,
-                                                               ReceptionDate = receptionDate,
+                                                               OwnerPodId = taskData.OwnerPodId,
+                                                               OwnerPodName = taskData.OwnerPodName,
+                                                               ReceptionDate = taskData.ReceptionDate,
                                                                AcquisitionDate = DateTime.UtcNow,
                                                              };
                                                     }));
 
   /// <inheritdoc />
-  public Task<TaskData> ReleaseTask(string            taskId,
-                                    string            ownerPodId,
+  public Task<TaskData> ReleaseTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                                     _ => throw new InvalidOperationException("The task does not exist."),
                                                     (_,
                                                      data) =>
                                                     {
-                                                      if (data.OwnerPodId != ownerPodId)
+                                                      if (data.OwnerPodId != taskData.OwnerPodId)
                                                       {
                                                         throw new
-                                                          InvalidOperationException($"The task {taskId} is acquired by {data.OwnerPodId}, but release is done by {ownerPodId}.");
+                                                          InvalidOperationException($"The task {taskData.TaskId} is acquired by {data.OwnerPodId}, but release is done by {taskData.OwnerPodId}.");
                                                       }
 
                                                       return data with
@@ -646,6 +469,8 @@ public class TaskTable : ITaskTable
                                    null,
                                    null,
                                    null,
+                                   null,
+                                   null,
                                    new Output(false,
                                               ""));
 
@@ -660,15 +485,6 @@ public class TaskTable : ITaskTable
     session.Enqueue(newTaskId);
 
     return Task.FromResult(newTaskId);
-  }
-
-  public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                        CancellationToken   cancellationToken = default)
-  {
-    var result = taskIds.Sum(taskId => UpdateTaskToSubmitted(taskId)
-                                         ? 1
-                                         : 0);
-    return Task.FromResult(result);
   }
 
   /// <inheritdoc />
@@ -686,39 +502,6 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
-
-  private bool UpdateAndCheckTaskStatus(string     id,
-                                        TaskStatus status)
-  {
-    if (!taskId2TaskData_.ContainsKey(id))
-    {
-      throw new TaskNotFoundException($"Key '{id}' not found");
-    }
-
-    var updated = false;
-    taskId2TaskData_.AddOrUpdate(id,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (status is not TaskStatus.Cancelling && data.Status is TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error)
-                                   {
-                                     throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
-                                   }
-
-                                   if (data.Status == status || data.Status is TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error)
-                                   {
-                                     return data;
-                                   }
-
-                                   updated = true;
-                                   return data with
-                                          {
-                                            Status = status,
-                                          };
-                                 });
-    return updated;
-  }
 
   private bool UpdateTaskToSubmitted(string id)
   {

@@ -21,6 +21,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Results;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using Google.Protobuf.WellKnownTypes;
@@ -86,12 +89,15 @@ public static class GrpcChannelExt
                                                          },
                                                          new ListTasksRequest.Types.Sort
                                                          {
-                                                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                           Field     = ListTasksRequest.Types.OrderByField.TaskId,
+                                                           Direction = SortDirection.Asc,
+                                                           Field = new TaskField
+                                                                   {
+                                                                     TaskSummaryField = TaskSummaryField.TaskId,
+                                                                   },
                                                          })
                                          .ConfigureAwait(false))
     {
-      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error)
+      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
       {
         var useRatio = (taskRaw.EndedAt - taskRaw.StartedAt).ToTimeSpan()
                                                             .TotalMilliseconds / (taskRaw.EndedAt - taskRaw.ReceivedAt).ToTimeSpan()
@@ -123,12 +129,12 @@ public static class GrpcChannelExt
                                                     })
                                     .ResultTask.Select(m => m.TaskId);
 
-      var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key))
+      var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key) && pair.Value.EndedAt is not null)
                                                    .Select(pair => pair.Value)
                                                    .MaxBy(pair => pair.EndedAt);
-      if (lastDependencyFinished is not null)
+      if (agg.StartedAt is not null && lastDependencyFinished is not null)
       {
-        var diff = agg.StartedAt - lastDependencyFinished?.EndedAt;
+        var diff = agg.StartedAt - lastDependencyFinished.EndedAt;
         timediff.Add(diff.ToTimeSpan()
                          .TotalMilliseconds / 1000);
       }
@@ -200,7 +206,7 @@ public static class GrpcChannelExt
     var sessionEnd = taskDependencies.Values.Where(raw => raw.EndedAt is not null)
                                      .Max(raw => raw.EndedAt);
     var sessionDuration = (sessionEnd - sessionStart).ToTimeSpan();
-    var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error);
+    var taskCount       = taskDependencies.Count(pair => pair.Value.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried);
 
     logger.LogInformation("Throughput for session {session} : {sessionThroughput} task/s (completed {nTasks}, total {total} tasks in {timespan})",
                           sessionId,
@@ -217,12 +223,16 @@ public static class GrpcChannelExt
                                                      {
                                                        TaskStatus.Completed,
                                                        TaskStatus.Error,
+                                                       TaskStatus.Retried,
                                                      },
                                                    },
                                                    new ListTasksRequest.Types.Sort
                                                    {
-                                                     Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                     Field     = ListTasksRequest.Types.OrderByField.TaskId,
+                                                     Direction = SortDirection.Asc,
+                                                     Field = new TaskField
+                                                             {
+                                                               TaskSummaryField = TaskSummaryField.TaskId,
+                                                             },
                                                    })
                                    .ConfigureAwait(false))
     {

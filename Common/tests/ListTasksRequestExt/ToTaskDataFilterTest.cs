@@ -19,6 +19,9 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
@@ -28,7 +31,7 @@ using NUnit.Framework;
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
@@ -69,6 +72,15 @@ public class ToTaskDataFilterTest
                                             new Output(true,
                                                        ""));
 
+  private static readonly ListTasksRequest.Types.Sort Sort = new()
+                                                             {
+                                                               Direction = SortDirection.Asc,
+                                                               Field = new TaskField
+                                                                       {
+                                                                         TaskSummaryField = TaskSummaryField.StartedAt,
+                                                                       },
+                                                             };
+
   [Test]
   public void FilterSessionIdShouldSucceed()
   {
@@ -78,11 +90,7 @@ public class ToTaskDataFilterTest
                           {
                             SessionId = "SessionId",
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -98,11 +106,7 @@ public class ToTaskDataFilterTest
                           {
                             SessionId = "SessionId",
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -121,11 +125,7 @@ public class ToTaskDataFilterTest
                           {
                             CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -144,11 +144,7 @@ public class ToTaskDataFilterTest
                           {
                             CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -167,11 +163,7 @@ public class ToTaskDataFilterTest
                           {
                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -190,11 +182,7 @@ public class ToTaskDataFilterTest
                           {
                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -213,11 +201,7 @@ public class ToTaskDataFilterTest
                           {
                             EndedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -236,11 +220,7 @@ public class ToTaskDataFilterTest
                           {
                             EndedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -259,11 +239,7 @@ public class ToTaskDataFilterTest
                           {
                             EndedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -282,11 +258,7 @@ public class ToTaskDataFilterTest
                           {
                             EndedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -305,11 +277,7 @@ public class ToTaskDataFilterTest
                           {
                             StartedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -328,11 +296,7 @@ public class ToTaskDataFilterTest
                           {
                             StartedAfter = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -351,11 +315,7 @@ public class ToTaskDataFilterTest
                           {
                             StartedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -374,11 +334,7 @@ public class ToTaskDataFilterTest
                           {
                             StartedBefore = FromDateTime(DateTime.UtcNow),
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -402,11 +358,7 @@ public class ToTaskDataFilterTest
                               TaskStatus.Error,
                             },
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 
@@ -429,11 +381,7 @@ public class ToTaskDataFilterTest
                               TaskStatus.Error,
                             },
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
+                 Sort = Sort,
                }.Filter.ToTaskDataFilter()
                 .Compile();
 

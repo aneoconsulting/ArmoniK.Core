@@ -375,5 +375,6 @@ terraform/.terraform
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/logs/armonik-logs.json
+terraform/generated
 
 tmp

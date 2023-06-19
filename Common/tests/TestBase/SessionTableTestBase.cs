@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +27,11 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
-using Google.Protobuf.WellKnownTypes;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
 
@@ -57,15 +56,16 @@ public class SessionTableTestBase
                                                                "part1",
                                                                "part2",
                                                              },
-                                                             new TaskOptions
-                                                             {
-                                                               MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                                               MaxRetries         = 2,
-                                                               Priority           = 1,
-                                                               PartitionId        = "part1",
-                                                               ApplicationName    = "ApplicationName",
-                                                               ApplicationVersion = "ApplicationVersion",
-                                                             },
+                                                             new TaskOptions(new Dictionary<string, string>(),
+                                                                             TimeSpan.FromMinutes(1),
+                                                                             2,
+                                                                             1,
+                                                                             "part1",
+                                                                             "ApplicationName",
+                                                                             "ApplicationVersion",
+                                                                             "",
+                                                                             "",
+                                                                             ""),
                                                              CancellationToken.None)
                                         .ConfigureAwait(false);
 
@@ -74,15 +74,16 @@ public class SessionTableTestBase
                                                                 "part1",
                                                                 "part2",
                                                               },
-                                                              new TaskOptions
-                                                              {
-                                                                MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                                                MaxRetries         = 2,
-                                                                Priority           = 1,
-                                                                PartitionId        = "part1",
-                                                                ApplicationName    = "ApplicationName",
-                                                                ApplicationVersion = "ApplicationVersion",
-                                                              },
+                                                              new TaskOptions(new Dictionary<string, string>(),
+                                                                              TimeSpan.FromMinutes(1),
+                                                                              2,
+                                                                              1,
+                                                                              "part1",
+                                                                              "ApplicationName",
+                                                                              "ApplicationVersion",
+                                                                              "",
+                                                                              "",
+                                                                              ""),
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -91,15 +92,16 @@ public class SessionTableTestBase
                                                                 "part1",
                                                                 "part2",
                                                               },
-                                                              new TaskOptions
-                                                              {
-                                                                MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                                                MaxRetries         = 2,
-                                                                Priority           = 1,
-                                                                PartitionId        = "part1",
-                                                                ApplicationName    = "ApplicationName",
-                                                                ApplicationVersion = "ApplicationVersion",
-                                                              },
+                                                              new TaskOptions(new Dictionary<string, string>(),
+                                                                              TimeSpan.FromMinutes(1),
+                                                                              2,
+                                                                              1,
+                                                                              "part1",
+                                                                              "ApplicationName",
+                                                                              "ApplicationVersion",
+                                                                              "",
+                                                                              "",
+                                                                              ""),
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -108,15 +110,16 @@ public class SessionTableTestBase
                                                                 "part1",
                                                                 "part2",
                                                               },
-                                                              new TaskOptions
-                                                              {
-                                                                MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                                                MaxRetries         = 2,
-                                                                Priority           = 1,
-                                                                PartitionId        = "part1",
-                                                                ApplicationName    = "ApplicationName2",
-                                                                ApplicationVersion = "ApplicationVersion2",
-                                                              },
+                                                              new TaskOptions(new Dictionary<string, string>(),
+                                                                              TimeSpan.FromMinutes(1),
+                                                                              2,
+                                                                              1,
+                                                                              "part1",
+                                                                              "ApplicationName2",
+                                                                              "ApplicationVersion2",
+                                                                              "",
+                                                                              "",
+                                                                              ""),
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 

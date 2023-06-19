@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
@@ -33,8 +34,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
-using Google.Protobuf.WellKnownTypes;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -42,9 +41,8 @@ using Moq;
 
 using NUnit.Framework;
 
-using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -68,15 +66,19 @@ public class PollsterTest
 
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
+                                                                                                         IResultTable      resultTable,
                                                                                                          CancellationToken token)
   {
-    var defaultTaskOptions = new TaskOptions
-                             {
-                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                               MaxRetries  = 2,
-                               Priority    = 1,
-                               PartitionId = "part1",
-                             };
+    var defaultTaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                             TimeSpan.FromSeconds(2),
+                                             2,
+                                             1,
+                                             "part1",
+                                             "",
+                                             "",
+                                             "",
+                                             "",
+                                             "");
 
     await partitionTable.CreatePartitionsAsync(new[]
                                                {
@@ -107,6 +109,28 @@ public class PollsterTest
                                                    token)
                                     .ConfigureAwait(false)).SessionId;
 
+    await resultTable.Create(new[]
+                             {
+                               new Result(sessionId,
+                                          ExpectedOutput1,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                               new Result(sessionId,
+                                          ExpectedOutput2,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                             },
+                             token)
+                     .ConfigureAwait(false);
+
     var taskCreating = (await submitter.CreateTasks(sessionId,
                                                     sessionId,
                                                     defaultTaskOptions,
@@ -123,33 +147,31 @@ public class PollsterTest
                                                           }.ToAsyncEnumerable()),
                                                     }.ToAsyncEnumerable(),
                                                     CancellationToken.None)
-                                       .ConfigureAwait(false)).requests.First()
-                                                              .Id;
+                                       .ConfigureAwait(false)).First()
+                                                              .TaskId;
 
-    var tuple = await submitter.CreateTasks(sessionId,
-                                            sessionId,
-                                            defaultTaskOptions,
-                                            new List<TaskRequest>
-                                            {
-                                              new(new[]
-                                                  {
-                                                    ExpectedOutput2,
-                                                  },
-                                                  new List<string>(),
-                                                  new List<ReadOnlyMemory<byte>>
-                                                  {
-                                                    new(Encoding.ASCII.GetBytes("AAAA")),
-                                                  }.ToAsyncEnumerable()),
-                                            }.ToAsyncEnumerable(),
-                                            CancellationToken.None)
-                               .ConfigureAwait(false);
+    var requests = await submitter.CreateTasks(sessionId,
+                                               sessionId,
+                                               defaultTaskOptions,
+                                               new List<TaskRequest>
+                                               {
+                                                 new(new[]
+                                                     {
+                                                       ExpectedOutput2,
+                                                     },
+                                                     new List<string>(),
+                                                     new List<ReadOnlyMemory<byte>>
+                                                     {
+                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                     }.ToAsyncEnumerable()),
+                                               }.ToAsyncEnumerable(),
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    var taskSubmitted = tuple.requests.First()
-                             .Id;
+    var taskSubmitted = requests.First()
+                                .TaskId;
 
-    await submitter.FinalizeTaskCreation(tuple.requests,
-                                         tuple.priority,
-                                         tuple.partitionId,
+    await submitter.FinalizeTaskCreation(requests,
                                          sessionId,
                                          sessionId,
                                          CancellationToken.None)
@@ -455,6 +477,7 @@ public class PollsterTest
 
     var tuple = await InitSubmitter(testServiceProvider.Submitter,
                                     testServiceProvider.PartitionTable,
+                                    testServiceProvider.ResultTable,
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 
@@ -508,6 +531,7 @@ public class PollsterTest
 
     var tuple = await InitSubmitter(testServiceProvider.Submitter,
                                     testServiceProvider.PartitionTable,
+                                    testServiceProvider.ResultTable,
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 
@@ -662,6 +686,7 @@ public class PollsterTest
 
     var tuple = await InitSubmitter(testServiceProvider.Submitter,
                                     testServiceProvider.PartitionTable,
+                                    testServiceProvider.ResultTable,
                                     CancellationToken.None)
                   .ConfigureAwait(false);
 

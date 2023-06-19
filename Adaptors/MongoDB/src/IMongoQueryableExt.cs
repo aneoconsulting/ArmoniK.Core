@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -43,6 +44,24 @@ internal static class IMongoQueryableExt
       }
     }
   }
+
+
+  public static async IAsyncEnumerable<U> ToAsyncEnumerable<T, U>(this                     IFindFluent<T, U> findFluent,
+                                                                  [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    var cursor = await findFluent.ToCursorAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+    while (await cursor.MoveNextAsync(cancellationToken)
+                       .ConfigureAwait(false))
+    {
+      foreach (var item in cursor.Current)
+      {
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return item;
+      }
+    }
+  }
+
 
   public static IOrderedMongoQueryable<T> OrderByList<T>(this IMongoQueryable<T>                   queryable,
                                                          ICollection<Expression<Func<T, object?>>> orderFields,

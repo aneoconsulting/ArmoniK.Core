@@ -27,12 +27,10 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 
-using Google.Protobuf.WellKnownTypes;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -48,13 +46,16 @@ public class SimpleSessionTable : ISessionTable
   public static readonly TaskOptions TaskOptions;
 
   static SimpleSessionTable()
-    => TaskOptions = new Api.gRPC.V1.TaskOptions
-                     {
-                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                       MaxRetries  = 4,
-                       Priority    = 2,
-                       PartitionId = PartitionId,
-                     };
+    => TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                     TimeSpan.FromSeconds(1),
+                                     5,
+                                     1,
+                                     PartitionId,
+                                     "",
+                                     "",
+                                     "",
+                                     "",
+                                     "");
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));

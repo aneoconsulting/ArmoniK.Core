@@ -68,6 +68,13 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Common.gRPC.Services.Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       builder.Host.UseSerilog(logger.GetSerilogConf());
@@ -175,6 +182,8 @@ public static class Program
       app.MapGrpcService<GrpcEventsService>()
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcPartitionsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcVersionsService>()
          .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",

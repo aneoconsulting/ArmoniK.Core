@@ -23,6 +23,8 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+
 namespace ArmoniK.Core.Common.Storage;
 
 public record SessionData(string        SessionId,
@@ -52,22 +54,11 @@ public record SessionData(string        SessionId,
                          ? FromDateTime(sessionData.CancellationDate.Value)
                          : null,
          CreatedAt = FromDateTime(sessionData.CreationDate),
-         Options   = sessionData.Options,
+         Options   = sessionData.Options.ToGrpcTaskOptions(),
          PartitionIds =
          {
            sessionData.PartitionIds,
          },
-         SessionId = sessionData.SessionId,
-         Status    = sessionData.Status,
-       };
-
-  public static implicit operator SessionSummary(SessionData sessionData)
-    => new()
-       {
-         CancelledAt = sessionData.CancellationDate is not null
-                         ? FromDateTime(sessionData.CancellationDate.Value)
-                         : null,
-         CreatedAt = FromDateTime(sessionData.CreationDate),
          SessionId = sessionData.SessionId,
          Status    = sessionData.Status,
        };
