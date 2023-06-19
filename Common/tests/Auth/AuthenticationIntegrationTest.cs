@@ -1085,6 +1085,9 @@ public class AuthenticationIntegrationTest
                                            client,
                                            args));
 
+  private static readonly SemaphoreSlim singleThreadSemaphore = new(1,
+                                                                    1);
+
   /// <summary>
   ///   Function used to test async clientStream-unary functions
   /// </summary>
@@ -1337,26 +1340,28 @@ public class AuthenticationIntegrationTest
     }
 
     var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
-
-    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
-                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name +
-                                                                                                                          (parameters.IsAsync
-                                                                                                                             ? "Async"
-                                                                                                                             : "") == parameters.Method)))
+    using (singleThreadSemaphore)
     {
-      Assert.DoesNotThrowAsync(TestFunction);
-    }
-    else
-    {
-      var exception = Assert.CatchAsync(TestFunction);
-      Assert.IsNotNull(exception);
-      var finalException = parameters.IsAsync || parameters.ClientStream || parameters.ServerStream
-                             ? exception
-                             : exception!.InnerException;
-      Assert.IsNotNull(finalException);
-      Assert.IsInstanceOf<RpcException>(finalException);
-      Assert.AreEqual(expectedError,
-                      ((RpcException)finalException!).StatusCode);
+      if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
+                                                                                                      .Permissions.Any(p => p.Service == serviceName && p.Name +
+                                                                                                                            (parameters.IsAsync
+                                                                                                                               ? "Async"
+                                                                                                                               : "") == parameters.Method)))
+      {
+        Assert.DoesNotThrowAsync(TestFunction);
+      }
+      else
+      {
+        var exception = Assert.CatchAsync(TestFunction);
+        Assert.IsNotNull(exception);
+        var finalException = parameters.IsAsync || parameters.ClientStream || parameters.ServerStream
+                               ? exception
+                               : exception!.InnerException;
+        Assert.IsNotNull(finalException);
+        Assert.IsInstanceOf<RpcException>(finalException);
+        Assert.AreEqual(expectedError,
+                        ((RpcException)finalException!).StatusCode);
+      }
     }
 
     helper_.DeleteChannel(channel)
