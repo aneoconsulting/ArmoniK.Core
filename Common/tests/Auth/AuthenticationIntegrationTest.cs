@@ -120,19 +120,29 @@ public class AuthenticationIntegrationTest
 
   public enum AuthenticationType
   {
-    // Auth and Authorization
+    /// <summary>
+    ///   Auth and Authorization
+    /// </summary>
     DefaultAuth,
 
-    // Auth Only
+    /// <summary>
+    ///   Auth Only
+    /// </summary>
     NoAuthorization,
 
-    // No Auth, No Authorization
+    /// <summary>
+    ///   No Auth, No Authorization
+    /// </summary>
     NoAuthentication,
 
-    // Auth and Authorization, no impersonation
+    /// <summary>
+    ///   Auth and Authorization, no impersonation
+    /// </summary>
     NoImpersonation,
 
-    // Auth, no impersonation no authorization
+    /// <summary>
+    ///   Auth, no impersonation no authorization
+    /// </summary>
     NoImpersonationNoAuthorization,
   }
 
@@ -141,7 +151,11 @@ public class AuthenticationIntegrationTest
   private          AuthenticatorOptions? options_;
   private readonly AuthenticationType    authType_;
 
-  // Creates the test and changes the options to match desired behavior
+  /// <summary>
+  ///   Creates the test and changes the options to match desired behavior
+  /// </summary>
+  /// <param name="type">Type of authentication</param>
+  /// <exception cref="ArgumentException">If the authentication type doesn't exist</exception>
   public AuthenticationIntegrationTest(AuthenticationType type)
   {
     TestContext.Progress.WriteLine(type);
@@ -183,28 +197,44 @@ public class AuthenticationIntegrationTest
   /// </summary>
   public enum IdentityIndex
   {
-    // Request has been sent without headers
+    /// <summary>
+    ///   Request has been sent without headers
+    /// </summary>
     MissingHeaders = -2,
 
-    // The user doesn't exist
+    /// <summary>
+    ///   The user doesn't exist
+    /// </summary>
     DoesntExist = -1,
 
-    // The user has all permissions
+    /// <summary>
+    ///   The user has all permissions
+    /// </summary>
     AllRights = 0,
 
-    // The user has no permissions
+    /// <summary>
+    ///   The user has no permissions
+    /// </summary>
     NoRights = 1,
 
-    // The user has the permission to impersonate
+    /// <summary>
+    ///   The user has the permission to impersonate
+    /// </summary>
     CanImpersonate = 2,
 
-    // The user has no valid certificate
+    /// <summary>
+    ///   The user has no valid certificate
+    /// </summary>
     NoCertificate = 3,
 
-    // The user has half of the permissions
+    /// <summary>
+    ///   The user has half of the permissions
+    /// </summary>
     SomeRights = 4,
 
-    // The user has the other half of the permissions
+    /// <summary>
+    ///   The user has the other half of the permissions
+    /// </summary>
     OtherRights = 5,
   }
 
@@ -213,13 +243,19 @@ public class AuthenticationIntegrationTest
   /// </summary>
   public enum ResultType
   {
-    // User is always authorized
+    /// <summary>
+    ///   User is always authorized
+    /// </summary>
     AlwaysTrue,
 
-    //User is never authorized
+    /// <summary>
+    ///   User is never authorized
+    /// </summary>
     AlwaysFalse,
 
-    //User is only authorized for the permissions they have
+    /// <summary>
+    ///   User is only authorized for the permissions they have
+    /// </summary>
     AuthorizedForSome,
   }
 
@@ -228,13 +264,19 @@ public class AuthenticationIntegrationTest
   /// </summary>
   public enum ImpersonationType
   {
-    // Impersonate using user id
+    /// <summary>
+    ///   Impersonate using user id
+    /// </summary>
     ImpersonateId,
 
-    // Impersonate using user name
+    /// <summary>
+    ///   Impersonate using user name
+    /// </summary>
     ImpersonateUsername,
 
-    // Do not impersonate
+    /// <summary>
+    ///   Do not impersonate
+    /// </summary>
     NoImpersonate,
   }
 
@@ -247,7 +289,7 @@ public class AuthenticationIntegrationTest
   /// </summary>
   public static readonly MockIdentity[] Identities =
   {
-    //All rights
+    // All rights
     new(AllRightsId,
         AllRightsUsername,
         new[]
@@ -261,7 +303,7 @@ public class AuthenticationIntegrationTest
         },
         ServicesPermissions.PermissionsLists[ServicesPermissions.All],
         Authenticator.SchemeName),
-    //No Rights
+    // No Rights
     new("NoRightsId1",
         "NoRightsUsername1",
         new[]
@@ -317,7 +359,7 @@ public class AuthenticationIntegrationTest
                            .Where((_,
                                    index) => index % 2 == 0),
         Authenticator.SchemeName),
-    //Has the other half of the permissions
+    // Has the other half of the permissions
     new("OtherRightsId",
         "OtherRightsUsername",
         new[]
@@ -351,7 +393,7 @@ public class AuthenticationIntegrationTest
                                                               "Default");
     if ((int)index < -1)
     {
-      //Missing headers case
+      // Missing headers case
       return headers;
     }
 
@@ -387,7 +429,14 @@ public class AuthenticationIntegrationTest
     return headers;
   }
 
-  // Get the invocation arguments for reflection from the parameters
+  /// <summary>
+  ///   Get the invocation arguments for reflection from the parameters
+  /// </summary>
+  /// <param name="obj">Method call parameter</param>
+  /// <param name="identityIndex">Initial identity</param>
+  /// <param name="impersonationType">Type of impersonation</param>
+  /// <param name="impersonate">Identity to impersonate</param>
+  /// <returns></returns>
   public static object?[] GetArgs(object?           obj,
                                   IdentityIndex     identityIndex,
                                   ImpersonationType impersonationType,
@@ -402,7 +451,9 @@ public class AuthenticationIntegrationTest
          new CancellationToken(),
        };
 
-  // Identities and expectations
+  /// <summary>
+  ///   Identities and expectations
+  /// </summary>
   private static readonly List<object[]> ParametersList = new()
                                                           {
                                                             new object[]
@@ -511,7 +562,9 @@ public class AuthenticationIntegrationTest
                                                             },
                                                           };
 
-  // Default task options
+  /// <summary>
+  ///   Default task options
+  /// </summary>
   private static readonly TaskOptions TaskOptions = new()
                                                     {
                                                       MaxDuration     = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
@@ -521,7 +574,9 @@ public class AuthenticationIntegrationTest
                                                       ApplicationName = "TestName",
                                                     };
 
-  // For cases where the server enforces a specific format
+  /// <summary>
+  ///   For cases where the server enforces a specific format
+  /// </summary>
   public static readonly IReadOnlyDictionary<Type, object> ManualRequests = new ReadOnlyDictionary<Type, object>(new Dictionary<Type, object>
                                                                                                                  {
                                                                                                                    {
@@ -926,7 +981,9 @@ public class AuthenticationIntegrationTest
                : Activator.CreateInstance(finalType);
   }
 
-  // Mapping between the client type and the server type
+  /// <summary>
+  ///   Mapping between the client type and the server type
+  /// </summary>
   public static readonly IReadOnlyDictionary<Type, Type> ClientServerTypeMapping = new ReadOnlyDictionary<Type, Type>(new Dictionary<Type, Type>
                                                                                                                       {
                                                                                                                         {
@@ -968,12 +1025,20 @@ public class AuthenticationIntegrationTest
                                                                                                                         },
                                                                                                                       });
 
-  // Mapping between the server type and the client type
+  /// <summary>
+  ///   Mapping between the server type and the client type
+  /// </summary>
   public static readonly IReadOnlyDictionary<Type, Type> ServerClientTypeMapping =
     new ReadOnlyDictionary<Type, Type>(ClientServerTypeMapping.ToDictionary(kv => kv.Value,
                                                                             kv => kv.Key));
 
-  // Function used to test async unary-unary functions
+  /// <summary>
+  ///   Function used to test async unary-unary functions
+  /// </summary>
+  /// <param name="method">Method name</param>
+  /// <param name="client">Client to use</param>
+  /// <param name="args">Method arguments</param>
+  /// <returns></returns>
   public static Task AsyncTestFunction(string     method,
                                        ClientBase client,
                                        object?[]  args)
@@ -990,7 +1055,13 @@ public class AuthenticationIntegrationTest
                       null);
   }
 
-  // Function used to test synchronous unary-unary functions
+  /// <summary>
+  ///   Function used to test synchronous unary-unary functions
+  /// </summary>
+  /// <param name="method">Method name</param>
+  /// <param name="client">Client to use</param>
+  /// <param name="args">Method arguments</param>
+  /// <returns></returns>
   public static Task SyncTestFunction(string     method,
                                       ClientBase client,
                                       object?[]  args)
@@ -1001,7 +1072,15 @@ public class AuthenticationIntegrationTest
                                            client,
                                            args));
 
-  // Function used to test async clientStream-unary functions
+  /// <summary>
+  ///   Function used to test async clientStream-unary functions
+  /// </summary>
+  /// <typeparam name="TRequest">Request type</typeparam>
+  /// <typeparam name="TReply">Reply type</typeparam>
+  /// <param name="method">Method name</param>
+  /// <param name="client">Client to use</param>
+  /// <param name="args">Method arguments</param>
+  /// <returns></returns>
   public static async Task ClientStreamTestFunction<TRequest, TReply>(string     method,
                                                                       ClientBase client,
                                                                       object?[]  args)
@@ -1028,7 +1107,14 @@ public class AuthenticationIntegrationTest
     await stream.ResponseAsync.ConfigureAwait(false);
   }
 
-  // Function used to test async unary-serverStream functions
+  /// <summary>
+  ///   Function used to test async unary-serverStream functions
+  /// </summary>
+  /// <typeparam name="TReply">Reply type</typeparam>
+  /// <param name="method">Method name</param>
+  /// <param name="client">Client to use</param>
+  /// <param name="args">Method arguments</param>
+  /// <returns></returns>
   public static async Task ServerStreamTestFunction<TReply>(string     method,
                                                             ClientBase client,
                                                             object?[]  args)
@@ -1264,7 +1350,10 @@ public class AuthenticationIntegrationTest
            .Wait();
   }
 
-  // Test case for the auth service get user
+  /// <summary>
+  ///   Test case for the auth service get user
+  /// </summary>
+  /// <returns></returns>
   public static IEnumerable GetAuthServiceTestCaseSource()
   {
     List<CasesConfig> methodObjectList = new()
