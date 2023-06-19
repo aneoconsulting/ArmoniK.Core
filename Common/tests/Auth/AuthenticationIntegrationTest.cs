@@ -59,7 +59,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 using Type = System.Type;
 
@@ -1357,13 +1356,26 @@ public class AuthenticationIntegrationTest
                                                                                                                              ? "Async"
                                                                                                                              : "") == parameters.Method)))
     {
+      // TODO: FIX ME => The RPCException with the OK status only happens in the CI, and it's random. I don't know why
+      RpcException? exception = null;
+      try
+      {
+        TestFunction()
+          .Wait();
+      }
+      catch (Exception ex)
+      {
+        Assert.That(ex.InnerException,
+                    Is.Not.Null);
+        Assert.That(ex.InnerException,
+                    Is.InstanceOf<RpcException>());
+        exception = (RpcException)ex.InnerException!;
+      }
+
       // This handles issues when the machine is too slow and grpc gives a RpcException with no error
-      Assert.That(TestFunction()
-                    .Wait,
-                  new OrConstraint(Throws.Nothing,
-                                   Throws.Exception.TypeOf<RpcException>()
-                                         .With.Property("StatusCode")
-                                         .EqualTo(StatusCode.OK)));
+      Assert.That(exception,
+                  Is.Null.Or.Property("StatusCode")
+                    .EqualTo(StatusCode.OK));
     }
     else
     {
