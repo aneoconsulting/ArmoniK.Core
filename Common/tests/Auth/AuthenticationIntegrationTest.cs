@@ -109,6 +109,14 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
+  [SetUp]
+  public void BeforeEach()
+    => singleThreadSemaphore.Wait();
+
+  [TearDown]
+  public void AfterEach()
+    => singleThreadSemaphore.Release();
+
   private const string SessionId   = "MySession";
   private const string ResultKey   = "ResultKey";
   private const string PartitionId = "PartitionId";
@@ -1300,73 +1308,71 @@ public class AuthenticationIntegrationTest
                     out var finalUserIndex,
                     out var shouldSucceed,
                     out var expectedError);
-    using (singleThreadSemaphore)
+
+    var channel = helper_!.CreateChannel()
+                          .Result;
+    var client = Activator.CreateInstance(parameters.ClientType,
+                                          channel);
+    Assert.IsNotNull(client);
+    Assert.IsInstanceOf<ClientBase>(client);
+
+    async Task TestFunction()
     {
-      var channel = helper_!.CreateChannel()
-                            .Result;
-      var client = Activator.CreateInstance(parameters.ClientType,
-                                            channel);
-      Assert.IsNotNull(client);
-      Assert.IsInstanceOf<ClientBase>(client);
-
-      async Task TestFunction()
+      if (parameters.IsAsync)
       {
-        if (parameters.IsAsync)
-        {
-          await AsyncTestFunction(parameters.Method,
-                                  (ClientBase)client!,
-                                  parameters.Args)
-            .ConfigureAwait(false);
-        }
-        else if (parameters.ClientStream)
-        {
-          await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
-                                                           (ClientBase)client!,
-                                                           parameters.Args)
-            .ConfigureAwait(false);
-        }
-        else if (parameters.ServerStream)
-        {
-          await ServerStreamTestFunction<TReply>(parameters.Method,
-                                                 (ClientBase)client!,
-                                                 parameters.Args)
-            .ConfigureAwait(false);
-        }
-        else
-        {
-          await SyncTestFunction(parameters.Method,
-                                 (ClientBase)client!,
-                                 parameters.Args)
-            .ConfigureAwait(false);
-        }
+        await AsyncTestFunction(parameters.Method,
+                                (ClientBase)client!,
+                                parameters.Args)
+          .ConfigureAwait(false);
       }
-
-      var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
-
-      if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
-                                                                                                      .Permissions.Any(p => p.Service == serviceName && p.Name +
-                                                                                                                            (parameters.IsAsync
-                                                                                                                               ? "Async"
-                                                                                                                               : "") == parameters.Method)))
+      else if (parameters.ClientStream)
       {
-        Assert.DoesNotThrowAsync(TestFunction);
+        await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
+                                                         (ClientBase)client!,
+                                                         parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else if (parameters.ServerStream)
+      {
+        await ServerStreamTestFunction<TReply>(parameters.Method,
+                                               (ClientBase)client!,
+                                               parameters.Args)
+          .ConfigureAwait(false);
       }
       else
       {
-        var exception = Assert.CatchAsync(TestFunction);
-        Assert.IsNotNull(exception);
-        var finalException = parameters.IsAsync || parameters.ClientStream || parameters.ServerStream
-                               ? exception
-                               : exception!.InnerException;
-        Assert.IsNotNull(finalException);
-        Assert.IsInstanceOf<RpcException>(finalException);
-        Assert.AreEqual(expectedError,
-                        ((RpcException)finalException!).StatusCode);
+        await SyncTestFunction(parameters.Method,
+                               (ClientBase)client!,
+                               parameters.Args)
+          .ConfigureAwait(false);
       }
-
-      helper_.DeleteChannel(channel)
-             .Wait();
     }
+
+    var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
+
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[finalUserIndex]
+                                                                                                    .Permissions.Any(p => p.Service == serviceName && p.Name +
+                                                                                                                          (parameters.IsAsync
+                                                                                                                             ? "Async"
+                                                                                                                             : "") == parameters.Method)))
+    {
+      Assert.DoesNotThrowAsync(TestFunction);
+    }
+    else
+    {
+      var exception = Assert.CatchAsync(TestFunction);
+      Assert.IsNotNull(exception);
+      var finalException = parameters.IsAsync || parameters.ClientStream || parameters.ServerStream
+                             ? exception
+                             : exception!.InnerException;
+      Assert.IsNotNull(finalException);
+      Assert.IsInstanceOf<RpcException>(finalException);
+      Assert.AreEqual(expectedError,
+                      ((RpcException)finalException!).StatusCode);
+    }
+
+    helper_.DeleteChannel(channel)
+           .Wait();
   }
 
   /// <summary>
