@@ -998,7 +998,7 @@ public class TaskHandlerTest
     {
     }
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
     public void StartTaskProcessing(TaskData          taskData,
                                     CancellationToken cancellationToken)
