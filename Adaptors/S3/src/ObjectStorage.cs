@@ -23,7 +23,7 @@ using Amazon.S3.Model;
 using Amazon.S3.Util;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;

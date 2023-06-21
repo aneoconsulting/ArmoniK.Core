@@ -18,6 +18,7 @@
 using System;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using JetBrains.Annotations;
 

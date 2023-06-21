@@ -22,7 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using EphemeralMongo;
 
