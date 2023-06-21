@@ -17,6 +17,8 @@
 
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.DataStructures;
+
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
