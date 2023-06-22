@@ -26,6 +26,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
@@ -158,6 +159,8 @@ public class Agent : IAgent
                                                   data => new
                                                           {
                                                             data.TaskId,
+                                                            data.SessionId,
+                                                            data.Options,
                                                             data.Options.PartitionId,
                                                             data.Options.Priority,
                                                           },
@@ -168,7 +171,12 @@ public class Agent : IAgent
     {
       var ids = group.Select(data => data.TaskId)
                      .ToList();
-      await pushQueueStorage_.PushMessagesAsync(ids,
+
+      var msgsData = group.Select(data => new MessageData(data.TaskId,
+                                                          data.SessionId,
+                                                          data.Options))
+                          .ToList();
+      await pushQueueStorage_.PushMessagesAsync(msgsData,
                                                 group.Key.PartitionId,
                                                 group.Key.Priority,
                                                 cancellationToken)

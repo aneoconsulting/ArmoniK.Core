@@ -48,16 +48,16 @@ public class PushQueueStorage : IPushQueueStorage
     => 100;
 
   /// <inheritdoc />
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default)
+  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                string                   partitionId,
+                                int                      priority          = 1,
+                                CancellationToken        cancellationToken = default)
   {
     var messageHandlers = messages.Select(message => new MessageHandler
                                                      {
                                                        IsVisible         = true,
                                                        Priority          = priority,
-                                                       TaskId            = message,
+                                                       TaskId            = message.Message,
                                                        CancellationToken = CancellationToken.None,
                                                        Status            = QueueMessageStatus.Waiting,
                                                        Queues            = queues_,

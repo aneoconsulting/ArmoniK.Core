@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +27,7 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -74,10 +76,10 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   }
 
   /// <inheritdoc />
-  public async Task PushMessagesAsync(IEnumerable<string> messages,
-                                      string              partitionId,
-                                      int                 priority          = 1,
-                                      CancellationToken   cancellationToken = default)
+  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                      string                   partitionId,
+                                      int                      priority          = 1,
+                                      CancellationToken        cancellationToken = default)
   {
     if (!IsInitialized)
     {
@@ -108,15 +110,21 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                   $"{partitionId}###SenderLink{whichQueue}",
                                   $"{partitionId}###q{whichQueue}");
 
-      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
-                                                                {
-                                                                  Header = new Header
-                                                                           {
-                                                                             Priority = (byte)internalPriority,
-                                                                           },
-                                                                  Properties = new Properties(),
-                                                                })))
+      await Task.WhenAll(messages.Select(msgData => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                                                                                                                                 {
+                                                                                                                                   msgData.Message,
+                                                                                                                                   msgData.SessionId,
+                                                                                                                                   msgData.Options,
+                                                                                                                                 })))
+                                                                     {
+                                                                       Header = new Header
+                                                                                {
+                                                                                  Priority = (byte)internalPriority,
+                                                                                },
+                                                                       Properties = new Properties(),
+                                                                     })))
                 .ConfigureAwait(false);
+
 
       await sender.CloseAsync()
                   .ConfigureAwait(false);

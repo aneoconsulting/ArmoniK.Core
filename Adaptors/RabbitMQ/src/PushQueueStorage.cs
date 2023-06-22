@@ -18,11 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using Microsoft.Extensions.Logging;
 
@@ -43,10 +45,10 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
 
   /// <inheritdoc />
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default)
+  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                string                   partitionId,
+                                int                      priority          = 1,
+                                CancellationToken        cancellationToken = default)
   {
     var task = Task.Run(() => PushMessages(messages,
                                            partitionId,
@@ -55,9 +57,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     return task;
   }
 
-  private void PushMessages(IEnumerable<string> messages,
-                            string              partitionId,
-                            int                 priority)
+  private void PushMessages(IEnumerable<MessageData> messages,
+                            string                   partitionId,
+                            int                      priority)
   {
     if (!IsInitialized)
     {
@@ -72,10 +74,16 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
     foreach (var msg in messages)
     {
+      var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+                                                                         {
+                                                                           msg.Message,
+                                                                           msg.SessionId,
+                                                                           msg.Options,
+                                                                         }));
       ConnectionRabbit.Channel.BasicPublish("ArmoniK.QueueExchange",
                                             partitionId,
                                             basicProperties,
-                                            Encoding.UTF8.GetBytes(msg));
+                                            messageBytes);
     }
   }
 }

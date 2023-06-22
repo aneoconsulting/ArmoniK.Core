@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.DataStructures;
+
 namespace ArmoniK.Core.Base;
 
 /// <summary>
@@ -36,8 +38,8 @@ public interface IPushQueueStorage : IQueueStorage
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default);
+  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                string                   partitionId,
+                                int                      priority          = 1,
+                                CancellationToken        cancellationToken = default);
 }

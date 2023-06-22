@@ -42,14 +42,14 @@ public class SimplePushQueueStorage : IPushQueueStorage
 
   public int MaxPriority { get; } = 10;
 
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default)
+  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                string                   partitionId,
+                                int                      priority          = 1,
+                                CancellationToken        cancellationToken = default)
   {
     foreach (var message in messages)
     {
-      Messages.Add(message);
+      Messages.Add(message.Message);
     }
 
     return Task.CompletedTask;
