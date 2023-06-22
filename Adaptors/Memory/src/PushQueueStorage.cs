@@ -57,7 +57,7 @@ public class PushQueueStorage : IPushQueueStorage
                                                      {
                                                        IsVisible         = true,
                                                        Priority          = priority,
-                                                       TaskId            = message.Message,
+                                                       TaskId            = message.TaskId,
                                                        CancellationToken = CancellationToken.None,
                                                        Status            = QueueMessageStatus.Waiting,
                                                        Queues            = queues_,

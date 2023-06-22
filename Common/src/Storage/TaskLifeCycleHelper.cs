@@ -293,7 +293,7 @@ public static class TaskLifeCycleHelper
                                                  item.Key.priority,
                                                  cancellationToken)
                               .ConfigureAwait(false);
-        await taskTable.FinalizeTaskCreation(item.Value.Select(data => data.Message)
+        await taskTable.FinalizeTaskCreation(item.Value.Select(data => data.TaskId)
                                                  .ToList(),
                                              cancellationToken)
                        .ConfigureAwait(false);

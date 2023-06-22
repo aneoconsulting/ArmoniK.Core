@@ -20,9 +20,9 @@ namespace ArmoniK.Core.Base.DataStructures;
 /// <summary>
 ///   Data structure to hold message data
 /// </summary>
-/// <param name="Message">Content of the message</param>
+/// <param name="TaskId">Unique identifier of the task</param>
 /// <param name="SessionId">Unique name of the session to which this message belongs</param>
 /// <param name="Options">Task options</param>
-public record MessageData(string      Message,
+public record MessageData(string      TaskId,
                           string      SessionId,
                           TaskOptions Options);

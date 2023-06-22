@@ -76,7 +76,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     {
       var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
                                                                          {
-                                                                           msg.Message,
+                                                                           msg.TaskId,
                                                                            msg.SessionId,
                                                                            msg.Options,
                                                                          }));

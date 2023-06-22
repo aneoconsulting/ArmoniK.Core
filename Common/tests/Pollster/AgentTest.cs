@@ -118,7 +118,7 @@ public class AgentTest
                                                 _ => new ConcurrentBag<string>());
       foreach (var msgData in msgsData)
       {
-        partitionMessages.Add(msgData.Message);
+        partitionMessages.Add(msgData.TaskId);
       }
 
       return Task.CompletedTask;

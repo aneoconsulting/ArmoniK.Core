@@ -112,7 +112,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
       await Task.WhenAll(messages.Select(msgData => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
                                                                                                                                  {
-                                                                                                                                   msgData.Message,
+                                                                                                                                   msgData.TaskId,
                                                                                                                                    msgData.SessionId,
                                                                                                                                    msgData.Options,
                                                                                                                                  })))

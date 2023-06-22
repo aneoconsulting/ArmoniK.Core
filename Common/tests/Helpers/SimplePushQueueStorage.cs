@@ -49,7 +49,7 @@ public class SimplePushQueueStorage : IPushQueueStorage
   {
     foreach (var msgData in msgsData)
     {
-      Messages.Add(msgData.Message);
+      Messages.Add(msgData.TaskId);
     }
 
     return Task.CompletedTask;
