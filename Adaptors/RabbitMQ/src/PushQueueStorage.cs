@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,16 +73,10 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
     foreach (var msg in messages)
     {
-      var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-                                                                         {
-                                                                           msg.TaskId,
-                                                                           msg.SessionId,
-                                                                           msg.Options,
-                                                                         }));
       ConnectionRabbit.Channel.BasicPublish("ArmoniK.QueueExchange",
                                             partitionId,
                                             basicProperties,
-                                            messageBytes);
+                                            Encoding.UTF8.GetBytes(msg.TaskId));
     }
   }
 }

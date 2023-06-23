@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -110,12 +109,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                   $"{partitionId}###SenderLink{whichQueue}",
                                   $"{partitionId}###q{whichQueue}");
 
-      await Task.WhenAll(messages.Select(msgData => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-                                                                                                                                 {
-                                                                                                                                   msgData.TaskId,
-                                                                                                                                   msgData.SessionId,
-                                                                                                                                   msgData.Options,
-                                                                                                                                 })))
+      await Task.WhenAll(messages.Select(msgData => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
                                                                      {
                                                                        Header = new Header
                                                                                 {
@@ -124,7 +118,6 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                                        Properties = new Properties(),
                                                                      })))
                 .ConfigureAwait(false);
-
 
       await sender.CloseAsync()
                   .ConfigureAwait(false);
