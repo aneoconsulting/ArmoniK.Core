@@ -29,7 +29,8 @@ namespace ArmoniK.Core.Base;
 public interface IPushQueueStorage : IQueueStorage
 {
   /// <summary>
-  ///   Puts messages into the queue
+  ///   Puts messages into the queue, handles priorities of messages by grouping those with the same priority and sending
+  ///   them together
   /// </summary>
   /// <param name="messages">Collection of messages</param>
   /// <param name="partitionId">Id of the partition</param>
