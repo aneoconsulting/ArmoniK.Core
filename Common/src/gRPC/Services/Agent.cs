@@ -178,7 +178,6 @@ public class Agent : IAgent
                           .ToList();
       await pushQueueStorage_.PushMessagesAsync(msgsData,
                                                 group.Key.PartitionId,
-                                                group.Key.Priority,
                                                 cancellationToken)
                              .ConfigureAwait(false);
 

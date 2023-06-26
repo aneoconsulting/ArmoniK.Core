@@ -186,7 +186,6 @@ public class QueueStorageTestsBase
 
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
-                                               1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
     }
@@ -239,7 +238,6 @@ public class QueueStorageTestsBase
       /* Push 5 messages to the queue to test the pull */
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
-                                               priority,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
@@ -321,7 +319,6 @@ public class QueueStorageTestsBase
                          };
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
-                                               1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 

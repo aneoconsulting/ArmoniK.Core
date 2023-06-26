@@ -190,7 +190,7 @@ public static class TaskLifeCycleHelper
                                             cancellationToken)
                      .ConfigureAwait(false);
 
-    var readyTasks = new Dictionary<(int priority, string partitionId), List<MessageData>>();
+    var readyTasks = new Dictionary<string, List<MessageData>>();
 
 
     foreach (var request in taskRequests)
@@ -243,7 +243,7 @@ public static class TaskLifeCycleHelper
         // If all dependencies were already completed, the task is ready to be started.
         if (dependencies.Count == completedDependencies.Count)
         {
-          if (readyTasks.TryGetValue((request.Options.Priority, request.Options.PartitionId),
+          if (readyTasks.TryGetValue(request.Options.PartitionId,
                                      out var msgsData))
           {
             msgsData.Add(new MessageData(request.TaskId,
@@ -252,7 +252,7 @@ public static class TaskLifeCycleHelper
           }
           else
           {
-            readyTasks.Add((request.Options.Priority, request.Options.PartitionId),
+            readyTasks.Add(request.Options.PartitionId,
                            new List<MessageData>
                            {
                              new(request.TaskId,
@@ -264,7 +264,7 @@ public static class TaskLifeCycleHelper
       }
       else
       {
-        if (readyTasks.TryGetValue((request.Options.Priority, request.Options.PartitionId),
+        if (readyTasks.TryGetValue(request.Options.PartitionId,
                                    out var msgsData))
         {
           msgsData.Add(new MessageData(request.TaskId,
@@ -273,7 +273,7 @@ public static class TaskLifeCycleHelper
         }
         else
         {
-          readyTasks.Add((request.Options.Priority, request.Options.PartitionId),
+          readyTasks.Add(request.Options.PartitionId,
                          new List<MessageData>
                          {
                            new(request.TaskId,
@@ -289,8 +289,7 @@ public static class TaskLifeCycleHelper
       foreach (var item in readyTasks)
       {
         await pushQueueStorage.PushMessagesAsync(item.Value,
-                                                 item.Key.partitionId,
-                                                 item.Key.priority,
+                                                 item.Key,
                                                  cancellationToken)
                               .ConfigureAwait(false);
         await taskTable.FinalizeTaskCreation(item.Value.Select(data => data.TaskId)

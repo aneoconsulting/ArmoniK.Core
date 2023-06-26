@@ -33,13 +33,11 @@ public interface IPushQueueStorage : IQueueStorage
   /// </summary>
   /// <param name="messages">Collection of messages</param>
   /// <param name="partitionId">Id of the partition</param>
-  /// <param name="priority">Priority of the tasks associated to the messages</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   public Task PushMessagesAsync(IEnumerable<MessageData> messages,
                                 string                   partitionId,
-                                int                      priority          = 1,
                                 CancellationToken        cancellationToken = default);
 }
