@@ -74,6 +74,19 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     sessionPool_ = new DefaultObjectPool<Session>(new SessionPooledObjectPolicy(ConnectionAmqp));
   }
 
+  /// <inheritdoc />
+  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                      string                   partitionId,
+                                      CancellationToken        cancellationToken = default)
+  {
+    var priorityGroups = messages.GroupBy(msgData => msgData.Options.Priority);
+    await Task.WhenAll(priorityGroups.Select(group => PushMessagesAsync(group,
+                                                                        partitionId,
+                                                                        group.Key,
+                                                                        cancellationToken)))
+              .ConfigureAwait(false);
+  }
+
   private async Task PushMessagesAsync(IEnumerable<MessageData> messages,
                                        string                   partitionId,
                                        int                      priority          = 1,
@@ -125,18 +138,5 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     {
       sessionPool_.Return(session);
     }
-  }
-
-  /// <inheritdoc />
-  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
-                                      string                   partitionId,
-                                      CancellationToken        cancellationToken = default)
-  {
-    var priorityGroups = messages.GroupBy(msgData => msgData.Options.Priority);
-    await Task.WhenAll(priorityGroups.Select(group => PushMessagesAsync(group,
-                                                                        partitionId,
-                                                                        group.Key,
-                                                                        cancellationToken)))
-              .ConfigureAwait(false);
   }
 }
