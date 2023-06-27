@@ -621,48 +621,51 @@ public class TaskHandler : IAsyncDisposable
     if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
-      return;
-    }
-
-    if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && e is RpcException
-                                                                                   {
-                                                                                     StatusCode: StatusCode.Unavailable,
-                                                                                   }))
-    {
-      logger_.LogWarning(e,
-                         cancellationToken.IsCancellationRequested
-                           ? "Cancellation triggered, task cancelled here and re executed elsewhere"
-                           : "Worker not available, task cancelled here and re executed elsewhere");
-
-      await taskTable_.ReleaseTask(taskData,
-                                   CancellationToken.None)
-                      .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Postponed;
     }
     else
     {
-      logger_.LogError(e,
-                       resubmit
-                         ? "Error during task execution, retrying task"
-                         : "Error during task execution, cancelling task");
+      var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode);
 
-      await submitter_.CompleteTaskAsync(taskData,
-                                         resubmit,
-                                         new Output
-                                         {
-                                           Error = new Output.Types.Error
-                                                   {
-                                                     Details = e.Message,
-                                                   },
-                                         },
-                                         CancellationToken.None)
-                      .ConfigureAwait(false);
-      messageHandler_.Status = resubmit
-                                 ? QueueMessageStatus.Cancelled
-                                 : QueueMessageStatus.Processed;
+      if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && isWorkerDown))
+      {
+        logger_.LogWarning(e,
+                           cancellationToken.IsCancellationRequested
+                             ? "Cancellation triggered, task cancelled here and re executed elsewhere"
+                             : "Worker not available, task cancelled here and re executed elsewhere");
+
+        await taskTable_.ReleaseTask(taskData,
+                                     CancellationToken.None)
+                        .ConfigureAwait(false);
+        messageHandler_.Status = QueueMessageStatus.Postponed;
+      }
+      else
+      {
+        logger_.LogError(e,
+                         resubmit
+                           ? "Error during task execution, retrying task"
+                           : "Error during task execution, cancelling task");
+
+        await submitter_.CompleteTaskAsync(taskData,
+                                           resubmit,
+                                           new Output
+                                           {
+                                             Error = new Output.Types.Error
+                                                     {
+                                                       Details = e.Message,
+                                                     },
+                                           },
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+        messageHandler_.Status = resubmit
+                                   ? QueueMessageStatus.Cancelled
+                                   : QueueMessageStatus.Processed;
+      }
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop
     throw e;
   }
+
+  internal static bool IsStatusFatal(StatusCode statusCode)
+    => statusCode is StatusCode.Aborted or StatusCode.Unavailable or StatusCode.Unknown;
 }
