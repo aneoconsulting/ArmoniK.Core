@@ -6,6 +6,9 @@
     ":semanticCommitTypeAll(chore)",
     "helpers:pinGitHubActionDigests"
   ],
+  "ignorePresets": [
+    ":ignoreModulesAndTests"
+  ],
   "rangeStrategy": "bump",
   "packageRules": [
     {
