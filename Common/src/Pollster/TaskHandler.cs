@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -663,7 +664,9 @@ public class TaskHandler : IAsyncDisposable
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop
-    throw e;
+    // Keep the stack trace for the rethrown exception
+    ExceptionDispatchInfo.Capture(e)
+                         .Throw();
   }
 
   internal static bool IsStatusFatal(StatusCode statusCode)
