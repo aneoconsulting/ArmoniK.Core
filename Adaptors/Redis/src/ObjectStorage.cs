@@ -106,13 +106,13 @@ public class ObjectStorage : IObjectStorage
                                            .ConfigureAwait(false))
     {
       var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
-      taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKeyWithIndex,
-                                                                      chunk)));
+      taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
+                                                               chunk)));
       ++idx;
     }
 
-    await PerformActionWithRetry(() => redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                                             idx))
+    await PerformActionWithRetry(() => SetObjectAsync(objectStorageName_ + key + "_count",
+                                                      idx))
       .ConfigureAwait(false);
     await taskList.WhenAll()
                   .ConfigureAwait(false);
@@ -132,13 +132,13 @@ public class ObjectStorage : IObjectStorage
                                            .ConfigureAwait(false))
     {
       var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
-      taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKeyWithIndex,
-                                                                      chunk)));
+      taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
+                                                               chunk)));
       ++idx;
     }
 
-    taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKey + "_count",
-                                                                    idx)));
+    taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
+                                                             idx)));
     await taskList.WhenAll()
                   .ConfigureAwait(false);
   }
@@ -236,5 +236,19 @@ public class ObjectStorage : IObjectStorage
 
     throw new RedisTimeoutException("A RedisTimeoutException occurred",
                                     CommandStatus.Unknown);
+  }
+
+  private Task<bool> SetObjectAsync(string     key,
+                                    RedisValue chunk)
+  {
+    if (redisOptions_.TtlTimeSpan <= TimeSpan.Zero || redisOptions_.TtlTimeSpan == TimeSpan.MaxValue)
+    {
+      return redis_.StringSetAsync(key,
+                                   chunk);
+    }
+
+    return redis_.StringSetAsync(key,
+                                 chunk,
+                                 redisOptions_.TtlTimeSpan);
   }
 }
