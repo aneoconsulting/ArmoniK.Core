@@ -174,8 +174,7 @@ public class Agent : IAgent
 
       var msgsData = group.Select(data => new MessageData(data.TaskId,
                                                           data.SessionId,
-                                                          data.Options))
-                          .ToList();
+                                                          data.Options));
       await pushQueueStorage_.PushMessagesAsync(msgsData,
                                                 group.Key.PartitionId,
                                                 cancellationToken)
