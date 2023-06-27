@@ -83,11 +83,6 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
     var indexModels = new[]
                       {
                         IndexHelper.CreateHashedIndex<PartitionData>(model => model.PartitionId),
-                        IndexHelper.CreateAscendingIndex<PartitionData>(model => model.ParentPartitionIds),
-                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.Priority),
-                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PodMax),
-                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PodReserved),
-                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PreemptionPercentage),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

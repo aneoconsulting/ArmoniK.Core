@@ -106,10 +106,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                       {
                         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate),
                         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CancellationDate),
-                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.PartitionIds),
-                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.Options),
                         IndexHelper.CreateHashedIndex<SessionData>(model => model.Status),
-                        IndexHelper.CreateHashedIndex<SessionData>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<SessionData>(model => model.Options.PartitionId),
                       };
 

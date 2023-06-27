@@ -76,9 +76,6 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                       {
                         IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
-                        IndexHelper.CreateHashedIndex<Result>(model => model.Name),
-                        IndexHelper.CreateHashedIndex<Result>(model => model.Status),
-                        IndexHelper.CreateHashedIndex<Result>(model => model.ResultId),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate),
                       };
 
