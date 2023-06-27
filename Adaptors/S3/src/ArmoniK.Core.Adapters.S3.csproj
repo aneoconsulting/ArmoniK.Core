@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.101.46" />
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.101.36" />
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.0.0" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.106.1" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.103.16" />
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.0" />
   </ItemGroup>
 
   <ItemGroup>
