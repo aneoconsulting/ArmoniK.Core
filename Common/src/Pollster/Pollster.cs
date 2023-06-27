@@ -313,7 +313,7 @@ public class Pollster : IInitializable
                 }
               }
             }
-            catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+            catch (RpcException e) when (TaskHandler.IsStatusFatal(e.StatusCode))
             {
               // This exception should stop pollster
               throw;

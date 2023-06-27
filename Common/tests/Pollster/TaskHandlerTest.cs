@@ -1008,20 +1008,20 @@ public class TaskHandlerTest
   public class TestRpcException : RpcException
   {
     public TestRpcException()
-      : base(new Status(StatusCode.Aborted,
+      : base(new Status(StatusCode.Internal,
                         ""))
     {
     }
 
     public TestRpcException(string message)
-      : base(new Status(StatusCode.Aborted,
+      : base(new Status(StatusCode.Internal,
                         ""),
              message)
     {
     }
 
     public TestRpcException(Metadata trailers)
-      : base(new Status(StatusCode.Aborted,
+      : base(new Status(StatusCode.Internal,
                         ""),
              trailers)
     {
@@ -1029,7 +1029,7 @@ public class TaskHandlerTest
 
     public TestRpcException(Metadata trailers,
                             string   message)
-      : base(new Status(StatusCode.Aborted,
+      : base(new Status(StatusCode.Internal,
                         ""),
              trailers,
              message)
@@ -1510,8 +1510,8 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.StopCancelledTask()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.PostProcessing()
-                             .ConfigureAwait(false);
+    Assert.That(testServiceProvider.TaskHandler.PostProcessing,
+                Throws.InstanceOf<OperationCanceledException>());
 
     Assert.AreEqual(TaskStatus.Cancelling,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
