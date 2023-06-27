@@ -6,6 +6,10 @@
     ":semanticCommitTypeAll(chore)",
     "helpers:pinGitHubActionDigests"
   ],
+  "//": "https://github.com/renovatebot/config-help/issues/666",
+  "ignorePresets": [
+    ":ignoreModulesAndTests"
+  ],
   "rangeStrategy": "bump",
   "packageRules": [
     {
