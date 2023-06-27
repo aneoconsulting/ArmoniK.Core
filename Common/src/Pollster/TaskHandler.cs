@@ -670,5 +670,5 @@ public class TaskHandler : IAsyncDisposable
   }
 
   internal static bool IsStatusFatal(StatusCode statusCode)
-    => statusCode is StatusCode.Aborted or StatusCode.Unavailable or StatusCode.Unknown;
+    => statusCode is StatusCode.Aborted or StatusCode.Cancelled or StatusCode.Unavailable or StatusCode.Unknown;
 }
