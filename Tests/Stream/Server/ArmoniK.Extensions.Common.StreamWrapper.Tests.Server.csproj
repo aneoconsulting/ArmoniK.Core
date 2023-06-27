@@ -24,8 +24,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.9.0-edge.115.5d51a95" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.9.1" />
   </ItemGroup>
 
   <ItemGroup>
