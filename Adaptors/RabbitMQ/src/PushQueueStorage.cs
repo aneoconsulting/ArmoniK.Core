@@ -17,12 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using Microsoft.Extensions.Logging;
 
@@ -41,12 +43,23 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
            connectionRabbit)
     => logger_ = logger;
 
-
   /// <inheritdoc />
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default)
+  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                      string                   partitionId,
+                                      CancellationToken        cancellationToken = default)
+  {
+    var priorityGroups = messages.GroupBy(msgData => msgData.Options.Priority);
+    await Task.WhenAll(priorityGroups.Select(group => PushMessagesAsync(group,
+                                                                        partitionId,
+                                                                        group.Key,
+                                                                        cancellationToken)))
+              .ConfigureAwait(false);
+  }
+
+  private Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                 string                   partitionId,
+                                 int                      priority          = 1,
+                                 CancellationToken        cancellationToken = default)
   {
     var task = Task.Run(() => PushMessages(messages,
                                            partitionId,
@@ -55,9 +68,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     return task;
   }
 
-  private void PushMessages(IEnumerable<string> messages,
-                            string              partitionId,
-                            int                 priority)
+  private void PushMessages(IEnumerable<MessageData> messages,
+                            string                   partitionId,
+                            int                      priority)
   {
     if (!IsInitialized)
     {
@@ -75,7 +88,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
       ConnectionRabbit.Channel.BasicPublish("ArmoniK.QueueExchange",
                                             partitionId,
                                             basicProperties,
-                                            Encoding.UTF8.GetBytes(msg));
+                                            Encoding.UTF8.GetBytes(msg.TaskId));
     }
   }
 }

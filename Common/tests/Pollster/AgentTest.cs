@@ -109,16 +109,16 @@ public class AgentTest
     public int MaxPriority
       => 10;
 
-    public Task PushMessagesAsync(IEnumerable<string> messages,
-                                  string              partitionId,
-                                  int                 priority          = 1,
-                                  CancellationToken   cancellationToken = default)
+    /// <inheritdoc />
+    public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                  string                   partitionId,
+                                  CancellationToken        cancellationToken = default)
     {
       var partitionMessages = Messages.GetOrAdd(partitionId,
                                                 _ => new ConcurrentBag<string>());
-      foreach (var message in messages)
+      foreach (var msgData in messages)
       {
-        partitionMessages.Add(message);
+        partitionMessages.Add(msgData.TaskId);
       }
 
       return Task.CompletedTask;

@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Utils;
 
@@ -189,7 +190,7 @@ public static class TaskLifeCycleHelper
                                             cancellationToken)
                      .ConfigureAwait(false);
 
-    var readyTasks = new Dictionary<(int priority, string partitionId), List<string>>();
+    var readyTasks = new Dictionary<string, List<MessageData>>();
 
 
     foreach (var request in taskRequests)
@@ -242,34 +243,42 @@ public static class TaskLifeCycleHelper
         // If all dependencies were already completed, the task is ready to be started.
         if (dependencies.Count == completedDependencies.Count)
         {
-          if (readyTasks.TryGetValue((request.Options.Priority, request.Options.PartitionId),
-                                     out var ids))
+          if (readyTasks.TryGetValue(request.Options.PartitionId,
+                                     out var msgsData))
           {
-            ids.Add(request.TaskId);
+            msgsData.Add(new MessageData(request.TaskId,
+                                         sessionId,
+                                         request.Options));
           }
           else
           {
-            readyTasks.Add((request.Options.Priority, request.Options.PartitionId),
-                           new List<string>
+            readyTasks.Add(request.Options.PartitionId,
+                           new List<MessageData>
                            {
-                             request.TaskId,
+                             new(request.TaskId,
+                                 sessionId,
+                                 request.Options),
                            });
           }
         }
       }
       else
       {
-        if (readyTasks.TryGetValue((request.Options.Priority, request.Options.PartitionId),
-                                   out var ids))
+        if (readyTasks.TryGetValue(request.Options.PartitionId,
+                                   out var msgsData))
         {
-          ids.Add(request.TaskId);
+          msgsData.Add(new MessageData(request.TaskId,
+                                       sessionId,
+                                       request.Options));
         }
         else
         {
-          readyTasks.Add((request.Options.Priority, request.Options.PartitionId),
-                         new List<string>
+          readyTasks.Add(request.Options.PartitionId,
+                         new List<MessageData>
                          {
-                           request.TaskId,
+                           new(request.TaskId,
+                               sessionId,
+                               request.Options),
                          });
         }
       }
@@ -280,11 +289,11 @@ public static class TaskLifeCycleHelper
       foreach (var item in readyTasks)
       {
         await pushQueueStorage.PushMessagesAsync(item.Value,
-                                                 item.Key.partitionId,
-                                                 item.Key.priority,
+                                                 item.Key,
                                                  cancellationToken)
                               .ConfigureAwait(false);
-        await taskTable.FinalizeTaskCreation(item.Value,
+        await taskTable.FinalizeTaskCreation(item.Value.Select(data => data.TaskId)
+                                                 .ToList(),
                                              cancellationToken)
                        .ConfigureAwait(false);
       }

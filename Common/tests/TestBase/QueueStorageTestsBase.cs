@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -148,17 +150,42 @@ public class QueueStorageTestsBase
       await PushQueueStorage!.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-      var testMessages = new[]
+      var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+                                            {
+                                              {
+                                                "testOptionKey", "testOptionValue"
+                                              },
+                                            },
+                                            TimeSpan.FromHours(2),
+                                            2,
+                                            1,
+                                            "testPartition",
+                                            "testApplication",
+                                            "testVersion",
+                                            "testNamespace",
+                                            "testService",
+                                            "testEngineType");
+      var testMessages = new List<MessageData>
                          {
-                           "msg1",
-                           "msg2",
-                           "msg3",
-                           "msg4",
-                           "msg5",
+                           new("msg1",
+                               "session1",
+                               testTaskOptions),
+                           new("msg2",
+                               "session1",
+                               testTaskOptions),
+                           new("msg3",
+                               "session1",
+                               testTaskOptions),
+                           new("msg4",
+                               "session1",
+                               testTaskOptions),
+                           new("msg5",
+                               "session1",
+                               testTaskOptions),
                          };
+
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
-                                               1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
     }
@@ -175,18 +202,42 @@ public class QueueStorageTestsBase
                              .ConfigureAwait(false);
 
       const int priority = 1;
-      var testMessages = new[]
+      var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+                                            {
+                                              {
+                                                "testOptionKey", "testOptionValue"
+                                              },
+                                            },
+                                            TimeSpan.FromHours(2),
+                                            2,
+                                            1,
+                                            "testPartition",
+                                            "testApplication",
+                                            "testVersion",
+                                            "testNamespace",
+                                            "testService",
+                                            "testEngineType");
+      var testMessages = new List<MessageData>
                          {
-                           "msg1",
-                           "msg2",
-                           "msg3",
-                           "msg4",
-                           "msg5",
+                           new("msg1",
+                               "session1",
+                               testTaskOptions),
+                           new("msg2",
+                               "session1",
+                               testTaskOptions),
+                           new("msg3",
+                               "session1",
+                               testTaskOptions),
+                           new("msg4",
+                               "session1",
+                               testTaskOptions),
+                           new("msg5",
+                               "session1",
+                               testTaskOptions),
                          };
       /* Push 5 messages to the queue to test the pull */
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
-                                               priority,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
@@ -233,17 +284,41 @@ public class QueueStorageTestsBase
       await PushQueueStorage!.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-      var testMessages = new[]
+      var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+                                            {
+                                              {
+                                                "testOptionKey", "testOptionValue"
+                                              },
+                                            },
+                                            TimeSpan.FromHours(2),
+                                            2,
+                                            1,
+                                            "testPartition",
+                                            "testApplication",
+                                            "testVersion",
+                                            "testNamespace",
+                                            "testService",
+                                            "testEngineType");
+      var testMessages = new List<MessageData>
                          {
-                           "msg1",
-                           "msg2",
-                           "msg3",
-                           "msg4",
-                           "msg5",
+                           new("msg1",
+                               "session1",
+                               testTaskOptions),
+                           new("msg2",
+                               "session1",
+                               testTaskOptions),
+                           new("msg3",
+                               "session1",
+                               testTaskOptions),
+                           new("msg4",
+                               "session1",
+                               testTaskOptions),
+                           new("msg5",
+                               "session1",
+                               testTaskOptions),
                          };
       await PushQueueStorage.PushMessagesAsync(testMessages,
                                                Options!.PartitionId,
-                                               1,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
