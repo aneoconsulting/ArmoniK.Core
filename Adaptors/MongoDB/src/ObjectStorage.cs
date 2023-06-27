@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,9 +92,9 @@ public class ObjectStorage : IObjectStorage
                          : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                   key,
-                                     IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken        cancellationToken = default)
+  public async Task AddOrUpdateAsync(string                                 key,
+                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                     CancellationToken                      cancellationToken = default)
   {
     var       dbKey            = objectStorageName_ + key;
     using var _                = logger_.LogFunction(dbKey);
@@ -109,7 +108,7 @@ public class ObjectStorage : IObjectStorage
     {
       taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
                                                    {
-                                                     Chunk    = chunk,
+                                                     Chunk    = chunk.ToArray(),
                                                      ChunkIdx = idx,
                                                      Key      = dbKey,
                                                    },
@@ -132,14 +131,6 @@ public class ObjectStorage : IObjectStorage
     await taskList.WhenAll()
                   .ConfigureAwait(false);
   }
-
-  /// <inheritdoc />
-  public Task AddOrUpdateAsync(string                                 key,
-                               IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                               CancellationToken                      cancellationToken = default)
-    => AddOrUpdateAsync(key,
-                        valueChunks.Select(chunk => chunk.ToArray()),
-                        cancellationToken);
 
   /// <inheritdoc />
   async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string                                     key,
