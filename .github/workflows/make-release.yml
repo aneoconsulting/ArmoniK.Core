@@ -84,7 +84,7 @@ jobs:
 
     - name: Build
       run: |
-        just tag=$VERSION platform="linux/arm64,linux/amd64" build-core
+        just tag=$VERSION builder=buildx platform="linux/arm64,linux/amd64" build-core
 
 
   buildImages:
