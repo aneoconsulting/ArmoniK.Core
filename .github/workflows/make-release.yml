@@ -82,6 +82,10 @@ jobs:
     - name: login
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
+    - name: Create builder
+      run: |
+        docker buildx create --use
+
     - name: Build
       run: |
         just tag=$VERSION builder=buildx platform="linux/arm64,linux/amd64" build-core
