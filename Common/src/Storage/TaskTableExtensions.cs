@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +32,15 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class TaskTableExtensions
 {
+  private static readonly TaskStatus[] FinalStatus =
+  {
+    TaskStatus.Completed,
+    TaskStatus.Cancelled,
+    TaskStatus.Error,
+    TaskStatus.Retried,
+    TaskStatus.Timeout,
+  };
+
   public static async Task<int> CancelTasks(this ITaskTable   taskTable,
                                             TaskFilter        filter,
                                             CancellationToken cancellationToken = default)
@@ -225,7 +235,7 @@ public static class TaskTableExtensions
   public static async Task CancelSessionAsync(this ITaskTable   taskTable,
                                               string            sessionId,
                                               CancellationToken cancellationToken = default)
-    => await taskTable.UpdateManyTasks(data => data.SessionId == sessionId,
+    => await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && !FinalStatus.Contains(data.Status),
                                        new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
                                        {
                                          (tdm => tdm.Status, TaskStatus.Cancelling),
