@@ -307,19 +307,23 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = taskCollectionProvider_.Get();
 
-    var findFluent = taskCollection.Find(sessionHandle,
-                                         filter);
+    // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
+    var findFluent1 = taskCollection.Find(sessionHandle,
+                                          filter);
+    var findFluent2 = taskCollection.Find(sessionHandle,
+                                          filter);
 
     var ordered = ascOrder
-                    ? findFluent.SortBy(orderField)
-                    : findFluent.SortByDescending(orderField);
+                    ? findFluent1.SortBy(orderField)
+                    : findFluent1.SortByDescending(orderField);
 
-    var taskResult = ordered.Skip(page * pageSize)
-                            .Limit(pageSize)
-                            .ToListAsync(cancellationToken);
+    var taskList = ordered.Skip(page * pageSize)
+                          .Limit(pageSize)
+                          .ToListAsync(cancellationToken);
 
-    return (await taskResult.ConfigureAwait(false), await findFluent.CountDocumentsAsync(cancellationToken)
-                                                                    .ConfigureAwait(false));
+    var taskCount = findFluent2.CountDocumentsAsync(cancellationToken);
+
+    return (await taskList.ConfigureAwait(false), await taskCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />
