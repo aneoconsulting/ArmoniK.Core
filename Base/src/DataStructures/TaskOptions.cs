@@ -20,6 +20,19 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Base.DataStructures;
 
+/// <summary>
+///   Options to set up task execution
+/// </summary>
+/// <param name="Options">Custom defined options transmitted to the task from the client</param>
+/// <param name="MaxDuration">Max duration of the task</param>
+/// <param name="MaxRetries">Number of retries allowed to the task</param>
+/// <param name="Priority">Priority of the task</param>
+/// <param name="PartitionId">Partition in which the task is executed</param>
+/// <param name="ApplicationName">Application Name field transmitted to the task from the client</param>
+/// <param name="ApplicationVersion">Application Version field transmitted to the task from the client</param>
+/// <param name="ApplicationNamespace">Application Namespace field transmitted to the task from the client</param>
+/// <param name="ApplicationService">Application Service field transmitted to the task from the client</param>
+/// <param name="EngineType">Engine Type field transmitted to the task from the client</param>
 public record TaskOptions(IDictionary<string, string> Options,
                           TimeSpan                    MaxDuration,
                           int                         MaxRetries,
@@ -31,6 +44,14 @@ public record TaskOptions(IDictionary<string, string> Options,
                           string                      ApplicationService,
                           string                      EngineType)
 {
+  /// <summary>
+  ///   Creates new <see cref="TaskOptions" /> based on given task options with the given default values
+  /// </summary>
+  /// <param name="taskOption">Base options</param>
+  /// <param name="defaultOption">Default values</param>
+  /// <returns>
+  ///   The merged options
+  /// </returns>
   public static TaskOptions Merge(TaskOptions? taskOption,
                                   TaskOptions  defaultOption)
   {
