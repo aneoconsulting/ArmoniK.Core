@@ -45,6 +45,23 @@ public static class ListSessionsRequestExt
                  SessionRawField.Unspecified  => throw new ArgumentOutOfRangeException(),
                  _                            => throw new ArgumentOutOfRangeException(),
                };
+      case SessionField.FieldOneofCase.TaskOptionField:
+        return sort.Field.TaskOptionField switch
+               {
+                 TaskOptionField.MaxDuration          => data => data.Options.MaxDuration,
+                 TaskOptionField.MaxRetries           => data => data.Options.MaxRetries,
+                 TaskOptionField.Priority             => data => data.Options.Priority,
+                 TaskOptionField.PartitionId          => data => data.Options.PartitionId,
+                 TaskOptionField.ApplicationName      => data => data.Options.ApplicationName,
+                 TaskOptionField.ApplicationVersion   => data => data.Options.ApplicationVersion,
+                 TaskOptionField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
+                 TaskOptionField.ApplicationService   => data => data.Options.ApplicationService,
+                 TaskOptionField.EngineType           => data => data.Options.EngineType,
+                 TaskOptionField.Unspecified          => throw new ArgumentOutOfRangeException(),
+                 _                                    => throw new ArgumentOutOfRangeException(),
+               };
+      case SessionField.FieldOneofCase.TaskOptionGenericField:
+        return data => data.Options.Options[sort.Field.TaskOptionGenericField.Field];
       case SessionField.FieldOneofCase.None:
       default:
         throw new ArgumentOutOfRangeException();

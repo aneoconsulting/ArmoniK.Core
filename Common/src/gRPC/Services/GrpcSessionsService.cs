@@ -149,7 +149,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
                {
                  sessionData.sessions.Select(data => new SessionRaw(data)),
                },
-               Total = sessionData.totalCount,
+               Total = (int)sessionData.totalCount,
              };
     }
     catch (ArmoniKException e)
