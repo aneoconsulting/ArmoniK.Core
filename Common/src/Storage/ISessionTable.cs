@@ -130,10 +130,10 @@ public interface ISessionTable : IInitializable
   /// <returns>
   ///   Collection of sessions metadata that matched the filter and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                              Expression<Func<SessionData, object?>> orderField,
-                                                                              bool                                   ascOrder,
-                                                                              int                                    page,
-                                                                              int                                    pageSize,
-                                                                              CancellationToken                      cancellationToken = default);
+  Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                               Expression<Func<SessionData, object?>> orderField,
+                                                                               bool                                   ascOrder,
+                                                                               int                                    page,
+                                                                               int                                    pageSize,
+                                                                               CancellationToken                      cancellationToken = default);
 }

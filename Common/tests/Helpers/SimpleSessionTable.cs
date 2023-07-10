@@ -113,22 +113,22 @@ public class SimpleSessionTable : ISessionTable
          SessionId,
        }.ToAsyncEnumerable();
 
-  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                     Expression<Func<SessionData, object?>> orderField,
-                                                                                     bool                                   ascOrder,
-                                                                                     int                                    page,
-                                                                                     int                                    pageSize,
-                                                                                     CancellationToken                      cancellationToken = default)
-    => Task.FromResult((new List<SessionData>
-                        {
-                          new(SessionId,
-                              SessionStatus.Running,
-                              DateTime.Today.ToUniversalTime(),
-                              null,
-                              new List<string>
-                              {
-                                PartitionId,
-                              },
-                              TaskOptions),
-                        }.AsEnumerable(), 1));
+  public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                      Expression<Func<SessionData, object?>> orderField,
+                                                                                      bool                                   ascOrder,
+                                                                                      int                                    page,
+                                                                                      int                                    pageSize,
+                                                                                      CancellationToken                      cancellationToken = default)
+    => Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((new List<SessionData>
+                                                                              {
+                                                                                new(SessionId,
+                                                                                    SessionStatus.Running,
+                                                                                    DateTime.Today.ToUniversalTime(),
+                                                                                    null,
+                                                                                    new List<string>
+                                                                                    {
+                                                                                      PartitionId,
+                                                                                    },
+                                                                                    TaskOptions),
+                                                                              }.AsEnumerable(), 1));
 }

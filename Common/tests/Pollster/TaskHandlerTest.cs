@@ -867,12 +867,12 @@ public class TaskHandlerTest
                                                       CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                       Expression<Func<SessionData, object?>> orderField,
-                                                                                       bool                                   ascOrder,
-                                                                                       int                                    page,
-                                                                                       int                                    pageSize,
-                                                                                       CancellationToken                      cancellationToken = default)
+    public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                        Expression<Func<SessionData, object?>> orderField,
+                                                                                        bool                                   ascOrder,
+                                                                                        int                                    page,
+                                                                                        int                                    pageSize,
+                                                                                        CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
   }
 

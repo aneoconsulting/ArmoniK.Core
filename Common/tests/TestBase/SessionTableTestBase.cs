@@ -22,9 +22,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Sessions;
+
+using Armonik.Api.Grpc.V1.SortDirection;
+
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -56,16 +61,7 @@ public class SessionTableTestBase
                                                                "part1",
                                                                "part2",
                                                              },
-                                                             new TaskOptions(new Dictionary<string, string>(),
-                                                                             TimeSpan.FromMinutes(1),
-                                                                             2,
-                                                                             1,
-                                                                             "part1",
-                                                                             "ApplicationName",
-                                                                             "ApplicationVersion",
-                                                                             "",
-                                                                             "",
-                                                                             ""),
+                                                             Options,
                                                              CancellationToken.None)
                                         .ConfigureAwait(false);
 
@@ -74,16 +70,7 @@ public class SessionTableTestBase
                                                                 "part1",
                                                                 "part2",
                                                               },
-                                                              new TaskOptions(new Dictionary<string, string>(),
-                                                                              TimeSpan.FromMinutes(1),
-                                                                              2,
-                                                                              1,
-                                                                              "part1",
-                                                                              "ApplicationName",
-                                                                              "ApplicationVersion",
-                                                                              "",
-                                                                              "",
-                                                                              ""),
+                                                              Options,
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -92,16 +79,7 @@ public class SessionTableTestBase
                                                                 "part1",
                                                                 "part2",
                                                               },
-                                                              new TaskOptions(new Dictionary<string, string>(),
-                                                                              TimeSpan.FromMinutes(1),
-                                                                              2,
-                                                                              1,
-                                                                              "part1",
-                                                                              "ApplicationName",
-                                                                              "ApplicationVersion",
-                                                                              "",
-                                                                              "",
-                                                                              ""),
+                                                              Options,
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -110,16 +88,11 @@ public class SessionTableTestBase
                                                                 "part1",
                                                                 "part2",
                                                               },
-                                                              new TaskOptions(new Dictionary<string, string>(),
-                                                                              TimeSpan.FromMinutes(1),
-                                                                              2,
-                                                                              1,
-                                                                              "part1",
-                                                                              "ApplicationName2",
-                                                                              "ApplicationVersion2",
-                                                                              "",
-                                                                              "",
-                                                                              ""),
+                                                              Options with
+                                                              {
+                                                                ApplicationName = "ApplicationName2",
+                                                                ApplicationVersion = "ApplicationVersion2",
+                                                              },
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -134,6 +107,22 @@ public class SessionTableTestBase
     SessionTable = null;
     RunTests     = false;
   }
+
+  public static TaskOptions Options = new(new Dictionary<string, string>
+                                          {
+                                            {
+                                              "key1", "val1"
+                                            },
+                                          },
+                                          TimeSpan.FromMinutes(1),
+                                          2,
+                                          1,
+                                          "part1",
+                                          "ApplicationName",
+                                          "ApplicationVersion",
+                                          "",
+                                          "",
+                                          "");
 
   private static bool CheckForSkipSetup()
   {
@@ -445,6 +434,40 @@ public class SessionTableTestBase
       var res = (await SessionTable!.ListSessionsAsync(data => true,
                                                        data => data.Status,
                                                        true,
+                                                       0,
+                                                       3,
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false)).sessions.ToList();
+
+      Assert.AreEqual(3,
+                      res.Count);
+    }
+  }
+
+
+  [Test]
+  public async Task ListSessionAsyncTaskOptionsOptions()
+  {
+    if (RunTests)
+    {
+      var req = new ListSessionsRequest
+                {
+                  Sort = new ListSessionsRequest.Types.Sort
+                         {
+                           Direction = SortDirection.Asc,
+                           Field = new SessionField
+                                   {
+                                     TaskOptionGenericField = new TaskOptionGenericField
+                                                              {
+                                                                Field = "key1",
+                                                              },
+                                   },
+                         },
+                };
+
+      var res = (await SessionTable!.ListSessionsAsync(data => true,
+                                                       req.Sort.ToSessionDataField(),
+                                                       false,
                                                        0,
                                                        3,
                                                        CancellationToken.None)

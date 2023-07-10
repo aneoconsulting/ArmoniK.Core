@@ -171,12 +171,12 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                     Expression<Func<SessionData, object?>> orderField,
-                                                                                     bool                                   ascOrder,
-                                                                                     int                                    page,
-                                                                                     int                                    pageSize,
-                                                                                     CancellationToken                      cancellationToken = default)
+  public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                      Expression<Func<SessionData, object?>> orderField,
+                                                                                      bool                                   ascOrder,
+                                                                                      int                                    page,
+                                                                                      int                                    pageSize,
+                                                                                      CancellationToken                      cancellationToken = default)
   {
     var queryable = storage_.AsQueryable()
                             .Select(pair => pair.Value)
@@ -186,8 +186,8 @@ public class SessionTable : ISessionTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<(IEnumerable<SessionData> sessions, int totalCount)>((ordered.Skip(page * pageSize)
-                                                                                        .Take(pageSize), ordered.Count()));
+    return Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((ordered.Skip(page * pageSize)
+                                                                                         .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />

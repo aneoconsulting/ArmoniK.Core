@@ -41,7 +41,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
@@ -228,30 +227,32 @@ public class SessionTable : ISessionTable
     }
   }
 
-  public async Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                           Expression<Func<SessionData, object?>> orderField,
-                                                                                           bool                                   ascOrder,
-                                                                                           int                                    page,
-                                                                                           int                                    pageSize,
-                                                                                           CancellationToken                      cancellationToken = default)
+  public async Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                            Expression<Func<SessionData, object?>> orderField,
+                                                                                            bool                                   ascOrder,
+                                                                                            int                                    page,
+                                                                                            int                                    pageSize,
+                                                                                            CancellationToken                      cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
     using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
     var       sessionHandle     = sessionProvider_.Get();
     var       sessionCollection = sessionCollectionProvider_.Get();
 
-    var queryable = sessionCollection.AsQueryable(sessionHandle)
-                                     .Where(filter);
+    var findFluent = sessionCollection.Find(sessionHandle,
+                                            filter);
 
     var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+                    ? findFluent.SortBy(orderField)
+                    : findFluent.SortByDescending(orderField);
 
     return (await ordered.Skip(page * pageSize)
-                         .Take(pageSize)
+                         .Limit(pageSize)
                          .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                              .ConfigureAwait(false));
+                         .ConfigureAwait(false), await sessionCollection.Find(sessionHandle,
+                                                                              filter)
+                                                                        .CountDocumentsAsync(cancellationToken)
+                                                                        .ConfigureAwait(false));
   }
 
   /// <inheritdoc />
