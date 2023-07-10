@@ -204,9 +204,9 @@ public class GrpcTasksService : Task.TasksBase
              {
                Tasks =
                {
-                 await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                 data => new TaskSummary(data))
-                                 .ConfigureAwait(false),
+                 (await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                  data => data)
+                                  .ConfigureAwait(false)).Select(data => new TaskSummary(data)),
                },
              };
     }
