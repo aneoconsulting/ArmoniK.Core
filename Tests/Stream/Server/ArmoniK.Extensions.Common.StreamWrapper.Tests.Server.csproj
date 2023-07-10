@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.11.0-feataddtaskoptionstosession.23.58da3e7" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.11.0-edge.24.2016d6e" />
   </ItemGroup>
 
   <ItemGroup>
