@@ -47,7 +47,10 @@ public class ToPartitionDataFilterTest
                                                                     Direction = SortDirection.Asc,
                                                                     Field = new PartitionField
                                                                             {
-                                                                              PartitionRawField = PartitionRawField.Id,
+                                                                              PartitionRawField = new PartitionRawField
+                                                                                                  {
+                                                                                                    Field = PartitionRawEnumField.Id,
+                                                                                                  },
                                                                             },
                                                                   };
 

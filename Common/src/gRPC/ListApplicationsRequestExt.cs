@@ -32,14 +32,14 @@ public static class ListApplicationsRequestExt
     switch (field.FieldCase)
     {
       case ApplicationField.FieldOneofCase.ApplicationField_:
-        return field.ApplicationField_ switch
+        return field.ApplicationField_.Field switch
                {
-                 ApplicationRawField.Name        => taskData => taskData.Name,
-                 ApplicationRawField.Version     => taskData => taskData.Version,
-                 ApplicationRawField.Namespace   => taskData => taskData.Namespace,
-                 ApplicationRawField.Service     => taskData => taskData.Service,
-                 ApplicationRawField.Unspecified => throw new ArgumentOutOfRangeException(),
-                 _                               => throw new ArgumentOutOfRangeException(),
+                 ApplicationRawEnumField.Name        => taskData => taskData.Name,
+                 ApplicationRawEnumField.Version     => taskData => taskData.Version,
+                 ApplicationRawEnumField.Namespace   => taskData => taskData.Namespace,
+                 ApplicationRawEnumField.Service     => taskData => taskData.Service,
+                 ApplicationRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
+                 _                                   => throw new ArgumentOutOfRangeException(),
                };
 
       case ApplicationField.FieldOneofCase.None:

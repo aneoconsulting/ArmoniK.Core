@@ -51,17 +51,35 @@ public class ToResultFieldTest
 
 
     // TODO add completedDate
-    yield return Case(ResultRawField.Status,
+    yield return Case(new ResultRawField
+                      {
+                        Field = ResultRawEnumField.Status,
+                      },
                       Result.Status);
-    yield return Case(ResultRawField.CreatedAt,
+    yield return Case(new ResultRawField
+                      {
+                        Field = ResultRawEnumField.CreatedAt,
+                      },
                       Result.CreationDate);
-    yield return Case(ResultRawField.Name,
+    yield return Case(new ResultRawField
+                      {
+                        Field = ResultRawEnumField.Name,
+                      },
                       Result.Name);
-    yield return Case(ResultRawField.OwnerTaskId,
+    yield return Case(new ResultRawField
+                      {
+                        Field = ResultRawEnumField.OwnerTaskId,
+                      },
                       Result.OwnerTaskId);
-    yield return Case(ResultRawField.ResultId,
+    yield return Case(new ResultRawField
+                      {
+                        Field = ResultRawEnumField.ResultId,
+                      },
                       Result.ResultId);
-    yield return Case(ResultRawField.SessionId,
+    yield return Case(new ResultRawField
+                      {
+                        Field = ResultRawEnumField.SessionId,
+                      },
                       Result.SessionId);
   }
 

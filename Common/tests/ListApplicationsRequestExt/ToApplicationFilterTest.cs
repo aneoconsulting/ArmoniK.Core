@@ -81,7 +81,10 @@ public class ToApplicationFilterTest
                                                                       {
                                                                         new ApplicationField
                                                                         {
-                                                                          ApplicationField_ = ApplicationRawField.Name,
+                                                                          ApplicationField_ = new ApplicationRawField
+                                                                                              {
+                                                                                                Field = ApplicationRawEnumField.Name,
+                                                                                              },
                                                                         },
                                                                       },
                                                                       Direction = SortDirection.Asc,

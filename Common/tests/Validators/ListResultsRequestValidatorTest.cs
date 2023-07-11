@@ -40,7 +40,10 @@ public class ListResultsRequestValidatorTest
                                              Direction = SortDirection.Asc,
                                              Field = new ResultField
                                                      {
-                                                       ResultRawField = ResultRawField.CreatedAt,
+                                                       ResultRawField = new ResultRawField
+                                                                        {
+                                                                          Field = ResultRawEnumField.CreatedAt,
+                                                                        },
                                                      },
                                            },
                                     Page     = 0,
@@ -102,7 +105,10 @@ public class ListResultsRequestValidatorTest
                                      {
                                        Field = new ResultField
                                                {
-                                                 ResultRawField = ResultRawField.Name,
+                                                 ResultRawField = new ResultRawField
+                                                                  {
+                                                                    Field = ResultRawEnumField.Name,
+                                                                  },
                                                },
                                      };
     foreach (var error in validator_.Validate(validListResultsRequest_)

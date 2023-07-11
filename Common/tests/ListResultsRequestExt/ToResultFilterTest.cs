@@ -48,7 +48,10 @@ public class ToResultFilterTest
                                                                {
                                                                  Field = new ResultField
                                                                          {
-                                                                           ResultRawField = ResultRawField.CreatedAt,
+                                                                           ResultRawField = new ResultRawField
+                                                                                            {
+                                                                                              Field = ResultRawEnumField.CreatedAt,
+                                                                                            },
                                                                          },
                                                                  Direction = SortDirection.Asc,
                                                                };

@@ -612,7 +612,7 @@ public class AuthenticationIntegrationTest
                                                                                                                                 Field = new PartitionField
                                                                                                                                         {
                                                                                                                                           PartitionRawField =
-                                                                                                                                            PartitionRawField.Id,
+                                                                                                                                            new PartitionRawField(),
                                                                                                                                         },
                                                                                                                                 Direction = SortDirection.Asc,
                                                                                                                               },
@@ -636,8 +636,13 @@ public class AuthenticationIntegrationTest
                                                                                                                                                          new ResultField
                                                                                                                                                          {
                                                                                                                                                            ResultRawField =
+                                                                                                                                                             new
                                                                                                                                                              ResultRawField
-                                                                                                                                                               .ResultId,
+                                                                                                                                                             {
+                                                                                                                                                               Field =
+                                                                                                                                                                 ResultRawEnumField
+                                                                                                                                                                   .ResultId,
+                                                                                                                                                             },
                                                                                                                                                          },
                                                                                                                                                        Direction =
                                                                                                                                                          SortDirection
@@ -664,8 +669,13 @@ public class AuthenticationIntegrationTest
                                                                                                                                                           SessionField
                                                                                                                                                           {
                                                                                                                                                             SessionRawField =
+                                                                                                                                                              new
                                                                                                                                                               SessionRawField
-                                                                                                                                                                .SessionId,
+                                                                                                                                                              {
+                                                                                                                                                                Field =
+                                                                                                                                                                  SessionRawEnumField
+                                                                                                                                                                    .SessionId,
+                                                                                                                                                              },
                                                                                                                                                           },
                                                                                                                                                         Direction =
                                                                                                                                                           SortDirection
@@ -689,8 +699,13 @@ public class AuthenticationIntegrationTest
                                                                                                                                                        new TaskField
                                                                                                                                                        {
                                                                                                                                                          TaskSummaryField =
+                                                                                                                                                           new
                                                                                                                                                            TaskSummaryField
-                                                                                                                                                             .TaskId,
+                                                                                                                                                           {
+                                                                                                                                                             Field =
+                                                                                                                                                               TaskSummaryEnumField
+                                                                                                                                                                 .TaskId,
+                                                                                                                                                           },
                                                                                                                                                        },
                                                                                                                                                      Direction =
                                                                                                                                                        SortDirection.Asc,

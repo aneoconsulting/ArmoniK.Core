@@ -49,17 +49,35 @@ public class ToPartitionDataFieldTest
       => new TestCaseData(field,
                           expected).SetArgDisplayNames(field.ToString());
 
-    yield return Case(PartitionRawField.ParentPartitionIds,
+    yield return Case(new PartitionRawField
+                      {
+                        Field = PartitionRawEnumField.ParentPartitionIds,
+                      },
                       PartitionData.ParentPartitionIds);
-    yield return Case(PartitionRawField.Id,
+    yield return Case(new PartitionRawField
+                      {
+                        Field = PartitionRawEnumField.Id,
+                      },
                       PartitionData.PartitionId);
-    yield return Case(PartitionRawField.PodMax,
+    yield return Case(new PartitionRawField
+                      {
+                        Field = PartitionRawEnumField.PodMax,
+                      },
                       PartitionData.PodMax);
-    yield return Case(PartitionRawField.PodReserved,
+    yield return Case(new PartitionRawField
+                      {
+                        Field = PartitionRawEnumField.PodReserved,
+                      },
                       PartitionData.PodReserved);
-    yield return Case(PartitionRawField.Priority,
+    yield return Case(new PartitionRawField
+                      {
+                        Field = PartitionRawEnumField.Priority,
+                      },
                       PartitionData.Priority);
-    yield return Case(PartitionRawField.PreemptionPercentage,
+    yield return Case(new PartitionRawField
+                      {
+                        Field = PartitionRawEnumField.PreemptionPercentage,
+                      },
                       PartitionData.PreemptionPercentage);
   }
 

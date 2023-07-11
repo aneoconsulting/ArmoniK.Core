@@ -40,7 +40,10 @@ public class ListSessionsRequestValidatorTest
                                               Direction = SortDirection.Asc,
                                               Field = new SessionField
                                                       {
-                                                        SessionRawField = SessionRawField.CreatedAt,
+                                                        SessionRawField = new SessionRawField
+                                                                          {
+                                                                            Field = SessionRawEnumField.CreatedAt,
+                                                                          },
                                                       },
                                             },
                                      Page     = 0,
@@ -102,7 +105,10 @@ public class ListSessionsRequestValidatorTest
                                       {
                                         Field = new SessionField
                                                 {
-                                                  SessionRawField = SessionRawField.SessionId,
+                                                  SessionRawField = new SessionRawField
+                                                                    {
+                                                                      Field = SessionRawEnumField.SessionId,
+                                                                    },
                                                 },
                                       };
     foreach (var error in validator_.Validate(validListSessionsRequest_)

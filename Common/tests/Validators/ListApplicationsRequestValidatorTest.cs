@@ -42,7 +42,10 @@ public class ListApplicationsRequestValidatorTest
                                                   {
                                                     new ApplicationField
                                                     {
-                                                      ApplicationField_ = ApplicationRawField.Name,
+                                                      ApplicationField_ = new ApplicationRawField
+                                                                          {
+                                                                            Field = ApplicationRawEnumField.Name,
+                                                                          },
                                                     },
                                                   },
                                                 },
@@ -107,7 +110,10 @@ public class ListApplicationsRequestValidatorTest
                                             {
                                               new ApplicationField
                                               {
-                                                ApplicationField_ = ApplicationRawField.Name,
+                                                ApplicationField_ = new ApplicationRawField
+                                                                    {
+                                                                      Field = ApplicationRawEnumField.Name,
+                                                                    },
                                               },
                                             },
                                           };

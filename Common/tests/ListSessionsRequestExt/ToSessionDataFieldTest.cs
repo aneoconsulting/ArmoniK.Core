@@ -61,17 +61,35 @@ public class ToSessionDataFieldTest
                           expected).SetArgDisplayNames(field.ToString());
 
     // TODO add Duration
-    yield return Case(SessionRawField.Status,
+    yield return Case(new SessionRawField
+                      {
+                        Field = SessionRawEnumField.Status,
+                      },
                       SessionData.Status);
-    yield return Case(SessionRawField.Options,
+    yield return Case(new SessionRawField
+                      {
+                        Field = SessionRawEnumField.Options,
+                      },
                       SessionData.Options);
-    yield return Case(SessionRawField.CancelledAt,
+    yield return Case(new SessionRawField
+                      {
+                        Field = SessionRawEnumField.CancelledAt,
+                      },
                       SessionData.CancellationDate);
-    yield return Case(SessionRawField.SessionId,
+    yield return Case(new SessionRawField
+                      {
+                        Field = SessionRawEnumField.SessionId,
+                      },
                       SessionData.SessionId);
-    yield return Case(SessionRawField.CreatedAt,
+    yield return Case(new SessionRawField
+                      {
+                        Field = SessionRawEnumField.CreatedAt,
+                      },
                       SessionData.CreationDate);
-    yield return Case(SessionRawField.PartitionIds,
+    yield return Case(new SessionRawField
+                      {
+                        Field = SessionRawEnumField.PartitionIds,
+                      },
                       SessionData.PartitionIds);
   }
 

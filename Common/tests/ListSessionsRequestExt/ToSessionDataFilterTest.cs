@@ -60,7 +60,10 @@ public class ToSessionDataFilterTest
                                                                   Direction = SortDirection.Asc,
                                                                   Field = new SessionField
                                                                           {
-                                                                            SessionRawField = SessionRawField.CreatedAt,
+                                                                            SessionRawField = new SessionRawField
+                                                                                              {
+                                                                                                Field = SessionRawEnumField.CreatedAt,
+                                                                                              },
                                                                           },
                                                                 };
 

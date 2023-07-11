@@ -77,7 +77,10 @@ public class ToTaskDataFilterTest
                                                                Direction = SortDirection.Asc,
                                                                Field = new TaskField
                                                                        {
-                                                                         TaskSummaryField = TaskSummaryField.StartedAt,
+                                                                         TaskSummaryField = new TaskSummaryField
+                                                                                            {
+                                                                                              Field = TaskSummaryEnumField.StartedAt,
+                                                                                            },
                                                                        },
                                                              };
 

@@ -33,32 +33,32 @@ public static class ListSessionsRequestExt
     switch (sort.Field.FieldCase)
     {
       case SessionField.FieldOneofCase.SessionRawField:
-        return sort.Field.SessionRawField switch
+        return sort.Field.SessionRawField.Field switch
                {
-                 SessionRawField.SessionId    => session => session.SessionId,
-                 SessionRawField.Status       => session => session.Status,
-                 SessionRawField.PartitionIds => session => session.PartitionIds,
-                 SessionRawField.Options      => session => session.Options,
-                 SessionRawField.CreatedAt    => session => session.CreationDate,
-                 SessionRawField.CancelledAt  => session => session.CancellationDate,
-                 SessionRawField.Duration     => throw new ArgumentOutOfRangeException(),
-                 SessionRawField.Unspecified  => throw new ArgumentOutOfRangeException(),
-                 _                            => throw new ArgumentOutOfRangeException(),
+                 SessionRawEnumField.SessionId    => session => session.SessionId,
+                 SessionRawEnumField.Status       => session => session.Status,
+                 SessionRawEnumField.PartitionIds => session => session.PartitionIds,
+                 SessionRawEnumField.Options      => session => session.Options,
+                 SessionRawEnumField.CreatedAt    => session => session.CreationDate,
+                 SessionRawEnumField.CancelledAt  => session => session.CancellationDate,
+                 SessionRawEnumField.Duration     => throw new ArgumentOutOfRangeException(),
+                 SessionRawEnumField.Unspecified  => throw new ArgumentOutOfRangeException(),
+                 _                                => throw new ArgumentOutOfRangeException(),
                };
       case SessionField.FieldOneofCase.TaskOptionField:
-        return sort.Field.TaskOptionField switch
+        return sort.Field.TaskOptionField.Field switch
                {
-                 TaskOptionField.MaxDuration          => data => data.Options.MaxDuration,
-                 TaskOptionField.MaxRetries           => data => data.Options.MaxRetries,
-                 TaskOptionField.Priority             => data => data.Options.Priority,
-                 TaskOptionField.PartitionId          => data => data.Options.PartitionId,
-                 TaskOptionField.ApplicationName      => data => data.Options.ApplicationName,
-                 TaskOptionField.ApplicationVersion   => data => data.Options.ApplicationVersion,
-                 TaskOptionField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
-                 TaskOptionField.ApplicationService   => data => data.Options.ApplicationService,
-                 TaskOptionField.EngineType           => data => data.Options.EngineType,
-                 TaskOptionField.Unspecified          => throw new ArgumentOutOfRangeException(),
-                 _                                    => throw new ArgumentOutOfRangeException(),
+                 TaskOptionEnumField.MaxDuration          => data => data.Options.MaxDuration,
+                 TaskOptionEnumField.MaxRetries           => data => data.Options.MaxRetries,
+                 TaskOptionEnumField.Priority             => data => data.Options.Priority,
+                 TaskOptionEnumField.PartitionId          => data => data.Options.PartitionId,
+                 TaskOptionEnumField.ApplicationName      => data => data.Options.ApplicationName,
+                 TaskOptionEnumField.ApplicationVersion   => data => data.Options.ApplicationVersion,
+                 TaskOptionEnumField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
+                 TaskOptionEnumField.ApplicationService   => data => data.Options.ApplicationService,
+                 TaskOptionEnumField.EngineType           => data => data.Options.EngineType,
+                 TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
+                 _                                        => throw new ArgumentOutOfRangeException(),
                };
       case SessionField.FieldOneofCase.TaskOptionGenericField:
         return data => data.Options.Options[sort.Field.TaskOptionGenericField.Field];

@@ -1259,7 +1259,10 @@ public class TaskTableTestBase
                            {
                              new ApplicationField
                              {
-                               ApplicationField_ = ApplicationRawField.Name,
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Name,
+                                                   },
                              },
                            },
                          },
@@ -1402,11 +1405,17 @@ public class TaskTableTestBase
                            {
                              new ApplicationField
                              {
-                               ApplicationField_ = ApplicationRawField.Version,
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Version,
+                                                   },
                              },
                              new ApplicationField
                              {
-                               ApplicationField_ = ApplicationRawField.Service,
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Service,
+                                                   },
                              },
                            },
                          },

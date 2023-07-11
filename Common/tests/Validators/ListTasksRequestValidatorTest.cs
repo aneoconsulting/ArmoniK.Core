@@ -39,7 +39,10 @@ public class ListTasksRequestValidatorTest
                                            Direction = SortDirection.Asc,
                                            Field = new TaskField
                                                    {
-                                                     TaskSummaryField = TaskSummaryField.CreatedAt,
+                                                     TaskSummaryField = new TaskSummaryField
+                                                                        {
+                                                                          Field = TaskSummaryEnumField.CreatedAt,
+                                                                        },
                                                    },
                                          },
                                   Page     = 0,
@@ -101,7 +104,10 @@ public class ListTasksRequestValidatorTest
                                    {
                                      Field = new TaskField
                                              {
-                                               TaskSummaryField = TaskSummaryField.SessionId,
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
                                              },
                                    };
     foreach (var error in validator_.Validate(validListTasksRequest_)
