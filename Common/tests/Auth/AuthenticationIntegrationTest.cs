@@ -612,7 +612,11 @@ public class AuthenticationIntegrationTest
                                                                                                                                 Field = new PartitionField
                                                                                                                                         {
                                                                                                                                           PartitionRawField =
-                                                                                                                                            new PartitionRawField(),
+                                                                                                                                            new PartitionRawField
+                                                                                                                                            {
+                                                                                                                                              Field =
+                                                                                                                                                PartitionRawEnumField.Id,
+                                                                                                                                            },
                                                                                                                                         },
                                                                                                                                 Direction = SortDirection.Asc,
                                                                                                                               },
