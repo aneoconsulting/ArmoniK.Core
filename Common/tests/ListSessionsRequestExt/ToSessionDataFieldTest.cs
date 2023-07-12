@@ -55,41 +55,26 @@ public class ToSessionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(SessionRawField field,
-                      object?         expected)
-      => new TestCaseData(field,
+    TestCaseData Case(SessionRawEnumField field,
+                      object?             expected)
+      => new TestCaseData(new SessionRawField
+                          {
+                            Field = field,
+                          },
                           expected).SetArgDisplayNames(field.ToString());
 
     // TODO add Duration
-    yield return Case(new SessionRawField
-                      {
-                        Field = SessionRawEnumField.Status,
-                      },
+    yield return Case(SessionRawEnumField.Status,
                       SessionData.Status);
-    yield return Case(new SessionRawField
-                      {
-                        Field = SessionRawEnumField.Options,
-                      },
+    yield return Case(SessionRawEnumField.Options,
                       SessionData.Options);
-    yield return Case(new SessionRawField
-                      {
-                        Field = SessionRawEnumField.CancelledAt,
-                      },
+    yield return Case(SessionRawEnumField.CancelledAt,
                       SessionData.CancellationDate);
-    yield return Case(new SessionRawField
-                      {
-                        Field = SessionRawEnumField.SessionId,
-                      },
+    yield return Case(SessionRawEnumField.SessionId,
                       SessionData.SessionId);
-    yield return Case(new SessionRawField
-                      {
-                        Field = SessionRawEnumField.CreatedAt,
-                      },
+    yield return Case(SessionRawEnumField.CreatedAt,
                       SessionData.CreationDate);
-    yield return Case(new SessionRawField
-                      {
-                        Field = SessionRawEnumField.PartitionIds,
-                      },
+    yield return Case(SessionRawEnumField.PartitionIds,
                       SessionData.PartitionIds);
   }
 

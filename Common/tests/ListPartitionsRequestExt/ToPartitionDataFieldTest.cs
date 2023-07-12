@@ -44,40 +44,25 @@ public class ToPartitionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(PartitionRawField field,
-                      object?           expected)
-      => new TestCaseData(field,
+    TestCaseData Case(PartitionRawEnumField field,
+                      object?               expected)
+      => new TestCaseData(new PartitionRawField
+                          {
+                            Field = field,
+                          },
                           expected).SetArgDisplayNames(field.ToString());
 
-    yield return Case(new PartitionRawField
-                      {
-                        Field = PartitionRawEnumField.ParentPartitionIds,
-                      },
+    yield return Case(PartitionRawEnumField.ParentPartitionIds,
                       PartitionData.ParentPartitionIds);
-    yield return Case(new PartitionRawField
-                      {
-                        Field = PartitionRawEnumField.Id,
-                      },
+    yield return Case(PartitionRawEnumField.Id,
                       PartitionData.PartitionId);
-    yield return Case(new PartitionRawField
-                      {
-                        Field = PartitionRawEnumField.PodMax,
-                      },
+    yield return Case(PartitionRawEnumField.PodMax,
                       PartitionData.PodMax);
-    yield return Case(new PartitionRawField
-                      {
-                        Field = PartitionRawEnumField.PodReserved,
-                      },
+    yield return Case(PartitionRawEnumField.PodReserved,
                       PartitionData.PodReserved);
-    yield return Case(new PartitionRawField
-                      {
-                        Field = PartitionRawEnumField.Priority,
-                      },
+    yield return Case(PartitionRawEnumField.Priority,
                       PartitionData.Priority);
-    yield return Case(new PartitionRawField
-                      {
-                        Field = PartitionRawEnumField.PreemptionPercentage,
-                      },
+    yield return Case(PartitionRawEnumField.PreemptionPercentage,
                       PartitionData.PreemptionPercentage);
   }
 
