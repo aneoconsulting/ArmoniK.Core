@@ -80,72 +80,78 @@ public class ToTaskDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData CaseSummary(TaskSummaryField field,
-                             object?          expected)
+    TestCaseData CaseSummary(TaskSummaryEnumField field,
+                             object?              expected)
       => new TestCaseData(new TaskField
                           {
-                            TaskSummaryField = field,
+                            TaskSummaryField = new TaskSummaryField
+                                               {
+                                                 Field = field,
+                                               },
                           },
                           expected).SetArgDisplayNames(field.ToString());
 
-    yield return CaseSummary(TaskSummaryField.TaskId,
+    yield return CaseSummary(TaskSummaryEnumField.TaskId,
                              TaskData.TaskId);
-    yield return CaseSummary(TaskSummaryField.SessionId,
+    yield return CaseSummary(TaskSummaryEnumField.SessionId,
                              TaskData.SessionId);
-    yield return CaseSummary(TaskSummaryField.Status,
+    yield return CaseSummary(TaskSummaryEnumField.Status,
                              TaskData.Status);
-    yield return CaseSummary(TaskSummaryField.CreatedAt,
+    yield return CaseSummary(TaskSummaryEnumField.CreatedAt,
                              TaskData.CreationDate);
-    yield return CaseSummary(TaskSummaryField.StartedAt,
+    yield return CaseSummary(TaskSummaryEnumField.StartedAt,
                              TaskData.StartDate);
-    yield return CaseSummary(TaskSummaryField.EndedAt,
+    yield return CaseSummary(TaskSummaryEnumField.EndedAt,
                              TaskData.EndDate);
-    yield return CaseSummary(TaskSummaryField.CreationToEndDuration,
+    yield return CaseSummary(TaskSummaryEnumField.CreationToEndDuration,
                              TaskData.CreationToEndDuration);
-    yield return CaseSummary(TaskSummaryField.ProcessingToEndDuration,
+    yield return CaseSummary(TaskSummaryEnumField.ProcessingToEndDuration,
                              TaskData.ProcessingToEndDuration);
-    yield return CaseSummary(TaskSummaryField.Error,
+    yield return CaseSummary(TaskSummaryEnumField.Error,
                              TaskData.Output.Error);
-    yield return CaseSummary(TaskSummaryField.OwnerPodId,
+    yield return CaseSummary(TaskSummaryEnumField.OwnerPodId,
                              TaskData.OwnerPodId);
-    yield return CaseSummary(TaskSummaryField.InitialTaskId,
+    yield return CaseSummary(TaskSummaryEnumField.InitialTaskId,
                              TaskData.InitialTaskId);
-    yield return CaseSummary(TaskSummaryField.SubmittedAt,
+    yield return CaseSummary(TaskSummaryEnumField.SubmittedAt,
                              TaskData.SubmittedDate);
-    yield return CaseSummary(TaskSummaryField.PodTtl,
+    yield return CaseSummary(TaskSummaryEnumField.PodTtl,
                              TaskData.PodTtl);
-    yield return CaseSummary(TaskSummaryField.PodHostname,
+    yield return CaseSummary(TaskSummaryEnumField.PodHostname,
                              TaskData.OwnerPodName);
-    yield return CaseSummary(TaskSummaryField.ReceivedAt,
+    yield return CaseSummary(TaskSummaryEnumField.ReceivedAt,
                              TaskData.ReceptionDate);
-    yield return CaseSummary(TaskSummaryField.AcquiredAt,
+    yield return CaseSummary(TaskSummaryEnumField.AcquiredAt,
                              TaskData.AcquisitionDate);
 
-    TestCaseData CaseOption(TaskOptionField field,
-                            object?         expected)
+    TestCaseData CaseOption(TaskOptionEnumField field,
+                            object?             expected)
       => new TestCaseData(new TaskField
                           {
-                            TaskOptionField = field,
+                            TaskOptionField = new TaskOptionField
+                                              {
+                                                Field = field,
+                                              },
                           },
                           expected).SetArgDisplayNames(field.ToString());
 
-    yield return CaseOption(TaskOptionField.MaxDuration,
+    yield return CaseOption(TaskOptionEnumField.MaxDuration,
                             TaskData.Options.MaxDuration);
-    yield return CaseOption(TaskOptionField.MaxRetries,
+    yield return CaseOption(TaskOptionEnumField.MaxRetries,
                             TaskData.Options.MaxRetries);
-    yield return CaseOption(TaskOptionField.Priority,
+    yield return CaseOption(TaskOptionEnumField.Priority,
                             TaskData.Options.Priority);
-    yield return CaseOption(TaskOptionField.PartitionId,
+    yield return CaseOption(TaskOptionEnumField.PartitionId,
                             TaskData.Options.PartitionId);
-    yield return CaseOption(TaskOptionField.ApplicationName,
+    yield return CaseOption(TaskOptionEnumField.ApplicationName,
                             TaskData.Options.ApplicationName);
-    yield return CaseOption(TaskOptionField.ApplicationVersion,
+    yield return CaseOption(TaskOptionEnumField.ApplicationVersion,
                             TaskData.Options.ApplicationVersion);
-    yield return CaseOption(TaskOptionField.ApplicationNamespace,
+    yield return CaseOption(TaskOptionEnumField.ApplicationNamespace,
                             TaskData.Options.ApplicationNamespace);
-    yield return CaseOption(TaskOptionField.ApplicationService,
+    yield return CaseOption(TaskOptionEnumField.ApplicationService,
                             TaskData.Options.ApplicationService);
-    yield return CaseOption(TaskOptionField.EngineType,
+    yield return CaseOption(TaskOptionEnumField.EngineType,
                             TaskData.Options.EngineType);
 
     TestCaseData CaseOptionGeneric(string key)

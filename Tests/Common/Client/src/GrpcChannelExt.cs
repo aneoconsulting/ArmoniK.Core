@@ -92,7 +92,10 @@ public static class GrpcChannelExt
                                                            Direction = SortDirection.Asc,
                                                            Field = new TaskField
                                                                    {
-                                                                     TaskSummaryField = TaskSummaryField.TaskId,
+                                                                     TaskSummaryField = new TaskSummaryField
+                                                                                        {
+                                                                                          Field = TaskSummaryEnumField.TaskId,
+                                                                                        },
                                                                    },
                                                          })
                                          .ConfigureAwait(false))
@@ -231,7 +234,10 @@ public static class GrpcChannelExt
                                                      Direction = SortDirection.Asc,
                                                      Field = new TaskField
                                                              {
-                                                               TaskSummaryField = TaskSummaryField.TaskId,
+                                                               TaskSummaryField = new TaskSummaryField
+                                                                                  {
+                                                                                    Field = TaskSummaryEnumField.TaskId,
+                                                                                  },
                                                              },
                                                    })
                                    .ConfigureAwait(false))

@@ -33,16 +33,16 @@ public static class ListPartitionsRequestExt
     switch (sort.Field.FieldCase)
     {
       case PartitionField.FieldOneofCase.PartitionRawField:
-        return sort.Field.PartitionRawField switch
+        return sort.Field.PartitionRawField.Field switch
                {
-                 PartitionRawField.Id                   => partitionData => partitionData.PartitionId,
-                 PartitionRawField.ParentPartitionIds   => partitionData => partitionData.ParentPartitionIds,
-                 PartitionRawField.PodReserved          => partitionData => partitionData.PodReserved,
-                 PartitionRawField.PodMax               => partitionData => partitionData.PodMax,
-                 PartitionRawField.PreemptionPercentage => partitionData => partitionData.PreemptionPercentage,
-                 PartitionRawField.Priority             => partitionData => partitionData.Priority,
-                 PartitionRawField.Unspecified          => throw new ArgumentOutOfRangeException(),
-                 _                                      => throw new ArgumentOutOfRangeException(),
+                 PartitionRawEnumField.Id                   => partitionData => partitionData.PartitionId,
+                 PartitionRawEnumField.ParentPartitionIds   => partitionData => partitionData.ParentPartitionIds,
+                 PartitionRawEnumField.PodReserved          => partitionData => partitionData.PodReserved,
+                 PartitionRawEnumField.PodMax               => partitionData => partitionData.PodMax,
+                 PartitionRawEnumField.PreemptionPercentage => partitionData => partitionData.PreemptionPercentage,
+                 PartitionRawEnumField.Priority             => partitionData => partitionData.Priority,
+                 PartitionRawEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
+                 _                                          => throw new ArgumentOutOfRangeException(),
                };
 
       case PartitionField.FieldOneofCase.None:

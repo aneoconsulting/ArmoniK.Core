@@ -33,41 +33,41 @@ public static class ListTasksRequestExt
     switch (sort.Field.FieldCase)
     {
       case TaskField.FieldOneofCase.TaskSummaryField:
-        return sort.Field.TaskSummaryField switch
+        return sort.Field.TaskSummaryField.Field switch
                {
-                 TaskSummaryField.TaskId                  => data => data.TaskId,
-                 TaskSummaryField.SessionId               => data => data.SessionId,
-                 TaskSummaryField.OwnerPodId              => data => data.OwnerPodId,
-                 TaskSummaryField.InitialTaskId           => data => data.InitialTaskId,
-                 TaskSummaryField.Status                  => data => data.Status,
-                 TaskSummaryField.CreatedAt               => data => data.CreationDate,
-                 TaskSummaryField.SubmittedAt             => data => data.SubmittedDate,
-                 TaskSummaryField.StartedAt               => data => data.StartDate,
-                 TaskSummaryField.EndedAt                 => data => data.EndDate,
-                 TaskSummaryField.CreationToEndDuration   => data => data.CreationToEndDuration,
-                 TaskSummaryField.ProcessingToEndDuration => data => data.ProcessingToEndDuration,
-                 TaskSummaryField.PodTtl                  => data => data.PodTtl,
-                 TaskSummaryField.PodHostname             => data => data.OwnerPodName,
-                 TaskSummaryField.ReceivedAt              => data => data.ReceptionDate,
-                 TaskSummaryField.AcquiredAt              => data => data.AcquisitionDate,
-                 TaskSummaryField.Error                   => data => data.Output.Error,
-                 TaskSummaryField.Unspecified             => throw new ArgumentOutOfRangeException(),
-                 _                                        => throw new ArgumentOutOfRangeException(),
+                 TaskSummaryEnumField.TaskId                  => data => data.TaskId,
+                 TaskSummaryEnumField.SessionId               => data => data.SessionId,
+                 TaskSummaryEnumField.OwnerPodId              => data => data.OwnerPodId,
+                 TaskSummaryEnumField.InitialTaskId           => data => data.InitialTaskId,
+                 TaskSummaryEnumField.Status                  => data => data.Status,
+                 TaskSummaryEnumField.CreatedAt               => data => data.CreationDate,
+                 TaskSummaryEnumField.SubmittedAt             => data => data.SubmittedDate,
+                 TaskSummaryEnumField.StartedAt               => data => data.StartDate,
+                 TaskSummaryEnumField.EndedAt                 => data => data.EndDate,
+                 TaskSummaryEnumField.CreationToEndDuration   => data => data.CreationToEndDuration,
+                 TaskSummaryEnumField.ProcessingToEndDuration => data => data.ProcessingToEndDuration,
+                 TaskSummaryEnumField.PodTtl                  => data => data.PodTtl,
+                 TaskSummaryEnumField.PodHostname             => data => data.OwnerPodName,
+                 TaskSummaryEnumField.ReceivedAt              => data => data.ReceptionDate,
+                 TaskSummaryEnumField.AcquiredAt              => data => data.AcquisitionDate,
+                 TaskSummaryEnumField.Error                   => data => data.Output.Error,
+                 TaskSummaryEnumField.Unspecified             => throw new ArgumentOutOfRangeException(),
+                 _                                            => throw new ArgumentOutOfRangeException(),
                };
       case TaskField.FieldOneofCase.TaskOptionField:
-        return sort.Field.TaskOptionField switch
+        return sort.Field.TaskOptionField.Field switch
                {
-                 TaskOptionField.MaxDuration          => data => data.Options.MaxDuration,
-                 TaskOptionField.MaxRetries           => data => data.Options.MaxRetries,
-                 TaskOptionField.Priority             => data => data.Options.Priority,
-                 TaskOptionField.PartitionId          => data => data.Options.PartitionId,
-                 TaskOptionField.ApplicationName      => data => data.Options.ApplicationName,
-                 TaskOptionField.ApplicationVersion   => data => data.Options.ApplicationVersion,
-                 TaskOptionField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
-                 TaskOptionField.ApplicationService   => data => data.Options.ApplicationService,
-                 TaskOptionField.EngineType           => data => data.Options.EngineType,
-                 TaskOptionField.Unspecified          => throw new ArgumentOutOfRangeException(),
-                 _                                    => throw new ArgumentOutOfRangeException(),
+                 TaskOptionEnumField.MaxDuration          => data => data.Options.MaxDuration,
+                 TaskOptionEnumField.MaxRetries           => data => data.Options.MaxRetries,
+                 TaskOptionEnumField.Priority             => data => data.Options.Priority,
+                 TaskOptionEnumField.PartitionId          => data => data.Options.PartitionId,
+                 TaskOptionEnumField.ApplicationName      => data => data.Options.ApplicationName,
+                 TaskOptionEnumField.ApplicationVersion   => data => data.Options.ApplicationVersion,
+                 TaskOptionEnumField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
+                 TaskOptionEnumField.ApplicationService   => data => data.Options.ApplicationService,
+                 TaskOptionEnumField.EngineType           => data => data.Options.EngineType,
+                 TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
+                 _                                        => throw new ArgumentOutOfRangeException(),
                };
       case TaskField.FieldOneofCase.TaskOptionGenericField:
         return data => data.Options.Options[sort.Field.TaskOptionGenericField.Field];

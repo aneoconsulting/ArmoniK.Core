@@ -33,17 +33,17 @@ public static class ListResultsRequestExt
     switch (sort.Field.FieldCase)
     {
       case ResultField.FieldOneofCase.ResultRawField:
-        return sort.Field.ResultRawField switch
+        return sort.Field.ResultRawField.Field switch
                {
-                 ResultRawField.SessionId   => result => result.SessionId,
-                 ResultRawField.Name        => result => result.Name,
-                 ResultRawField.OwnerTaskId => result => result.OwnerTaskId,
-                 ResultRawField.Status      => result => result.Status,
-                 ResultRawField.CreatedAt   => result => result.CreationDate,
-                 ResultRawField.ResultId    => result => result.ResultId,
-                 ResultRawField.CompletedAt => throw new ArgumentOutOfRangeException(),
-                 ResultRawField.Unspecified => throw new ArgumentOutOfRangeException(),
-                 _                          => throw new ArgumentOutOfRangeException(),
+                 ResultRawEnumField.SessionId   => result => result.SessionId,
+                 ResultRawEnumField.Name        => result => result.Name,
+                 ResultRawEnumField.OwnerTaskId => result => result.OwnerTaskId,
+                 ResultRawEnumField.Status      => result => result.Status,
+                 ResultRawEnumField.CreatedAt   => result => result.CreationDate,
+                 ResultRawEnumField.ResultId    => result => result.ResultId,
+                 ResultRawEnumField.CompletedAt => throw new ArgumentOutOfRangeException(),
+                 ResultRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
+                 _                              => throw new ArgumentOutOfRangeException(),
                };
       case ResultField.FieldOneofCase.None:
       default:

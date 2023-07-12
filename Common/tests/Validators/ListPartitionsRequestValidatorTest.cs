@@ -39,7 +39,10 @@ public class ListPartitionsRequestValidatorTest
                                                 Direction = SortDirection.Asc,
                                                 Field = new PartitionField
                                                         {
-                                                          PartitionRawField = PartitionRawField.Id,
+                                                          PartitionRawField = new PartitionRawField
+                                                                              {
+                                                                                Field = PartitionRawEnumField.Id,
+                                                                              },
                                                         },
                                               },
                                        Page     = 0,
@@ -101,7 +104,10 @@ public class ListPartitionsRequestValidatorTest
                                         {
                                           Field = new PartitionField
                                                   {
-                                                    PartitionRawField = PartitionRawField.Id,
+                                                    PartitionRawField = new PartitionRawField
+                                                                        {
+                                                                          Field = PartitionRawEnumField.Id,
+                                                                        },
                                                   },
                                         };
     foreach (var error in validator_.Validate(validListPartitionsRequest_)

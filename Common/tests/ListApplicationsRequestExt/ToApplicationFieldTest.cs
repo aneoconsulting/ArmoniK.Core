@@ -79,18 +79,21 @@ public class ToApplicationFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(ApplicationRawField field,
-                      object?             expected)
-      => new TestCaseData(field,
+    TestCaseData Case(ApplicationRawEnumField field,
+                      object?                 expected)
+      => new TestCaseData(new ApplicationRawField
+                          {
+                            Field = field,
+                          },
                           expected).SetArgDisplayNames(field.ToString());
 
-    yield return Case(ApplicationRawField.Service,
+    yield return Case(ApplicationRawEnumField.Service,
                       Options.ApplicationService);
-    yield return Case(ApplicationRawField.Name,
+    yield return Case(ApplicationRawEnumField.Name,
                       Options.ApplicationName);
-    yield return Case(ApplicationRawField.Namespace,
+    yield return Case(ApplicationRawEnumField.Namespace,
                       Options.ApplicationNamespace);
-    yield return Case(ApplicationRawField.Version,
+    yield return Case(ApplicationRawEnumField.Version,
                       Options.ApplicationVersion);
   }
 
@@ -133,11 +136,17 @@ public class ToApplicationFieldTest
                            {
                              new ApplicationField
                              {
-                               ApplicationField_ = ApplicationRawField.Service,
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Service,
+                                                   },
                              },
                              new ApplicationField
                              {
-                               ApplicationField_ = ApplicationRawField.Name,
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Name,
+                                                   },
                              },
                            },
                            Direction = SortDirection.Asc,

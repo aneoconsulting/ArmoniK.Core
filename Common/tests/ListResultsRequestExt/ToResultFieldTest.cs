@@ -44,24 +44,27 @@ public class ToResultFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(ResultRawField field,
-                      object?        expected)
-      => new TestCaseData(field,
+    TestCaseData Case(ResultRawEnumField field,
+                      object?            expected)
+      => new TestCaseData(new ResultRawField
+                          {
+                            Field = field,
+                          },
                           expected).SetArgDisplayNames(field.ToString());
 
 
     // TODO add completedDate
-    yield return Case(ResultRawField.Status,
+    yield return Case(ResultRawEnumField.Status,
                       Result.Status);
-    yield return Case(ResultRawField.CreatedAt,
+    yield return Case(ResultRawEnumField.CreatedAt,
                       Result.CreationDate);
-    yield return Case(ResultRawField.Name,
+    yield return Case(ResultRawEnumField.Name,
                       Result.Name);
-    yield return Case(ResultRawField.OwnerTaskId,
+    yield return Case(ResultRawEnumField.OwnerTaskId,
                       Result.OwnerTaskId);
-    yield return Case(ResultRawField.ResultId,
+    yield return Case(ResultRawEnumField.ResultId,
                       Result.ResultId);
-    yield return Case(ResultRawField.SessionId,
+    yield return Case(ResultRawEnumField.SessionId,
                       Result.SessionId);
   }
 

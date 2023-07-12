@@ -123,7 +123,10 @@ internal static class Program
                                                                            Direction = SortDirection.Desc,
                                                                            Field = new PartitionField
                                                                                    {
-                                                                                     PartitionRawField = PartitionRawField.Id,
+                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                         {
+                                                                                                           Field = PartitionRawEnumField.Id,
+                                                                                                         },
                                                                                    },
                                                                          },
                                                                   PageSize = 10,
