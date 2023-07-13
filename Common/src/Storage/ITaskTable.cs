@@ -176,6 +176,7 @@ public interface ITaskTable : IInitializable
   /// </summary>
   /// <param name="filter">Filter to select tasks</param>
   /// <param name="orderField">Select the field that will be used to order the tasks</param>
+  /// <param name="selector">Expression to select part of the returned task data</param>
   /// <param name="ascOrder">Is the order ascending</param>
   /// <param name="page">The page of results to retrieve</param>
   /// <param name="pageSize">The number of results pages</param>
@@ -183,12 +184,13 @@ public interface ITaskTable : IInitializable
   /// <returns>
   ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                      Expression<Func<TaskData, object?>> orderField,
-                                                                      bool                                ascOrder,
-                                                                      int                                 page,
-                                                                      int                                 pageSize,
-                                                                      CancellationToken                   cancellationToken = default);
+  Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
+                                                                  Expression<Func<TaskData, object?>> orderField,
+                                                                  Expression<Func<TaskData, T>>       selector,
+                                                                  bool                                ascOrder,
+                                                                  int                                 page,
+                                                                  int                                 pageSize,
+                                                                  CancellationToken                   cancellationToken = default);
 
   /// <summary>
   ///   Find all tasks matching the given filter and ordering

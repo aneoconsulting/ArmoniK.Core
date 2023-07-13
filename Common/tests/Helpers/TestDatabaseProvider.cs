@@ -38,6 +38,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Events;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -52,7 +53,8 @@ public class TestDatabaseProvider : IDisposable
 
   public TestDatabaseProvider(Action<IServiceCollection>?    collectionConfigurator           = null,
                               Action<IApplicationBuilder>?   applicationBuilderConfigurator   = null,
-                              Action<IEndpointRouteBuilder>? endpointRouteBuilderConfigurator = null)
+                              Action<IEndpointRouteBuilder>? endpointRouteBuilderConfigurator = null,
+                              bool                           logMongoRequests                 = false)
   {
     var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
@@ -67,12 +69,17 @@ public class TestDatabaseProvider : IDisposable
 
     runner_ = MongoRunner.Run(options);
     var settings = MongoClientSettings.FromConnectionString(runner_.ConnectionString);
-    //settings.ClusterConfigurator = cb =>
-    //                               {
-    //                                 cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
-    //                                                                                          e.CommandName,
-    //                                                                                          e.Command.ToJson()));
-    //                               };
+
+    if (logMongoRequests)
+    {
+      settings.ClusterConfigurator = cb =>
+                                     {
+                                       cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
+                                                                                                e.CommandName,
+                                                                                                e.Command.ToJson()));
+                                     };
+    }
+
     client_ = new MongoClient(settings);
 
     // Minimal set of configurations to operate on a toy DB

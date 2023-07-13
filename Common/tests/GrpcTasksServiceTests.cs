@@ -42,7 +42,8 @@ public class GrpcTasksServiceTests
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
-                                          builder => builder.MapGrpcService<GrpcTasksService>());
+                                          builder => builder.MapGrpcService<GrpcTasksService>(),
+                                          true);
 
   [TearDown]
   public void TearDown()

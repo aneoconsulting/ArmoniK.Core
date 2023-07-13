@@ -1451,6 +1451,7 @@ public class TaskTableTestBase
     {
       var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
                                                       data => data.SessionId,
+                                                      data => data,
                                                       false,
                                                       0,
                                                       20,
@@ -1485,6 +1486,7 @@ public class TaskTableTestBase
 
       var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
                                                       req.Sort.ToTaskDataField(),
+                                                      data => data,
                                                       false,
                                                       0,
                                                       20,
@@ -1509,6 +1511,7 @@ public class TaskTableTestBase
 
       var listTasks = await TaskTable!.ListTasksAsync(data => statusList.Contains(data.Status),
                                                       data => data.SessionId,
+                                                      data => data,
                                                       false,
                                                       0,
                                                       20,
@@ -1527,6 +1530,7 @@ public class TaskTableTestBase
     {
       var listTasks = await TaskTable!.ListTasksAsync(data => data.TaskId == "NotExisting",
                                                       data => data.SessionId,
+                                                      data => data,
                                                       false,
                                                       0,
                                                       20,

@@ -82,6 +82,7 @@ public class WatchToGrpc
                             (IEnumerable<TaskData> tasks, long totalCount) res;
                             while ((res = await taskTable_.ListTasksAsync(data => data.SessionId == sessionId,
                                                                           data => data.CreationDate,
+                                                                          data => data, // todo: create a class to properly use selector
                                                                           false,
                                                                           page,
                                                                           PageSize,

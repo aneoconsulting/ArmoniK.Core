@@ -240,12 +240,13 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                             Expression<Func<TaskData, object?>> orderField,
-                                                                             bool                                ascOrder,
-                                                                             int                                 page,
-                                                                             int                                 pageSize,
-                                                                             CancellationToken                   cancellationToken = default)
+  public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
+                                                                         Expression<Func<TaskData, object?>> orderField,
+                                                                         Expression<Func<TaskData, T>>       selector,
+                                                                         bool                                ascOrder,
+                                                                         int                                 page,
+                                                                         int                                 pageSize,
+                                                                         CancellationToken                   cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
@@ -255,8 +256,9 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<(IEnumerable<TaskData> tasks, long totalCount)>((ordered.Skip(page * pageSize)
-                                                                                   .Take(pageSize), ordered.Count()));
+    return Task.FromResult<(IEnumerable<T> tasks, long totalCount)>((ordered.Skip(page * pageSize)
+                                                                            .Take(pageSize)
+                                                                            .Select(selector), ordered.Count()));
   }
 
   /// <inheritdoc />

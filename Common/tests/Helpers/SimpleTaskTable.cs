@@ -138,31 +138,32 @@ public class SimpleTaskTable : ITaskTable
          TaskId,
        }.ToAsyncEnumerable();
 
-  public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                             Expression<Func<TaskData, object?>> orderField,
-                                                                             bool                                ascOrder,
-                                                                             int                                 page,
-                                                                             int                                 pageSize,
-                                                                             CancellationToken                   cancellationToken = default)
-    => Task.FromResult<(IEnumerable<TaskData> tasks, long totalCount)>((new[]
-                                                                        {
-                                                                          new TaskData(SessionId,
-                                                                                       TaskId,
-                                                                                       OwnerPodId,
-                                                                                       PodName,
-                                                                                       PayloadId,
-                                                                                       new List<string>(),
-                                                                                       new List<string>(),
-                                                                                       new List<string>
-                                                                                       {
-                                                                                         OutputId,
-                                                                                       },
-                                                                                       new List<string>(),
-                                                                                       TaskStatus.Completed,
-                                                                                       TaskOptions,
-                                                                                       new Output(true,
-                                                                                                  "")),
-                                                                        }, 1));
+  public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
+                                                                         Expression<Func<TaskData, object?>> orderField,
+                                                                         Expression<Func<TaskData, T>>       selector,
+                                                                         bool                                ascOrder,
+                                                                         int                                 page,
+                                                                         int                                 pageSize,
+                                                                         CancellationToken                   cancellationToken = default)
+    => Task.FromResult<(IEnumerable<T> tasks, long totalCount)>((new[]
+                                                                 {
+                                                                   new TaskData(SessionId,
+                                                                                TaskId,
+                                                                                OwnerPodId,
+                                                                                PodName,
+                                                                                PayloadId,
+                                                                                new List<string>(),
+                                                                                new List<string>(),
+                                                                                new List<string>
+                                                                                {
+                                                                                  OutputId,
+                                                                                },
+                                                                                new List<string>(),
+                                                                                TaskStatus.Completed,
+                                                                                TaskOptions,
+                                                                                new Output(true,
+                                                                                           "")),
+                                                                 }.Select(selector.Compile()), 1));
 
   public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
                                                 Expression<Func<TaskData, T>>    selector,
