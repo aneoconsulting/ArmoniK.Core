@@ -114,6 +114,28 @@ public class GrpcTasksService : Task.TasksBase
 
       var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
                                                      request.Sort.ToTaskDataField(),
+                                                     data => new TaskDataSummary(data.SessionId,
+                                                                                 data.TaskId,
+                                                                                 data.OwnerPodId,
+                                                                                 data.OwnerPodName,
+                                                                                 data.ParentTaskIds.Count,
+                                                                                 data.DataDependencies.Count,
+                                                                                 data.ExpectedOutputIds.Count,
+                                                                                 data.InitialTaskId,
+                                                                                 data.RetryOfIds.Count,
+                                                                                 data.Status,
+                                                                                 data.StatusMessage,
+                                                                                 data.Options,
+                                                                                 data.CreationDate,
+                                                                                 data.SubmittedDate,
+                                                                                 data.StartDate,
+                                                                                 data.EndDate,
+                                                                                 data.ReceptionDate,
+                                                                                 data.AcquisitionDate,
+                                                                                 data.PodTtl,
+                                                                                 data.ProcessingToEndDuration,
+                                                                                 data.CreationToEndDuration,
+                                                                                 data.Output),
                                                      request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
@@ -126,7 +148,7 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.tasks.Select(data => new TaskSummary(data)),
+                 taskData.tasks.Select(data => data.ToTaskSummary()),
                },
                Total = (int)taskData.totalCount,
              };
@@ -204,9 +226,30 @@ public class GrpcTasksService : Task.TasksBase
              {
                Tasks =
                {
-                 await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                 data => new TaskSummary(data))
-                                 .ConfigureAwait(false),
+                 (await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                  data => new TaskDataSummary(data.SessionId,
+                                                                              data.TaskId,
+                                                                              data.OwnerPodId,
+                                                                              data.OwnerPodName,
+                                                                              data.ParentTaskIds.Count,
+                                                                              data.DataDependencies.Count,
+                                                                              data.ExpectedOutputIds.Count,
+                                                                              data.InitialTaskId,
+                                                                              data.RetryOfIds.Count,
+                                                                              data.Status,
+                                                                              data.StatusMessage,
+                                                                              data.Options,
+                                                                              data.CreationDate,
+                                                                              data.SubmittedDate,
+                                                                              data.StartDate,
+                                                                              data.EndDate,
+                                                                              data.ReceptionDate,
+                                                                              data.AcquisitionDate,
+                                                                              data.PodTtl,
+                                                                              data.ProcessingToEndDuration,
+                                                                              data.CreationToEndDuration,
+                                                                              data.Output))
+                                  .ConfigureAwait(false)).Select(data => data.ToTaskSummary()),
                },
              };
     }
@@ -278,6 +321,7 @@ public class GrpcTasksService : Task.TasksBase
 
       var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
                                                      request.Sort.ToTaskDataField(),
+                                                     data => data,
                                                      request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,

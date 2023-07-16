@@ -629,12 +629,13 @@ public class TaskHandlerTest
                                                    CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                               Expression<Func<TaskData, object?>> orderField,
-                                                                               bool                                ascOrder,
-                                                                               int                                 page,
-                                                                               int                                 pageSize,
-                                                                               CancellationToken                   cancellationToken = default)
+    public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
+                                                                           Expression<Func<TaskData, object?>> orderField,
+                                                                           Expression<Func<TaskData, T>>       selector,
+                                                                           bool                                ascOrder,
+                                                                           int                                 page,
+                                                                           int                                 pageSize,
+                                                                           CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,

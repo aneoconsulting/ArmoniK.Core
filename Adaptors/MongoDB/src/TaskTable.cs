@@ -296,12 +296,13 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<TaskData> tasks, long totalCount)> ListTasksAsync(Expression<Func<TaskData, bool>>    filter,
-                                                                                   Expression<Func<TaskData, object?>> orderField,
-                                                                                   bool                                ascOrder,
-                                                                                   int                                 page,
-                                                                                   int                                 pageSize,
-                                                                                   CancellationToken                   cancellationToken = default)
+  public async Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
+                                                                               Expression<Func<TaskData, object?>> orderField,
+                                                                               Expression<Func<TaskData, T>>       selector,
+                                                                               bool                                ascOrder,
+                                                                               int                                 page,
+                                                                               int                                 pageSize,
+                                                                               CancellationToken                   cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
@@ -319,6 +320,7 @@ public class TaskTable : ITaskTable
 
     var taskList = ordered.Skip(page * pageSize)
                           .Limit(pageSize)
+                          .Project(selector)
                           .ToListAsync(cancellationToken);
 
     var taskCount = findFluent2.CountDocumentsAsync(cancellationToken);

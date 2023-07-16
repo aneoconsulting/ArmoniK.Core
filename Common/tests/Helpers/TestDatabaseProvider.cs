@@ -23,11 +23,14 @@ using System.Threading;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
 using EphemeralMongo;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,6 +38,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Events;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -42,12 +46,15 @@ public class TestDatabaseProvider : IDisposable
 {
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
-  private readonly        WebApplication app_;
+  public readonly         WebApplication App;
   private readonly        IMongoClient   client_;
   private readonly        IMongoRunner   runner_;
 
 
-  public TestDatabaseProvider(Action<IServiceCollection>? configurator = null)
+  public TestDatabaseProvider(Action<IServiceCollection>?    collectionConfigurator           = null,
+                              Action<IApplicationBuilder>?   applicationBuilderConfigurator   = null,
+                              Action<IEndpointRouteBuilder>? endpointRouteBuilderConfigurator = null,
+                              bool                           logMongoRequests                 = false)
   {
     var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
@@ -62,12 +69,17 @@ public class TestDatabaseProvider : IDisposable
 
     runner_ = MongoRunner.Run(options);
     var settings = MongoClientSettings.FromConnectionString(runner_.ConnectionString);
-    //settings.ClusterConfigurator = cb =>
-    //                               {
-    //                                 cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
-    //                                                                                          e.CommandName,
-    //                                                                                          e.Command.ToJson()));
-    //                               };
+
+    if (logMongoRequests)
+    {
+      settings.ClusterConfigurator = cb =>
+                                     {
+                                       cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
+                                                                                                e.CommandName,
+                                                                                                e.Command.ToJson()));
+                                     };
+    }
+
     client_ = new MongoClient(settings);
 
     // Minimal set of configurations to operate on a toy DB
@@ -78,6 +90,9 @@ public class TestDatabaseProvider : IDisposable
                                                   },
                                                   {
                                                     "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                                  },
+                                                  {
+                                                    "Components:AuthenticationStorage", "ArmoniK.Adapters.MongoDB.AuthenticationTable"
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
@@ -115,47 +130,59 @@ public class TestDatabaseProvider : IDisposable
 
     builder.Services.AddMongoStorages(builder.Configuration,
                                       NullLogger.Instance)
+           .AddClientSubmitterAuthenticationStorage(builder.Configuration,
+                                                    NullLogger.Instance)
+           .AddClientSubmitterAuthServices(builder.Configuration,
+                                           NullLogger.Instance,
+                                           out _)
+           .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);
-    configurator?.Invoke(builder.Services);
 
-    app_ = builder.Build();
+    collectionConfigurator?.Invoke(builder.Services);
 
-    var sessionProvider = app_.Services.GetRequiredService<SessionProvider>();
-    sessionProvider.Init(CancellationToken.None)
-                   .Wait();
+    builder.WebHost.UseTestServer(o => o.PreserveExecutionContext = true);
 
-    app_.Services.GetRequiredService<IResultTable>()
-        .Init(CancellationToken.None)
-        .Wait();
+    App = builder.Build();
 
-    app_.Services.GetRequiredService<ITaskTable>()
-        .Init(CancellationToken.None)
-        .Wait();
+    applicationBuilderConfigurator?.Invoke(App);
+    endpointRouteBuilderConfigurator?.Invoke(App);
 
-    app_.Services.GetRequiredService<ISessionTable>()
-        .Init(CancellationToken.None)
-        .Wait();
+    App.Services.GetRequiredService<SessionProvider>()
+       .Init(CancellationToken.None)
+       .Wait();
 
-    app_.Services.GetRequiredService<IPartitionTable>()
-        .Init(CancellationToken.None)
-        .Wait();
+    App.Services.GetRequiredService<IResultTable>()
+       .Init(CancellationToken.None)
+       .Wait();
 
-    app_.Services.GetRequiredService<IObjectStorage>()
-        .Init(CancellationToken.None)
-        .Wait();
+    App.Services.GetRequiredService<ITaskTable>()
+       .Init(CancellationToken.None)
+       .Wait();
+
+    App.Services.GetRequiredService<ISessionTable>()
+       .Init(CancellationToken.None)
+       .Wait();
+
+    App.Services.GetRequiredService<IPartitionTable>()
+       .Init(CancellationToken.None)
+       .Wait();
+
+    App.Services.GetRequiredService<IObjectStorage>()
+       .Init(CancellationToken.None)
+       .Wait();
   }
 
   public void Dispose()
   {
-    ((IDisposable)app_).Dispose();
+    ((IDisposable)App).Dispose();
     runner_.Dispose();
     GC.SuppressFinalize(this);
   }
 
   public T GetRequiredService<T>()
     where T : notnull
-    => app_.Services.GetRequiredService<T>();
+    => App.Services.GetRequiredService<T>();
 }
