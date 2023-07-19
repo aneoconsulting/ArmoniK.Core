@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 
@@ -25,6 +27,7 @@ using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
 
@@ -56,201 +59,196 @@ public class ToResultFilterTest
                                                                  Direction = SortDirection.Asc,
                                                                };
 
-  [Test]
-  public void FilterStatusShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            Status = ResultStatus.Created,
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
+  private static Func<Result, bool> RequestToFunc(ListResultsRequest.Types.Sort sort,
+                                                  IEnumerable<FilterField>      filterFields)
+    => CreateListResultsRequest(sort,
+                                filterFields)
+       .Filters.ToResultFilter()
+       .Compile();
 
-    Assert.IsTrue(func.Invoke(result_));
+
+  public static ListResultsRequest CreateListResultsRequest(ListResultsRequest.Types.Sort sort,
+                                                            IEnumerable<FilterField>      filterFields)
+    => new()
+       {
+         Filters = new Filters
+                   {
+                     Filters_ = new FiltersOr
+                                {
+                                  Filters =
+                                  {
+                                    new FiltersAnd
+                                    {
+                                      Filters =
+                                      {
+                                        filterFields,
+                                      },
+                                    },
+                                  },
+                                },
+                   },
+         Sort = sort,
+       };
+
+  public static FilterField CreateListResultsFilterString(ResultRawEnumField   field,
+                                                          FilterStringOperator op,
+                                                          string               value)
+    => new()
+       {
+         String = new FilterString
+                  {
+                    Field = new ResultField
+                            {
+                              ResultRawField = new ResultRawField
+                                               {
+                                                 Field = field,
+                                               },
+                            },
+                    Operator = op,
+                    Value    = value,
+                  },
+       };
+
+  public static FilterField CreateListResultsFilterNumber(ResultRawEnumField   field,
+                                                          FilterNumberOperator op,
+                                                          long                 value)
+    => new()
+       {
+         Number = new FilterNumber
+                  {
+                    Field = new ResultField
+                            {
+                              ResultRawField = new ResultRawField
+                                               {
+                                                 Field = field,
+                                               },
+                            },
+                    Operator = op,
+                    Value    = value,
+                  },
+       };
+
+  public static FilterField CreateListResultsFilterArray(ResultRawEnumField  field,
+                                                         FilterArrayOperator op,
+                                                         string              value)
+    => new()
+       {
+         Array = new FilterArray
+                 {
+                   Field = new ResultField
+                           {
+                             ResultRawField = new ResultRawField
+                                              {
+                                                Field = field,
+                                              },
+                           },
+                   Operator = op,
+                   Value    = value,
+                 },
+       };
+
+  public static FilterField CreateListResultsFilterStatus(ResultRawEnumField   field,
+                                                          FilterStatusOperator op,
+                                                          ResultStatus         value)
+    => new()
+       {
+         Status = new FilterStatus
+                  {
+                    Field = new ResultField
+                            {
+                              ResultRawField = new ResultRawField
+                                               {
+                                                 Field = field,
+                                               },
+                            },
+                    Operator = op,
+                    Value    = value,
+                  },
+       };
+
+  public static FilterField CreateListResultsFilterDate(ResultRawEnumField field,
+                                                        FilterDateOperator op,
+                                                        DateTime           value)
+    => new()
+       {
+         Date = new FilterDate
+                {
+                  Field = new ResultField
+                          {
+                            ResultRawField = new ResultRawField
+                                             {
+                                               Field = field,
+                                             },
+                          },
+                  Operator = op,
+                  Value    = FromDateTime(value),
+                },
+       };
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public void Filter(IEnumerable<FilterField> filterFields,
+                     bool                     expected)
+  {
+    var func = RequestToFunc(Sort,
+                             filterFields);
+
+    Assert.AreEqual(expected,
+                    func.Invoke(result_));
   }
 
-  [Test]
-  public void FilterStatusShouldFail()
+  public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
+    TestCaseData CaseTrue(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            Status = ResultStatus.Aborted,
+                            filterField,
                           },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
+                          true).SetArgDisplayNames(filterField.ToDisplay());
 
-    Assert.IsFalse(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterSessionIdShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
+    TestCaseData CaseFalse(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            SessionId = "SessionId",
+                            filterField,
                           },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
+                          false).SetArgDisplayNames(filterField.ToDisplay());
 
-    Assert.IsTrue(func.Invoke(result_));
-  }
+    yield return CaseTrue(CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                        FilterStatusOperator.Equal,
+                                                        ResultStatus.Created));
+    yield return CaseFalse(CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                         FilterStatusOperator.Equal,
+                                                         ResultStatus.Aborted));
+    yield return CaseTrue(CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                        FilterStatusOperator.NotEqual,
+                                                        ResultStatus.Aborted));
 
-  [Test]
-  public void FilterSessionIdShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            SessionId = "BadSessionId",
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
+    yield return CaseTrue(CreateListResultsFilterString(ResultRawEnumField.SessionId,
+                                                        FilterStringOperator.Equal,
+                                                        "SessionId"));
+    yield return CaseFalse(CreateListResultsFilterString(ResultRawEnumField.SessionId,
+                                                         FilterStringOperator.Equal,
+                                                         "BadSessionId"));
 
-    Assert.IsFalse(func.Invoke(result_));
-  }
+    yield return CaseTrue(CreateListResultsFilterString(ResultRawEnumField.Name,
+                                                        FilterStringOperator.Equal,
+                                                        "Name"));
+    yield return CaseFalse(CreateListResultsFilterString(ResultRawEnumField.Name,
+                                                         FilterStringOperator.Equal,
+                                                         "BadName"));
 
-  [Test]
-  public void FilterNameShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            Name = "Name",
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
+    yield return CaseTrue(CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
+                                                        FilterStringOperator.Equal,
+                                                        "OwnerTaskId"));
+    yield return CaseFalse(CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
+                                                         FilterStringOperator.Equal,
+                                                         "BadOwnerTaskId"));
 
-    Assert.IsTrue(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterNameShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            Name = "BadName",
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterOwnerTaskIdShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            OwnerTaskId = "OwnerTaskId",
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterOwnerTaskIdShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            OwnerTaskId = "BadOwnerTaskId",
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterCreatedBeforeShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterCreatedBeforeShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_ with
-                               {
-                                 CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(result_ with
-                              {
-                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_));
+    yield return CaseTrue(CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
+                                                      FilterDateOperator.After,
+                                                      DateTime.UtcNow));
+    yield return CaseFalse(CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
+                                                       FilterDateOperator.Before,
+                                                       DateTime.UtcNow));
   }
 }

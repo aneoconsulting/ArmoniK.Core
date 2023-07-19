@@ -24,6 +24,9 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
+
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
 
@@ -49,6 +52,13 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
 
+using FilterArray = Armonik.Api.Grpc.V1.Partitions.FilterArray;
+using FilterField = Armonik.Api.Grpc.V1.Partitions.FilterField;
+using FilterNumber = Armonik.Api.Grpc.V1.Partitions.FilterNumber;
+using Filters = Armonik.Api.Grpc.V1.Partitions.Filters;
+using FiltersAnd = Armonik.Api.Grpc.V1.Partitions.FiltersAnd;
+using FiltersOr = Armonik.Api.Grpc.V1.Partitions.FiltersOr;
+using FilterString = Armonik.Api.Grpc.V1.Partitions.FilterString;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Samples.Bench.Client;
@@ -86,15 +96,123 @@ internal static class Program
                                                            var client = new Partitions.PartitionsClient(channel);
                                                            var req = new ListPartitionsRequest
                                                                      {
-                                                                       Filter = new ListPartitionsRequest.Types.Filter
-                                                                                {
-                                                                                  Id                   = "",
-                                                                                  ParentPartitionId    = "",
-                                                                                  PodMax               = 0,
-                                                                                  PodReserved          = 0,
-                                                                                  PreemptionPercentage = 0,
-                                                                                  Priority             = 0,
-                                                                                },
+                                                                       Filters = new Filters
+                                                                                 {
+                                                                                   Filters_ = new FiltersOr
+                                                                                              {
+                                                                                                Filters =
+                                                                                                {
+                                                                                                  new FiltersAnd
+                                                                                                  {
+                                                                                                    Filters =
+                                                                                                    {
+                                                                                                      new FilterField
+                                                                                                      {
+                                                                                                        String = new FilterString
+                                                                                                                 {
+                                                                                                                   Field = new PartitionField
+                                                                                                                           {
+                                                                                                                             PartitionRawField = new PartitionRawField
+                                                                                                                                                 {
+                                                                                                                                                   Field =
+                                                                                                                                                     PartitionRawEnumField
+                                                                                                                                                       .Id,
+                                                                                                                                                 },
+                                                                                                                           },
+                                                                                                                   Operator = FilterStringOperator.Equal,
+                                                                                                                   Value    = "",
+                                                                                                                 },
+                                                                                                      },
+                                                                                                      new FilterField
+                                                                                                      {
+                                                                                                        Array = new FilterArray
+                                                                                                                {
+                                                                                                                  Field = new PartitionField
+                                                                                                                          {
+                                                                                                                            PartitionRawField = new PartitionRawField
+                                                                                                                                                {
+                                                                                                                                                  Field =
+                                                                                                                                                    PartitionRawEnumField
+                                                                                                                                                      .ParentPartitionIds,
+                                                                                                                                                },
+                                                                                                                          },
+                                                                                                                  Operator = FilterArrayOperator.Contains,
+                                                                                                                  Value    = "",
+                                                                                                                },
+                                                                                                      },
+                                                                                                      new FilterField
+                                                                                                      {
+                                                                                                        Number = new FilterNumber
+                                                                                                                 {
+                                                                                                                   Field = new PartitionField
+                                                                                                                           {
+                                                                                                                             PartitionRawField = new PartitionRawField
+                                                                                                                                                 {
+                                                                                                                                                   Field =
+                                                                                                                                                     PartitionRawEnumField
+                                                                                                                                                       .PodMax,
+                                                                                                                                                 },
+                                                                                                                           },
+                                                                                                                   Operator = FilterNumberOperator.Equal,
+                                                                                                                   Value    = 0,
+                                                                                                                 },
+                                                                                                      },
+                                                                                                      new FilterField
+                                                                                                      {
+                                                                                                        Number = new FilterNumber
+                                                                                                                 {
+                                                                                                                   Field = new PartitionField
+                                                                                                                           {
+                                                                                                                             PartitionRawField = new PartitionRawField
+                                                                                                                                                 {
+                                                                                                                                                   Field =
+                                                                                                                                                     PartitionRawEnumField
+                                                                                                                                                       .PodReserved,
+                                                                                                                                                 },
+                                                                                                                           },
+                                                                                                                   Operator = FilterNumberOperator.Equal,
+                                                                                                                   Value    = 0,
+                                                                                                                 },
+                                                                                                      },
+                                                                                                      new FilterField
+                                                                                                      {
+                                                                                                        Number = new FilterNumber
+                                                                                                                 {
+                                                                                                                   Field = new PartitionField
+                                                                                                                           {
+                                                                                                                             PartitionRawField = new PartitionRawField
+                                                                                                                                                 {
+                                                                                                                                                   Field =
+                                                                                                                                                     PartitionRawEnumField
+                                                                                                                                                       .PreemptionPercentage,
+                                                                                                                                                 },
+                                                                                                                           },
+                                                                                                                   Operator = FilterNumberOperator.Equal,
+                                                                                                                   Value    = 0,
+                                                                                                                 },
+                                                                                                      },
+                                                                                                      new FilterField
+                                                                                                      {
+                                                                                                        Number = new FilterNumber
+                                                                                                                 {
+                                                                                                                   Field = new PartitionField
+                                                                                                                           {
+                                                                                                                             PartitionRawField = new PartitionRawField
+                                                                                                                                                 {
+                                                                                                                                                   Field =
+                                                                                                                                                     PartitionRawEnumField
+                                                                                                                                                       .Priority,
+                                                                                                                                                 },
+                                                                                                                           },
+                                                                                                                   Operator = FilterNumberOperator.Equal,
+                                                                                                                   Value    = 0,
+                                                                                                                 },
+                                                                                                      },
+                                                                                                    },
+                                                                                                  },
+                                                                                                },
+                                                                                              },
+                                                                                 },
                                                                        Sort = new ListPartitionsRequest.Types.Sort
                                                                               {
                                                                                 Direction = SortDirection.Desc,

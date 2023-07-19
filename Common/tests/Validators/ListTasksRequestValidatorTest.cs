@@ -18,6 +18,7 @@
 using System;
 
 using Armonik.Api.Grpc.V1.SortDirection;
+using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -33,7 +34,7 @@ public class ListTasksRequestValidatorTest
   public void Setup()
     => validListTasksRequest_ = new ListTasksRequest
                                 {
-                                  Filter = new ListTasksRequest.Types.Filter(),
+                                  Filters = new Filters(),
                                   Sort = new ListTasksRequest.Types.Sort
                                          {
                                            Direction = SortDirection.Asc,
@@ -60,7 +61,7 @@ public class ListTasksRequestValidatorTest
   [Test]
   public void ListTasksRequestDefaultFilterShouldFail()
   {
-    validListTasksRequest_!.Filter = default;
+    validListTasksRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }

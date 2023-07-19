@@ -54,8 +54,8 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
-    var tasks = await taskTable_.ListApplicationsAsync(request.Filter.ToApplicationFilter(),
-                                                       request.Sort.Fields.Select(field => field.ToApplicationField())
+    var tasks = await taskTable_.ListApplicationsAsync(request.Filters.ToApplicationFilter(),
+                                                       request.Sort.Fields.Select(field => field.ToField())
                                                               .ToList(),
                                                        request.Sort.Direction == SortDirection.Asc,
                                                        request.Page,

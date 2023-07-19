@@ -18,7 +18,6 @@
 using System;
 using System.Linq.Expressions;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Core.Common.Storage;
 
@@ -28,62 +27,183 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListResultsRequestExt
 {
-  public static Expression<Func<Result, object?>> ToResultField(this ListResultsRequest.Types.Sort sort)
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="Result" /> field
+  /// </summary>
+  /// <param name="sort">The gPRC message</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, object?>> ToField(this ListResultsRequest.Types.Sort sort)
   {
     switch (sort.Field.FieldCase)
     {
       case ResultField.FieldOneofCase.ResultRawField:
-        return sort.Field.ResultRawField.Field switch
-               {
-                 ResultRawEnumField.SessionId   => result => result.SessionId,
-                 ResultRawEnumField.Name        => result => result.Name,
-                 ResultRawEnumField.OwnerTaskId => result => result.OwnerTaskId,
-                 ResultRawEnumField.Status      => result => result.Status,
-                 ResultRawEnumField.CreatedAt   => result => result.CreationDate,
-                 ResultRawEnumField.ResultId    => result => result.ResultId,
-                 ResultRawEnumField.CompletedAt => throw new ArgumentOutOfRangeException(),
-                 ResultRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
-                 _                              => throw new ArgumentOutOfRangeException(),
-               };
+        return sort.Field.ResultRawField.Field.ToField();
       case ResultField.FieldOneofCase.None:
       default:
         throw new ArgumentOutOfRangeException();
     }
   }
 
-  public static Expression<Func<Result, bool>> ToResultFilter(this ListResultsRequest.Types.Filter filter)
+  /// <summary>
+  ///   Converts gRPC message filter into an <see cref="Expression" /> that represents the filter condition
+  /// </summary>
+  /// <param name="filter">The gPRC filter</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter condition
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToExpression(this FilterString filter)
+    => filter.Field.FieldCase switch
+       {
+         ResultField.FieldOneofCase.None => throw new ArgumentOutOfRangeException(),
+         ResultField.FieldOneofCase.ResultRawField => filter.Operator.ToFilter(filter.Field.ResultRawField.Field.ToField(),
+                                                                               filter.Value),
+         _ => throw new ArgumentOutOfRangeException(),
+       };
+
+
+  /// <summary>
+  ///   Converts gRPC message filter into an <see cref="Expression" /> that represents the filter condition
+  /// </summary>
+  /// <param name="filter">The gPRC filter</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter condition
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToExpression(this FilterNumber filter)
+    => filter.Field.FieldCase switch
+       {
+         ResultField.FieldOneofCase.None => throw new ArgumentOutOfRangeException(),
+         ResultField.FieldOneofCase.ResultRawField => ExpressionBuilders.MakeBinary(filter.Field.ResultRawField.Field.ToField(),
+                                                                                    filter.Value,
+                                                                                    filter.Operator.ToExpressionType()),
+         _ => throw new ArgumentOutOfRangeException(),
+       };
+
+
+  /// <summary>
+  ///   Converts gRPC message filter into an <see cref="Expression" /> that represents the filter condition
+  /// </summary>
+  /// <param name="filter">The gPRC filter</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter condition
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToExpression(this FilterDate filter)
+    => filter.Field.FieldCase switch
+       {
+         ResultField.FieldOneofCase.ResultRawField => ExpressionBuilders.MakeBinary(filter.Field.ResultRawField.Field.ToField(),
+                                                                                    filter.Value.ToDateTime(),
+                                                                                    filter.Operator.ToExpressionType()),
+         ResultField.FieldOneofCase.None => throw new ArgumentOutOfRangeException(),
+         _                               => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filter into an <see cref="Expression" /> that represents the filter condition
+  /// </summary>
+  /// <param name="filter">The gPRC filter</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter condition
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToExpression(this FilterBoolean filter)
+    => filter.Field.FieldCase switch
+       {
+         ResultField.FieldOneofCase.ResultRawField => ExpressionBuilders.MakeBinary(filter.Field.ResultRawField.Field.ToField(),
+                                                                                    filter.Value,
+                                                                                    ExpressionType.Equal),
+         ResultField.FieldOneofCase.None => throw new ArgumentOutOfRangeException(),
+         _                               => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filter into an <see cref="Expression" /> that represents the filter condition
+  /// </summary>
+  /// <param name="filter">The gPRC filter</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter condition
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToExpression(this FilterArray filter)
+    => filter.Field.FieldCase switch
+       {
+         ResultField.FieldOneofCase.ResultRawField => filter.Operator.ToFilter(filter.Field.ResultRawField.Field.ToField(),
+                                                                               filter.Value),
+         ResultField.FieldOneofCase.None => throw new ArgumentOutOfRangeException(),
+         _                               => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filter into an <see cref="Expression" /> that represents the filter condition
+  /// </summary>
+  /// <param name="filter">The gPRC filter</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter condition
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToExpression(this FilterStatus filter)
+    => filter.Field.FieldCase switch
+       {
+         ResultField.FieldOneofCase.None => throw new ArgumentOutOfRangeException(),
+         ResultField.FieldOneofCase.ResultRawField => ExpressionBuilders.MakeBinary(filter.Field.ResultRawField.Field.ToField(),
+                                                                                    filter.Value,
+                                                                                    filter.Operator.ToExpressionType()),
+         _ => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filters into an <see cref="Expression" /> that represents the filter conditions
+  /// </summary>
+  /// <param name="filters">The gPRC filters</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter conditions
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Result, bool>> ToResultFilter(this Filters filters)
   {
-    var predicate = PredicateBuilder.New<Result>();
-    predicate = predicate.And(data => true);
+    var predicate = PredicateBuilder.New<Result>(data => false);
 
-    if (!string.IsNullOrEmpty(filter.SessionId))
+    if (filters.Filters_?.Filters == null)
     {
-      predicate = predicate.And(data => data.SessionId == filter.SessionId);
+      return predicate;
     }
 
-    if (!string.IsNullOrEmpty(filter.Name))
+    foreach (var filtersAnd in filters.Filters_.Filters)
     {
-      predicate = predicate.And(data => data.Name == filter.Name);
-    }
+      var predicateAnd = PredicateBuilder.New<Result>(data => true);
+      foreach (var filterField in filtersAnd.Filters)
+      {
+        switch (filterField.FilterCase)
+        {
+          case FilterField.FilterOneofCase.String:
+            predicateAnd = predicateAnd.And(filterField.String.ToExpression());
+            break;
+          case FilterField.FilterOneofCase.Number:
+            predicateAnd = predicateAnd.And(filterField.Number.ToExpression());
+            break;
+          case FilterField.FilterOneofCase.Date:
+            predicateAnd = predicateAnd.And(filterField.Date.ToExpression());
+            break;
+          case FilterField.FilterOneofCase.Boolean:
+            predicateAnd = predicateAnd.And(filterField.Boolean.ToExpression());
+            break;
+          case FilterField.FilterOneofCase.Array:
+            predicateAnd = predicateAnd.And(filterField.Array.ToExpression());
+            break;
+          case FilterField.FilterOneofCase.Status:
+            predicateAnd = predicateAnd.And(filterField.Status.ToExpression());
+            break;
+          case FilterField.FilterOneofCase.None:
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
 
-    if (!string.IsNullOrEmpty(filter.OwnerTaskId))
-    {
-      predicate = predicate.And(data => data.OwnerTaskId == filter.OwnerTaskId);
-    }
-
-    if (filter.CreatedAfter is not null)
-    {
-      predicate = predicate.And(data => data.CreationDate > filter.CreatedAfter.ToDateTime());
-    }
-
-    if (filter.CreatedBefore is not null)
-    {
-      predicate = predicate.And(data => data.CreationDate < filter.CreatedBefore.ToDateTime());
-    }
-
-    if (filter.Status != ResultStatus.Unspecified)
-    {
-      predicate = predicate.And(data => data.Status == filter.Status);
+      predicate = predicate.Or(predicateAnd);
     }
 
     return predicate;

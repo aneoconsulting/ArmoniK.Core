@@ -81,8 +81,8 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   public override async Task<ListPartitionsResponse> ListPartitions(ListPartitionsRequest request,
                                                                     ServerCallContext     context)
   {
-    var partitions = await partitionTable_.ListPartitionsAsync(request.Filter.ToPartitionFilter(),
-                                                               request.Sort.ToPartitionField(),
+    var partitions = await partitionTable_.ListPartitionsAsync(request.Filters.ToPartitionFilter(),
+                                                               request.Sort.ToField(),
                                                                request.Sort.Direction == SortDirection.Asc,
                                                                request.Page,
                                                                request.PageSize,

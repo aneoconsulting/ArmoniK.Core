@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 
 using Armonik.Api.Grpc.V1.SortDirection;
+using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
@@ -112,8 +113,8 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
-                                                     request.Sort.ToTaskDataField(),
+      var taskData = await taskTable_.ListTasksAsync(request.Filters.ToTaskDataFilter(),
+                                                     request.Sort.ToField(),
                                                      data => new TaskDataSummary(data.SessionId,
                                                                                  data.TaskId,
                                                                                  data.OwnerPodId,
@@ -319,8 +320,8 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
-                                                     request.Sort.ToTaskDataField(),
+      var taskData = await taskTable_.ListTasksAsync(request.Filters.ToTaskDataFilter(),
+                                                     request.Sort.ToField(),
                                                      data => data,
                                                      request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,

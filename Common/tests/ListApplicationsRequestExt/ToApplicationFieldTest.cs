@@ -104,7 +104,7 @@ public class ToApplicationFieldTest
   {
     var func = new ListApplicationsRequest
                {
-                 Filter = new ListApplicationsRequest.Types.Filter(),
+                 Filters = new Filters(),
                  Sort = new ListApplicationsRequest.Types.Sort
                         {
                           Fields =
@@ -117,7 +117,7 @@ public class ToApplicationFieldTest
                           Direction = SortDirection.Asc,
                         },
                }.Sort.Fields.Single()
-                .ToApplicationField()
+                .ToField()
                 .Compile();
 
     Assert.AreEqual(expected,
@@ -129,7 +129,7 @@ public class ToApplicationFieldTest
   {
     var field = new ListApplicationsRequest
                 {
-                  Filter = new ListApplicationsRequest.Types.Filter(),
+                  Filters = new Filters(),
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
                            Fields =
@@ -158,13 +158,13 @@ public class ToApplicationFieldTest
 
     Assert.AreEqual(Options.ApplicationService,
                     field[0]
-                      .ToApplicationField()
+                      .ToField()
                       .Compile()
                       .Invoke(taskData_));
 
     Assert.AreEqual(Options.ApplicationName,
                     field[1]
-                      .ToApplicationField()
+                      .ToField()
                       .Compile()
                       .Invoke(taskData_));
   }

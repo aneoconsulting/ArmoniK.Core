@@ -39,10 +39,10 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
       .NotNull()
       .GreaterThanOrEqualTo(1)
       .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.PageSize)}");
-    RuleFor(request => request.Filter)
+    RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
-      .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Filter)}");
+      .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
       .NotEmpty()

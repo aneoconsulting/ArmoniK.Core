@@ -18,17 +18,19 @@
 using System;
 using System.Collections.Generic;
 
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1;
 
 using Armonik.Api.Grpc.V1.SortDirection;
+using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
@@ -38,7 +40,12 @@ namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 [TestFixture(TestOf = typeof(ToTaskDataFilterTest))]
 public class ToTaskDataFilterTest
 {
-  private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+                                                    {
+                                                      {
+                                                        "key1", "val1"
+                                                      },
+                                                    },
                                                     TimeSpan.MaxValue,
                                                     5,
                                                     1,
@@ -54,21 +61,27 @@ public class ToTaskDataFilterTest
                                             "OwnerPodId",
                                             "OwnerPodName",
                                             "PayloadId",
-                                            new[]
+                                            new List<string>
                                             {
-                                              "parent1",
+                                              "parentId",
                                             },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
+                                            new List<string>(),
+                                            new Dictionary<string, bool>(),
+                                            new List<string>(),
+                                            "InitialTaskId",
+                                            new List<string>(),
                                             TaskStatus.Completed,
+                                            "StatusMessage",
                                             Options,
+                                            DateTime.UtcNow,
+                                            DateTime.Now,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            TimeSpan.FromDays(1),
+                                            TimeSpan.FromDays(2),
                                             new Output(true,
                                                        ""));
 
@@ -84,313 +97,127 @@ public class ToTaskDataFilterTest
                                                                        },
                                                              };
 
-  [Test]
-  public void FilterSessionIdShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
+  private static Func<TaskData, bool> RequestToFunc(ListTasksRequest.Types.Sort sort,
+                                                    IEnumerable<FilterField>    filterFields)
+    => ListTasksHelper.CreateListSessionsRequest(sort,
+                                                 filterFields)
+                      .Filters.ToTaskDataFilter()
+                      .Compile();
 
-    Assert.IsTrue(func.Invoke(taskData_));
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public void Filter(IEnumerable<FilterField> filterFields,
+                     bool                     expected)
+  {
+    var func = RequestToFunc(Sort,
+                             filterFields);
+
+    Assert.AreEqual(expected,
+                    func.Invoke(taskData_));
   }
 
-  [Test]
-  public void FilterWrongSessionIdShouldFail()
+  public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
+    TestCaseData CaseTrue(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            SessionId = "SessionId",
+                            filterField,
                           },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
+                          true).SetArgDisplayNames(filterField.ToDisplay());
 
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 SessionId = "test",
-                               }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
+    TestCaseData CaseFalse(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
+                            filterField,
                           },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
+                          false).SetArgDisplayNames(filterField.ToDisplay());
 
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 CreationDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-                               }));
-  }
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
+                                                                    FilterDateOperator.After,
+                                                                    DateTime.UtcNow));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
+                                                                     FilterDateOperator.Before,
+                                                                     DateTime.UtcNow));
 
-  [Test]
-  public void FilterCreatedAfterShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.SubmittedAt,
+                                                                    FilterDateOperator.AfterOrEqual,
+                                                                    DateTime.UtcNow));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.SubmittedAt,
+                                                                     FilterDateOperator.BeforeOrEqual,
+                                                                     DateTime.UtcNow));
+
+    // end date is null
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.EndedAt,
+                                                                     FilterDateOperator.After,
+                                                                     DateTime.UtcNow));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.EndedAt,
+                                                                     FilterDateOperator.Before,
+                                                                     DateTime.UtcNow));
+
+    // start date is null
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
+                                                                     FilterDateOperator.After,
+                                                                     DateTime.UtcNow));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
+                                                                     FilterDateOperator.Before,
+                                                                     DateTime.UtcNow));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
+                                                                    FilterDateOperator.Equal,
+                                                                    null));
+    yield return CaseTrue(new FilterField
                           {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
+                            Date = new FilterDate
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.StartedAt,
+                                                                  },
+                                             },
+                                     Operator = FilterDateOperator.Equal,
+                                   },
+                          });
 
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                      FilterStringOperator.Equal,
+                                                                      "SessionId"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadSessionId"));
 
-  [Test]
-  public void FilterCreatedBeforeShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskOptionEnumField.PartitionId,
+                                                                      FilterStringOperator.Equal,
+                                                                      "part1"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskOptionEnumField.PartitionId,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadPartitionId"));
 
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
+                                                                      FilterStatusOperator.Equal,
+                                                                      TaskStatus.Completed));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
+                                                                       FilterStatusOperator.Equal,
+                                                                       TaskStatus.Cancelling));
 
-  [Test]
-  public void FilterCreatedBeforeShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
+                                                                      FilterNumberOperator.LessThanOrEqual,
+                                                                      5));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
+                                                                       FilterNumberOperator.LessThan,
+                                                                       5));
 
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                CreationDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterEndedAfterShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            EndedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 EndDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterEndedAfterShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            EndedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                EndDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterEndedBeforeShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            EndedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 EndDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterEndedBeforeShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            EndedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                EndDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterStartedAfterShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            StartedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 StartDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterStartedAfterShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            StartedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                StartDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterStartedBeforeShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            StartedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 StartDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterStartedBeforeShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            StartedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                StartDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-                              }));
-  }
-
-
-  [Test]
-  public void FilterStatusShouldSucceed()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            Status =
-                            {
-                              TaskStatus.Completed,
-                              TaskStatus.Error,
-                            },
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_ with
-                              {
-                                Status = TaskStatus.Completed,
-                              }));
-  }
-
-  [Test]
-  public void FilterStatusShouldFail()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            Status =
-                            {
-                              TaskStatus.Completed,
-                              TaskStatus.Error,
-                            },
-                          },
-                 Sort = Sort,
-               }.Filter.ToTaskDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_ with
-                               {
-                                 Status = TaskStatus.Cancelling,
-                               }));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.Equal,
+                                                                      "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.Contains,
+                                                                      "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.StartsWith,
+                                                                      "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.EndsWith,
+                                                                      "val1"));
   }
 }

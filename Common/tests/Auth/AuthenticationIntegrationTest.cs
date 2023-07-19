@@ -37,6 +37,9 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+
+using Armonik.Api.gRPC.V1.Tasks;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using Armonik.Api.Grpc.V1.Versions;
@@ -60,6 +63,7 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
+using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
 using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
@@ -590,8 +594,7 @@ public class AuthenticationIntegrationTest
                                                                                                                      typeof(ListApplicationsRequest),
                                                                                                                      new ListApplicationsRequest
                                                                                                                      {
-                                                                                                                       Filter =
-                                                                                                                         new ListApplicationsRequest.Types.Filter(),
+                                                                                                                       Filters  = new Filters(),
                                                                                                                        Page     = 0,
                                                                                                                        PageSize = 1,
                                                                                                                        Sort = new ListApplicationsRequest.Types.Sort
@@ -604,8 +607,9 @@ public class AuthenticationIntegrationTest
                                                                                                                      typeof(ListPartitionsRequest),
                                                                                                                      new ListPartitionsRequest
                                                                                                                      {
-                                                                                                                       Filter = new ListPartitionsRequest.Types.Filter(),
-                                                                                                                       Page = 0,
+                                                                                                                       Filters =
+                                                                                                                         new Armonik.Api.Grpc.V1.Partitions.Filters(),
+                                                                                                                       Page     = 0,
                                                                                                                        PageSize = 1,
                                                                                                                        Sort = new ListPartitionsRequest.Types.Sort
                                                                                                                               {
@@ -625,10 +629,9 @@ public class AuthenticationIntegrationTest
                                                                                                                    {
                                                                                                                      typeof(ListResultsRequest), new ListResultsRequest
                                                                                                                                                  {
-                                                                                                                                                   Filter =
-                                                                                                                                                     new
-                                                                                                                                                       ListResultsRequest
-                                                                                                                                                       .Types.Filter(),
+                                                                                                                                                   Filters =
+                                                                                                                                                     new Api.gRPC.V1.
+                                                                                                                                                       Results.Filters(),
                                                                                                                                                    Page     = 0,
                                                                                                                                                    PageSize = 1,
                                                                                                                                                    Sort =
@@ -657,10 +660,10 @@ public class AuthenticationIntegrationTest
                                                                                                                    {
                                                                                                                      typeof(ListSessionsRequest), new ListSessionsRequest
                                                                                                                                                   {
-                                                                                                                                                    Filter =
-                                                                                                                                                      new
-                                                                                                                                                        ListSessionsRequest
-                                                                                                                                                        .Types.Filter(),
+                                                                                                                                                    Filters =
+                                                                                                                                                      new Api.gRPC.V1.
+                                                                                                                                                        Sessions.
+                                                                                                                                                        Filters(),
                                                                                                                                                     Page     = 0,
                                                                                                                                                     PageSize = 1,
                                                                                                                                                     Sort =
@@ -690,9 +693,9 @@ public class AuthenticationIntegrationTest
                                                                                                                    {
                                                                                                                      typeof(ListTasksRequest), new ListTasksRequest
                                                                                                                                                {
-                                                                                                                                                 Filter =
-                                                                                                                                                   new ListTasksRequest.
-                                                                                                                                                     Types.Filter(),
+                                                                                                                                                 Filters =
+                                                                                                                                                   new Armonik.Api.gRPC.
+                                                                                                                                                     V1.Tasks.Filters(),
                                                                                                                                                  Page     = 0,
                                                                                                                                                  PageSize = 1,
                                                                                                                                                  Sort =
