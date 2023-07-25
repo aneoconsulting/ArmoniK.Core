@@ -198,8 +198,8 @@ internal static class Program
                                                                                                       Value    = 0,
                                                                                                     },
                                                                                          },
-                                                                                       }
-                                                                                     }
+                                                                                       },
+                                                                                     },
                                                                                    },
                                                                                  },
                                                                        Sort = new ListPartitionsRequest.Types.Sort
