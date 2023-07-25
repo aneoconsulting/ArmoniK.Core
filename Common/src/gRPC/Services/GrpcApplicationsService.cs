@@ -15,18 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 
 using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -78,42 +75,5 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
              },
              Total = tasks.totalCount,
            };
-  }
-
-  [RequiresPermission(typeof(GrpcApplicationsService),
-                      nameof(CountTasksByStatus))]
-  public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
-                                                                            ServerCallContext         context)
-  {
-    try
-    {
-      return new CountTasksByStatusResponse
-             {
-               Status =
-               {
-                 (await taskTable_.CountTasksAsync(data => data.Options.ApplicationName == request.Name && data.Options.ApplicationVersion == request.Version,
-                                                   context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => new StatusCount
-                                                                          {
-                                                                            Status = count.Status,
-                                                                            Count  = count.Count,
-                                                                          }),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks by applications");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal ArmoniK Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks by applications");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
   }
 }

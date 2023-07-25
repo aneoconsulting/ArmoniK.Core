@@ -51,7 +51,6 @@ using FilterDate = Armonik.Api.gRPC.V1.Tasks.FilterDate;
 using FilterField = ArmoniK.Api.gRPC.V1.Applications.FilterField;
 using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Applications.FiltersAnd;
-using FiltersOr = ArmoniK.Api.gRPC.V1.Applications.FiltersOr;
 using FilterString = ArmoniK.Api.gRPC.V1.Applications.FilterString;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -1287,33 +1286,30 @@ public class TaskTableTestBase
                   PageSize = 4,
                   Filters = new Filters
                             {
-                              Filters_ = new FiltersOr
-                                         {
-                                           Filters =
-                                           {
-                                             new FiltersAnd
-                                             {
-                                               Filters =
+                              Or =
+                              {
+                                new FiltersAnd
+                                {
+                                  And =
+                                  {
+                                    new FilterField
+                                    {
+                                      String = new FilterString
                                                {
-                                                 new FilterField
-                                                 {
-                                                   String = new FilterString
-                                                            {
-                                                              Field = new ApplicationField
-                                                                      {
-                                                                        ApplicationField_ = new ApplicationRawField
-                                                                                            {
-                                                                                              Field = ApplicationRawEnumField.Name,
-                                                                                            },
-                                                                      },
-                                                              Operator = FilterStringOperator.Equal,
-                                                              Value    = Options.ApplicationName,
-                                                            },
-                                                 },
+                                                 Field = new ApplicationField
+                                                         {
+                                                           ApplicationField_ = new ApplicationRawField
+                                                                               {
+                                                                                 Field = ApplicationRawEnumField.Name,
+                                                                               },
+                                                         },
+                                                 Operator = FilterStringOperator.Equal,
+                                                 Value    = Options.ApplicationName,
                                                },
-                                             },
-                                           },
-                                         },
+                                    },
+                                  },
+                                },
+                              },
                             },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
@@ -1459,33 +1455,30 @@ public class TaskTableTestBase
                   PageSize = 4,
                   Filters = new Filters
                             {
-                              Filters_ = new FiltersOr
-                                         {
-                                           Filters =
-                                           {
-                                             new FiltersAnd
-                                             {
-                                               Filters =
+                              Or =
+                              {
+                                new FiltersAnd
+                                {
+                                  And =
+                                  {
+                                    new FilterField
+                                    {
+                                      String = new FilterString
                                                {
-                                                 new FilterField
-                                                 {
-                                                   String = new FilterString
-                                                            {
-                                                              Field = new ApplicationField
-                                                                      {
-                                                                        ApplicationField_ = new ApplicationRawField
-                                                                                            {
-                                                                                              Field = ApplicationRawEnumField.Name,
-                                                                                            },
-                                                                      },
-                                                              Operator = FilterStringOperator.Equal,
-                                                              Value    = applicationName,
-                                                            },
-                                                 },
+                                                 Field = new ApplicationField
+                                                         {
+                                                           ApplicationField_ = new ApplicationRawField
+                                                                               {
+                                                                                 Field = ApplicationRawEnumField.Name,
+                                                                               },
+                                                         },
+                                                 Operator = FilterStringOperator.Equal,
+                                                 Value    = applicationName,
                                                },
-                                             },
-                                           },
-                                         },
+                                    },
+                                  },
+                                },
+                              },
                             },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
@@ -1571,33 +1564,30 @@ public class TaskTableTestBase
                 {
                   Filters = new Armonik.Api.gRPC.V1.Tasks.Filters
                             {
-                              Filters_ = new Armonik.Api.gRPC.V1.Tasks.FiltersOr
-                                         {
-                                           Filters =
-                                           {
-                                             new Armonik.Api.gRPC.V1.Tasks.FiltersAnd
-                                             {
-                                               Filters =
+                              Or =
+                              {
+                                new Armonik.Api.gRPC.V1.Tasks.FiltersAnd
+                                {
+                                  And =
+                                  {
+                                    new Armonik.Api.gRPC.V1.Tasks.FilterField
+                                    {
+                                      String = new Armonik.Api.gRPC.V1.Tasks.FilterString
                                                {
-                                                 new Armonik.Api.gRPC.V1.Tasks.FilterField
-                                                 {
-                                                   String = new Armonik.Api.gRPC.V1.Tasks.FilterString
-                                                            {
-                                                              Value = "SessionId",
-                                                              Field = new TaskField
-                                                                      {
-                                                                        TaskSummaryField = new TaskSummaryField
-                                                                                           {
-                                                                                             Field = TaskSummaryEnumField.SessionId,
-                                                                                           },
-                                                                      },
-                                                              Operator = FilterStringOperator.Equal,
-                                                            },
-                                                 },
+                                                 Value = "SessionId",
+                                                 Field = new TaskField
+                                                         {
+                                                           TaskSummaryField = new TaskSummaryField
+                                                                              {
+                                                                                Field = TaskSummaryEnumField.SessionId,
+                                                                              },
+                                                         },
+                                                 Operator = FilterStringOperator.Equal,
                                                },
-                                             },
-                                           },
-                                         },
+                                    },
+                                  },
+                                },
+                              },
                             },
                   Sort = new ListTasksRequest.Types.Sort
                          {

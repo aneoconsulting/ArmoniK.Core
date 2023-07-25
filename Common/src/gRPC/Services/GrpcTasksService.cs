@@ -281,7 +281,7 @@ public class GrpcTasksService : Task.TasksBase
              {
                Status =
                {
-                 (await taskTable_.CountTasksAsync(_ => true,
+                 (await taskTable_.CountTasksAsync(request.Filters.ToTaskDataFilter(),
                                                    context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => new StatusCount
                                                                           {

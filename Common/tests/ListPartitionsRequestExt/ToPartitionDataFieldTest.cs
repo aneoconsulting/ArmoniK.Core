@@ -76,34 +76,33 @@ public class ToPartitionDataFieldTest
                {
                  Filters = new Filters
                            {
-                             Filters_ = new FiltersOr
-                                        {
-                                          Filters =
-                                          {
-                                            new FiltersAnd
-                                            {
-                                              Filters =
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     String = new FilterString
                                               {
-                                                new FilterField
-                                                {
-                                                  String = new FilterString
-                                                           {
-                                                             Field = new PartitionField
-                                                                     {
-                                                                       PartitionRawField = new PartitionRawField
-                                                                                           {
-                                                                                             Field = PartitionRawEnumField.Id,
-                                                                                           },
-                                                                     },
-                                                             Operator = FilterStringOperator.Equal,
-                                                             Value    = "PartitionId",
-                                                           },
-                                                },
+                                                Field = new PartitionField
+                                                        {
+                                                          PartitionRawField = new PartitionRawField
+                                                                              {
+                                                                                Field = PartitionRawEnumField.Id,
+                                                                              },
+                                                        },
+                                                Operator = FilterStringOperator.Equal,
+                                                Value    = "PartitionId",
                                               },
-                                            },
-                                          },
-                                        },
+                                   },
+                                 },
+                               },
+                             },
                            },
+
+
                  Sort = new ListPartitionsRequest.Types.Sort
                         {
                           Direction = SortDirection.Asc,

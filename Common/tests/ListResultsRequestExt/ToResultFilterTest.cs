@@ -73,19 +73,16 @@ public class ToResultFilterTest
        {
          Filters = new Filters
                    {
-                     Filters_ = new FiltersOr
-                                {
-                                  Filters =
-                                  {
-                                    new FiltersAnd
-                                    {
-                                      Filters =
-                                      {
-                                        filterFields,
-                                      },
-                                    },
-                                  },
-                                },
+                     Or =
+                     {
+                       new FiltersAnd
+                       {
+                         And =
+                         {
+                           filterFields,
+                         },
+                       },
+                     },
                    },
          Sort = sort,
        };

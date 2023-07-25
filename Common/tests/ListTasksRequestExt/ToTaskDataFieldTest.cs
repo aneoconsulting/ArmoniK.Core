@@ -180,33 +180,30 @@ public class ToTaskDataFieldTest
                {
                  Filters = new Filters
                            {
-                             Filters_ = new FiltersOr
-                                        {
-                                          Filters =
-                                          {
-                                            new FiltersAnd
-                                            {
-                                              Filters =
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     String = new FilterString
                                               {
-                                                new FilterField
-                                                {
-                                                  String = new FilterString
-                                                           {
-                                                             Field = new TaskField
-                                                                     {
-                                                                       TaskSummaryField = new TaskSummaryField
-                                                                                          {
-                                                                                            Field = TaskSummaryEnumField.SessionId,
-                                                                                          },
-                                                                     },
-                                                             Value    = "SessionId",
-                                                             Operator = FilterStringOperator.Equal,
-                                                           },
-                                                },
+                                                Field = new TaskField
+                                                        {
+                                                          TaskSummaryField = new TaskSummaryField
+                                                                             {
+                                                                               Field = TaskSummaryEnumField.SessionId,
+                                                                             },
+                                                        },
+                                                Value    = "SessionId",
+                                                Operator = FilterStringOperator.Equal,
                                               },
-                                            },
-                                          },
-                                        },
+                                   },
+                                 },
+                               },
+                             },
                            },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -227,33 +224,30 @@ public class ToTaskDataFieldTest
                {
                  Filters = new Filters
                            {
-                             Filters_ = new FiltersOr
-                                        {
-                                          Filters =
-                                          {
-                                            new FiltersAnd
-                                            {
-                                              Filters =
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     String = new FilterString
                                               {
-                                                new FilterField
-                                                {
-                                                  String = new FilterString
-                                                           {
-                                                             Field = new TaskField
-                                                                     {
-                                                                       TaskSummaryField = new TaskSummaryField
-                                                                                          {
-                                                                                            Field = TaskSummaryEnumField.SessionId,
-                                                                                          },
-                                                                     },
-                                                             Value    = "SessionId",
-                                                             Operator = FilterStringOperator.Equal,
-                                                           },
-                                                },
+                                                Field = new TaskField
+                                                        {
+                                                          TaskSummaryField = new TaskSummaryField
+                                                                             {
+                                                                               Field = TaskSummaryEnumField.SessionId,
+                                                                             },
+                                                        },
+                                                Value    = "SessionId",
+                                                Operator = FilterStringOperator.Equal,
                                               },
-                                            },
-                                          },
-                                        },
+                                   },
+                                 },
+                               },
+                             },
                            },
                  Sort = new ListTasksRequest.Types.Sort
                         {

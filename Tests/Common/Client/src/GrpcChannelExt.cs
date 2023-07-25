@@ -39,7 +39,6 @@ using FilterDate = Armonik.Api.gRPC.V1.Tasks.FilterDate;
 using FilterField = Armonik.Api.gRPC.V1.Tasks.FilterField;
 using Filters = Armonik.Api.gRPC.V1.Tasks.Filters;
 using FiltersAnd = Armonik.Api.gRPC.V1.Tasks.FiltersAnd;
-using FiltersOr = Armonik.Api.gRPC.V1.Tasks.FiltersOr;
 using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
 using FilterString = Armonik.Api.gRPC.V1.Tasks.FilterString;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -95,33 +94,30 @@ public static class GrpcChannelExt
 
     await foreach (var taskRaw in channel.ListTasksAsync(new Filters
                                                          {
-                                                           Filters_ = new FiltersOr
-                                                                      {
-                                                                        Filters =
-                                                                        {
-                                                                          new FiltersAnd
-                                                                          {
-                                                                            Filters =
+                                                           Or =
+                                                           {
+                                                             new FiltersAnd
+                                                             {
+                                                               And =
+                                                               {
+                                                                 new FilterField
+                                                                 {
+                                                                   String = new FilterString
                                                                             {
-                                                                              new FilterField
-                                                                              {
-                                                                                String = new FilterString
-                                                                                         {
-                                                                                           Field = new TaskField
-                                                                                                   {
-                                                                                                     TaskSummaryField = new TaskSummaryField
-                                                                                                                        {
-                                                                                                                          Field = TaskSummaryEnumField.SessionId,
-                                                                                                                        },
-                                                                                                   },
-                                                                                           Value    = sessionId,
-                                                                                           Operator = FilterStringOperator.Equal,
-                                                                                         },
-                                                                              },
+                                                                              Field = new TaskField
+                                                                                      {
+                                                                                        TaskSummaryField = new TaskSummaryField
+                                                                                                           {
+                                                                                                             Field = TaskSummaryEnumField.SessionId,
+                                                                                                           },
+                                                                                      },
+                                                                              Value    = sessionId,
+                                                                              Operator = FilterStringOperator.Equal,
                                                                             },
-                                                                          },
-                                                                        },
-                                                                      },
+                                                                 },
+                                                               },
+                                                             },
+                                                           },
                                                          },
                                                          new ListTasksRequest.Types.Sort
                                                          {
@@ -256,17 +252,14 @@ public static class GrpcChannelExt
     var count = 0;
     await foreach (var _ in channel.ListTasksAsync(new Filters
                                                    {
-                                                     Filters_ = new FiltersOr
-                                                                {
-                                                                  Filters =
-                                                                  {
-                                                                    FilterStatus(sessionStart - Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
-                                                                                 sessionEnd   + Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
-                                                                                 TaskStatus.Completed,
-                                                                                 TaskStatus.Error,
-                                                                                 TaskStatus.Retried),
-                                                                  },
-                                                                },
+                                                     Or =
+                                                     {
+                                                       FilterStatus(sessionStart - Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
+                                                                    sessionEnd   + Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
+                                                                    TaskStatus.Completed,
+                                                                    TaskStatus.Error,
+                                                                    TaskStatus.Retried),
+                                                     },
                                                    },
                                                    new ListTasksRequest.Types.Sort
                                                    {
@@ -296,7 +289,7 @@ public static class GrpcChannelExt
                                                       params TaskStatus[] statuses)
     => statuses.Select(status => new FiltersAnd
                                  {
-                                   Filters =
+                                   And =
                                    {
                                      new FilterField
                                      {

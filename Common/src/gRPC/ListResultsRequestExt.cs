@@ -168,15 +168,15 @@ public static class ListResultsRequestExt
   {
     var predicate = PredicateBuilder.New<Result>();
 
-    if (filters.Filters_?.Filters == null || !filters.Filters_.Filters.Any())
+    if (filters.Or == null || !filters.Or.Any())
     {
       return data => true;
     }
 
-    foreach (var filtersAnd in filters.Filters_.Filters)
+    foreach (var filtersAnd in filters.Or)
     {
       var predicateAnd = PredicateBuilder.New<Result>(data => true);
-      foreach (var filterField in filtersAnd.Filters)
+      foreach (var filterField in filtersAnd.And)
       {
         switch (filterField.FilterCase)
         {
