@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
@@ -199,11 +200,11 @@ public static class ListSessionsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
   {
-    var predicate = PredicateBuilder.New<SessionData>(data => false);
+    var predicate = PredicateBuilder.New<SessionData>();
 
-    if (filters.Filters_?.Filters == null)
+    if (filters.Filters_?.Filters == null || !filters.Filters_.Filters.Any())
     {
-      return predicate;
+      return data => true;
     }
 
     foreach (var filtersAnd in filters.Filters_.Filters)

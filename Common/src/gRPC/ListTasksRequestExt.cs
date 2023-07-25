@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 using Armonik.Api.gRPC.V1.Tasks;
@@ -201,11 +202,11 @@ public static class ListTasksRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<TaskData, bool>> ToTaskDataFilter(this Filters filters)
   {
-    var predicate = PredicateBuilder.New<TaskData>(data => false);
+    var predicate = PredicateBuilder.New<TaskData>();
 
-    if (filters.Filters_?.Filters == null)
+    if (filters.Filters_?.Filters == null || !filters.Filters_.Filters.Any())
     {
-      return predicate;
+      return data => true;
     }
 
     foreach (var filtersAnd in filters.Filters_.Filters)
