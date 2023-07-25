@@ -59,6 +59,7 @@ public static class FilterRangeExt
          FilterDateOperator.Before        => ExpressionType.LessThan,
          FilterDateOperator.BeforeOrEqual => ExpressionType.LessThanOrEqual,
          FilterDateOperator.Equal         => ExpressionType.Equal,
+         FilterDateOperator.NotEqual      => ExpressionType.NotEqual,
          FilterDateOperator.AfterOrEqual  => ExpressionType.GreaterThanOrEqual,
          FilterDateOperator.After         => ExpressionType.GreaterThan,
          FilterDateOperator.Unspecified   => throw new ArgumentOutOfRangeException(),
