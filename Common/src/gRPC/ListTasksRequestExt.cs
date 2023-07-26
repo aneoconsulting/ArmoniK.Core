@@ -26,7 +26,6 @@ using ArmoniK.Core.Common.Storage;
 
 using LinqKit;
 
-
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListTasksRequestExt

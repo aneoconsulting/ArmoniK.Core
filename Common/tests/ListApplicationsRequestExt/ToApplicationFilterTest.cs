@@ -27,7 +27,6 @@ using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
 
@@ -142,8 +141,8 @@ public class ToApplicationFilterTest
 
   [Test]
   [TestCaseSource(nameof(TestCasesFilter))]
-  public void Filter(IEnumerable<FilterField> filterFields,
-                     bool                     expected)
+  public void Filter2(IEnumerable<FilterField> filterFields,
+                      bool                     expected)
   {
     var func = RequestToFunc(Sort,
                              filterFields);

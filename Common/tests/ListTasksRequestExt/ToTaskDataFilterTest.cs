@@ -113,8 +113,8 @@ public class ToTaskDataFilterTest
 
   [Test]
   [TestCaseSource(nameof(TestCasesFilter))]
-  public void Filter(IEnumerable<FilterField> filterFields,
-                     bool                     expected)
+  public void Filter2(IEnumerable<FilterField> filterFields,
+                      bool                     expected)
   {
     var func = RequestToFunc(Sort,
                              filterFields);

@@ -27,7 +27,6 @@ using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
 
@@ -155,7 +154,7 @@ public class ToSessionDataFilterTest
                         {
                           Operator = op,
                           Value    = value,
-                        }
+                        },
        };
 
   public static FilterField CreateListSessionsFilterArray(SessionRawEnumField field,
