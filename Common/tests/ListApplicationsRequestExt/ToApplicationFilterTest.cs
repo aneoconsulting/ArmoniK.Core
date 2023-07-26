@@ -126,37 +126,18 @@ public class ToApplicationFilterTest
                                                                string                  value)
     => new()
        {
-         String = new FilterString
-                  {
-                    Field = new ApplicationField
-                            {
-                              ApplicationField_ = new ApplicationRawField
-                                                  {
-                                                    Field = field,
-                                                  },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
-       };
-
-  public FilterField CreateListApplicationsFilterNumber(ApplicationRawEnumField field,
-                                                        FilterNumberOperator    op,
-                                                        long                    value)
-    => new()
-       {
-         Number = new FilterNumber
-                  {
-                    Field = new ApplicationField
-                            {
-                              ApplicationField_ = new ApplicationRawField
-                                                  {
-                                                    Field = field,
-                                                  },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new ApplicationField
+                 {
+                   ApplicationField_ = new ApplicationRawField
+                                       {
+                                         Field = field,
+                                       },
+                 },
+         FilterString = new FilterString
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   [Test]
@@ -178,14 +159,14 @@ public class ToApplicationFilterTest
                           {
                             filterField,
                           },
-                          true).SetArgDisplayNames(filterField.ToDisplay());
+                          true).SetArgDisplayNames(filterField.ToString());
 
     TestCaseData CaseFalse(FilterField filterField)
       => new TestCaseData(new[]
                           {
                             filterField,
                           },
-                          false).SetArgDisplayNames(filterField.ToDisplay());
+                          false).SetArgDisplayNames(filterField.ToString());
 
     yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
                                                              FilterStringOperator.Equal,

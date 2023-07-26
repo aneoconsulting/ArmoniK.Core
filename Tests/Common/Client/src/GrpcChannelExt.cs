@@ -35,12 +35,10 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using FilterDate = Armonik.Api.gRPC.V1.Tasks.FilterDate;
 using FilterField = Armonik.Api.gRPC.V1.Tasks.FilterField;
 using Filters = Armonik.Api.gRPC.V1.Tasks.Filters;
 using FiltersAnd = Armonik.Api.gRPC.V1.Tasks.FiltersAnd;
 using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
-using FilterString = Armonik.Api.gRPC.V1.Tasks.FilterString;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Client;
@@ -102,18 +100,18 @@ public static class GrpcChannelExt
                                                                {
                                                                  new FilterField
                                                                  {
-                                                                   String = new FilterString
-                                                                            {
-                                                                              Field = new TaskField
-                                                                                      {
-                                                                                        TaskSummaryField = new TaskSummaryField
-                                                                                                           {
-                                                                                                             Field = TaskSummaryEnumField.SessionId,
-                                                                                                           },
-                                                                                      },
-                                                                              Value    = sessionId,
-                                                                              Operator = FilterStringOperator.Equal,
-                                                                            },
+                                                                   Field = new TaskField
+                                                                           {
+                                                                             TaskSummaryField = new TaskSummaryField
+                                                                                                {
+                                                                                                  Field = TaskSummaryEnumField.SessionId,
+                                                                                                },
+                                                                           },
+                                                                   FilterString = new FilterString
+                                                                                  {
+                                                                                    Value    = sessionId,
+                                                                                    Operator = FilterStringOperator.Equal,
+                                                                                  },
                                                                  },
                                                                },
                                                              },
@@ -293,48 +291,48 @@ public static class GrpcChannelExt
                                    {
                                      new FilterField
                                      {
-                                       Date = new FilterDate
-                                              {
-                                                Field = new TaskField
-                                                        {
-                                                          TaskSummaryField = new TaskSummaryField
-                                                                             {
-                                                                               Field = TaskSummaryEnumField.CreatedAt,
-                                                                             },
-                                                        },
-                                                Operator = FilterDateOperator.After,
-                                                Value    = createdAfter,
-                                              },
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.CreatedAt,
+                                                                    },
+                                               },
+                                       FilterDate = new FilterDate
+                                                    {
+                                                      Operator = FilterDateOperator.After,
+                                                      Value    = createdAfter,
+                                                    },
                                      },
                                      new FilterField
                                      {
-                                       Date = new FilterDate
-                                              {
-                                                Field = new TaskField
-                                                        {
-                                                          TaskSummaryField = new TaskSummaryField
-                                                                             {
-                                                                               Field = TaskSummaryEnumField.EndedAt,
-                                                                             },
-                                                        },
-                                                Operator = FilterDateOperator.Before,
-                                                Value    = endedBefore,
-                                              },
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.EndedAt,
+                                                                    },
+                                               },
+                                       FilterDate = new FilterDate
+                                                    {
+                                                      Operator = FilterDateOperator.Before,
+                                                      Value    = endedBefore,
+                                                    },
                                      },
                                      new FilterField
                                      {
-                                       Status = new FilterStatus
-                                                {
-                                                  Field = new TaskField
-                                                          {
-                                                            TaskSummaryField = new TaskSummaryField
-                                                                               {
-                                                                                 Field = TaskSummaryEnumField.Status,
-                                                                               },
-                                                          },
-                                                  Operator = FilterStatusOperator.Equal,
-                                                  Value    = status,
-                                                },
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.Status,
+                                                                    },
+                                               },
+                                       FilterStatus = new FilterStatus
+                                                      {
+                                                        Operator = FilterStatusOperator.Equal,
+                                                        Value    = status,
+                                                      },
                                      },
                                    },
                                  });

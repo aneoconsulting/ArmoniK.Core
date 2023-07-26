@@ -33,6 +33,8 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using FilterStatus = ArmoniK.Api.gRPC.V1.Results.FilterStatus;
+
 namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 
 [TestFixture(TestOf = typeof(ToResultFilterTest))]
@@ -92,56 +94,38 @@ public class ToResultFilterTest
                                                           string               value)
     => new()
        {
-         String = new FilterString
-                  {
-                    Field = new ResultField
-                            {
-                              ResultRawField = new ResultRawField
-                                               {
-                                                 Field = field,
-                                               },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new ResultField
+                 {
+                   ResultRawField = new ResultRawField
+                                    {
+                                      Field = field,
+                                    },
+                 },
+         FilterString = new FilterString
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
-  public static FilterField CreateListResultsFilterNumber(ResultRawEnumField   field,
-                                                          FilterNumberOperator op,
-                                                          long                 value)
-    => new()
-       {
-         Number = new FilterNumber
-                  {
-                    Field = new ResultField
-                            {
-                              ResultRawField = new ResultRawField
-                                               {
-                                                 Field = field,
-                                               },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
-       };
 
   public static FilterField CreateListResultsFilterArray(ResultRawEnumField  field,
                                                          FilterArrayOperator op,
                                                          string              value)
     => new()
        {
-         Array = new FilterArray
+         Field = new ResultField
                  {
-                   Field = new ResultField
-                           {
-                             ResultRawField = new ResultRawField
-                                              {
-                                                Field = field,
-                                              },
-                           },
-                   Operator = op,
-                   Value    = value,
+                   ResultRawField = new ResultRawField
+                                    {
+                                      Field = field,
+                                    },
                  },
+         FilterArray = new FilterArray
+                       {
+                         Operator = op,
+                         Value    = value,
+                       },
        };
 
   public static FilterField CreateListResultsFilterStatus(ResultRawEnumField   field,
@@ -149,18 +133,18 @@ public class ToResultFilterTest
                                                           ResultStatus         value)
     => new()
        {
-         Status = new FilterStatus
-                  {
-                    Field = new ResultField
-                            {
-                              ResultRawField = new ResultRawField
-                                               {
-                                                 Field = field,
-                                               },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new ResultField
+                 {
+                   ResultRawField = new ResultRawField
+                                    {
+                                      Field = field,
+                                    },
+                 },
+         FilterStatus = new FilterStatus
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   public static FilterField CreateListResultsFilterDate(ResultRawEnumField field,
@@ -168,18 +152,18 @@ public class ToResultFilterTest
                                                         DateTime           value)
     => new()
        {
-         Date = new FilterDate
-                {
-                  Field = new ResultField
-                          {
-                            ResultRawField = new ResultRawField
-                                             {
-                                               Field = field,
-                                             },
-                          },
-                  Operator = op,
-                  Value    = FromDateTime(value),
-                },
+         Field = new ResultField
+                 {
+                   ResultRawField = new ResultRawField
+                                    {
+                                      Field = field,
+                                    },
+                 },
+         FilterDate = new FilterDate
+                      {
+                        Operator = op,
+                        Value    = FromDateTime(value),
+                      },
        };
 
   [Test]
@@ -201,14 +185,14 @@ public class ToResultFilterTest
                           {
                             filterField,
                           },
-                          true).SetArgDisplayNames(filterField.ToDisplay());
+                          true).SetArgDisplayNames(filterField.ToString());
 
     TestCaseData CaseFalse(FilterField filterField)
       => new TestCaseData(new[]
                           {
                             filterField,
                           },
-                          false).SetArgDisplayNames(filterField.ToDisplay());
+                          false).SetArgDisplayNames(filterField.ToString());
 
     yield return CaseTrue(CreateListResultsFilterStatus(ResultRawEnumField.Status,
                                                         FilterStatusOperator.Equal,

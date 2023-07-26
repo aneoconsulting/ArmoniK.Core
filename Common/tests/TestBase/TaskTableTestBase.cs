@@ -38,7 +38,6 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
@@ -47,11 +46,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-using FilterDate = Armonik.Api.gRPC.V1.Tasks.FilterDate;
 using FilterField = ArmoniK.Api.gRPC.V1.Applications.FilterField;
 using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Applications.FiltersAnd;
-using FilterString = ArmoniK.Api.gRPC.V1.Applications.FilterString;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
@@ -141,6 +138,10 @@ public class TaskTableTestBase
                                                      Options,
                                                      new Output(true,
                                                                 ""));
+
+  private static readonly DateTime DateToCompare = new DateTime(2020,
+                                                                3,
+                                                                15).ToUniversalTime();
 
   private readonly TaskData taskCreatingData_ = new("SessionId",
                                                     "TaskCreatingId",
@@ -1294,18 +1295,18 @@ public class TaskTableTestBase
                                   {
                                     new FilterField
                                     {
-                                      String = new FilterString
-                                               {
-                                                 Field = new ApplicationField
-                                                         {
-                                                           ApplicationField_ = new ApplicationRawField
-                                                                               {
-                                                                                 Field = ApplicationRawEnumField.Name,
-                                                                               },
-                                                         },
-                                                 Operator = FilterStringOperator.Equal,
-                                                 Value    = Options.ApplicationName,
-                                               },
+                                      Field = new ApplicationField
+                                              {
+                                                ApplicationField_ = new ApplicationRawField
+                                                                    {
+                                                                      Field = ApplicationRawEnumField.Name,
+                                                                    },
+                                              },
+                                      FilterString = new FilterString
+                                                     {
+                                                       Operator = FilterStringOperator.Equal,
+                                                       Value    = Options.ApplicationName,
+                                                     },
                                     },
                                   },
                                 },
@@ -1463,18 +1464,18 @@ public class TaskTableTestBase
                                   {
                                     new FilterField
                                     {
-                                      String = new FilterString
-                                               {
-                                                 Field = new ApplicationField
-                                                         {
-                                                           ApplicationField_ = new ApplicationRawField
-                                                                               {
-                                                                                 Field = ApplicationRawEnumField.Name,
-                                                                               },
-                                                         },
-                                                 Operator = FilterStringOperator.Equal,
-                                                 Value    = applicationName,
-                                               },
+                                      Field = new ApplicationField
+                                              {
+                                                ApplicationField_ = new ApplicationRawField
+                                                                    {
+                                                                      Field = ApplicationRawEnumField.Name,
+                                                                    },
+                                              },
+                                      FilterString = new FilterString
+                                                     {
+                                                       Operator = FilterStringOperator.Equal,
+                                                       Value    = applicationName,
+                                                     },
                                     },
                                   },
                                 },
@@ -1572,18 +1573,19 @@ public class TaskTableTestBase
                                   {
                                     new Armonik.Api.gRPC.V1.Tasks.FilterField
                                     {
-                                      String = new Armonik.Api.gRPC.V1.Tasks.FilterString
-                                               {
-                                                 Value = "SessionId",
-                                                 Field = new TaskField
-                                                         {
-                                                           TaskSummaryField = new TaskSummaryField
-                                                                              {
-                                                                                Field = TaskSummaryEnumField.SessionId,
-                                                                              },
-                                                         },
-                                                 Operator = FilterStringOperator.Equal,
-                                               },
+                                      Field = new TaskField
+                                              {
+                                                TaskSummaryField = new TaskSummaryField
+                                                                   {
+                                                                     Field = TaskSummaryEnumField.SessionId,
+                                                                   },
+                                              },
+                                      FilterString = new FilterString
+                                                     {
+                                                       Value = "SessionId",
+
+                                                       Operator = FilterStringOperator.Equal,
+                                                     },
                                     },
                                   },
                                 },
@@ -1692,7 +1694,7 @@ public class TaskTableTestBase
                                                                                                                   FilterStringOperator.Equal,
                                                                                                                   "TaskCompletedId"),
                                                                     }),
-                          1).SetArgDisplayNames(filterField.ToDisplay() + " true");
+                          1).SetArgDisplayNames(filterField + " true");
 
     TestCaseData CaseFalse(Armonik.Api.gRPC.V1.Tasks.FilterField filterField)
       => new TestCaseData(ListTasksHelper.CreateListSessionsRequest(new ListTasksRequest.Types.Sort(),
@@ -1703,37 +1705,37 @@ public class TaskTableTestBase
                                                                                                                   FilterStringOperator.Equal,
                                                                                                                   "TaskCompletedId"),
                                                                     }),
-                          0).SetArgDisplayNames(filterField.ToDisplay() + " false");
+                          0).SetArgDisplayNames(filterField + " false");
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
                                                                     FilterDateOperator.After,
-                                                                    DateTime.UtcNow));
+                                                                    DateToCompare));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
                                                                     FilterDateOperator.AfterOrEqual,
-                                                                    DateTime.UtcNow));
+                                                                    DateToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
                                                                      FilterDateOperator.Before,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
                                                                      FilterDateOperator.BeforeOrEqual,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
     yield return CaseTrue(new Armonik.Api.gRPC.V1.Tasks.FilterField
                           {
-                            Date = new FilterDate
-                                   {
-                                     Field = new TaskField
-                                             {
-                                               TaskSummaryField = new TaskSummaryField
-                                                                  {
-                                                                    Field = TaskSummaryEnumField.StartedAt,
-                                                                  },
-                                             },
-                                     Operator = FilterDateOperator.Equal,
-                                   },
+                            Field = new TaskField
+                                    {
+                                      TaskSummaryField = new TaskSummaryField
+                                                         {
+                                                           Field = TaskSummaryEnumField.StartedAt,
+                                                         },
+                                    },
+                            FilterDate = new FilterDate
+                                         {
+                                           Operator = FilterDateOperator.Equal,
+                                         },
                           });
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,

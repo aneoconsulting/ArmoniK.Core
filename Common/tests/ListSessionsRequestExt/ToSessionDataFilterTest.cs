@@ -33,6 +33,7 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using FilterStatus = ArmoniK.Api.gRPC.V1.Sessions.FilterStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
@@ -103,12 +104,12 @@ public class ToSessionDataFilterTest
                                                            string               value)
     => new()
        {
-         String = new FilterString
-                  {
-                    Field    = field,
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = field,
+         FilterString = new FilterString
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
 
@@ -143,18 +144,18 @@ public class ToSessionDataFilterTest
                                                            long                 value)
     => new()
        {
-         Number = new FilterNumber
-                  {
-                    Field = new SessionField
-                            {
-                              SessionRawField = new SessionRawField
-                                                {
-                                                  Field = field,
-                                                },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterNumber = new FilterNumber
+                        {
+                          Operator = op,
+                          Value    = value,
+                        }
        };
 
   public static FilterField CreateListSessionsFilterArray(SessionRawEnumField field,
@@ -162,18 +163,18 @@ public class ToSessionDataFilterTest
                                                           string              value)
     => new()
        {
-         Array = new FilterArray
+         Field = new SessionField
                  {
-                   Field = new SessionField
-                           {
-                             SessionRawField = new SessionRawField
-                                               {
-                                                 Field = field,
-                                               },
-                           },
-                   Operator = op,
-                   Value    = value,
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
                  },
+         FilterArray = new FilterArray
+                       {
+                         Operator = op,
+                         Value    = value,
+                       },
        };
 
   public static FilterField CreateListSessionsFilterStatus(SessionRawEnumField  field,
@@ -181,18 +182,18 @@ public class ToSessionDataFilterTest
                                                            SessionStatus        value)
     => new()
        {
-         Status = new FilterStatus
-                  {
-                    Field = new SessionField
-                            {
-                              SessionRawField = new SessionRawField
-                                                {
-                                                  Field = field,
-                                                },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterStatus = new FilterStatus
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   public static FilterField CreateListSessionsFilterDate(SessionRawEnumField field,
@@ -200,18 +201,18 @@ public class ToSessionDataFilterTest
                                                          DateTime            value)
     => new()
        {
-         Date = new FilterDate
-                {
-                  Field = new SessionField
-                          {
-                            SessionRawField = new SessionRawField
-                                              {
-                                                Field = field,
-                                              },
-                          },
-                  Operator = op,
-                  Value    = FromDateTime(value),
-                },
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterDate = new FilterDate
+                      {
+                        Operator = op,
+                        Value    = FromDateTime(value),
+                      },
        };
 
   [Test]
@@ -233,14 +234,14 @@ public class ToSessionDataFilterTest
                           {
                             filterField,
                           },
-                          true).SetArgDisplayNames(filterField.ToDisplay());
+                          true).SetArgDisplayNames(filterField.ToString());
 
     TestCaseData CaseFalse(FilterField filterField)
       => new TestCaseData(new[]
                           {
                             filterField,
                           },
-                          false).SetArgDisplayNames(filterField.ToDisplay());
+                          false).SetArgDisplayNames(filterField.ToString());
 
     yield return CaseTrue(CreateListSessionsFilterStatus(SessionRawEnumField.Status,
                                                          FilterStatusOperator.Equal,

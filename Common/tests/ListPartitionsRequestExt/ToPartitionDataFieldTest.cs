@@ -84,18 +84,18 @@ public class ToPartitionDataFieldTest
                                  {
                                    new FilterField
                                    {
-                                     String = new FilterString
-                                              {
-                                                Field = new PartitionField
-                                                        {
-                                                          PartitionRawField = new PartitionRawField
-                                                                              {
-                                                                                Field = PartitionRawEnumField.Id,
-                                                                              },
-                                                        },
-                                                Operator = FilterStringOperator.Equal,
-                                                Value    = "PartitionId",
-                                              },
+                                     Field = new PartitionField
+                                             {
+                                               PartitionRawField = new PartitionRawField
+                                                                   {
+                                                                     Field = PartitionRawEnumField.Id,
+                                                                   },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Operator = FilterStringOperator.Equal,
+                                                      Value    = "PartitionId",
+                                                    },
                                    },
                                  },
                                },

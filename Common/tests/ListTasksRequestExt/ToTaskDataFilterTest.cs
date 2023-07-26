@@ -28,7 +28,6 @@ using Armonik.Api.gRPC.V1.Tasks;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
 
@@ -73,8 +72,12 @@ public class ToTaskDataFilterTest
                                             TaskStatus.Completed,
                                             "StatusMessage",
                                             Options,
-                                            DateTime.UtcNow,
-                                            DateTime.Now,
+                                            new DateTime(2020,
+                                                         3,
+                                                         14),
+                                            new DateTime(2020,
+                                                         3,
+                                                         16),
                                             null,
                                             null,
                                             null,
@@ -84,6 +87,10 @@ public class ToTaskDataFilterTest
                                             TimeSpan.FromDays(2),
                                             new Output(true,
                                                        ""));
+
+  private static readonly DateTime DateToCompare = new DateTime(2020,
+                                                                3,
+                                                                15).ToUniversalTime();
 
   private static readonly ListTasksRequest.Types.Sort Sort = new()
                                                              {
@@ -123,60 +130,60 @@ public class ToTaskDataFilterTest
                           {
                             filterField,
                           },
-                          true).SetArgDisplayNames(filterField.ToDisplay());
+                          true).SetArgDisplayNames(filterField.ToString());
 
     TestCaseData CaseFalse(FilterField filterField)
       => new TestCaseData(new[]
                           {
                             filterField,
                           },
-                          false).SetArgDisplayNames(filterField.ToDisplay());
+                          false).SetArgDisplayNames(filterField.ToString());
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
-                                                                    FilterDateOperator.After,
-                                                                    DateTime.UtcNow));
+                                                                    FilterDateOperator.Before,
+                                                                    DateToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
-                                                                     FilterDateOperator.Before,
-                                                                     DateTime.UtcNow));
+                                                                     FilterDateOperator.After,
+                                                                     DateToCompare));
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.SubmittedAt,
                                                                     FilterDateOperator.AfterOrEqual,
-                                                                    DateTime.UtcNow));
+                                                                    DateToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.SubmittedAt,
                                                                      FilterDateOperator.BeforeOrEqual,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
 
     // end date is null
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.EndedAt,
                                                                      FilterDateOperator.After,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.EndedAt,
                                                                      FilterDateOperator.Before,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
 
     // start date is null
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                      FilterDateOperator.After,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                      FilterDateOperator.Before,
-                                                                     DateTime.UtcNow));
+                                                                     DateToCompare));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
     yield return CaseTrue(new FilterField
                           {
-                            Date = new FilterDate
-                                   {
-                                     Field = new TaskField
-                                             {
-                                               TaskSummaryField = new TaskSummaryField
-                                                                  {
-                                                                    Field = TaskSummaryEnumField.StartedAt,
-                                                                  },
-                                             },
-                                     Operator = FilterDateOperator.Equal,
-                                   },
+                            Field = new TaskField
+                                    {
+                                      TaskSummaryField = new TaskSummaryField
+                                                         {
+                                                           Field = TaskSummaryEnumField.StartedAt,
+                                                         },
+                                    },
+                            FilterDate = new FilterDate
+                                         {
+                                           Operator = FilterDateOperator.Equal,
+                                         },
                           });
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,

@@ -188,18 +188,18 @@ public class ToTaskDataFieldTest
                                  {
                                    new FilterField
                                    {
-                                     String = new FilterString
-                                              {
-                                                Field = new TaskField
-                                                        {
-                                                          TaskSummaryField = new TaskSummaryField
-                                                                             {
-                                                                               Field = TaskSummaryEnumField.SessionId,
-                                                                             },
-                                                        },
-                                                Value    = "SessionId",
-                                                Operator = FilterStringOperator.Equal,
-                                              },
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
                                    },
                                  },
                                },
@@ -232,18 +232,18 @@ public class ToTaskDataFieldTest
                                  {
                                    new FilterField
                                    {
-                                     String = new FilterString
-                                              {
-                                                Field = new TaskField
-                                                        {
-                                                          TaskSummaryField = new TaskSummaryField
-                                                                             {
-                                                                               Field = TaskSummaryEnumField.SessionId,
-                                                                             },
-                                                        },
-                                                Value    = "SessionId",
-                                                Operator = FilterStringOperator.Equal,
-                                              },
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
                                    },
                                  },
                                },

@@ -49,18 +49,18 @@ public static class ListPartitionsHelper
                                                              string                value)
     => new()
        {
-         String = new FilterString
-                  {
-                    Field = new PartitionField
-                            {
-                              PartitionRawField = new PartitionRawField
-                                                  {
-                                                    Field = field,
-                                                  },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new PartitionField
+                 {
+                   PartitionRawField = new PartitionRawField
+                                       {
+                                         Field = field,
+                                       },
+                 },
+         FilterString = new FilterString
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   public static FilterField CreateListPartitionsFilterNumber(PartitionRawEnumField field,
@@ -68,18 +68,18 @@ public static class ListPartitionsHelper
                                                              long                  value)
     => new()
        {
-         Number = new FilterNumber
-                  {
-                    Field = new PartitionField
-                            {
-                              PartitionRawField = new PartitionRawField
-                                                  {
-                                                    Field = field,
-                                                  },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new PartitionField
+                 {
+                   PartitionRawField = new PartitionRawField
+                                       {
+                                         Field = field,
+                                       },
+                 },
+         FilterNumber = new FilterNumber
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   public static FilterField CreateListPartitionsFilterArray(PartitionRawEnumField field,
@@ -87,17 +87,17 @@ public static class ListPartitionsHelper
                                                             string                value)
     => new()
        {
-         Array = new FilterArray
+         Field = new PartitionField
                  {
-                   Field = new PartitionField
-                           {
-                             PartitionRawField = new PartitionRawField
-                                                 {
-                                                   Field = field,
-                                                 },
-                           },
-                   Operator = op,
-                   Value    = value,
+                   PartitionRawField = new PartitionRawField
+                                       {
+                                         Field = field,
+                                       },
                  },
+         FilterArray = new FilterArray
+                       {
+                         Operator = op,
+                         Value    = value,
+                       },
        };
 }

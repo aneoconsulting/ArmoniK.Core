@@ -28,6 +28,8 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
+
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
 public static class ListTasksHelper
@@ -57,12 +59,12 @@ public static class ListTasksHelper
                                                         string               value)
     => new()
        {
-         String = new FilterString
-                  {
-                    Field    = field,
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = field,
+         FilterString = new FilterString
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
 
@@ -110,18 +112,19 @@ public static class ListTasksHelper
                                                         long                 value)
     => new()
        {
-         Number = new FilterNumber
-                  {
-                    Field = new TaskField
-                            {
-                              TaskOptionField = new TaskOptionField
-                                                {
-                                                  Field = field,
-                                                },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new TaskField
+                 {
+                   TaskOptionField = new TaskOptionField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+
+         FilterNumber = new FilterNumber
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   public static FilterField CreateListTasksFilterStatus(TaskSummaryEnumField field,
@@ -129,18 +132,18 @@ public static class ListTasksHelper
                                                         TaskStatus           value)
     => new()
        {
-         Status = new FilterStatus
-                  {
-                    Field = new TaskField
-                            {
-                              TaskSummaryField = new TaskSummaryField
-                                                 {
-                                                   Field = field,
-                                                 },
-                            },
-                    Operator = op,
-                    Value    = value,
-                  },
+         Field = new TaskField
+                 {
+                   TaskSummaryField = new TaskSummaryField
+                                      {
+                                        Field = field,
+                                      },
+                 },
+         FilterStatus = new FilterStatus
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
        };
 
   public static FilterField CreateListTasksFilterDate(TaskSummaryEnumField field,
@@ -148,19 +151,19 @@ public static class ListTasksHelper
                                                       DateTime?            value)
     => new()
        {
-         Date = new FilterDate
-                {
-                  Field = new TaskField
-                          {
-                            TaskSummaryField = new TaskSummaryField
-                                               {
-                                                 Field = field,
-                                               },
-                          },
-                  Operator = op,
-                  Value = value is null
-                            ? null
-                            : FromDateTime(value.Value),
-                },
+         Field = new TaskField
+                 {
+                   TaskSummaryField = new TaskSummaryField
+                                      {
+                                        Field = field,
+                                      },
+                 },
+         FilterDate = new FilterDate
+                      {
+                        Operator = op,
+                        Value = value is null
+                                  ? null
+                                  : FromDateTime(value.Value),
+                      },
        };
 }

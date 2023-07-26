@@ -26,7 +26,6 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Tests.ListPartitionsRequestExt;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -292,7 +291,7 @@ public class PartitionTableTestBase
                                                                                                                                    FilterStringOperator.Equal,
                                                                                                                                    "PartitionId2"),
                                                                            }),
-                          1).SetArgDisplayNames(filterField.ToDisplay() + " true");
+                          1).SetArgDisplayNames(filterField + " true");
 
     TestCaseData CaseFalse(FilterField filterField)
       => new TestCaseData(ListPartitionsHelper.CreateListPartitionsRequest(new ListPartitionsRequest.Types.Sort(),
@@ -303,7 +302,7 @@ public class PartitionTableTestBase
                                                                                                                                    FilterStringOperator.Equal,
                                                                                                                                    "PartitionId2"),
                                                                            }),
-                          0).SetArgDisplayNames(filterField.ToDisplay() + " false");
+                          0).SetArgDisplayNames(filterField + " false");
 
     yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
                                                                                 FilterStringOperator.Equal,

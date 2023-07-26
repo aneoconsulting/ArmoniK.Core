@@ -85,14 +85,14 @@ public class ToPartitionDataFilterTest
                           {
                             filterField,
                           },
-                          true).SetArgDisplayNames(filterField.ToDisplay());
+                          true).SetArgDisplayNames(filterField.ToString());
 
     TestCaseData CaseFalse(FilterField filterField)
       => new TestCaseData(new[]
                           {
                             filterField,
                           },
-                          false).SetArgDisplayNames(filterField.ToDisplay());
+                          false).SetArgDisplayNames(filterField.ToString());
 
     yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
                                                                                 FilterStringOperator.Equal,

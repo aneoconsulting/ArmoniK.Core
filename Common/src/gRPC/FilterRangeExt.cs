@@ -30,61 +30,106 @@ namespace ArmoniK.Core.Common.gRPC;
 public static class FilterRangeExt
 {
   /// <summary>
-  ///   Convert gRPC field to <see cref="ExpressionType" /> that represent which operation has to be performed
+  ///   Generate a filter <see cref="Expression" /> for operations on strings
   /// </summary>
-  /// <param name="filterOperator">The gRPC Enum</param>
+  /// <typeparam name="T">Type of the value and field on which the operation is applied</typeparam>
+  /// <typeparam name="TStatus">Status enum type used for the comparison</typeparam>
+  /// <param name="filterOperator">The gRPC enum that selects the operation</param>
+  /// <param name="field">The <see cref="Expression" /> to select the field on which to apply the operation</param>
+  /// <param name="value">Value for the operation</param>
   /// <returns>
-  ///   The <see cref="ExpressionType" /> that represent the operation
+  ///   The <see cref="Expression" /> that represents the operation on the field with the given value
   /// </returns>
-  public static ExpressionType ToExpressionType(this FilterStatusOperator filterOperator)
+  public static Expression<Func<T, bool>> ToFilter<T, TStatus>(this FilterStatusOperator    filterOperator,
+                                                               Expression<Func<T, object?>> field,
+                                                               TStatus                      value)
     => filterOperator switch
        {
          FilterStatusOperator.Unspecified => throw new ArgumentOutOfRangeException(),
-         FilterStatusOperator.Equal       => ExpressionType.Equal,
-         FilterStatusOperator.NotEqual    => ExpressionType.NotEqual,
-         _                                => throw new ArgumentOutOfRangeException(),
+         FilterStatusOperator.Equal => ExpressionBuilders.MakeBinary(field,
+                                                                     value,
+                                                                     ExpressionType.Equal),
+         FilterStatusOperator.NotEqual => ExpressionBuilders.MakeBinary(field,
+                                                                        value,
+                                                                        ExpressionType.NotEqual),
+         _ => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Generate a filter <see cref="Expression" /> for operations on strings
+  /// </summary>
+  /// <typeparam name="T">Type of the value and field on which the operation is applied</typeparam>
+  /// <param name="filterOperator">The gRPC enum that selects the operation</param>
+  /// <param name="field">The <see cref="Expression" /> to select the field on which to apply the operation</param>
+  /// <param name="value">Value for the operation</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the operation on the field with the given value
+  /// </returns>
+  public static Expression<Func<T, bool>> ToFilter<T>(this FilterDateOperator      filterOperator,
+                                                      Expression<Func<T, object?>> field,
+                                                      DateTime?                    value)
+    => filterOperator switch
+       {
+         FilterDateOperator.Unspecified => throw new ArgumentOutOfRangeException(),
+         FilterDateOperator.Before => ExpressionBuilders.MakeBinary(field,
+                                                                    value,
+                                                                    ExpressionType.LessThan),
+         FilterDateOperator.BeforeOrEqual => ExpressionBuilders.MakeBinary(field,
+                                                                           value,
+                                                                           ExpressionType.LessThanOrEqual),
+         FilterDateOperator.Equal => ExpressionBuilders.MakeBinary(field,
+                                                                   value,
+                                                                   ExpressionType.Equal),
+         FilterDateOperator.AfterOrEqual => ExpressionBuilders.MakeBinary(field,
+                                                                          value,
+                                                                          ExpressionType.GreaterThanOrEqual),
+         FilterDateOperator.After => ExpressionBuilders.MakeBinary(field,
+                                                                   value,
+                                                                   ExpressionType.GreaterThan),
+         FilterDateOperator.NotEqual => ExpressionBuilders.MakeBinary(field,
+                                                                      value,
+                                                                      ExpressionType.NotEqual),
+         _ => throw new ArgumentOutOfRangeException(),
        };
 
 
   /// <summary>
-  ///   Convert gRPC field to <see cref="ExpressionType" /> that represent which operation has to be performed
+  ///   Generate a filter <see cref="Expression" /> for operations on strings
   /// </summary>
-  /// <param name="filterOperator">The gRPC Enum</param>
+  /// <typeparam name="T">Type of the value and field on which the operation is applied</typeparam>
+  /// <param name="filterOperator">The gRPC enum that selects the operation</param>
+  /// <param name="field">The <see cref="Expression" /> to select the field on which to apply the operation</param>
+  /// <param name="value">Value for the operation</param>
   /// <returns>
-  ///   The <see cref="ExpressionType" /> that represent the operation
+  ///   The <see cref="Expression" /> that represents the operation on the field with the given value
   /// </returns>
-  public static ExpressionType ToExpressionType(this FilterDateOperator filterOperator)
+  public static Expression<Func<T, bool>> ToFilter<T>(this FilterNumberOperator    filterOperator,
+                                                      Expression<Func<T, object?>> field,
+                                                      long                         value)
     => filterOperator switch
        {
-         FilterDateOperator.Before        => ExpressionType.LessThan,
-         FilterDateOperator.BeforeOrEqual => ExpressionType.LessThanOrEqual,
-         FilterDateOperator.Equal         => ExpressionType.Equal,
-         FilterDateOperator.NotEqual      => ExpressionType.NotEqual,
-         FilterDateOperator.AfterOrEqual  => ExpressionType.GreaterThanOrEqual,
-         FilterDateOperator.After         => ExpressionType.GreaterThan,
-         FilterDateOperator.Unspecified   => throw new ArgumentOutOfRangeException(),
-         _                                => throw new ArgumentOutOfRangeException(),
+         FilterNumberOperator.Unspecified => throw new ArgumentOutOfRangeException(),
+         FilterNumberOperator.LessThan => ExpressionBuilders.MakeBinary(field,
+                                                                        value,
+                                                                        ExpressionType.LessThan),
+         FilterNumberOperator.LessThanOrEqual => ExpressionBuilders.MakeBinary(field,
+                                                                               value,
+                                                                               ExpressionType.LessThanOrEqual),
+         FilterNumberOperator.Equal => ExpressionBuilders.MakeBinary(field,
+                                                                     value,
+                                                                     ExpressionType.Equal),
+         FilterNumberOperator.NotEqual => ExpressionBuilders.MakeBinary(field,
+                                                                        value,
+                                                                        ExpressionType.NotEqual),
+         FilterNumberOperator.GreaterThanOrEqual => ExpressionBuilders.MakeBinary(field,
+                                                                                  value,
+                                                                                  ExpressionType.GreaterThanOrEqual),
+         FilterNumberOperator.GreaterThan => ExpressionBuilders.MakeBinary(field,
+                                                                           value,
+                                                                           ExpressionType.GreaterThan),
+         _ => throw new ArgumentOutOfRangeException(),
        };
 
-  /// <summary>
-  ///   Convert gRPC field to <see cref="ExpressionType" /> that represent which operation has to be performed
-  /// </summary>
-  /// <param name="filterOperator">The gRPC Enum</param>
-  /// <returns>
-  ///   The <see cref="ExpressionType" /> that represent the operation
-  /// </returns>
-  public static ExpressionType ToExpressionType(this FilterNumberOperator filterOperator)
-    => filterOperator switch
-       {
-         FilterNumberOperator.LessThan           => ExpressionType.LessThan,
-         FilterNumberOperator.LessThanOrEqual    => ExpressionType.LessThanOrEqual,
-         FilterNumberOperator.Equal              => ExpressionType.Equal,
-         FilterNumberOperator.NotEqual           => ExpressionType.NotEqual,
-         FilterNumberOperator.GreaterThanOrEqual => ExpressionType.GreaterThanOrEqual,
-         FilterNumberOperator.GreaterThan        => ExpressionType.GreaterThan,
-         FilterNumberOperator.Unspecified        => throw new ArgumentOutOfRangeException(),
-         _                                       => throw new ArgumentOutOfRangeException(),
-       };
 
   /// <summary>
   ///   Generate a filter <see cref="Expression" /> for operations on strings
