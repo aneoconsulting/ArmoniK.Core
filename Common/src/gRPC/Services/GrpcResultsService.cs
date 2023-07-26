@@ -87,9 +87,13 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
                                                               ServerCallContext  context)
   {
-    var results = await resultTable_.ListResultsAsync(request.Filters.ToResultFilter(),
-                                                      request.Sort.ToField(),
-                                                      request.Sort.Direction == SortDirection.Asc,
+    var results = await resultTable_.ListResultsAsync(request.Filters is null
+                                                        ? data => true
+                                                        : request.Filters.ToResultFilter(),
+                                                      request.Sort is null
+                                                        ? result => result.ResultId
+                                                        : request.Sort.ToField(),
+                                                      request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                       request.Page,
                                                       request.PageSize,
                                                       context.CancellationToken)

@@ -33,13 +33,7 @@ using Armonik.Api.Grpc.V1.Partitions;
 
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-
 using ArmoniK.Api.gRPC.V1.Submitter;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using Armonik.Api.Grpc.V1.Versions;
@@ -63,7 +57,6 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
-using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
 using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
@@ -590,135 +583,6 @@ public class AuthenticationIntegrationTest
   /// </summary>
   public static readonly IReadOnlyDictionary<Type, object> ManualRequests = new ReadOnlyDictionary<Type, object>(new Dictionary<Type, object>
                                                                                                                  {
-                                                                                                                   {
-                                                                                                                     typeof(ListApplicationsRequest),
-                                                                                                                     new ListApplicationsRequest
-                                                                                                                     {
-                                                                                                                       Filters  = new Filters(),
-                                                                                                                       Page     = 0,
-                                                                                                                       PageSize = 1,
-                                                                                                                       Sort = new ListApplicationsRequest.Types.Sort
-                                                                                                                              {
-                                                                                                                                Direction = SortDirection.Asc,
-                                                                                                                              },
-                                                                                                                     }
-                                                                                                                   },
-                                                                                                                   {
-                                                                                                                     typeof(ListPartitionsRequest),
-                                                                                                                     new ListPartitionsRequest
-                                                                                                                     {
-                                                                                                                       Filters =
-                                                                                                                         new Armonik.Api.Grpc.V1.Partitions.Filters(),
-                                                                                                                       Page     = 0,
-                                                                                                                       PageSize = 1,
-                                                                                                                       Sort = new ListPartitionsRequest.Types.Sort
-                                                                                                                              {
-                                                                                                                                Field = new PartitionField
-                                                                                                                                        {
-                                                                                                                                          PartitionRawField =
-                                                                                                                                            new PartitionRawField
-                                                                                                                                            {
-                                                                                                                                              Field =
-                                                                                                                                                PartitionRawEnumField.Id,
-                                                                                                                                            },
-                                                                                                                                        },
-                                                                                                                                Direction = SortDirection.Asc,
-                                                                                                                              },
-                                                                                                                     }
-                                                                                                                   },
-                                                                                                                   {
-                                                                                                                     typeof(ListResultsRequest), new ListResultsRequest
-                                                                                                                                                 {
-                                                                                                                                                   Filters =
-                                                                                                                                                     new Api.gRPC.V1.
-                                                                                                                                                       Results.Filters(),
-                                                                                                                                                   Page     = 0,
-                                                                                                                                                   PageSize = 1,
-                                                                                                                                                   Sort =
-                                                                                                                                                     new
-                                                                                                                                                     ListResultsRequest.
-                                                                                                                                                     Types.Sort
-                                                                                                                                                     {
-                                                                                                                                                       Field =
-                                                                                                                                                         new ResultField
-                                                                                                                                                         {
-                                                                                                                                                           ResultRawField =
-                                                                                                                                                             new
-                                                                                                                                                             ResultRawField
-                                                                                                                                                             {
-                                                                                                                                                               Field =
-                                                                                                                                                                 ResultRawEnumField
-                                                                                                                                                                   .ResultId,
-                                                                                                                                                             },
-                                                                                                                                                         },
-                                                                                                                                                       Direction =
-                                                                                                                                                         SortDirection
-                                                                                                                                                           .Asc,
-                                                                                                                                                     },
-                                                                                                                                                 }
-                                                                                                                   },
-                                                                                                                   {
-                                                                                                                     typeof(ListSessionsRequest), new ListSessionsRequest
-                                                                                                                                                  {
-                                                                                                                                                    Filters =
-                                                                                                                                                      new Api.gRPC.V1.
-                                                                                                                                                        Sessions.
-                                                                                                                                                        Filters(),
-                                                                                                                                                    Page     = 0,
-                                                                                                                                                    PageSize = 1,
-                                                                                                                                                    Sort =
-                                                                                                                                                      new
-                                                                                                                                                      ListSessionsRequest
-                                                                                                                                                      .Types.Sort
-                                                                                                                                                      {
-                                                                                                                                                        Field =
-                                                                                                                                                          new
-                                                                                                                                                          SessionField
-                                                                                                                                                          {
-                                                                                                                                                            SessionRawField =
-                                                                                                                                                              new
-                                                                                                                                                              SessionRawField
-                                                                                                                                                              {
-                                                                                                                                                                Field =
-                                                                                                                                                                  SessionRawEnumField
-                                                                                                                                                                    .SessionId,
-                                                                                                                                                              },
-                                                                                                                                                          },
-                                                                                                                                                        Direction =
-                                                                                                                                                          SortDirection
-                                                                                                                                                            .Asc,
-                                                                                                                                                      },
-                                                                                                                                                  }
-                                                                                                                   },
-                                                                                                                   {
-                                                                                                                     typeof(ListTasksRequest), new ListTasksRequest
-                                                                                                                                               {
-                                                                                                                                                 Filters =
-                                                                                                                                                   new Armonik.Api.gRPC.
-                                                                                                                                                     V1.Tasks.Filters(),
-                                                                                                                                                 Page     = 0,
-                                                                                                                                                 PageSize = 1,
-                                                                                                                                                 Sort =
-                                                                                                                                                   new ListTasksRequest.
-                                                                                                                                                   Types.Sort
-                                                                                                                                                   {
-                                                                                                                                                     Field =
-                                                                                                                                                       new TaskField
-                                                                                                                                                       {
-                                                                                                                                                         TaskSummaryField =
-                                                                                                                                                           new
-                                                                                                                                                           TaskSummaryField
-                                                                                                                                                           {
-                                                                                                                                                             Field =
-                                                                                                                                                               TaskSummaryEnumField
-                                                                                                                                                                 .TaskId,
-                                                                                                                                                           },
-                                                                                                                                                       },
-                                                                                                                                                     Direction =
-                                                                                                                                                       SortDirection.Asc,
-                                                                                                                                                   },
-                                                                                                                                               }
-                                                                                                                   },
                                                                                                                    {
                                                                                                                      typeof(CreateSessionRequest),
                                                                                                                      new CreateSessionRequest

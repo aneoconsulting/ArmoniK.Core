@@ -133,9 +133,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var sessionData = await sessionTable_.ListSessionsAsync(request.Filters.ToSessionDataFilter(),
-                                                              request.Sort.ToField(),
-                                                              request.Sort.Direction == SortDirection.Asc,
+      var sessionData = await sessionTable_.ListSessionsAsync(request.Filters is null
+                                                                ? data => true
+                                                                : request.Filters.ToSessionDataFilter(),
+                                                              request.Sort is null
+                                                                ? data => data.SessionId
+                                                                : request.Sort.ToField(),
+                                                              request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                               request.Page,
                                                               request.PageSize,
                                                               context.CancellationToken)

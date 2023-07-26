@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
@@ -51,10 +54,17 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
-    var tasks = await taskTable_.ListApplicationsAsync(request.Filters.ToApplicationFilter(),
-                                                       request.Sort.Fields.Select(field => field.ToField())
-                                                              .ToList(),
-                                                       request.Sort.Direction == SortDirection.Asc,
+    var tasks = await taskTable_.ListApplicationsAsync(request.Filters is null
+                                                         ? data => true
+                                                         : request.Filters.ToApplicationFilter(),
+                                                       request.Sort is null
+                                                         ? new List<Expression<Func<Application, object?>>>
+                                                           {
+                                                             application => application.Name,
+                                                           }
+                                                         : request.Sort.Fields.Select(field => field.ToField())
+                                                                  .ToList(),
+                                                       request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                        request.Page,
                                                        request.PageSize,
                                                        context.CancellationToken)

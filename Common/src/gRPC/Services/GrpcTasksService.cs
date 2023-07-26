@@ -107,14 +107,18 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
-      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
       {
         logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filters.ToTaskDataFilter(),
-                                                     request.Sort.ToField(),
+      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
+                                                       ? data => true
+                                                       : request.Filters.ToTaskDataFilter(),
+                                                     request.Sort is null
+                                                       ? data => data.TaskId
+                                                       : request.Sort.ToField(),
                                                      data => new TaskDataSummary(data.SessionId,
                                                                                  data.TaskId,
                                                                                  data.OwnerPodId,
@@ -137,7 +141,7 @@ public class GrpcTasksService : Task.TasksBase
                                                                                  data.ProcessingToEndDuration,
                                                                                  data.CreationToEndDuration,
                                                                                  data.Output),
-                                                     request.Sort.Direction == SortDirection.Asc,
+                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
                                                      context.CancellationToken)
@@ -316,16 +320,20 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
-      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
       {
         logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filters.ToTaskDataFilter(),
-                                                     request.Sort.ToField(),
+      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
+                                                       ? data => true
+                                                       : request.Filters.ToTaskDataFilter(),
+                                                     request.Sort is null
+                                                       ? data => data.TaskId
+                                                       : request.Sort.ToField(),
                                                      data => data,
-                                                     request.Sort.Direction == SortDirection.Asc,
+                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
                                                      context.CancellationToken)
