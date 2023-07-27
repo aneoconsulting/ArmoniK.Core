@@ -38,13 +38,13 @@ To deploy ArmoniK.Core locally, you need first to clone the repository [ArmoniK.
 just
 ```
 
-More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/content/1.concepts/1.local-deployment.md).
+More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/content/0.installation/1.local-deployment.md).
 
 ### Tests
 
 There are a number of tests that help to verify the successful installation of ArmoniK.Core. Some of them require a full deployment of ArmoniK.Core, for others a partial deployment is enough.
 
-More about tests, see [Tests of ArmoniK.Core](./.docs/content//1.concepts/2.tests.md).
+More about tests, see [Tests of ArmoniK.Core](./.docs/content/0.installation/2.tests.md).
 
 ## Contribution
 
