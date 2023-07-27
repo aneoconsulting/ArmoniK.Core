@@ -28,8 +28,6 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
-
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
 public static class ListTasksHelper

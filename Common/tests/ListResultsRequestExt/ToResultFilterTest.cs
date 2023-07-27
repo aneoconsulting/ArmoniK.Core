@@ -32,8 +32,6 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-using FilterStatus = ArmoniK.Api.gRPC.V1.Results.FilterStatus;
-
 namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 
 [TestFixture(TestOf = typeof(ToResultFilterTest))]

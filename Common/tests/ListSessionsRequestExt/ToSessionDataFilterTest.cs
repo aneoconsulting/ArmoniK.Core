@@ -32,7 +32,6 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-using FilterStatus = ArmoniK.Api.gRPC.V1.Sessions.FilterStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;

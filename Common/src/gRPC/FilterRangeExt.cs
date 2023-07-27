@@ -45,7 +45,6 @@ public static class FilterRangeExt
                                                                TStatus                      value)
     => filterOperator switch
        {
-         FilterStatusOperator.Unspecified => throw new ArgumentOutOfRangeException(),
          FilterStatusOperator.Equal => ExpressionBuilders.MakeBinary(field,
                                                                      value,
                                                                      ExpressionType.Equal),
@@ -70,7 +69,6 @@ public static class FilterRangeExt
                                                       DateTime?                    value)
     => filterOperator switch
        {
-         FilterDateOperator.Unspecified => throw new ArgumentOutOfRangeException(),
          FilterDateOperator.Before => ExpressionBuilders.MakeBinary(field,
                                                                     value,
                                                                     ExpressionType.LessThan),
@@ -108,7 +106,6 @@ public static class FilterRangeExt
                                                       long                         value)
     => filterOperator switch
        {
-         FilterNumberOperator.Unspecified => throw new ArgumentOutOfRangeException(),
          FilterNumberOperator.LessThan => ExpressionBuilders.MakeBinary(field,
                                                                         value,
                                                                         ExpressionType.LessThan),
@@ -165,8 +162,7 @@ public static class FilterRangeExt
          FilterStringOperator.EndsWith => ExpressionBuilders.MakeCallString(field,
                                                                             value,
                                                                             nameof(string.EndsWith)),
-         FilterStringOperator.Unspecified => throw new ArgumentOutOfRangeException(),
-         _                                => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(),
        };
 
   /// <summary>
@@ -184,7 +180,6 @@ public static class FilterRangeExt
                                                       string                       value)
     => filterOperator switch
        {
-         FilterArrayOperator.Unspecified => throw new ArgumentOutOfRangeException(),
          FilterArrayOperator.Contains => ExpressionBuilders.MakeCall(field,
                                                                      value,
                                                                      typeof(Enumerable),
@@ -194,6 +189,27 @@ public static class FilterRangeExt
                                                                         typeof(Enumerable),
                                                                         nameof(Enumerable.Contains),
                                                                         true),
+         _ => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Generate a filter <see cref="Expression" /> for operations on arrays
+  /// </summary>
+  /// <typeparam name="T">Type of the value and field on which the operation is applied</typeparam>
+  /// <param name="filterOperator">The gRPC enum that selects the operation</param>
+  /// <param name="field">The <see cref="Expression" /> to select the field on which to apply the operation</param>
+  /// <param name="value">Value for the operation</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the operation on the field with the given value
+  /// </returns>
+  public static Expression<Func<T, bool>> ToFilter<T>(this FilterBooleanOperator   filterOperator,
+                                                      Expression<Func<T, object?>> field,
+                                                      bool                         value)
+    => filterOperator switch
+       {
+         FilterBooleanOperator.Is => ExpressionBuilders.MakeBinary(field,
+                                                                   value,
+                                                                   ExpressionType.Equal),
          _ => throw new ArgumentOutOfRangeException(),
        };
 }

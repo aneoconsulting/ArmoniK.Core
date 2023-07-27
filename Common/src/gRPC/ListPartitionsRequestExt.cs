@@ -91,9 +91,8 @@ public static class ListPartitionsRequestExt
                                                                                        filterField.FilterNumber.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterBoolean:
-            predicateAnd = predicateAnd.And(ExpressionBuilders.MakeBinary(filterField.Field.ToField(),
-                                                                          filterField.FilterBoolean.Value,
-                                                                          ExpressionType.Equal));
+            predicateAnd = predicateAnd.And(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                        filterField.FilterBoolean.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterArray:
             predicateAnd = predicateAnd.And(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
