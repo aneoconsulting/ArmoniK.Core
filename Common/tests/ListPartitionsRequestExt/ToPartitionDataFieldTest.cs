@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Armonik.Api.gRPC.V1;
 using Armonik.Api.Grpc.V1.Partitions;
 using Armonik.Api.Grpc.V1.SortDirection;
 
@@ -73,10 +74,35 @@ public class ToPartitionDataFieldTest
   {
     var func = new ListPartitionsRequest
                {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            Id = "PartitionId",
-                          },
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new PartitionField
+                                             {
+                                               PartitionRawField = new PartitionRawField
+                                                                   {
+                                                                     Field = PartitionRawEnumField.Id,
+                                                                   },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Operator = FilterStringOperator.Equal,
+                                                      Value    = "PartitionId",
+                                                    },
+                                   },
+                                 },
+                               },
+                             },
+                           },
+
+
                  Sort = new ListPartitionsRequest.Types.Sort
                         {
                           Direction = SortDirection.Asc,
@@ -85,7 +111,7 @@ public class ToPartitionDataFieldTest
                                     PartitionRawField = field,
                                   },
                         },
-               }.Sort.ToPartitionField()
+               }.Sort.ToField()
                 .Compile();
 
     Assert.AreEqual(expected,

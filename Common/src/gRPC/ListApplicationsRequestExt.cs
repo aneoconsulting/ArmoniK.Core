@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1.Applications;
@@ -27,17 +28,25 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListApplicationsRequestExt
 {
-  public static Expression<Func<Application, object?>> ToApplicationField(this ApplicationField field)
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="Application" /> field
+  /// </summary>
+  /// <param name="field">The gPRC message</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<Application, object?>> ToField(this ApplicationField field)
   {
     switch (field.FieldCase)
     {
       case ApplicationField.FieldOneofCase.ApplicationField_:
         return field.ApplicationField_.Field switch
                {
-                 ApplicationRawEnumField.Name        => taskData => taskData.Name,
-                 ApplicationRawEnumField.Version     => taskData => taskData.Version,
-                 ApplicationRawEnumField.Namespace   => taskData => taskData.Namespace,
-                 ApplicationRawEnumField.Service     => taskData => taskData.Service,
+                 ApplicationRawEnumField.Name        => application => application.Name,
+                 ApplicationRawEnumField.Version     => application => application.Version,
+                 ApplicationRawEnumField.Namespace   => application => application.Namespace,
+                 ApplicationRawEnumField.Service     => application => application.Service,
                  ApplicationRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
                  _                                   => throw new ArgumentOutOfRangeException(),
                };
@@ -48,29 +57,41 @@ public static class ListApplicationsRequestExt
     }
   }
 
-  public static Expression<Func<TaskData, bool>> ToApplicationFilter(this ListApplicationsRequest.Types.Filter filter)
+  /// <summary>
+  ///   Converts gRPC message filters into an <see cref="Expression" /> that represents the filter conditions
+  /// </summary>
+  /// <param name="filters">The gPRC filters</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter conditions
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<TaskData, bool>> ToApplicationFilter(this Filters filters)
   {
     var predicate = PredicateBuilder.New<TaskData>();
-    predicate = predicate.And(data => true);
 
-    if (!string.IsNullOrEmpty(filter.Namespace))
+    if (filters.Or == null || !filters.Or.Any())
     {
-      predicate = predicate.And(data => data.Options.ApplicationNamespace == filter.Namespace);
+      return data => true;
     }
 
-    if (!string.IsNullOrEmpty(filter.Name))
+    foreach (var filtersAnd in filters.Or)
     {
-      predicate = predicate.And(data => data.Options.ApplicationName == filter.Name);
-    }
+      var predicateAnd = PredicateBuilder.New<TaskData>(data => true);
+      foreach (var filterField in filtersAnd.And)
+      {
+        switch (filterField.ValueConditionCase)
+        {
+          case FilterField.ValueConditionOneofCase.FilterString:
+            predicateAnd = predicateAnd.And(filterField.FilterString.Operator.ToFilter(filterField.Field.ApplicationField_.Field.ToField(),
+                                                                                       filterField.FilterString.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.None:
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
 
-    if (!string.IsNullOrEmpty(filter.Service))
-    {
-      predicate = predicate.And(data => data.Options.ApplicationService == filter.Service);
-    }
-
-    if (!string.IsNullOrEmpty(filter.Version))
-    {
-      predicate = predicate.And(data => data.Options.ApplicationVersion == filter.Version);
+      predicate = predicate.Or(predicateAnd);
     }
 
     return predicate;

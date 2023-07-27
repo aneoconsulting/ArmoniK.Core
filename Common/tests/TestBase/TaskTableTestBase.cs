@@ -22,17 +22,23 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1.Applications;
 
 using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+
+using Armonik.Api.gRPC.V1.Tasks;
+
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
@@ -40,6 +46,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
+using FilterField = ArmoniK.Api.gRPC.V1.Applications.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Applications.FiltersAnd;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
@@ -68,6 +77,7 @@ public class TaskTableTestBase
                                    taskProcessingData2_,
                                    taskSubmittedData_,
                                    taskFailedData_,
+                                   taskSession2_,
                                  })
                     .ConfigureAwait(false);
   }
@@ -128,6 +138,10 @@ public class TaskTableTestBase
                                                      Options,
                                                      new Output(true,
                                                                 ""));
+
+  private static readonly DateTime DateToCompare = new DateTime(2020,
+                                                                3,
+                                                                15).ToUniversalTime();
 
   private readonly TaskData taskCreatingData_ = new("SessionId",
                                                     "TaskCreatingId",
@@ -220,6 +234,29 @@ public class TaskTableTestBase
                                                   Options,
                                                   new Output(false,
                                                              "sad task"));
+
+  private readonly TaskData taskSession2_ = new("SessionId2",
+                                                "TaskFailedId_session2",
+                                                "OwnerPodId",
+                                                "OwnerPodName",
+                                                "PayloadId",
+                                                new[]
+                                                {
+                                                  "parent1",
+                                                },
+                                                new[]
+                                                {
+                                                  "dependency2",
+                                                },
+                                                new[]
+                                                {
+                                                  "output1",
+                                                },
+                                                Array.Empty<string>(),
+                                                TaskStatus.Error,
+                                                Options,
+                                                new Output(false,
+                                                           "sad task"));
 
   private static bool CheckForSkipSetup()
   {
@@ -580,7 +617,7 @@ public class TaskTableTestBase
                       result[2]);
       Assert.AreEqual(new PartitionTaskStatusCount("part1",
                                                    TaskStatus.Error,
-                                                   1),
+                                                   2),
                       result[3]);
       Assert.AreEqual(new PartitionTaskStatusCount("part1",
                                                    TaskStatus.Processing,
@@ -1248,10 +1285,33 @@ public class TaskTableTestBase
                 {
                   Page     = 0,
                   PageSize = 4,
-                  Filter = new ListApplicationsRequest.Types.Filter
-                           {
-                             Name = Options.ApplicationName,
-                           },
+                  Filters = new Filters
+                            {
+                              Or =
+                              {
+                                new FiltersAnd
+                                {
+                                  And =
+                                  {
+                                    new FilterField
+                                    {
+                                      Field = new ApplicationField
+                                              {
+                                                ApplicationField_ = new ApplicationRawField
+                                                                    {
+                                                                      Field = ApplicationRawEnumField.Name,
+                                                                    },
+                                              },
+                                      FilterString = new FilterString
+                                                     {
+                                                       Operator = FilterStringOperator.Equal,
+                                                       Value    = Options.ApplicationName,
+                                                     },
+                                    },
+                                  },
+                                },
+                              },
+                            },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
                            Direction = SortDirection.Desc,
@@ -1272,8 +1332,8 @@ public class TaskTableTestBase
       Assert.IsTrue(validator.Validate(req)
                              .IsValid);
 
-      var listTasks = await TaskTable!.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
-                                                             req.Sort.Fields.Select(sort => sort.ToApplicationField())
+      var listTasks = await TaskTable!.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
+                                                             req.Sort.Fields.Select(sort => sort.ToField())
                                                                 .ToList(),
                                                              false,
                                                              req.Page,
@@ -1394,10 +1454,33 @@ public class TaskTableTestBase
                 {
                   Page     = 0,
                   PageSize = 4,
-                  Filter = new ListApplicationsRequest.Types.Filter
-                           {
-                             Name = applicationName,
-                           },
+                  Filters = new Filters
+                            {
+                              Or =
+                              {
+                                new FiltersAnd
+                                {
+                                  And =
+                                  {
+                                    new FilterField
+                                    {
+                                      Field = new ApplicationField
+                                              {
+                                                ApplicationField_ = new ApplicationRawField
+                                                                    {
+                                                                      Field = ApplicationRawEnumField.Name,
+                                                                    },
+                                              },
+                                      FilterString = new FilterString
+                                                     {
+                                                       Operator = FilterStringOperator.Equal,
+                                                       Value    = applicationName,
+                                                     },
+                                    },
+                                  },
+                                },
+                              },
+                            },
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
                            Direction = SortDirection.Desc,
@@ -1425,8 +1508,8 @@ public class TaskTableTestBase
       Assert.IsTrue(validator.Validate(req)
                              .IsValid);
 
-      var listTasks = await TaskTable.ListApplicationsAsync(req.Filter.ToApplicationFilter(),
-                                                            req.Sort.Fields.Select(sort => sort.ToApplicationField())
+      var listTasks = await TaskTable.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
+                                                            req.Sort.Fields.Select(sort => sort.ToField())
                                                                .ToList(),
                                                             req.Sort.Direction == SortDirection.Asc,
                                                             req.Page,
@@ -1480,6 +1563,34 @@ public class TaskTableTestBase
     {
       var req = new ListTasksRequest
                 {
+                  Filters = new Armonik.Api.gRPC.V1.Tasks.Filters
+                            {
+                              Or =
+                              {
+                                new Armonik.Api.gRPC.V1.Tasks.FiltersAnd
+                                {
+                                  And =
+                                  {
+                                    new Armonik.Api.gRPC.V1.Tasks.FilterField
+                                    {
+                                      Field = new TaskField
+                                              {
+                                                TaskSummaryField = new TaskSummaryField
+                                                                   {
+                                                                     Field = TaskSummaryEnumField.SessionId,
+                                                                   },
+                                              },
+                                      FilterString = new FilterString
+                                                     {
+                                                       Value = "SessionId",
+
+                                                       Operator = FilterStringOperator.Equal,
+                                                     },
+                                    },
+                                  },
+                                },
+                              },
+                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
                            Direction = SortDirection.Asc,
@@ -1493,8 +1604,8 @@ public class TaskTableTestBase
                          },
                 };
 
-      var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
-                                                      req.Sort.ToTaskDataField(),
+      var listTasks = await TaskTable!.ListTasksAsync(req.Filters.ToTaskDataFilter(),
+                                                      req.Sort.ToField(),
                                                       data => data,
                                                       false,
                                                       0,
@@ -1527,7 +1638,7 @@ public class TaskTableTestBase
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(2,
+      Assert.AreEqual(3,
                       listTasks.totalCount);
     }
   }
@@ -1549,6 +1660,139 @@ public class TaskTableTestBase
       Assert.AreEqual(0,
                       listTasks.totalCount);
     }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public async Task ListTaskFilter(ListTasksRequest request,
+                                   int              count)
+  {
+    if (RunTests)
+    {
+      var listTasks = await TaskTable!.ListTasksAsync(request.Filters.ToTaskDataFilter(),
+                                                      data => data.SessionId,
+                                                      data => data,
+                                                      false,
+                                                      0,
+                                                      20,
+                                                      CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(count,
+                      listTasks.totalCount);
+    }
+  }
+
+  public static IEnumerable<TestCaseData> TestCasesFilter()
+  {
+    TestCaseData CaseTrue(Armonik.Api.gRPC.V1.Tasks.FilterField filterField)
+      => new TestCaseData(ListTasksHelper.CreateListSessionsRequest(new ListTasksRequest.Types.Sort(),
+                                                                    new[]
+                                                                    {
+                                                                      filterField,
+                                                                      ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.TaskId,
+                                                                                                                  FilterStringOperator.Equal,
+                                                                                                                  "TaskCompletedId"),
+                                                                    }),
+                          1).SetArgDisplayNames(filterField + " true");
+
+    TestCaseData CaseFalse(Armonik.Api.gRPC.V1.Tasks.FilterField filterField)
+      => new TestCaseData(ListTasksHelper.CreateListSessionsRequest(new ListTasksRequest.Types.Sort(),
+                                                                    new[]
+                                                                    {
+                                                                      filterField,
+                                                                      ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.TaskId,
+                                                                                                                  FilterStringOperator.Equal,
+                                                                                                                  "TaskCompletedId"),
+                                                                    }),
+                          0).SetArgDisplayNames(filterField + " false");
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
+                                                                    FilterDateOperator.After,
+                                                                    DateToCompare));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
+                                                                    FilterDateOperator.AfterOrEqual,
+                                                                    DateToCompare));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
+                                                                     FilterDateOperator.Before,
+                                                                     DateToCompare));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.CreatedAt,
+                                                                     FilterDateOperator.BeforeOrEqual,
+                                                                     DateToCompare));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
+                                                                    FilterDateOperator.Equal,
+                                                                    null));
+    yield return CaseTrue(new Armonik.Api.gRPC.V1.Tasks.FilterField
+                          {
+                            Field = new TaskField
+                                    {
+                                      TaskSummaryField = new TaskSummaryField
+                                                         {
+                                                           Field = TaskSummaryEnumField.StartedAt,
+                                                         },
+                                    },
+                            FilterDate = new FilterDate
+                                         {
+                                           Operator = FilterDateOperator.Equal,
+                                         },
+                          });
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                      FilterStringOperator.Equal,
+                                                                      "SessionId"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                      FilterStringOperator.StartsWith,
+                                                                      "SessionId"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                      FilterStringOperator.EndsWith,
+                                                                      "SessionId"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                      FilterStringOperator.Contains,
+                                                                      "SessionId"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                      FilterStringOperator.NotContains,
+                                                                      "BadSessionId"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadSessionId"));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.Equal,
+                                                                      "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.Contains,
+                                                                      "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.StartsWith,
+                                                                      "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
+                                                                      FilterStringOperator.EndsWith,
+                                                                      "val1"));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskOptionEnumField.PartitionId,
+                                                                      FilterStringOperator.Equal,
+                                                                      "part1"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskOptionEnumField.PartitionId,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadPartitionId"));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
+                                                                      FilterStatusOperator.Equal,
+                                                                      TaskStatus.Completed));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
+                                                                      FilterStatusOperator.NotEqual,
+                                                                      TaskStatus.Cancelling));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
+                                                                       FilterStatusOperator.Equal,
+                                                                       TaskStatus.Cancelling));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
+                                                                      FilterNumberOperator.LessThanOrEqual,
+                                                                      5));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
+                                                                       FilterNumberOperator.LessThan,
+                                                                       5));
   }
 
   [TestCase(TaskStatus.Error)]

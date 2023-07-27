@@ -16,9 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Core.Common.Storage;
 
@@ -28,89 +28,95 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListSessionsRequestExt
 {
-  public static Expression<Func<SessionData, object?>> ToSessionDataField(this ListSessionsRequest.Types.Sort sort)
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="SessionData" /> field
+  /// </summary>
+  /// <param name="sort">The gPRC message</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<SessionData, object?>> ToField(this ListSessionsRequest.Types.Sort sort)
   {
     switch (sort.Field.FieldCase)
     {
       case SessionField.FieldOneofCase.SessionRawField:
-        return sort.Field.SessionRawField.Field switch
-               {
-                 SessionRawEnumField.SessionId    => session => session.SessionId,
-                 SessionRawEnumField.Status       => session => session.Status,
-                 SessionRawEnumField.PartitionIds => session => session.PartitionIds,
-                 SessionRawEnumField.Options      => session => session.Options,
-                 SessionRawEnumField.CreatedAt    => session => session.CreationDate,
-                 SessionRawEnumField.CancelledAt  => session => session.CancellationDate,
-                 SessionRawEnumField.Duration     => throw new ArgumentOutOfRangeException(),
-                 SessionRawEnumField.Unspecified  => throw new ArgumentOutOfRangeException(),
-                 _                                => throw new ArgumentOutOfRangeException(),
-               };
+        return sort.Field.SessionRawField.Field.ToField();
       case SessionField.FieldOneofCase.TaskOptionField:
-        return sort.Field.TaskOptionField.Field switch
-               {
-                 TaskOptionEnumField.MaxDuration          => data => data.Options.MaxDuration,
-                 TaskOptionEnumField.MaxRetries           => data => data.Options.MaxRetries,
-                 TaskOptionEnumField.Priority             => data => data.Options.Priority,
-                 TaskOptionEnumField.PartitionId          => data => data.Options.PartitionId,
-                 TaskOptionEnumField.ApplicationName      => data => data.Options.ApplicationName,
-                 TaskOptionEnumField.ApplicationVersion   => data => data.Options.ApplicationVersion,
-                 TaskOptionEnumField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
-                 TaskOptionEnumField.ApplicationService   => data => data.Options.ApplicationService,
-                 TaskOptionEnumField.EngineType           => data => data.Options.EngineType,
-                 TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
-                 _                                        => throw new ArgumentOutOfRangeException(),
-               };
+        return sort.Field.TaskOptionField.Field.ToField();
       case SessionField.FieldOneofCase.TaskOptionGenericField:
-        return data => data.Options.Options[sort.Field.TaskOptionGenericField.Field];
+        return sort.Field.TaskOptionGenericField.ToField();
       case SessionField.FieldOneofCase.None:
       default:
         throw new ArgumentOutOfRangeException();
     }
   }
 
-  public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this ListSessionsRequest.Types.Filter filter)
+  public static Expression<Func<SessionData, object?>> ToField(this SessionField taskField)
+    => taskField.FieldCase switch
+       {
+         SessionField.FieldOneofCase.None                   => throw new ArgumentOutOfRangeException(),
+         SessionField.FieldOneofCase.SessionRawField        => taskField.SessionRawField.Field.ToField(),
+         SessionField.FieldOneofCase.TaskOptionField        => taskField.TaskOptionField.Field.ToField(),
+         SessionField.FieldOneofCase.TaskOptionGenericField => taskField.TaskOptionGenericField.ToField(),
+         _                                                  => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filters into an <see cref="Expression" /> that represents the filter conditions
+  /// </summary>
+  /// <param name="filters">The gPRC filters</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter conditions
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
   {
     var predicate = PredicateBuilder.New<SessionData>();
-    predicate = predicate.And(data => true);
 
-    if (!string.IsNullOrEmpty(filter.SessionId))
+    if (filters.Or == null || !filters.Or.Any())
     {
-      predicate = predicate.And(data => data.SessionId == filter.SessionId);
+      return data => true;
     }
 
-    if (!string.IsNullOrEmpty(filter.ApplicationName))
+    foreach (var filtersAnd in filters.Or)
     {
-      predicate = predicate.And(data => data.Options.ApplicationName == filter.ApplicationName);
-    }
+      var predicateAnd = PredicateBuilder.New<SessionData>(data => true);
+      foreach (var filterField in filtersAnd.And)
+      {
+        switch (filterField.ValueConditionCase)
+        {
+          case FilterField.ValueConditionOneofCase.FilterString:
+            predicateAnd = predicateAnd.And(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterString.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterNumber:
+            predicateAnd = predicateAnd.And(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterNumber.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterBoolean:
+            predicateAnd = predicateAnd.And(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                        filterField.FilterBoolean.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterStatus:
+            predicateAnd = predicateAnd.And(filterField.FilterStatus.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterStatus.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterDate:
+            predicateAnd = predicateAnd.And(filterField.FilterDate.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                     filterField.FilterDate.Value.ToDateTime()));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterArray:
+            predicateAnd = predicateAnd.And(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                      filterField.FilterArray.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.None:
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
 
-    if (!string.IsNullOrEmpty(filter.ApplicationVersion))
-    {
-      predicate = predicate.And(data => data.Options.ApplicationVersion == filter.ApplicationVersion);
-    }
-
-    if (filter.CreatedAfter is not null)
-    {
-      predicate = predicate.And(data => data.CreationDate > filter.CreatedAfter.ToDateTime());
-    }
-
-    if (filter.CreatedBefore is not null)
-    {
-      predicate = predicate.And(data => data.CreationDate < filter.CreatedBefore.ToDateTime());
-    }
-
-    if (filter.CancelledAfter is not null)
-    {
-      predicate = predicate.And(data => data.CancellationDate > filter.CancelledAfter.ToDateTime());
-    }
-
-    if (filter.CancelledBefore is not null)
-    {
-      predicate = predicate.And(data => data.CancellationDate < filter.CancelledBefore.ToDateTime());
-    }
-
-    if (filter.Status != SessionStatus.Unspecified)
-    {
-      predicate = predicate.And(data => data.Status == filter.Status);
+      predicate = predicate.Or(predicateAnd);
     }
 
     return predicate;

@@ -39,10 +39,10 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
       .NotNull()
       .GreaterThanOrEqualTo(1)
       .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.PageSize)}");
-    RuleFor(request => request.Filter)
+    RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
-      .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Filter)}");
+      .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
       .NotEmpty()
@@ -60,3 +60,5 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
                       });
   }
 }
+
+// todo: validate that requests are in alphanumeric to avoid most of injection problems

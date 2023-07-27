@@ -18,9 +18,12 @@
 using System;
 using System.Collections.Generic;
 
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1;
 
 using Armonik.Api.Grpc.V1.SortDirection;
+using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC;
@@ -175,16 +178,39 @@ public class ToTaskDataFieldTest
   {
     var func = new ListTasksRequest
                {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
+                                   },
+                                 },
+                               },
+                             },
+                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
                           Direction = SortDirection.Asc,
                           Field     = field,
                         },
-               }.Sort.ToTaskDataField()
+               }.Sort.ToField()
                 .Compile();
 
     Assert.AreEqual(expected,
@@ -196,10 +222,33 @@ public class ToTaskDataFieldTest
   {
     var func = new ListTasksRequest
                {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
+                                   },
+                                 },
+                               },
+                             },
+                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
                           Direction = SortDirection.Asc,
@@ -211,7 +260,7 @@ public class ToTaskDataFieldTest
                                                              },
                                   },
                         },
-               }.Sort.ToTaskDataField()
+               }.Sort.ToField()
                 .Compile();
 
     Assert.Throws<KeyNotFoundException>(() => func.Invoke(TaskData));

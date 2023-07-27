@@ -16,17 +16,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 
 using Armonik.Api.Grpc.V1.SortDirection;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -54,10 +54,17 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
-    var tasks = await taskTable_.ListApplicationsAsync(request.Filter.ToApplicationFilter(),
-                                                       request.Sort.Fields.Select(field => field.ToApplicationField())
-                                                              .ToList(),
-                                                       request.Sort.Direction == SortDirection.Asc,
+    var tasks = await taskTable_.ListApplicationsAsync(request.Filters is null
+                                                         ? data => true
+                                                         : request.Filters.ToApplicationFilter(),
+                                                       request.Sort is null
+                                                         ? new List<Expression<Func<Application, object?>>>
+                                                           {
+                                                             application => application.Name,
+                                                           }
+                                                         : request.Sort.Fields.Select(field => field.ToField())
+                                                                  .ToList(),
+                                                       request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                        request.Page,
                                                        request.PageSize,
                                                        context.CancellationToken)
@@ -78,42 +85,5 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
              },
              Total = tasks.totalCount,
            };
-  }
-
-  [RequiresPermission(typeof(GrpcApplicationsService),
-                      nameof(CountTasksByStatus))]
-  public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
-                                                                            ServerCallContext         context)
-  {
-    try
-    {
-      return new CountTasksByStatusResponse
-             {
-               Status =
-               {
-                 (await taskTable_.CountTasksAsync(data => data.Options.ApplicationName == request.Name && data.Options.ApplicationVersion == request.Version,
-                                                   context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => new StatusCount
-                                                                          {
-                                                                            Status = count.Status,
-                                                                            Count  = count.Count,
-                                                                          }),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks by applications");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal ArmoniK Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks by applications");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
   }
 }

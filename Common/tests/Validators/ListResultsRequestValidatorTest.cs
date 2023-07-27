@@ -34,7 +34,7 @@ public class ListResultsRequestValidatorTest
   public void Setup()
     => validListResultsRequest_ = new ListResultsRequest
                                   {
-                                    Filter = new ListResultsRequest.Types.Filter(),
+                                    Filters = new Filters(),
                                     Sort = new ListResultsRequest.Types.Sort
                                            {
                                              Direction = SortDirection.Asc,
@@ -61,7 +61,7 @@ public class ListResultsRequestValidatorTest
   [Test]
   public void ListResultsRequestDefaultFilterShouldFail()
   {
-    validListResultsRequest_!.Filter = default;
+    validListResultsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListResultsRequest_)
                              .IsValid);
   }

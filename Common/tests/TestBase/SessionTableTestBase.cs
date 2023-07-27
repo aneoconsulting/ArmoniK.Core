@@ -466,7 +466,7 @@ public class SessionTableTestBase
                 };
 
       var res = (await SessionTable!.ListSessionsAsync(data => true,
-                                                       req.Sort.ToSessionDataField(),
+                                                       req.Sort.ToField(),
                                                        false,
                                                        0,
                                                        3,

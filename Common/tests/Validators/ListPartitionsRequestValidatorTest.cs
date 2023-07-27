@@ -33,7 +33,7 @@ public class ListPartitionsRequestValidatorTest
   public void Setup()
     => validListPartitionsRequest_ = new ListPartitionsRequest
                                      {
-                                       Filter = new ListPartitionsRequest.Types.Filter(),
+                                       Filters = new Filters(),
                                        Sort = new ListPartitionsRequest.Types.Sort
                                               {
                                                 Direction = SortDirection.Asc,
@@ -60,7 +60,7 @@ public class ListPartitionsRequestValidatorTest
   [Test]
   public void ListPartitionsRequestDefaultFilterShouldFail()
   {
-    validListPartitionsRequest_!.Filter = default;
+    validListPartitionsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
                              .IsValid);
   }

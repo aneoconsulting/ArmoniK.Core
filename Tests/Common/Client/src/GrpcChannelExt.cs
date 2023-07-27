@@ -20,9 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1.Results;
 
 using Armonik.Api.Grpc.V1.SortDirection;
+using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
 
@@ -32,15 +35,19 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
+using FilterField = Armonik.Api.gRPC.V1.Tasks.FilterField;
+using Filters = Armonik.Api.gRPC.V1.Tasks.Filters;
+using FiltersAnd = Armonik.Api.gRPC.V1.Tasks.FiltersAnd;
+using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Client;
 
 public static class GrpcChannelExt
 {
-  public static async IAsyncEnumerable<TaskRaw> ListTasksAsync(this ChannelBase              channel,
-                                                               ListTasksRequest.Types.Filter filter,
-                                                               ListTasksRequest.Types.Sort   sort)
+  public static async IAsyncEnumerable<TaskRaw> ListTasksAsync(this ChannelBase            channel,
+                                                               Filters                     filters,
+                                                               ListTasksRequest.Types.Sort sort)
   {
     var               read       = 0;
     var               page       = 0;
@@ -49,7 +56,7 @@ public static class GrpcChannelExt
 
     while ((res = await taskClient.ListTasksAsync(new ListTasksRequest
                                                   {
-                                                    Filter   = filter,
+                                                    Filters  = filters,
                                                     Sort     = sort,
                                                     PageSize = 50,
                                                     Page     = page,
@@ -83,9 +90,32 @@ public static class GrpcChannelExt
     var usageRatio       = new List<double>();
 
 
-    await foreach (var taskRaw in channel.ListTasksAsync(new ListTasksRequest.Types.Filter
+    await foreach (var taskRaw in channel.ListTasksAsync(new Filters
                                                          {
-                                                           SessionId = sessionId,
+                                                           Or =
+                                                           {
+                                                             new FiltersAnd
+                                                             {
+                                                               And =
+                                                               {
+                                                                 new FilterField
+                                                                 {
+                                                                   Field = new TaskField
+                                                                           {
+                                                                             TaskSummaryField = new TaskSummaryField
+                                                                                                {
+                                                                                                  Field = TaskSummaryEnumField.SessionId,
+                                                                                                },
+                                                                           },
+                                                                   FilterString = new FilterString
+                                                                                  {
+                                                                                    Value    = sessionId,
+                                                                                    Operator = FilterStringOperator.Equal,
+                                                                                  },
+                                                                 },
+                                                               },
+                                                             },
+                                                           },
                                                          },
                                                          new ListTasksRequest.Types.Sort
                                                          {
@@ -218,15 +248,15 @@ public static class GrpcChannelExt
                           taskDependencies.Count,
                           sessionDuration);
     var count = 0;
-    await foreach (var _ in channel.ListTasksAsync(new ListTasksRequest.Types.Filter
+    await foreach (var _ in channel.ListTasksAsync(new Filters
                                                    {
-                                                     CreatedAfter = sessionStart - Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
-                                                     EndedBefore  = sessionEnd   + Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
-                                                     Status =
+                                                     Or =
                                                      {
-                                                       TaskStatus.Completed,
-                                                       TaskStatus.Error,
-                                                       TaskStatus.Retried,
+                                                       FilterStatus(sessionStart - Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
+                                                                    sessionEnd   + Duration.FromTimeSpan(TimeSpan.FromMilliseconds(1)),
+                                                                    TaskStatus.Completed,
+                                                                    TaskStatus.Error,
+                                                                    TaskStatus.Retried),
                                                      },
                                                    },
                                                    new ListTasksRequest.Types.Sort
@@ -251,4 +281,59 @@ public static class GrpcChannelExt
                           count,
                           sessionDuration);
   }
+
+  private static IEnumerable<FiltersAnd> FilterStatus(Timestamp           createdAfter,
+                                                      Timestamp           endedBefore,
+                                                      params TaskStatus[] statuses)
+    => statuses.Select(status => new FiltersAnd
+                                 {
+                                   And =
+                                   {
+                                     new FilterField
+                                     {
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.CreatedAt,
+                                                                    },
+                                               },
+                                       FilterDate = new FilterDate
+                                                    {
+                                                      Operator = FilterDateOperator.After,
+                                                      Value    = createdAfter,
+                                                    },
+                                     },
+                                     new FilterField
+                                     {
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.EndedAt,
+                                                                    },
+                                               },
+                                       FilterDate = new FilterDate
+                                                    {
+                                                      Operator = FilterDateOperator.Before,
+                                                      Value    = endedBefore,
+                                                    },
+                                     },
+                                     new FilterField
+                                     {
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.Status,
+                                                                    },
+                                               },
+                                       FilterStatus = new FilterStatus
+                                                      {
+                                                        Operator = FilterStatusOperator.Equal,
+                                                        Value    = status,
+                                                      },
+                                     },
+                                   },
+                                 });
 }

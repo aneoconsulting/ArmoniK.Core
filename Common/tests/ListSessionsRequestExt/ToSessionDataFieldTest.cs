@@ -85,7 +85,7 @@ public class ToSessionDataFieldTest
   {
     var func = new ListSessionsRequest
                {
-                 Filter = new ListSessionsRequest.Types.Filter(),
+                 Filters = new Filters(),
                  Sort = new ListSessionsRequest.Types.Sort
                         {
                           Direction = SortDirection.Asc,
@@ -94,7 +94,7 @@ public class ToSessionDataFieldTest
                                     SessionRawField = field,
                                   },
                         },
-               }.Sort.ToSessionDataField()
+               }.Sort.ToField()
                 .Compile();
 
     Assert.AreEqual(expected,

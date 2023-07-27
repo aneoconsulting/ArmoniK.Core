@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 
 using Armonik.Api.Grpc.V1.SortDirection;
+using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
@@ -106,14 +107,18 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
-      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
       {
         logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
-                                                     request.Sort.ToTaskDataField(),
+      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
+                                                       ? data => true
+                                                       : request.Filters.ToTaskDataFilter(),
+                                                     request.Sort is null
+                                                       ? data => data.TaskId
+                                                       : request.Sort.ToField(),
                                                      data => new TaskDataSummary(data.SessionId,
                                                                                  data.TaskId,
                                                                                  data.OwnerPodId,
@@ -136,7 +141,7 @@ public class GrpcTasksService : Task.TasksBase
                                                                                  data.ProcessingToEndDuration,
                                                                                  data.CreationToEndDuration,
                                                                                  data.Output),
-                                                     request.Sort.Direction == SortDirection.Asc,
+                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
                                                      context.CancellationToken)
@@ -280,7 +285,9 @@ public class GrpcTasksService : Task.TasksBase
              {
                Status =
                {
-                 (await taskTable_.CountTasksAsync(_ => true,
+                 (await taskTable_.CountTasksAsync(request.Filters is null
+                                                     ? data => true
+                                                     : request.Filters.ToTaskDataFilter(),
                                                    context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => new StatusCount
                                                                           {
@@ -313,16 +320,20 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
-      if (request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
       {
         logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
-                                                     request.Sort.ToTaskDataField(),
+      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
+                                                       ? data => true
+                                                       : request.Filters.ToTaskDataFilter(),
+                                                     request.Sort is null
+                                                       ? data => data.TaskId
+                                                       : request.Sort.ToField(),
                                                      data => data,
-                                                     request.Sort.Direction == SortDirection.Asc,
+                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                      request.Page,
                                                      request.PageSize,
                                                      context.CancellationToken)

@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
 using Armonik.Api.Grpc.V1.Partitions;
@@ -28,22 +29,20 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListPartitionsRequestExt
 {
-  public static Expression<Func<PartitionData, object?>> ToPartitionField(this ListPartitionsRequest.Types.Sort sort)
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="PartitionData" /> field
+  /// </summary>
+  /// <param name="sort">The gPRC message</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<PartitionData, object?>> ToField(this ListPartitionsRequest.Types.Sort sort)
   {
     switch (sort.Field.FieldCase)
     {
       case PartitionField.FieldOneofCase.PartitionRawField:
-        return sort.Field.PartitionRawField.Field switch
-               {
-                 PartitionRawEnumField.Id                   => partitionData => partitionData.PartitionId,
-                 PartitionRawEnumField.ParentPartitionIds   => partitionData => partitionData.ParentPartitionIds,
-                 PartitionRawEnumField.PodReserved          => partitionData => partitionData.PodReserved,
-                 PartitionRawEnumField.PodMax               => partitionData => partitionData.PodMax,
-                 PartitionRawEnumField.PreemptionPercentage => partitionData => partitionData.PreemptionPercentage,
-                 PartitionRawEnumField.Priority             => partitionData => partitionData.Priority,
-                 PartitionRawEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
-                 _                                          => throw new ArgumentOutOfRangeException(),
-               };
+        return sort.Field.PartitionRawField.Field.ToField();
 
       case PartitionField.FieldOneofCase.None:
       default:
@@ -51,39 +50,61 @@ public static class ListPartitionsRequestExt
     }
   }
 
-  public static Expression<Func<PartitionData, bool>> ToPartitionFilter(this ListPartitionsRequest.Types.Filter filter)
+  public static Expression<Func<PartitionData, object?>> ToField(this PartitionField taskField)
+    => taskField.FieldCase switch
+       {
+         PartitionField.FieldOneofCase.None              => throw new ArgumentOutOfRangeException(),
+         PartitionField.FieldOneofCase.PartitionRawField => taskField.PartitionRawField.Field.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filters into an <see cref="Expression" /> that represents the filter conditions
+  /// </summary>
+  /// <param name="filters">The gPRC filters</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter conditions
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<PartitionData, bool>> ToPartitionFilter(this Filters filters)
   {
     var predicate = PredicateBuilder.New<PartitionData>();
-    predicate = predicate.And(data => true);
 
-    if (!string.IsNullOrEmpty(filter.Id))
+    if (filters.Or == null || !filters.Or.Any())
     {
-      predicate = predicate.And(data => data.PartitionId == filter.Id);
+      return data => true;
     }
 
-    if (!string.IsNullOrEmpty(filter.ParentPartitionId))
+    foreach (var filtersAnd in filters.Or)
     {
-      predicate = predicate.And(data => data.ParentPartitionIds.Contains(filter.ParentPartitionId));
-    }
+      var predicateAnd = PredicateBuilder.New<PartitionData>(data => true);
+      foreach (var filterField in filtersAnd.And)
+      {
+        switch (filterField.ValueConditionCase)
+        {
+          case FilterField.ValueConditionOneofCase.FilterString:
+            predicateAnd = predicateAnd.And(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterString.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterNumber:
+            predicateAnd = predicateAnd.And(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterNumber.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterBoolean:
+            predicateAnd = predicateAnd.And(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                        filterField.FilterBoolean.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterArray:
+            predicateAnd = predicateAnd.And(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                      filterField.FilterArray.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.None:
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
 
-    if (filter.Priority > 0)
-    {
-      predicate = predicate.And(data => data.Priority == filter.Priority);
-    }
-
-    if (filter.PodMax > 0)
-    {
-      predicate = predicate.And(data => data.PodMax == filter.PodMax);
-    }
-
-    if (filter.PodReserved > 0)
-    {
-      predicate = predicate.And(data => data.PodReserved == filter.PodReserved);
-    }
-
-    if (filter.PreemptionPercentage > 0)
-    {
-      predicate = predicate.And(data => data.PreemptionPercentage == filter.PreemptionPercentage);
+      predicate = predicate.Or(predicateAnd);
     }
 
     return predicate;

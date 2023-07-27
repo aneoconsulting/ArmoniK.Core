@@ -75,7 +75,7 @@ public class ToResultFieldTest
   {
     var func = new ListResultsRequest
                {
-                 Filter = new ListResultsRequest.Types.Filter(),
+                 Filters = new Filters(),
                  Sort = new ListResultsRequest.Types.Sort
                         {
                           Field = new ResultField
@@ -84,7 +84,7 @@ public class ToResultFieldTest
                                   },
                           Direction = SortDirection.Asc,
                         },
-               }.Sort.ToResultField()
+               }.Sort.ToField()
                 .Compile();
 
     Assert.AreEqual(expected,

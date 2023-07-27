@@ -34,7 +34,7 @@ public class ListSessionsRequestValidatorTest
   public void Setup()
     => validListSessionsRequest_ = new ListSessionsRequest
                                    {
-                                     Filter = new ListSessionsRequest.Types.Filter(),
+                                     Filters = new Filters(),
                                      Sort = new ListSessionsRequest.Types.Sort
                                             {
                                               Direction = SortDirection.Asc,
@@ -61,7 +61,7 @@ public class ListSessionsRequestValidatorTest
   [Test]
   public void ListSessionsRequestDefaultFilterShouldFail()
   {
-    validListSessionsRequest_!.Filter = default;
+    validListSessionsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }

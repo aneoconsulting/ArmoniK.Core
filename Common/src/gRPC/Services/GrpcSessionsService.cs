@@ -19,7 +19,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 
 using Armonik.Api.Grpc.V1.SortDirection;
@@ -41,15 +40,12 @@ public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
   private readonly ISessionTable                sessionTable_;
-  private readonly ITaskTable                   taskTable_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
-                             ITaskTable                   taskTable,
                              ILogger<GrpcSessionsService> logger)
   {
     logger_       = logger;
     sessionTable_ = sessionTable;
-    taskTable_    = taskTable;
   }
 
   [RequiresPermission(typeof(GrpcSessionsService),
@@ -133,9 +129,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var sessionData = await sessionTable_.ListSessionsAsync(request.Filter.ToSessionDataFilter(),
-                                                              request.Sort.ToSessionDataField(),
-                                                              request.Sort.Direction == SortDirection.Asc,
+      var sessionData = await sessionTable_.ListSessionsAsync(request.Filters is null
+                                                                ? data => true
+                                                                : request.Filters.ToSessionDataFilter(),
+                                                              request.Sort is null
+                                                                ? data => data.SessionId
+                                                                : request.Sort.ToField(),
+                                                              request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                               request.Page,
                                                               request.PageSize,
                                                               context.CancellationToken)
@@ -163,43 +163,6 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       logger_.LogWarning(e,
                          "Error while listing sessions");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
-  }
-
-  [RequiresPermission(typeof(GrpcSessionsService),
-                      nameof(CountTasksByStatus))]
-  public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
-                                                                            ServerCallContext         context)
-  {
-    try
-    {
-      return new CountTasksByStatusResponse
-             {
-               Status =
-               {
-                 (await taskTable_.CountTasksAsync(data => data.SessionId == request.SessionId,
-                                                   context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => new StatusCount
-                                                                          {
-                                                                            Status = count.Status,
-                                                                            Count  = count.Count,
-                                                                          }),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks in session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks in session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

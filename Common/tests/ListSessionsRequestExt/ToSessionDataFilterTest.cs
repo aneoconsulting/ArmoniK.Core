@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Armonik.Api.gRPC.V1;
+
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 
@@ -67,271 +69,218 @@ public class ToSessionDataFilterTest
                                                                           },
                                                                 };
 
-  [Test]
-  public void FilterStatusShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            Status = SessionStatus.Running,
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
+  private static Func<SessionData, bool> RequestToFunc(ListSessionsRequest.Types.Sort sort,
+                                                       IEnumerable<FilterField>       filterFields)
+    => CreateListSessionsRequest(sort,
+                                 filterFields)
+       .Filters.ToSessionDataFilter()
+       .Compile();
 
-    Assert.IsTrue(func.Invoke(sessionData_));
+
+  public static ListSessionsRequest CreateListSessionsRequest(ListSessionsRequest.Types.Sort sort,
+                                                              IEnumerable<FilterField>       filterFields)
+    => new()
+       {
+         Filters = new Filters
+                   {
+                     Or =
+                     {
+                       new FiltersAnd
+                       {
+                         And =
+                         {
+                           filterFields,
+                         },
+                       },
+                     },
+                   },
+         Sort = sort,
+       };
+
+  public static FilterField CreateListSessionsFilterString(SessionField         field,
+                                                           FilterStringOperator op,
+                                                           string               value)
+    => new()
+       {
+         Field = field,
+         FilterString = new FilterString
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
+       };
+
+
+  public static FilterField CreateListSessionsFilterString(SessionRawEnumField  field,
+                                                           FilterStringOperator op,
+                                                           string               value)
+    => CreateListSessionsFilterString(new SessionField
+                                      {
+                                        SessionRawField = new SessionRawField
+                                                          {
+                                                            Field = field,
+                                                          },
+                                      },
+                                      op,
+                                      value);
+
+  public static FilterField CreateListSessionsFilterString(TaskOptionEnumField  field,
+                                                           FilterStringOperator op,
+                                                           string               value)
+    => CreateListSessionsFilterString(new SessionField
+                                      {
+                                        TaskOptionField = new TaskOptionField
+                                                          {
+                                                            Field = field,
+                                                          },
+                                      },
+                                      op,
+                                      value);
+
+  public static FilterField CreateListSessionsFilterNumber(SessionRawEnumField  field,
+                                                           FilterNumberOperator op,
+                                                           long                 value)
+    => new()
+       {
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterNumber = new FilterNumber
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
+       };
+
+  public static FilterField CreateListSessionsFilterArray(SessionRawEnumField field,
+                                                          FilterArrayOperator op,
+                                                          string              value)
+    => new()
+       {
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterArray = new FilterArray
+                       {
+                         Operator = op,
+                         Value    = value,
+                       },
+       };
+
+  public static FilterField CreateListSessionsFilterStatus(SessionRawEnumField  field,
+                                                           FilterStatusOperator op,
+                                                           SessionStatus        value)
+    => new()
+       {
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterStatus = new FilterStatus
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
+       };
+
+  public static FilterField CreateListSessionsFilterDate(SessionRawEnumField field,
+                                                         FilterDateOperator  op,
+                                                         DateTime            value)
+    => new()
+       {
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterDate = new FilterDate
+                      {
+                        Operator = op,
+                        Value    = FromDateTime(value),
+                      },
+       };
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public void Filter(IEnumerable<FilterField> filterFields,
+                     bool                     expected)
+  {
+    var func = RequestToFunc(Sort,
+                             filterFields);
+
+    Assert.AreEqual(expected,
+                    func.Invoke(sessionData_));
   }
 
-  [Test]
-  public void FilterStatusShouldFail()
+  public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
+    TestCaseData CaseTrue(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            Status = SessionStatus.Cancelled,
+                            filterField,
                           },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
+                          true).SetArgDisplayNames(filterField.ToString());
 
-    Assert.IsFalse(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterSessionIdShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
+    TestCaseData CaseFalse(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            SessionId = "SessionId",
+                            filterField,
                           },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
+                          false).SetArgDisplayNames(filterField.ToString());
 
-    Assert.IsTrue(func.Invoke(sessionData_));
-  }
+    yield return CaseTrue(CreateListSessionsFilterStatus(SessionRawEnumField.Status,
+                                                         FilterStatusOperator.Equal,
+                                                         SessionStatus.Running));
+    yield return CaseFalse(CreateListSessionsFilterStatus(SessionRawEnumField.Status,
+                                                          FilterStatusOperator.Equal,
+                                                          SessionStatus.Cancelled));
 
-  [Test]
-  public void FilterSessionIdShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            SessionId = "BadSessionId",
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
+    yield return CaseTrue(CreateListSessionsFilterString(SessionRawEnumField.SessionId,
+                                                         FilterStringOperator.Equal,
+                                                         "SessionId"));
+    yield return CaseFalse(CreateListSessionsFilterString(SessionRawEnumField.SessionId,
+                                                          FilterStringOperator.Equal,
+                                                          "BadSessionId"));
 
-    Assert.IsFalse(func.Invoke(sessionData_));
-  }
+    yield return CaseTrue(CreateListSessionsFilterString(TaskOptionEnumField.ApplicationName,
+                                                         FilterStringOperator.Equal,
+                                                         "applicationName"));
+    yield return CaseFalse(CreateListSessionsFilterString(TaskOptionEnumField.ApplicationName,
+                                                          FilterStringOperator.Equal,
+                                                          "BadApplicationName"));
 
-  [Test]
-  public void FilterAppNameShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            ApplicationName = "applicationName",
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
+    yield return CaseTrue(CreateListSessionsFilterString(TaskOptionEnumField.ApplicationVersion,
+                                                         FilterStringOperator.Equal,
+                                                         "applicationVersion"));
+    yield return CaseFalse(CreateListSessionsFilterString(TaskOptionEnumField.ApplicationVersion,
+                                                          FilterStringOperator.Equal,
+                                                          "BadVersion"));
 
-    Assert.IsTrue(func.Invoke(sessionData_));
-  }
+    yield return CaseTrue(CreateListSessionsFilterDate(SessionRawEnumField.CreatedAt,
+                                                       FilterDateOperator.After,
+                                                       DateTime.UtcNow));
+    yield return CaseFalse(CreateListSessionsFilterDate(SessionRawEnumField.CreatedAt,
+                                                        FilterDateOperator.Before,
+                                                        DateTime.UtcNow));
 
-  [Test]
-  public void FilterAppNameShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            ApplicationName = "badname",
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterAppVersionShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            ApplicationVersion = "applicationVersion",
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterAppVersionShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            ApplicationVersion = "badname",
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterCreatedBeforeShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterCreatedBeforeShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(sessionData_ with
-                               {
-                                 CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(sessionData_ with
-                              {
-                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterCancelledBeforeShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CancelledBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void FilterCancelledBeforeShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CancelledBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(sessionData_ with
-                               {
-                                 CancellationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterCancelledAfterShouldSucceed()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CancelledAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(sessionData_ with
-                              {
-                                CancellationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterCancelledAfterShouldFail()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter
-                          {
-                            CancelledAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = Sort,
-               }.Filter.ToSessionDataFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(sessionData_));
+    yield return CaseTrue(CreateListSessionsFilterDate(SessionRawEnumField.CancelledAt,
+                                                       FilterDateOperator.After,
+                                                       DateTime.UtcNow));
+    yield return CaseFalse(CreateListSessionsFilterDate(SessionRawEnumField.CancelledAt,
+                                                        FilterDateOperator.Before,
+                                                        DateTime.UtcNow));
   }
 }

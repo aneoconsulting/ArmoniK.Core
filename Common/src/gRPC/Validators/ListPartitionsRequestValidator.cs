@@ -39,10 +39,10 @@ public class ListPartitionsRequestValidator : AbstractValidator<ListPartitionsRe
       .NotNull()
       .GreaterThanOrEqualTo(1)
       .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.PageSize)}");
-    RuleFor(request => request.Filter)
+    RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
-      .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.Filter)}");
+      .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
       .NotEmpty()

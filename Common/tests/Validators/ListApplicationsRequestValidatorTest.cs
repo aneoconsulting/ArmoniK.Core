@@ -34,7 +34,7 @@ public class ListApplicationsRequestValidatorTest
   public void Setup()
     => validListApplicationsRequest_ = new ListApplicationsRequest
                                        {
-                                         Filter = new ListApplicationsRequest.Types.Filter(),
+                                         Filters = new Filters(),
                                          Sort = new ListApplicationsRequest.Types.Sort
                                                 {
                                                   Direction = SortDirection.Asc,
@@ -64,7 +64,7 @@ public class ListApplicationsRequestValidatorTest
   [Test]
   public void ListApplicationsRequestDefaultFilterShouldFail()
   {
-    validListApplicationsRequest_!.Filter = default;
+    validListApplicationsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
                              .IsValid);
   }
