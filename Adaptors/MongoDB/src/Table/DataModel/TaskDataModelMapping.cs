@@ -173,7 +173,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<TaskData> collection)
+                                           IMongoCollection<TaskData> collection,
+                                           Options.MongoDB            options)
   {
     var indexModels = new[]
                       {
@@ -182,7 +183,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.OwnerPodId),
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.InitialTaskId),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: options.DataRetention),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.SubmittedDate),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.StartDate),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.EndDate),

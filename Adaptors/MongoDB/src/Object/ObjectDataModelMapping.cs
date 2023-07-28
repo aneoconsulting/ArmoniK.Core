@@ -48,7 +48,8 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle                     sessionHandle,
-                                           IMongoCollection<ObjectDataModelMapping> collection)
+                                           IMongoCollection<ObjectDataModelMapping> collection,
+                                           Options.MongoDB                          options)
   {
     var keyIndex      = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.Key);
     var chunkIdxIndex = Builders<ObjectDataModelMapping>.IndexKeys.Hashed(model => model.ChunkIdx);

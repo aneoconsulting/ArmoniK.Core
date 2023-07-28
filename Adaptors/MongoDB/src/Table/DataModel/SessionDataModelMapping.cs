@@ -100,11 +100,13 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                           IMongoCollection<SessionData> collection)
+                                           IMongoCollection<SessionData> collection,
+                                           Options.MongoDB               options)
   {
     var indexModels = new[]
                       {
-                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate),
+                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate,
+                                                                      expireAfter: options.DataRetention),
                         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CancellationDate),
                         IndexHelper.CreateHashedIndex<SessionData>(model => model.Status),
                         IndexHelper.CreateHashedIndex<SessionData>(model => model.Options.PartitionId),

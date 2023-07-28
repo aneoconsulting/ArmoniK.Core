@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -70,13 +71,15 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle     sessionHandle,
-                                           IMongoCollection<Result> collection)
+                                           IMongoCollection<Result> collection,
+                                           Options.MongoDB          options)
   {
     var indexModels = new[]
                       {
                         IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
-                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate),
+                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
+                                                                 expireAfter: TimeSpan.FromDays(1)),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

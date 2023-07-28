@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -82,7 +82,8 @@ public class OpenTelemetryDataModelMapping : IMongoDataModelMapping<OpenTelemetr
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle                sessionHandle,
-                                           IMongoCollection<OpenTelemetryData> collection)
+                                           IMongoCollection<OpenTelemetryData> collection,
+                                           Adapters.MongoDB.Options.MongoDB    options)
   {
     var sourceNameIndex  = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.SourceName);
     var displayNameIndex = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.DisplayName);

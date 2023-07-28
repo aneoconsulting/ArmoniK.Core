@@ -60,7 +60,8 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<UserData> collection)
+                                           IMongoCollection<UserData> collection,
+                                           Options.MongoDB            options)
   {
     var indexModels = new[]
                       {
