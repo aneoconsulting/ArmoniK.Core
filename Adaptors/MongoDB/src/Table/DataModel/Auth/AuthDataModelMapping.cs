@@ -62,7 +62,8 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<AuthData> collection)
+                                           IMongoCollection<AuthData> collection,
+                                           Options.MongoDB            options)
   {
     var indexModels = new[]
                       {

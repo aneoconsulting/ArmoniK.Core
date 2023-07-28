@@ -59,7 +59,8 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<RoleData> collection)
+                                           IMongoCollection<RoleData> collection,
+                                           Options.MongoDB            options)
   {
     var indexModels = new[]
                       {

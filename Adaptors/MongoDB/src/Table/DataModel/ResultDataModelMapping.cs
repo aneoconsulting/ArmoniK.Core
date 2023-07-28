@@ -70,13 +70,15 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle     sessionHandle,
-                                           IMongoCollection<Result> collection)
+                                           IMongoCollection<Result> collection,
+                                           Options.MongoDB          options)
   {
     var indexModels = new[]
                       {
                         IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
-                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate),
+                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
+                                                                 expireAfter: options.DataRetention),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

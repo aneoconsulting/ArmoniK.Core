@@ -149,7 +149,8 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       try
       {
         await model.InitializeIndexesAsync(session,
-                                           output)
+                                           output,
+                                           options)
                    .ConfigureAwait(false);
         break;
       }

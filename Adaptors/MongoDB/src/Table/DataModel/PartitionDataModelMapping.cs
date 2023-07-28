@@ -78,7 +78,8 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
-                                           IMongoCollection<PartitionData> collection)
+                                           IMongoCollection<PartitionData> collection,
+                                           Options.MongoDB                 options)
   {
     var indexModels = new[]
                       {

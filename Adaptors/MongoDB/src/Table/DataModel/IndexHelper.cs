@@ -80,16 +80,21 @@ public class IndexHelper
   /// <typeparam name="T">Type stored in database</typeparam>
   /// <param name="expr">Expression to select the field for the index</param>
   /// <param name="unique">Unicity constraint, default to false</param>
+  /// <param name="expireAfter">Setup document should expire</param>
   /// <returns>
   ///   The ascending index model
   /// </returns>
   public static CreateIndexModel<T> CreateAscendingIndex<T>(Expression<Func<T, object?>> expr,
-                                                            bool                         unique = false)
+                                                            bool                         unique      = false,
+                                                            TimeSpan?                    expireAfter = null)
     => new(Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(expr)),
            new CreateIndexOptions
            {
              Name   = $"{expr.GetMember().Name}_1",
              Unique = unique,
+             ExpireAfter = expireAfter == TimeSpan.MaxValue
+                             ? null
+                             : expireAfter,
            });
 
   /// <summary>

@@ -130,9 +130,60 @@ internal class IndexTest
                       {
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.PodTtl),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.Options.MaxDuration),
-                        IndexHelper.CreateDescendingIndex<TaskData>(model => model.CreationDate),
+                        IndexHelper.CreateDescendingIndex<TaskData>(model => model.Options.MaxDuration),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: TimeSpan.FromDays(1)),
                         IndexHelper.CreateTextIndex<TaskData>(model => model.OwnerPodId),
+                      };
+
+    collection.Indexes.CreateMany(indexModels);
+    foreach (var index in collection.Indexes.List()
+                                    .ToList())
+    {
+      Console.WriteLine(index);
+    }
+
+    Assert.AreEqual(indexModels.Length + 1,
+                    collection.Indexes.List()
+                              .ToList()
+                              .Count);
+  }
+
+  [Test]
+  public void IndexCreationWithMaxExpireShouldSucceed()
+  {
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<TaskData>("Test");
+
+    var indexModels = new[]
+                      {
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: TimeSpan.MaxValue),
+                      };
+
+    collection.Indexes.CreateMany(indexModels);
+    foreach (var index in collection.Indexes.List()
+                                    .ToList())
+    {
+      Console.WriteLine(index);
+    }
+
+    Assert.AreEqual(indexModels.Length + 1,
+                    collection.Indexes.List()
+                              .ToList()
+                              .Count);
+  }
+
+  [Test]
+  public void IndexCreationWithNullExpireShouldSucceed()
+  {
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<TaskData>("Test");
+
+    var indexModels = new[]
+                      {
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: null),
                       };
 
     collection.Indexes.CreateMany(indexModels);
