@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -79,7 +78,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                         IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
-                                                                 expireAfter: TimeSpan.FromDays(1)),
+                                                                 expireAfter: options.DataRetention),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
