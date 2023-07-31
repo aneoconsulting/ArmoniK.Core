@@ -81,16 +81,9 @@ public static class ExpressionExt
       newValue_ = newValue;
     }
 
-    public override Expression Visit(Expression? node)
-    {
-      if (node == null)
-      {
-        throw new ArgumentNullException(nameof(node));
-      }
-
-      return node == oldValue_
-               ? newValue_
-               : base.Visit(node);
-    }
+    public override Expression Visit(Expression node)
+      => node == oldValue_
+           ? newValue_
+           : base.Visit(node);
   }
 }
