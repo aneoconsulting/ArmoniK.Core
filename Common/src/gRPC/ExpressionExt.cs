@@ -30,8 +30,9 @@ public static class ExpressionExt
   public static Expression<Func<T, bool>> ExpressionAnd<T>(this Expression<Func<T, bool>> expr1,
                                                            Expression<Func<T, bool>>      expr2)
     => Expression.Lambda<Func<T, bool>>(Expression.AndAlso(expr1.Body,
-                                                           expr2.Body),
-                                        expr2.Parameters);
+                                                           Expression.Invoke(expr2,
+                                                                             expr1.Parameters)),
+                                        expr1.Parameters);
 
   /// <summary>
   ///   Combines two predicate expressions using a logical OR condition
@@ -43,6 +44,7 @@ public static class ExpressionExt
   public static Expression<Func<T, bool>> ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
                                                           Expression<Func<T, bool>>      expr2)
     => Expression.Lambda<Func<T, bool>>(Expression.OrElse(expr1.Body,
-                                                          expr2.Body),
-                                        expr2.Parameters);
+                                                          Expression.Invoke(expr2,
+                                                                            expr1.Parameters)),
+                                        expr1.Parameters);
 }
