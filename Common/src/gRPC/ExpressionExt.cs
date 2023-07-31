@@ -63,8 +63,8 @@ public static class ExpressionExt
   /// <param name="expr1"> The first predicate expression to combine </param>
   /// <param name="expr2"> The second predicate expression to combine </param>
   /// <returns> A new predicate expression that represents the logical OR of the two expressions </returns>
-  public static Expression<Func<T, bool>>? ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
-                                                           Expression<Func<T, bool>>      expr2)
+  public static Expression<Func<T, bool>> ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
+                                                          Expression<Func<T, bool>>      expr2)
     => MakeBinaryExpression(ExpressionType.OrElse,
                             expr1,
                             expr2);
