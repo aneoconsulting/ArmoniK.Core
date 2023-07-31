@@ -22,8 +22,6 @@ using System.Linq.Expressions;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Core.Common.Storage;
 
-using LinqKit;
-
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListSessionsRequestExt
@@ -72,7 +70,7 @@ public static class ListSessionsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
   {
-    var predicate = PredicateBuilder.New<SessionData>();
+    Expression<Func<SessionData, bool>> expr = data => false;
 
     if (filters.Or == null || !filters.Or.Any())
     {
@@ -81,33 +79,33 @@ public static class ListSessionsRequestExt
 
     foreach (var filtersAnd in filters.Or)
     {
-      var predicateAnd = PredicateBuilder.New<SessionData>(data => true);
+      Expression<Func<SessionData, bool>> exprAnd = data => true;
       foreach (var filterField in filtersAnd.And)
       {
         switch (filterField.ValueConditionCase)
         {
           case FilterField.ValueConditionOneofCase.FilterString:
-            predicateAnd = predicateAnd.And(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
                                                                                        filterField.FilterString.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterNumber:
-            predicateAnd = predicateAnd.And(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
                                                                                        filterField.FilterNumber.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterBoolean:
-            predicateAnd = predicateAnd.And(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
                                                                                         filterField.FilterBoolean.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterStatus:
-            predicateAnd = predicateAnd.And(filterField.FilterStatus.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterStatus.Operator.ToFilter(filterField.Field.ToField(),
                                                                                        filterField.FilterStatus.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterDate:
-            predicateAnd = predicateAnd.And(filterField.FilterDate.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterDate.Operator.ToFilter(filterField.Field.ToField(),
                                                                                      filterField.FilterDate.Value.ToDateTime()));
             break;
           case FilterField.ValueConditionOneofCase.FilterArray:
-            predicateAnd = predicateAnd.And(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
                                                                                       filterField.FilterArray.Value));
             break;
           case FilterField.ValueConditionOneofCase.None:
@@ -116,9 +114,9 @@ public static class ListSessionsRequestExt
         }
       }
 
-      predicate = predicate.Or(predicateAnd);
+      expr = expr.ExpressionOr(exprAnd);
     }
 
-    return predicate;
+    return expr;
   }
 }
