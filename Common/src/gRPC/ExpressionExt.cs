@@ -22,15 +22,9 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class ExpressionExt
 {
-  /// <summary>
-  ///   Combines two predicate expressions using a logical AND condition
-  /// </summary>
-  /// <typeparam name="T"> The type of the input parameter the predicate expressions are evaluated on </typeparam>
-  /// <param name="expr1"> The first predicate expression to combine </param>
-  /// <param name="expr2"> The second predicate expression to combine </param>
-  /// <returns> A new predicate expression that represents the logical AND of the two expressions </returns>
-  public static Expression<Func<T, bool>> ExpressionAnd<T>(this Expression<Func<T, bool>> expr1,
-                                                           Expression<Func<T, bool>>      expr2)
+  private static Expression<Func<T, bool>> MakeBinaryExpression<T>(ExpressionType            expressionType,
+                                                                   Expression<Func<T, bool>> expr1,
+                                                                   Expression<Func<T, bool>> expr2)
   {
     var parameter = Expression.Parameter(typeof(T));
 
@@ -42,11 +36,25 @@ public static class ExpressionExt
                                                     parameter);
     var right = rightVisitor.Visit(expr2.Body);
 
-    return Expression.Lambda<Func<T, bool>>(Expression.MakeBinary(ExpressionType.AndAlso,
+    return Expression.Lambda<Func<T, bool>>(Expression.MakeBinary(expressionType,
                                                                   left,
                                                                   right),
                                             parameter);
   }
+
+  /// <summary>
+  ///   Combines two predicate expressions using a logical AND condition
+  /// </summary>
+  /// <typeparam name="T"> The type of the input parameter the predicate expressions are evaluated on </typeparam>
+  /// <param name="expr1"> The first predicate expression to combine </param>
+  /// <param name="expr2"> The second predicate expression to combine </param>
+  /// <returns> A new predicate expression that represents the logical AND of the two expressions </returns>
+  public static Expression<Func<T, bool>> ExpressionAnd<T>(this Expression<Func<T, bool>> expr1,
+                                                           Expression<Func<T, bool>>      expr2)
+    => MakeBinaryExpression(ExpressionType.AndAlso,
+                            expr1,
+                            expr2);
+
 
   /// <summary>
   ///   Combines two predicate expressions using a logical OR condition
@@ -57,22 +65,9 @@ public static class ExpressionExt
   /// <returns> A new predicate expression that represents the logical OR of the two expressions </returns>
   public static Expression<Func<T, bool>>? ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
                                                            Expression<Func<T, bool>>      expr2)
-  {
-    var parameter = Expression.Parameter(typeof(T));
-
-    var leftVisitor = new ReplaceExpressionVisitor(expr1.Parameters[0],
-                                                   parameter);
-    var left = leftVisitor.Visit(expr1.Body);
-
-    var rightVisitor = new ReplaceExpressionVisitor(expr2.Parameters[0],
-                                                    parameter);
-    var right = rightVisitor.Visit(expr2.Body);
-
-    return Expression.Lambda<Func<T, bool>>(Expression.MakeBinary(ExpressionType.OrElse,
-                                                                  left,
-                                                                  right),
-                                            parameter);
-  }
+    => MakeBinaryExpression(ExpressionType.OrElse,
+                            expr1,
+                            expr2);
 
   private class ReplaceExpressionVisitor : ExpressionVisitor
   {
