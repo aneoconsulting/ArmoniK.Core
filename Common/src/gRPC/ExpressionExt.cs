@@ -37,8 +37,8 @@ public static class ExpressionExt
     var right = rightVisitor.Visit(expr2.Body);
 
     return Expression.Lambda<Func<T, bool>>(Expression.MakeBinary(expressionType,
-                                                                  left,
-                                                                  right),
+                                                                  left!,
+                                                                  right!),
                                             parameter);
   }
 
@@ -81,7 +81,7 @@ public static class ExpressionExt
       newValue_ = newValue;
     }
 
-    public override Expression Visit(Expression node)
+    public override Expression? Visit(Expression? node)
       => node == oldValue_
            ? newValue_
            : base.Visit(node);
