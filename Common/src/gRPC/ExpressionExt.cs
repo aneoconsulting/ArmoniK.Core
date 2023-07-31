@@ -18,6 +18,8 @@
 using System;
 using System.Linq.Expressions;
 
+namespace ArmoniK.Core.Common.gRPC;
+
 public static class ExpressionExt
 {
   /// <summary>
