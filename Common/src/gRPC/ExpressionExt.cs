@@ -31,10 +31,21 @@ public static class ExpressionExt
   /// <returns> A new predicate expression that represents the logical AND of the two expressions </returns>
   public static Expression<Func<T, bool>> ExpressionAnd<T>(this Expression<Func<T, bool>> expr1,
                                                            Expression<Func<T, bool>>      expr2)
-    => Expression.Lambda<Func<T, bool>>(Expression.AndAlso(expr1.Body,
-                                                           Expression.Invoke(expr2,
-                                                                             expr1.Parameters)),
-                                        expr1.Parameters);
+  {
+    var parameter = Expression.Parameter(typeof(T));
+
+    var leftVisitor = new ReplaceExpressionVisitor(expr1.Parameters[0],
+                                                   parameter);
+    var left = leftVisitor.Visit(expr1.Body);
+
+    var rightVisitor = new ReplaceExpressionVisitor(expr2.Parameters[0],
+                                                    parameter);
+    var right = rightVisitor.Visit(expr2.Body);
+
+    return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left,
+                                                               right),
+                                            parameter);
+  }
 
   /// <summary>
   ///   Combines two predicate expressions using a logical OR condition
@@ -45,8 +56,37 @@ public static class ExpressionExt
   /// <returns> A new predicate expression that represents the logical OR of the two expressions </returns>
   public static Expression<Func<T, bool>> ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
                                                           Expression<Func<T, bool>>      expr2)
-    => Expression.Lambda<Func<T, bool>>(Expression.OrElse(expr1.Body,
-                                                          Expression.Invoke(expr2,
-                                                                            expr1.Parameters)),
-                                        expr1.Parameters);
+  {
+    var parameter = Expression.Parameter(typeof(T));
+
+    var leftVisitor = new ReplaceExpressionVisitor(expr1.Parameters[0],
+                                                   parameter);
+    var left = leftVisitor.Visit(expr1.Body);
+
+    var rightVisitor = new ReplaceExpressionVisitor(expr2.Parameters[0],
+                                                    parameter);
+    var right = rightVisitor.Visit(expr2.Body);
+
+    return Expression.Lambda<Func<T, bool>>(Expression.OrElse(left,
+                                                              right),
+                                            parameter);
+  }
+
+  private class ReplaceExpressionVisitor : ExpressionVisitor
+  {
+    private readonly Expression newValue_;
+    private readonly Expression oldValue_;
+
+    public ReplaceExpressionVisitor(Expression oldValue,
+                                    Expression newValue)
+    {
+      oldValue_ = oldValue;
+      newValue_ = newValue;
+    }
+
+    public override Expression Visit(Expression node)
+      => node == oldValue_
+           ? newValue_
+           : base.Visit(node);
+  }
 }
