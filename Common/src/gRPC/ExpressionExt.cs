@@ -42,8 +42,9 @@ public static class ExpressionExt
                                                     parameter);
     var right = rightVisitor.Visit(expr2.Body);
 
-    return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left,
-                                                               right),
+    return Expression.Lambda<Func<T, bool>>(Expression.MakeBinary(ExpressionType.AndAlso,
+                                                                  left,
+                                                                  right),
                                             parameter);
   }
 
@@ -54,8 +55,8 @@ public static class ExpressionExt
   /// <param name="expr1"> The first predicate expression to combine </param>
   /// <param name="expr2"> The second predicate expression to combine </param>
   /// <returns> A new predicate expression that represents the logical OR of the two expressions </returns>
-  public static Expression<Func<T, bool>> ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
-                                                          Expression<Func<T, bool>>      expr2)
+  public static Expression<Func<T, bool>>? ExpressionOr<T>(this Expression<Func<T, bool>> expr1,
+                                                           Expression<Func<T, bool>>      expr2)
   {
     var parameter = Expression.Parameter(typeof(T));
 
@@ -67,8 +68,9 @@ public static class ExpressionExt
                                                     parameter);
     var right = rightVisitor.Visit(expr2.Body);
 
-    return Expression.Lambda<Func<T, bool>>(Expression.OrElse(left,
-                                                              right),
+    return Expression.Lambda<Func<T, bool>>(Expression.MakeBinary(ExpressionType.OrElse,
+                                                                  left,
+                                                                  right),
                                             parameter);
   }
 
