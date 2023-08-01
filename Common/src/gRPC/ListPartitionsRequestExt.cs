@@ -23,8 +23,6 @@ using Armonik.Api.Grpc.V1.Partitions;
 
 using ArmoniK.Core.Common.Storage;
 
-using LinqKit;
-
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListPartitionsRequestExt
@@ -68,7 +66,7 @@ public static class ListPartitionsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<PartitionData, bool>> ToPartitionFilter(this Filters filters)
   {
-    var predicate = PredicateBuilder.New<PartitionData>();
+    Expression<Func<PartitionData, bool>> expr = data => false;
 
     if (filters.Or == null || !filters.Or.Any())
     {
@@ -77,25 +75,25 @@ public static class ListPartitionsRequestExt
 
     foreach (var filtersAnd in filters.Or)
     {
-      var predicateAnd = PredicateBuilder.New<PartitionData>(data => true);
+      Expression<Func<PartitionData, bool>> exprAnd = data => true;
       foreach (var filterField in filtersAnd.And)
       {
         switch (filterField.ValueConditionCase)
         {
           case FilterField.ValueConditionOneofCase.FilterString:
-            predicateAnd = predicateAnd.And(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
                                                                                        filterField.FilterString.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterNumber:
-            predicateAnd = predicateAnd.And(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
                                                                                        filterField.FilterNumber.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterBoolean:
-            predicateAnd = predicateAnd.And(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
                                                                                         filterField.FilterBoolean.Value));
             break;
           case FilterField.ValueConditionOneofCase.FilterArray:
-            predicateAnd = predicateAnd.And(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
                                                                                       filterField.FilterArray.Value));
             break;
           case FilterField.ValueConditionOneofCase.None:
@@ -104,9 +102,9 @@ public static class ListPartitionsRequestExt
         }
       }
 
-      predicate = predicate.Or(predicateAnd);
+      expr = expr.ExpressionOr(exprAnd);
     }
 
-    return predicate;
+    return expr;
   }
 }

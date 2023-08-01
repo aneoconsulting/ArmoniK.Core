@@ -22,8 +22,6 @@ using System.Linq.Expressions;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Core.Common.Storage;
 
-using LinqKit;
-
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListApplicationsRequestExt
@@ -67,22 +65,25 @@ public static class ListApplicationsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<TaskData, bool>> ToApplicationFilter(this Filters filters)
   {
-    var predicate = PredicateBuilder.New<TaskData>();
+    Expression<Func<TaskData, bool>> expr = data => false;
+
 
     if (filters.Or == null || !filters.Or.Any())
     {
       return data => true;
     }
 
+
     foreach (var filtersAnd in filters.Or)
     {
-      var predicateAnd = PredicateBuilder.New<TaskData>(data => true);
+      Expression<Func<TaskData, bool>> exprAnd = data => true;
+
       foreach (var filterField in filtersAnd.And)
       {
         switch (filterField.ValueConditionCase)
         {
           case FilterField.ValueConditionOneofCase.FilterString:
-            predicateAnd = predicateAnd.And(filterField.FilterString.Operator.ToFilter(filterField.Field.ApplicationField_.Field.ToField(),
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ApplicationField_.Field.ToField(),
                                                                                        filterField.FilterString.Value));
             break;
           case FilterField.ValueConditionOneofCase.None:
@@ -91,9 +92,10 @@ public static class ListApplicationsRequestExt
         }
       }
 
-      predicate = predicate.Or(predicateAnd);
+      expr = expr.ExpressionOr(exprAnd);
     }
 
-    return predicate;
+
+    return expr;
   }
 }

@@ -26,8 +26,6 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
-using LinqKit;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -186,7 +184,9 @@ public class SimpleTaskTable : ITaskTable
                              TaskOptions,
                              new Output(true,
                                         "")),
-                       }.Select(selector.Invoke));
+                       }.Where(filter.Compile())
+                        .Select(selector.Compile()));
+
 
   public Task<TaskData> UpdateOneTask(string                                                                        taskId,
                                       ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
