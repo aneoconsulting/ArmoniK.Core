@@ -240,7 +240,6 @@ public class ObjectStorageTestBase
       var res = await ObjectStorage!.GetValuesAsync("dataKey")
                                     .ToListAsync()
                                     .ConfigureAwait(false);
-
       Assert.AreEqual(string.Join("",
                                   listChunks.Select(chunk => Encoding.ASCII.GetString(chunk.ToArray()))),
                       string.Join("",

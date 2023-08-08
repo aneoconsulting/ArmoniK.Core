@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Runtime.CompilerServices;
-using System.Text;
 
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -28,8 +27,6 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
-using CommunityToolkit.HighPerformance;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +36,8 @@ public class ObjectStorage : IObjectStorage
 {
   private const    int                    MaxAllowedKeysPerDelete = 1000;
   private readonly string                 bucketName_;
+  private readonly int                    chunkDownloadSize_;
+  private readonly int                    degreeOfParallelism_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
   private readonly AmazonS3Client         s3Client_;
@@ -55,10 +54,12 @@ public class ObjectStorage : IObjectStorage
                        Options.S3             options,
                        ILogger<ObjectStorage> logger)
   {
-    s3Client_          = s3Client;
-    objectStorageName_ = "objectStorageName";
-    bucketName_        = options.BucketName;
-    logger_            = logger;
+    s3Client_            = s3Client;
+    objectStorageName_   = "objectStorageName";
+    bucketName_          = options.BucketName;
+    chunkDownloadSize_   = options.ChunkDownloadSize;
+    logger_              = logger;
+    degreeOfParallelism_ = options.DegreeOfParallelism;
   }
 
   /// <inheritdoc />
@@ -96,32 +97,6 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
-  {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-
-    var idx      = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      taskList.Add(s3Client_.WriteObjectAsync(bucketName_,
-                                              $"{objectStorageName_}{key}_{idx}",
-                                              chunk));
-      ++idx;
-    }
-
-    await s3Client_.WriteStringAsync(bucketName_,
-                                     $"{objectStorageName_}{key}_count",
-                                     idx.ToString())
-                   .ConfigureAwait(false);
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
@@ -130,7 +105,7 @@ public class ObjectStorage : IObjectStorage
     try
     {
       response = await s3Client_.GetObjectAsync(bucketName_,
-                                                $"{objectStorageName_}{key}_count",
+                                                $"{objectStorageName_}{key}",
                                                 cancellationToken);
     }
     catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
@@ -140,26 +115,74 @@ public class ObjectStorage : IObjectStorage
       throw new ObjectDataNotFoundException("Key not found");
     }
 
-    // Get the data from the response stream
-    using var reader      = new StreamReader(response.ResponseStream);
-    var       fileContent = await reader.ReadToEndAsync();
+    var metaDataRequest = new GetObjectMetadataRequest
+                          {
+                            Key        = $"{objectStorageName_}{key}",
+                            BucketName = bucketName_,
+                          };
+    var objectMetaData = await s3Client_.GetObjectMetadataAsync(metaDataRequest,
+                                                                cancellationToken);
+    var contentLength = objectMetaData.ContentLength;
+    var nbChunks      = (contentLength + chunkDownloadSize_ - 1) / chunkDownloadSize_;
 
-    var valuesCount = int.Parse(fileContent);
-
-    if (valuesCount == 0)
+    var getObjectRequest = new GetObjectRequest
+                           {
+                             BucketName = bucketName_,
+                             Key        = $"{objectStorageName_}{key}",
+                           };
+    var objectResponse = await s3Client_.GetObjectAsync(getObjectRequest,
+                                                        cancellationToken);
+    var  responseStream = objectResponse.ResponseStream;
+    long totalBytesRead = 0;
+    while (totalBytesRead < contentLength)
     {
-      yield break;
+      var downloadedChunkSize = Math.Min(contentLength - totalBytesRead,
+                                         chunkDownloadSize_);
+      var downloadedChunk = new byte[downloadedChunkSize];
+      var bytesRead = await responseStream.ReadAsync(downloadedChunk,
+                                                     0,
+                                                     (int)downloadedChunkSize,
+                                                     cancellationToken)
+                                          .ConfigureAwait(false);
+      if (bytesRead + totalBytesRead > contentLength)
+      {
+        break;
+      }
+
+      totalBytesRead += bytesRead;
+
+      yield return downloadedChunk;
     }
 
-    foreach (var chunkTask in Enumerable.Range(0,
-                                               valuesCount)
-                                        .Select(index => s3Client_.StringByteGetAsync(bucketName_,
-                                                                                      $"{objectStorageName_}{key}_{index}",
-                                                                                      logger_))
-                                        .ToList())
+    /*
+    await foreach (var chunk in Enumerable.Range(0,
+                                                 (int)nbChunks)
+                                          .ToAsyncEnumerable()
+                                          .Select(async index =>
+                                                  {
+                                                    var downloadedChunk = new byte[chunkDownloadSize_];
+                                                    if (contentLength <= (index + 1) * chunkDownloadSize_)
+                                                    {
+                                                      var bytesRead = await responseStream.ReadAsync(downloadedChunk,
+                                                                                                     0,
+                                                                                                     downloadedChunk.Length,
+                                                                                                     cancellationToken);
+                                                    }
+                                                    else
+                                                    {
+                                                      var bytesRead = await responseStream.ReadAsync(downloadedChunk,
+                                                                                                     0,
+                                                                                                     chunkDownloadSize_,
+                                                                                                     cancellationToken);
+                                                    }
+
+                                                    return downloadedChunk;
+                                                  })
+                                          .ConfigureAwait(false))
+
     {
-      yield return (await chunkTask.ConfigureAwait(false))!;
-    }
+      yield return await chunk.ConfigureAwait(false);
+    }*/
   }
 
   /// <inheritdoc />
@@ -167,49 +190,16 @@ public class ObjectStorage : IObjectStorage
                                          CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var value = await s3Client_.StringGetValueAsync(bucketName_,
-                                                    $"{objectStorageName_}{key}_count",
-                                                    logger_)
-                               .ConfigureAwait(false);
-
-    if (value == null)
-    {
-      throw new ObjectDataNotFoundException("Key not found");
-    }
-
-    var valuesCount = int.Parse(value!);
-    var keyList = Enumerable.Range(0,
-                                   valuesCount)
-                            .Select(index => new KeyVersion
-                                             {
-                                               Key = $"{objectStorageName_}{key}_{index}",
-                                             })
-                            .Concat(new[]
-                                    {
-                                      new KeyVersion
-                                      {
-                                        Key = $"{objectStorageName_}{key}_count",
-                                      },
-                                    });
-
-    var deletedItem = 0;
     try
     {
-      await keyList.Chunk(MaxAllowedKeysPerDelete)
-                   .Select(async chunkedKeyList =>
-                           {
-                             var multiObjectDeleteRequest = new DeleteObjectsRequest
-                                                            {
-                                                              BucketName = bucketName_,
-                                                              Objects    = chunkedKeyList.ToList(),
-                                                            };
-                             var deleteObjectsResponse = await s3Client_.DeleteObjectsAsync(multiObjectDeleteRequest,
-                                                                                            cancellationToken)
-                                                                        .ConfigureAwait(false);
-                             Interlocked.Add(ref deletedItem,
-                                             deleteObjectsResponse.DeletedObjects.Count);
-                           })
-                   .WhenAll();
+      var objectDeleteRequest = new DeleteObjectRequest
+                                {
+                                  BucketName = bucketName_,
+                                  Key        = $"{objectStorageName_}{key}",
+                                };
+      var deleteObjectResponse = await s3Client_.DeleteObjectAsync(objectDeleteRequest,
+                                                                   cancellationToken)
+                                                .ConfigureAwait(false);
     }
     catch (Exception ex)
     {
@@ -218,77 +208,76 @@ public class ObjectStorage : IObjectStorage
                        bucketName_);
     }
 
-    return deletedItem == valuesCount + 1;
+    return true;
   }
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
     => throw new NotImplementedException();
-}
 
-internal static class AmazonS3ClientExt
-{
-  internal static async Task<PutObjectResponse> WriteObjectAsync(this AmazonS3Client  s3Client,
-                                                                 string               bucketName,
-                                                                 string               key,
-                                                                 ReadOnlyMemory<byte> chunk)
+  /// <inheritdoc />
+  public async Task AddOrUpdateAsync(string                                 key,
+                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                     CancellationToken                      cancellationToken = default)
   {
-    var request = new PutObjectRequest
-                  {
-                    BucketName  = bucketName,
-                    Key         = key,
-                    InputStream = chunk.AsStream(),
-                  };
-    return await s3Client.PutObjectAsync(request);
-  }
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var initRequest = new InitiateMultipartUploadRequest
+                      {
+                        BucketName = bucketName_,
+                        Key        = $"{objectStorageName_}{key}",
+                      };
+    var initResponse = await s3Client_.InitiateMultipartUploadAsync(initRequest,
+                                                                    cancellationToken)
+                                      .ConfigureAwait(false);
+    try
+    {
+      var uploadRequests = await UploadMultiPartHelper.PreparePartRequestsAsync(bucketName_,
+                                                                                $"{objectStorageName_}{key}",
+                                                                                initResponse.UploadId,
+                                                                                valueChunks,
+                                                                                cancellationToken)
+                                                      .ConfigureAwait(false);
 
-  internal static Task<PutObjectResponse> WriteStringAsync(this AmazonS3Client s3Client,
-                                                           string              bucketName,
-                                                           string              key,
-                                                           string              dataString)
-  {
-    var requestCount = new PutObjectRequest
-                       {
-                         BucketName  = bucketName,
-                         Key         = key,
-                         ContentBody = dataString,
-                       };
-    return s3Client.PutObjectAsync(requestCount);
-  }
+      var partETags = await uploadRequests.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
+                                                          async uploadPartRequest =>
+                                                          {
+                                                            var uploadPartResponse = await s3Client_.UploadPartAsync(uploadPartRequest,
+                                                                                                                     cancellationToken)
+                                                                                                    .ConfigureAwait(false);
+                                                            var partETag = new PartETag
+                                                                           {
+                                                                             ETag       = uploadPartResponse.ETag,
+                                                                             PartNumber = uploadPartResponse.PartNumber,
+                                                                           };
+                                                            return partETag;
+                                                          })
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
 
-  internal static async Task<byte[]> StringByteGetAsync(this AmazonS3Client    s3Client,
-                                                        string                 bucketName,
-                                                        string                 key,
-                                                        ILogger<ObjectStorage> logger)
-  {
-    var request = new GetObjectRequest
-                  {
-                    BucketName = bucketName,
-                    Key        = key,
-                  };
-    using var response     = await s3Client.GetObjectAsync(request);
-    using var memoryStream = new MemoryStream();
-    await response.ResponseStream.CopyToAsync(memoryStream);
-    var fileContent = memoryStream.ToArray();
+      var compRequest = new CompleteMultipartUploadRequest
+                        {
+                          BucketName = bucketName_,
+                          Key        = $"{objectStorageName_}{key}",
+                          UploadId   = initResponse.UploadId,
+                          PartETags  = partETags,
+                        };
 
-    return fileContent;
-  }
-
-  internal static async Task<string?> StringGetValueAsync(this AmazonS3Client    s3Client,
-                                                          string                 bucketName,
-                                                          string                 key,
-                                                          ILogger<ObjectStorage> logger)
-  {
-    var response = await s3Client.GetObjectAsync(bucketName,
-                                                 key);
-
-    // Get the data from the response stream
-    await using var responseStream = response.ResponseStream;
-
-    var retrievedData = new byte[responseStream.Length];
-    _ = await responseStream.ReadAsync(retrievedData,
-                                       0,
-                                       retrievedData.Length);
-    return Encoding.UTF8.GetString(retrievedData);
+      var compResponse = await s3Client_.CompleteMultipartUploadAsync(compRequest,
+                                                                      cancellationToken)
+                                        .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      logger_.LogError(e,
+                       "Multipart upload is being aborted");
+      var abortMpuRequest = new AbortMultipartUploadRequest
+                            {
+                              BucketName = bucketName_,
+                              Key        = $"{objectStorageName_}{key}",
+                              UploadId   = initResponse.UploadId,
+                            };
+      await s3Client_.AbortMultipartUploadAsync(abortMpuRequest,
+                                                cancellationToken);
+    }
   }
 }
