@@ -140,49 +140,26 @@ public class ObjectStorage : IObjectStorage
                                          chunkDownloadSize_);
       var downloadedChunk = new byte[downloadedChunkSize];
       var bytesRead = await responseStream.ReadAsync(downloadedChunk,
-                                                     0,
-                                                     (int)downloadedChunkSize,
                                                      cancellationToken)
                                           .ConfigureAwait(false);
-      if (bytesRead + totalBytesRead > contentLength)
+      while (bytesRead != downloadedChunkSize)
       {
-        break;
+        var remainingBytesRead = await responseStream.ReadAsync(downloadedChunk,
+                                                                bytesRead,
+                                                                (int)(downloadedChunkSize - bytesRead),
+                                                                cancellationToken)
+                                                     .ConfigureAwait(false);
+        if (remainingBytesRead == 0)
+        {
+          throw new ArmoniKException("S3 Partial Read");
+        }
+
+        bytesRead += remainingBytesRead;
       }
 
       totalBytesRead += bytesRead;
-
       yield return downloadedChunk;
     }
-
-    /*
-    await foreach (var chunk in Enumerable.Range(0,
-                                                 (int)nbChunks)
-                                          .ToAsyncEnumerable()
-                                          .Select(async index =>
-                                                  {
-                                                    var downloadedChunk = new byte[chunkDownloadSize_];
-                                                    if (contentLength <= (index + 1) * chunkDownloadSize_)
-                                                    {
-                                                      var bytesRead = await responseStream.ReadAsync(downloadedChunk,
-                                                                                                     0,
-                                                                                                     downloadedChunk.Length,
-                                                                                                     cancellationToken);
-                                                    }
-                                                    else
-                                                    {
-                                                      var bytesRead = await responseStream.ReadAsync(downloadedChunk,
-                                                                                                     0,
-                                                                                                     chunkDownloadSize_,
-                                                                                                     cancellationToken);
-                                                    }
-
-                                                    return downloadedChunk;
-                                                  })
-                                          .ConfigureAwait(false))
-
-    {
-      yield return await chunk.ConfigureAwait(false);
-    }*/
   }
 
   /// <inheritdoc />
