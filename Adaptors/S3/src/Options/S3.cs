@@ -29,7 +29,7 @@ public class S3
   /// <summary>
   ///   Number of tasks to be used in parallel execution
   /// </summary>
-  public int DegreeOfParallelism { get; set; } = -1;
+  public int DegreeOfParallelism { get; set; } = 0;
 
   /// <summary>
   ///   Size of one chunk when downloading an object by chunks
