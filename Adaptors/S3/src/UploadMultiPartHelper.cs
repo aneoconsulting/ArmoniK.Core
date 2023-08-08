@@ -46,7 +46,6 @@ internal class UploadMultiPartHelper
 
       if (bytesRead <= MaxPartSize)
       {
-        //Console.WriteLine(chunk.ToString());
         await currentPartStream.WriteAsync(chunk.ToArray(),
                                            cancellationToken)
                                .ConfigureAwait(false);
