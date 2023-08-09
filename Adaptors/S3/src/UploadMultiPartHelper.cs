@@ -76,8 +76,11 @@ internal class UploadMultiPartHelper
                             UploadId    = uploadId,
                           };
         partRequests.Add(partRequest);
-        currentPartStream = new MemoryStream(remainingStream.ToArray());
-        bytesRead         = remainingStream.Length;
+        currentPartStream = new MemoryStream();
+        await remainingStream.CopyToAsync(currentPartStream,
+                                          cancellationToken)
+                             .ConfigureAwait(false);
+        bytesRead = remainingStream.Length;
         partNumber++;
         currentPartSize += 1024 * 1024; // 1MiB
         if (currentPartSize > MaxPartSize)
