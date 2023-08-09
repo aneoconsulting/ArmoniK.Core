@@ -52,6 +52,8 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -1151,6 +1153,7 @@ public class AuthenticationIntegrationTest
   }
 
   [NonParallelizable]
+  [PublicAPI] // removes a warning about unused parameter
   [TestCaseSource(nameof(GetTestReflectionCases),
                   new object?[]
                   {
@@ -1179,7 +1182,9 @@ public class AuthenticationIntegrationTest
                     false,
                     true,
                   })]
-  public void AuthenticationShouldMatch<TRequest, TReply>(CaseParameters parameters)
+  public void AuthenticationShouldMatch<TRequest, TReply>(CaseParameters parameters,
+                                                          TRequest       requestExample,
+                                                          TReply         replyExample)
   {
     TransformResult(parameters.IdentityIndex,
                     parameters.ImpersonationType,
