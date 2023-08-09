@@ -28,6 +28,10 @@ namespace ArmoniK.Core.Common.Storage.Events;
 /// <param name="TaskId">The id of the task</param>
 /// <param name="OriginTaskId">The id of the task before retry (the task id if no retry)</param>
 /// <param name="PayloadId">The id of the payload</param>
+/// <param name="ParentTaskIds">
+///   Unique identifiers of the tasks that submitted the current task up to the session id which
+///   represents a submission from the client
+/// </param>
 /// <param name="ExpectedOutputKeys">The list of the id of the data produced by the task</param>
 /// <param name="DataDependencies">The list of id representing the data dependencies</param>
 /// <param name="RetryOfIds">The list of task id of the previous run of the task (empty of no retry)</param>
@@ -36,6 +40,7 @@ public record NewTask(string              SessionId,
                       string              TaskId,
                       string              OriginTaskId,
                       string              PayloadId,
+                      IEnumerable<string> ParentTaskIds,
                       IEnumerable<string> ExpectedOutputKeys,
                       IEnumerable<string> DataDependencies,
                       IEnumerable<string> RetryOfIds,

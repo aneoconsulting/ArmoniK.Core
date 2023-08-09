@@ -110,6 +110,7 @@ public class TaskWatcher : ITaskWatcher
                                                                                            doc.FullDocument.TaskId,
                                                                                            doc.FullDocument.InitialTaskId,
                                                                                            doc.FullDocument.PayloadId,
+                                                                                           doc.FullDocument.ParentTaskIds,
                                                                                            doc.FullDocument.ExpectedOutputIds,
                                                                                            doc.FullDocument.DataDependencies,
                                                                                            doc.FullDocument.RetryOfIds,
