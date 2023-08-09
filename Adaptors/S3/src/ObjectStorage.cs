@@ -215,30 +215,24 @@ public class ObjectStorage : IObjectStorage
                                                                                 cancellationToken)
                                                       .ConfigureAwait(false);
 
-      var partETags = await uploadRequests.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
-                                                          async uploadPartRequest =>
-                                                          {
-                                                            var uploadPartResponse = await s3Client_.UploadPartAsync(uploadPartRequest,
-                                                                                                                     cancellationToken)
-                                                                                                    .ConfigureAwait(false);
-                                                            var partETag = new PartETag
-                                                                           {
-                                                                             ETag       = uploadPartResponse.ETag,
-                                                                             PartNumber = uploadPartResponse.PartNumber,
-                                                                           };
-                                                            return partETag;
-                                                          })
-                                          .ToListAsync(cancellationToken)
-                                          .ConfigureAwait(false);
+      var uploadResponses = await uploadRequests.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
+                                                                async uploadPartRequest =>
+                                                                {
+                                                                  var uploadPartResponse = await s3Client_.UploadPartAsync(uploadPartRequest,
+                                                                                                                           cancellationToken)
+                                                                                                          .ConfigureAwait(false);
+                                                                  return uploadPartResponse;
+                                                                })
+                                                .ToListAsync(cancellationToken)
+                                                .ConfigureAwait(false);
 
       var compRequest = new CompleteMultipartUploadRequest
                         {
                           BucketName = bucketName_,
                           Key        = $"{objectStorageName_}{key}",
                           UploadId   = initResponse.UploadId,
-                          PartETags  = partETags,
                         };
-
+      compRequest.AddPartETags(uploadResponses);
       var compResponse = await s3Client_.CompleteMultipartUploadAsync(compRequest,
                                                                       cancellationToken)
                                         .ConfigureAwait(false);
