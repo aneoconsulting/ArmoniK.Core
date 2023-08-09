@@ -47,34 +47,31 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollingAgentProvider : IDisposable
 {
-  private const           string                   DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
-  private readonly        WebApplication           app;
-  private readonly        IMongoClient             client_;
-  private readonly        LoggerFactory            loggerFactory_;
-  private readonly        Common.Pollster.Pollster pollster_;
+  private const           string         DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
+  private readonly        WebApplication app_;
+  private readonly        LoggerFactory  loggerFactory_;
 
   private readonly CancellationTokenSource pollsterCancellationTokenSource_ = new();
-  private readonly Task                    pollsterRunningTask;
-  private readonly IResultTable            resultTable_;
+  private readonly Task                    pollsterRunningTask_;
   private readonly IMongoRunner            runner_;
-  private readonly ISessionTable           sessionTable_;
   public readonly  ISubmitter              Submitter;
-  private readonly ITaskTable              taskTable_;
 
 
   public TestPollingAgentProvider(IWorkerStreamHandler workerStreamHandler)
   {
-    var logger = NullLogger.Instance;
+    var           logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
-                  };
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
+    };
 
     runner_ = MongoRunner.Run(options);
-    client_ = new MongoClient(runner_.ConnectionString);
+    IMongoClient client = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -114,7 +111,7 @@ public class TestPollingAgentProvider : IDisposable
     builder.Services.AddMongoStorages(builder.Configuration,
                                       logger)
            .AddSingleton(ActivitySource)
-           .AddSingleton(serviceProvider => client_)
+           .AddSingleton(serviceProvider => client)
            .AddLogging()
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddSingleton<IQueueStorage, QueueStorage>()
@@ -126,28 +123,28 @@ public class TestPollingAgentProvider : IDisposable
     var computePlanOptions = builder.Configuration.GetRequiredValue<ComputePlane>(ComputePlane.SettingSection);
     builder.Services.AddSingleton(computePlanOptions);
 
-    app = builder.Build();
+    app_ = builder.Build();
 
-    resultTable_  = app.Services.GetRequiredService<IResultTable>();
-    taskTable_    = app.Services.GetRequiredService<ITaskTable>();
-    sessionTable_ = app.Services.GetRequiredService<ISessionTable>();
-    Submitter     = app.Services.GetRequiredService<ISubmitter>();
-    pollster_     = app.Services.GetRequiredService<Common.Pollster.Pollster>();
+    app_.Services.GetRequiredService<IResultTable>();
+    app_.Services.GetRequiredService<ITaskTable>();
+    var sessionTable = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter     = app_.Services.GetRequiredService<ISubmitter>();
+    var pollster = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
 
-    sessionTable_.Init(CancellationToken.None)
+    sessionTable.Init(CancellationToken.None)
                  .Wait();
 
-    pollsterRunningTask = Task.Factory.StartNew(() => pollster_.MainLoop(pollsterCancellationTokenSource_.Token),
+    pollsterRunningTask_ = Task.Factory.StartNew(() => pollster.MainLoop(pollsterCancellationTokenSource_.Token),
                                                 TaskCreationOptions.LongRunning);
   }
 
   public void Dispose()
   {
     pollsterCancellationTokenSource_?.Cancel(false);
-    pollsterRunningTask?.Wait();
-    pollsterRunningTask?.Dispose();
+    pollsterRunningTask_?.Wait();
+    pollsterRunningTask_?.Dispose();
     pollsterCancellationTokenSource_?.Dispose();
-    ((IDisposable)app)?.Dispose();
+    ((IDisposable)app_)?.Dispose();
     loggerFactory_?.Dispose();
     runner_?.Dispose();
     GC.SuppressFinalize(this);

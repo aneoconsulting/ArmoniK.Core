@@ -149,7 +149,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
         queueMessageHandlers_.Enqueue(new QueueMessageHandler(ConnectionRabbit.Channel!,
                                                               eventArgs,
                                                               message,
-                                                              logger_,
                                                               cancellationToken));
         return Task.CompletedTask;
       }

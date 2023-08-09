@@ -129,10 +129,8 @@ public static class Program
                             });
       }
 
-      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
-                                                               logger.GetLogger());
+      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration);
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                      logger.GetLogger(),
                                                       out var authCache);
 
       builder.WebHost.UseKestrel(options =>

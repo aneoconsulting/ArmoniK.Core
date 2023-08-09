@@ -129,7 +129,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var sessionData = await sessionTable_.ListSessionsAsync(request.Filters is null
+      var (sessions, totalCount) = await sessionTable_.ListSessionsAsync(request.Filters is null
                                                                 ? data => true
                                                                 : request.Filters.ToSessionDataFilter(),
                                                               request.Sort is null
@@ -147,9 +147,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-                 sessionData.sessions.Select(data => new SessionRaw(data)),
+                 sessions.Select(data => new SessionRaw(data)),
                },
-               Total = (int)sessionData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)

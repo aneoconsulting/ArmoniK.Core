@@ -57,7 +57,7 @@ internal class Program
     var optionsHtcMock = new Options.HtcMock();
     configuration.GetSection(Options.HtcMock.SettingSection)
                  .Bind(optionsHtcMock);
-    var channel = GrpcChannelFactory.CreateChannel(options);
+    var channel = GrpcChannelFactory.CreateChannel(options!);
 
     var gridClient = new GridClient(channel,
                                     factory,

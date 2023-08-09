@@ -76,8 +76,8 @@ public static class EnumFieldExt
          TaskSummaryEnumField.ReceivedAt              => data => data.ReceptionDate,
          TaskSummaryEnumField.AcquiredAt              => data => data.AcquisitionDate,
          TaskSummaryEnumField.Error                   => data => data.Output.Error,
-         TaskSummaryEnumField.Unspecified             => throw new ArgumentOutOfRangeException(),
-         _                                            => throw new ArgumentOutOfRangeException(),
+         TaskSummaryEnumField.Unspecified             => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                            => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
 
@@ -100,8 +100,8 @@ public static class EnumFieldExt
          TaskOptionEnumField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
          TaskOptionEnumField.ApplicationService   => data => data.Options.ApplicationService,
          TaskOptionEnumField.EngineType           => data => data.Options.EngineType,
-         TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
-         _                                        => throw new ArgumentOutOfRangeException(),
+         TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                        => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>
@@ -120,9 +120,9 @@ public static class EnumFieldExt
          SessionRawEnumField.Options      => session => session.Options,
          SessionRawEnumField.CreatedAt    => session => session.CreationDate,
          SessionRawEnumField.CancelledAt  => session => session.CancellationDate,
-         SessionRawEnumField.Duration     => throw new ArgumentOutOfRangeException(),
-         SessionRawEnumField.Unspecified  => throw new ArgumentOutOfRangeException(),
-         _                                => throw new ArgumentOutOfRangeException(),
+         SessionRawEnumField.Duration     => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         SessionRawEnumField.Unspecified  => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>
@@ -144,8 +144,8 @@ public static class EnumFieldExt
          Api.gRPC.V1.Sessions.TaskOptionEnumField.ApplicationNamespace => data => data.Options.ApplicationNamespace,
          Api.gRPC.V1.Sessions.TaskOptionEnumField.ApplicationService   => data => data.Options.ApplicationService,
          Api.gRPC.V1.Sessions.TaskOptionEnumField.EngineType           => data => data.Options.EngineType,
-         Api.gRPC.V1.Sessions.TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
-         _                                                             => throw new ArgumentOutOfRangeException(),
+         Api.gRPC.V1.Sessions.TaskOptionEnumField.Unspecified          => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                                             => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>
@@ -174,9 +174,9 @@ public static class EnumFieldExt
          ResultRawEnumField.Status      => result => result.Status,
          ResultRawEnumField.CreatedAt   => result => result.CreationDate,
          ResultRawEnumField.ResultId    => result => result.ResultId,
-         ResultRawEnumField.CompletedAt => throw new ArgumentOutOfRangeException(),
-         ResultRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
-         _                              => throw new ArgumentOutOfRangeException(),
+         ResultRawEnumField.CompletedAt => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         ResultRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                              => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>
@@ -195,8 +195,8 @@ public static class EnumFieldExt
          PartitionRawEnumField.PodMax               => partitionData => partitionData.PodMax,
          PartitionRawEnumField.PreemptionPercentage => partitionData => partitionData.PreemptionPercentage,
          PartitionRawEnumField.Priority             => partitionData => partitionData.Priority,
-         PartitionRawEnumField.Unspecified          => throw new ArgumentOutOfRangeException(),
-         _                                          => throw new ArgumentOutOfRangeException(),
+         PartitionRawEnumField.Unspecified          => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                          => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>
@@ -213,7 +213,7 @@ public static class EnumFieldExt
          ApplicationRawEnumField.Version     => taskData => taskData.Options.ApplicationVersion,
          ApplicationRawEnumField.Namespace   => taskData => taskData.Options.ApplicationNamespace,
          ApplicationRawEnumField.Service     => taskData => taskData.Options.ApplicationService,
-         ApplicationRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
-         _                                   => throw new ArgumentOutOfRangeException(),
+         ApplicationRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                   => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 }

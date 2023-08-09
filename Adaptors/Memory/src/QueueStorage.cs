@@ -42,10 +42,6 @@ public class QueueStorage : IQueueStorage
   private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
 
   /// <inheritdoc />
-  public string PartitionId
-    => "";
-
-  /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
 
@@ -57,7 +53,6 @@ public class QueueStorage : IQueueStorage
   public int MaxPriority
     => 100;
 
-  /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
@@ -97,10 +92,11 @@ public class QueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
                                 int                 priority          = 1,
                                 CancellationToken   cancellationToken = default)
   {
+    cancellationToken.ThrowIfCancellationRequested();
+
     var messageHandlers = messages.Select(message => new MessageHandler
                                                      {
                                                        IsVisible         = true,

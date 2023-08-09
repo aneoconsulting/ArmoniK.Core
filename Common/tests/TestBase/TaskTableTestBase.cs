@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// in tests, Tasks can be explicitly waited
+#pragma warning disable CA2012
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -406,13 +409,13 @@ public class TaskTableTestBase
                                                 TaskStatus.Timeout,
                                                 CancellationToken.None)
                       .ConfigureAwait(false);
-      var resCreating = await TaskTable.GetTaskStatus(new[]
+      var resCreating = await TaskTable!.GetTaskStatus(new[]
                                                       {
                                                         "TaskCreatingId",
                                                       },
                                                       CancellationToken.None)
                                        .ConfigureAwait(false);
-      var resProcessing = await TaskTable.GetTaskStatus(new[]
+      var resProcessing = await TaskTable!.GetTaskStatus(new[]
                                                         {
                                                           "TaskProcessingId",
                                                         },
@@ -445,13 +448,13 @@ public class TaskTableTestBase
                                                 TaskStatus.Timeout,
                                                 CancellationToken.None)
                       .ConfigureAwait(false);
-      var resCreating = await TaskTable.GetTaskStatus(new[]
+      var resCreating = await TaskTable!.GetTaskStatus(new[]
                                                       {
                                                         "TaskCreatingId",
                                                       },
                                                       CancellationToken.None)
                                        .ConfigureAwait(false);
-      var resProcessing = await TaskTable.GetTaskStatus(new[]
+      var resProcessing = await TaskTable!.GetTaskStatus(new[]
                                                         {
                                                           "TaskProcessingId",
                                                         },
@@ -700,7 +703,7 @@ public class TaskTableTestBase
                                            CancellationToken.None)
                       .ConfigureAwait(false);
 
-      var resStatus = await TaskTable.GetTaskStatus(new[]
+      var resStatus = await TaskTable!.GetTaskStatus(new[]
                                                     {
                                                       taskProcessingData_.TaskId,
                                                     },
@@ -1332,16 +1335,16 @@ public class TaskTableTestBase
       Assert.IsTrue(validator.Validate(req)
                              .IsValid);
 
-      var listTasks = await TaskTable!.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
-                                                             req.Sort.Fields.Select(sort => sort.ToField())
-                                                                .ToList(),
-                                                             false,
-                                                             req.Page,
-                                                             req.PageSize,
-                                                             CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var (applications, _) = await TaskTable!.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
+                                                                                req.Sort.Fields.Select(sort => sort.ToField())
+                                                                                   .ToList(),
+                                                                                false,
+                                                                                req.Page,
+                                                                                req.PageSize,
+                                                                                CancellationToken.None)
+                                                         .ConfigureAwait(false);
 
-      var listTasksResponseTaskData = listTasks.applications.ToList();
+      var listTasksResponseTaskData = applications.ToList();
       foreach (var task in listTasksResponseTaskData)
       {
         Console.WriteLine(task);
@@ -1508,16 +1511,16 @@ public class TaskTableTestBase
       Assert.IsTrue(validator.Validate(req)
                              .IsValid);
 
-      var listTasks = await TaskTable.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
-                                                            req.Sort.Fields.Select(sort => sort.ToField())
-                                                               .ToList(),
-                                                            req.Sort.Direction == SortDirection.Asc,
-                                                            req.Page,
-                                                            req.PageSize,
-                                                            CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var (applications, _) = await TaskTable.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
+                                                                               req.Sort.Fields.Select(sort => sort.ToField())
+                                                                                  .ToList(),
+                                                                               req.Sort.Direction == SortDirection.Asc,
+                                                                               req.Page,
+                                                                               req.PageSize,
+                                                                               CancellationToken.None)
+                                                        .ConfigureAwait(false);
 
-      var listTasksResponseTaskData = listTasks.applications.ToList();
+      var listTasksResponseTaskData = applications.ToList();
       foreach (var task in listTasksResponseTaskData)
       {
         Console.WriteLine(task);
@@ -1541,17 +1544,17 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
-                                                      data => data.SessionId,
-                                                      data => data,
-                                                      false,
-                                                      0,
-                                                      20,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var (_, totalCount) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                                         data => data.SessionId,
+                                                                         data => data,
+                                                                         false,
+                                                                         0,
+                                                                         20,
+                                                                         CancellationToken.None)
+                                                         .ConfigureAwait(false);
 
       Assert.AreEqual(6,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -1604,17 +1607,17 @@ public class TaskTableTestBase
                          },
                 };
 
-      var listTasks = await TaskTable!.ListTasksAsync(req.Filters.ToTaskDataFilter(),
-                                                      req.Sort.ToField(),
-                                                      data => data,
-                                                      false,
-                                                      0,
-                                                      20,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var (_, totalCount) = await TaskTable!.ListTasksAsync(req.Filters.ToTaskDataFilter(),
+                                                                         req.Sort.ToField(),
+                                                                         data => data,
+                                                                         false,
+                                                                         0,
+                                                                         20,
+                                                                         CancellationToken.None)
+                                                         .ConfigureAwait(false);
 
       Assert.AreEqual(6,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -1629,17 +1632,17 @@ public class TaskTableTestBase
                          TaskStatus.Completed,
                        };
 
-      var listTasks = await TaskTable!.ListTasksAsync(data => statusList.Contains(data.Status),
-                                                      data => data.SessionId,
-                                                      data => data,
-                                                      false,
-                                                      0,
-                                                      20,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var (_, totalCount) = await TaskTable!.ListTasksAsync(data => statusList.Contains(data.Status),
+                                                                         data => data.SessionId,
+                                                                         data => data,
+                                                                         false,
+                                                                         0,
+                                                                         20,
+                                                                         CancellationToken.None)
+                                                         .ConfigureAwait(false);
 
       Assert.AreEqual(3,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -1648,17 +1651,17 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(data => data.TaskId == "NotExisting",
-                                                      data => data.SessionId,
-                                                      data => data,
-                                                      false,
-                                                      0,
-                                                      20,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var (_, totalCount) = await TaskTable!.ListTasksAsync(data => data.TaskId == "NotExisting",
+                                                                         data => data.SessionId,
+                                                                         data => data,
+                                                                         false,
+                                                                         0,
+                                                                         20,
+                                                                         CancellationToken.None)
+                                                         .ConfigureAwait(false);
 
       Assert.AreEqual(0,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -1669,17 +1672,17 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(request.Filters.ToTaskDataFilter(),
-                                                      data => data.SessionId,
-                                                      data => data,
-                                                      false,
-                                                      0,
-                                                      20,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
+      var (_, totalCount) = await TaskTable!.ListTasksAsync(request.Filters.ToTaskDataFilter(),
+                                                                         data => data.SessionId,
+                                                                         data => data,
+                                                                         false,
+                                                                         0,
+                                                                         20,
+                                                                         CancellationToken.None)
+                                                         .ConfigureAwait(false);
 
       Assert.AreEqual(count,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -1896,7 +1899,7 @@ public class TaskTableTestBase
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(6,
-                      cancelledTasks.Count());
+                      cancelledTasks.Count);
       Assert.AreEqual(6,
                       cancelledTasks.SelectMany(list => list)
                                     .Count(s => s == "dependency1"));

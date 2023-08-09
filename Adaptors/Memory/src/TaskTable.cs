@@ -505,26 +505,4 @@ public class TaskTable : ITaskTable
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
 
-  private bool UpdateTaskToSubmitted(string id)
-  {
-    var updated = false;
-    taskId2TaskData_.AddOrUpdate(id,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.Status != TaskStatus.Creating)
-                                   {
-                                     return data;
-                                   }
-
-                                   updated = true;
-                                   return data with
-                                          {
-                                            Status = TaskStatus.Submitted,
-                                            SubmittedDate = DateTime.UtcNow,
-                                          };
-                                 });
-    return updated;
-  }
 }

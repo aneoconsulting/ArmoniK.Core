@@ -55,9 +55,11 @@ internal class MongoDatabaseProvider : IDisposable
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
-                    ReplicaSetSetupTimeout  = TimeSpan.FromSeconds(30),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
+      ReplicaSetSetupTimeout = TimeSpan.FromSeconds(30),
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -101,8 +103,7 @@ internal class MongoDatabaseProvider : IDisposable
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddMongoStorages(configuration,
                                        logger);
-    serviceCollection.AddClientSubmitterAuthenticationStorage(configuration,
-                                                              logger);
+    serviceCollection.AddClientSubmitterAuthenticationStorage(configuration);
     serviceCollection.AddSingleton(ActivitySource);
     serviceCollection.AddTransient<IMongoClient>(_ => client);
 

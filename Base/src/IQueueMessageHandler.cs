@@ -20,17 +20,6 @@ using System.Threading;
 
 namespace ArmoniK.Core.Base;
 
-public enum QueueMessageStatus
-{
-  Waiting,
-  Failed,
-  Running,
-  Postponed,
-  Processed,
-  Cancelled,
-  Poisonous,
-}
-
 public interface IQueueMessageHandler : IAsyncDisposable
 {
   CancellationToken CancellationToken { get; set; }

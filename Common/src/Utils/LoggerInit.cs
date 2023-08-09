@@ -38,7 +38,7 @@ public class LoggerInit
                                                     .Enrich.FromLogContext()
                                                     .Enrich.WithProperty("CoreVersion",
                                                                          typeof(LoggerInit).Assembly.GetName()
-                                                                                           .Version)
+                                                                                           .Version!)
                                                     .CreateLogger();
 
     logger_ = LoggerFactory.Create(builder => builder.AddSerilog(loggerConfiguration_))

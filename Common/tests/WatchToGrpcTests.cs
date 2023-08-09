@@ -25,8 +25,6 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
 
-using Microsoft.Extensions.Logging.Abstractions;
-
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -42,8 +40,7 @@ public class WatchToGrpcTests
     var watchToGrpcInstance = new WatchToGrpc(new SimpleTaskTable(),
                                               new SimpleTaskWatcher(),
                                               new SimpleResultTable(),
-                                              new SimpleResultWatcher(),
-                                              NullLogger.Instance);
+                                              new SimpleResultWatcher());
 
 
     var list = new List<EventSubscriptionResponse>();
@@ -53,7 +50,6 @@ public class WatchToGrpcTests
                                                      // Simple* that are used to create this instance do not check the session in their implementation
                                                      await foreach (var eventSubscriptionResponse in watchToGrpcInstance.GetEvents("",
                                                                                                                                    cts.Token)
-                                                                                                                        .WithCancellation(cts.Token)
                                                                                                                         .ConfigureAwait(false))
                                                      {
                                                        Console.WriteLine(eventSubscriptionResponse);
@@ -80,8 +76,7 @@ public class WatchToGrpcTests
                                            var watchToGrpcInstance = new WatchToGrpc(new SimpleTaskTable(),
                                                                                      new SimpleTaskWatcher(),
                                                                                      new SimpleResultTable(),
-                                                                                     new SimpleResultWatcher(),
-                                                                                     NullLogger.Instance);
+                                                                                     new SimpleResultWatcher());
 
                                            Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                                                           {
@@ -89,7 +84,6 @@ public class WatchToGrpcTests
                                                                                             await foreach (var eventSubscriptionResponse in watchToGrpcInstance
                                                                                                                                             .GetEvents("",
                                                                                                                                                        cts.Token)
-                                                                                                                                            .WithCancellation(cts.Token)
                                                                                                                                             .ConfigureAwait(false))
                                                                                             {
                                                                                               Console.WriteLine(eventSubscriptionResponse);

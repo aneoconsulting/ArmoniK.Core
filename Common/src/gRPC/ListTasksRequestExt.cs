@@ -37,29 +37,22 @@ public static class ListTasksRequestExt
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<TaskData, object?>> ToField(this ListTasksRequest.Types.Sort sort)
-  {
-    switch (sort.Field.FieldCase)
+    => sort.Field.FieldCase switch
     {
-      case TaskField.FieldOneofCase.TaskSummaryField:
-        return sort.Field.TaskSummaryField.Field.ToField();
-      case TaskField.FieldOneofCase.TaskOptionField:
-        return sort.Field.TaskOptionField.Field.ToField();
-      case TaskField.FieldOneofCase.TaskOptionGenericField:
-        return sort.Field.TaskOptionGenericField.ToField();
-      case TaskField.FieldOneofCase.None:
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-  }
+      TaskField.FieldOneofCase.TaskSummaryField => sort.Field.TaskSummaryField.Field.ToField(),
+      TaskField.FieldOneofCase.TaskOptionField => sort.Field.TaskOptionField.Field.ToField(),
+      TaskField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+      _ => throw new ArgumentOutOfRangeException(nameof(sort)),
+    };
 
   public static Expression<Func<TaskData, object?>> ToField(this TaskField taskField)
     => taskField.FieldCase switch
        {
-         TaskField.FieldOneofCase.None                   => throw new ArgumentOutOfRangeException(),
+         TaskField.FieldOneofCase.None                   => throw new ArgumentOutOfRangeException(nameof(taskField)),
          TaskField.FieldOneofCase.TaskSummaryField       => taskField.TaskSummaryField.Field.ToField(),
          TaskField.FieldOneofCase.TaskOptionField        => taskField.TaskOptionField.Field.ToField(),
          TaskField.FieldOneofCase.TaskOptionGenericField => taskField.TaskOptionGenericField.ToField(),
-         _                                               => throw new ArgumentOutOfRangeException(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(taskField)),
        };
 
   /// <summary>
@@ -105,9 +98,7 @@ public static class ListTasksRequestExt
           case FilterField.ValueConditionOneofCase.FilterDate:
             var val = filterField.FilterDate.Value;
             exprAnd = exprAnd.ExpressionAnd(filterField.FilterDate.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                     val == null
-                                                                                       ? null
-                                                                                       : val.ToDateTime()));
+                                                                                     val?.ToDateTime()));
             break;
           case FilterField.ValueConditionOneofCase.FilterArray:
             exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
@@ -115,7 +106,7 @@ public static class ListTasksRequestExt
             break;
           case FilterField.ValueConditionOneofCase.None:
           default:
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(filters));
         }
       }
 

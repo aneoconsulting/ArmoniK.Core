@@ -43,14 +43,14 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                                                 cm.MapProperty(nameof(AuthData.UserId))
                                                   .SetIsRequired(true)
                                                   .SetSerializer(IdSerializer.Instance);
-                                                cm.MapProperty(nameof(AuthData.CN))
+                                                cm.MapProperty(nameof(AuthData.Cn))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.Fingerprint))
                                                   .SetDefaultValue(BsonNull.Value);
                                                 cm.SetIgnoreExtraElements(true);
                                                 cm.MapCreator(model => new AuthData(model.AuthId,
                                                                                     model.UserId,
-                                                                                    model.CN,
+                                                                                    model.Cn,
                                                                                     model.Fingerprint));
                                               });
     }
@@ -68,7 +68,7 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
     var indexModels = new[]
                       {
                         IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Descending, model => model.Fingerprint),
-                                                                (IndexType.Ascending, model => model.CN)),
+                                                                (IndexType.Ascending, model => model.Cn)),
                         IndexHelper.CreateHashedIndex<AuthData>(model => model.Fingerprint),
                         IndexHelper.CreateHashedIndex<AuthData>(model => model.UserId),
                       };

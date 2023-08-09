@@ -49,7 +49,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// <summary>
 ///   Represents the internal processing requests received by the agent. Provides methods to process those requests
 /// </summary>
-public class Agent : IAgent
+public sealed class Agent : IAgent
 {
   private readonly List<TaskCreationRequest> createdTasks_;
   private readonly ILogger                   logger_;
@@ -187,6 +187,7 @@ public class Agent : IAgent
   }
 
   /// <inheritdoc />
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "No correct value for ArgumentOutOfRange Exception in nested code")]
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
@@ -508,6 +509,7 @@ public class Agent : IAgent
   }
 
   /// <inheritdoc />
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
   public async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
                                             CancellationToken          cancellationToken)
   {

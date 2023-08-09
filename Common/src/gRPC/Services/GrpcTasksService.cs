@@ -113,7 +113,7 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
+      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
                                                        ? data => true
                                                        : request.Filters.ToTaskDataFilter(),
                                                      request.Sort is null
@@ -153,9 +153,9 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.tasks.Select(data => data.ToTaskSummary()),
+                 tasks.Select(data => data.ToTaskSummary()),
                },
-               Total = (int)taskData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)
@@ -326,7 +326,7 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
+      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
                                                        ? data => true
                                                        : request.Filters.ToTaskDataFilter(),
                                                      request.Sort is null
@@ -345,9 +345,9 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.tasks.Select(data => new TaskRaw(data)),
+                 tasks.Select(data => new TaskRaw(data)),
                },
-               Total = (int)taskData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)

@@ -29,7 +29,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
+public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
   where T : Exception, new()
 {
   private readonly int delay_;

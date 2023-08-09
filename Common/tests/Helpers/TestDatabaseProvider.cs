@@ -60,12 +60,14 @@ public class TestDatabaseProvider : IDisposable
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
-                  };
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
+    };
 
     var loggerProvider = new ConsoleForwardingLoggerProvider();
-    var loggerDB       = loggerProvider.CreateLogger("db commands");
+    var loggerDb       = loggerProvider.CreateLogger("db commands");
 
     runner_ = MongoRunner.Run(options);
     var settings = MongoClientSettings.FromConnectionString(runner_.ConnectionString);
@@ -74,7 +76,7 @@ public class TestDatabaseProvider : IDisposable
     {
       settings.ClusterConfigurator = cb =>
                                      {
-                                       cb.Subscribe<CommandStartedEvent>(e => loggerDB.LogTrace("{CommandName} - {Command}",
+                                       cb.Subscribe<CommandStartedEvent>(e => loggerDb.LogTrace("{CommandName} - {Command}",
                                                                                                 e.CommandName,
                                                                                                 e.Command.ToJson()));
                                      };
@@ -130,10 +132,8 @@ public class TestDatabaseProvider : IDisposable
 
     builder.Services.AddMongoStorages(builder.Configuration,
                                       NullLogger.Instance)
-           .AddClientSubmitterAuthenticationStorage(builder.Configuration,
-                                                    NullLogger.Instance)
+           .AddClientSubmitterAuthenticationStorage(builder.Configuration)
            .AddClientSubmitterAuthServices(builder.Configuration,
-                                           NullLogger.Instance,
                                            out _)
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()

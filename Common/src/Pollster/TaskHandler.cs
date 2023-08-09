@@ -41,7 +41,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public class TaskHandler : IAsyncDisposable
+public sealed class TaskHandler : IAsyncDisposable
 {
   private readonly ActivitySource                              activitySource_;
   private readonly IAgentHandler                               agentHandler_;
@@ -629,10 +629,16 @@ public class TaskHandler : IAsyncDisposable
 
       if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && isWorkerDown))
       {
-        logger_.LogWarning(e,
-                           cancellationToken.IsCancellationRequested
-                             ? "Cancellation triggered, task cancelled here and re executed elsewhere"
-                             : "Worker not available, task cancelled here and re executed elsewhere");
+        if (cancellationToken.IsCancellationRequested)
+        {
+          logger_.LogWarning(e,
+                           "Cancellation triggered, task cancelled here and re executed elsewhere");
+        }
+        else
+        {
+          logger_.LogWarning(e,
+                           "Worker not available, task cancelled here and re executed elsewhere");
+        }
 
         await taskTable_.ReleaseTask(taskData,
                                      CancellationToken.None)
@@ -641,25 +647,43 @@ public class TaskHandler : IAsyncDisposable
       }
       else
       {
-        logger_.LogError(e,
-                         resubmit
-                           ? "Error during task execution, retrying task"
-                           : "Error during task execution, cancelling task");
+        if (resubmit)
+        {
+          logger_.LogError(e,
+                         "Error during task execution, retrying task");
 
-        await submitter_.CompleteTaskAsync(taskData,
-                                           resubmit,
-                                           new Output
-                                           {
-                                             Error = new Output.Types.Error
-                                                     {
-                                                       Details = e.Message,
-                                                     },
-                                           },
-                                           CancellationToken.None)
-                        .ConfigureAwait(false);
-        messageHandler_.Status = resubmit
-                                   ? QueueMessageStatus.Cancelled
-                                   : QueueMessageStatus.Processed;
+          await submitter_.CompleteTaskAsync(taskData,
+                                             resubmit,
+                                             new Output
+                                             {
+                                               Error = new Output.Types.Error
+                                               {
+                                                 Details = e.Message,
+                                               },
+                                             },
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+
+          messageHandler_.Status = QueueMessageStatus.Cancelled;
+        }
+        else
+        {
+          logger_.LogError(e,
+                         "Error during task execution, cancelling task");
+
+          await submitter_.CompleteTaskAsync(taskData,
+                                             resubmit,
+                                             new Output
+                                             {
+                                               Error = new Output.Types.Error
+                                               {
+                                                 Details = e.Message,
+                                               },
+                                             },
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+          messageHandler_.Status = QueueMessageStatus.Processed;
+        }
       }
     }
 

@@ -36,7 +36,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
   private MongoDatabaseProvider? tableProvider_;
 
-  public override void GetObjectStorageInstance()
+  protected override void GetObjectStorageInstance()
   {
     tableProvider_ = new MongoDatabaseProvider(serviceConfigurator: collection => collection.AddSingleton<IObjectStorage, ObjectStorage>());
     var provider = tableProvider_.GetServiceProvider();

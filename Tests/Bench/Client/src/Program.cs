@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// In benchmarks, Random can be used
+#pragma warning disable SEC0115
+
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -84,7 +87,7 @@ internal static class Program
                           benchOptions);
     using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
-    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options));
+    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options!));
 
     // Get List of partitions for logging purpose
     var partitions = await channelPool.WithInstanceAsync(async channel =>

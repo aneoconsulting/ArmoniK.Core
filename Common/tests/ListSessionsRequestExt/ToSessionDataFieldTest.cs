@@ -55,14 +55,6 @@ public class ToSessionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(SessionRawEnumField field,
-                      object?             expected)
-      => new TestCaseData(new SessionRawField
-                          {
-                            Field = field,
-                          },
-                          expected).SetArgDisplayNames(field.ToString());
-
     // TODO add Duration
     yield return Case(SessionRawEnumField.Status,
                       SessionData.Status);
@@ -77,6 +69,14 @@ public class ToSessionDataFieldTest
     yield return Case(SessionRawEnumField.PartitionIds,
                       SessionData.PartitionIds);
   }
+
+  private static TestCaseData Case(SessionRawEnumField field,
+                                   object?             expected)
+    => new TestCaseData(new SessionRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
 
   [Test]
   [TestCaseSource(nameof(TestCasesInvoke))]

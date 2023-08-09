@@ -176,6 +176,7 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = $"{nameof(ArgumentOutOfRangeException)} is used in nested code")]
   public async Task TryGetResult(ResultRequest                    request,
                                  IServerStreamWriter<ResultReply> responseStream,
                                  CancellationToken                cancellationToken)
@@ -450,6 +451,7 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = $"{nameof(ArgumentOutOfRangeException)} is used in nested code")]
   public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                                 CancellationToken contextCancellationToken)
   {

@@ -97,7 +97,7 @@ public class TaskHandlerTest
     Assert.IsFalse(acquired);
   }
 
-  private async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string taskRetriedId, string sessionId)> InitProviderRunnableTask(
+  private static async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string taskRetriedId, string sessionId)> InitProviderRunnableTask(
     TestTaskHandlerProvider testServiceProvider)
   {
     await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
@@ -558,7 +558,8 @@ public class TaskHandlerTest
     {
       if (waitMethod_ == WaitMethod.Read)
       {
-        await Task.Delay(delay_)
+        await Task.Delay(delay_,
+                         cancellationToken)
                   .ConfigureAwait(false);
       }
 
@@ -708,7 +709,8 @@ public class TaskHandlerTest
     {
       if (waitMethod_ == WaitMethod.Acquire)
       {
-        await Task.Delay(delay_)
+        await Task.Delay(delay_,
+                         cancellationToken)
                   .ConfigureAwait(false);
       }
 
@@ -843,7 +845,8 @@ public class TaskHandlerTest
     public async Task<SessionData> GetSessionAsync(string            sessionId,
                                                    CancellationToken cancellationToken = default)
     {
-      await Task.Delay(delay_)
+      await Task.Delay(delay_,
+                       cancellationToken)
                 .ConfigureAwait(false);
       return sessionData_!;
     }
@@ -997,6 +1000,7 @@ public class TaskHandlerTest
 
     public void Dispose()
     {
+      GC.SuppressFinalize(this);
     }
 
     public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }

@@ -58,7 +58,7 @@ public class AdapterLoadingTest
     }
   }
 
-  public void Setup(Dictionary<string, string?> config)
+  public static void Setup(Dictionary<string, string?> config)
   {
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var logger         = loggerProvider.CreateLogger("root");

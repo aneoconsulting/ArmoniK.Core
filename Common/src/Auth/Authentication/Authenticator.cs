@@ -211,7 +211,9 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     var identity = cache_.Get(cacheKey);
     if (identity?.Identity is not null)
     {
-      logger_.LogInformation($"Found authenticated user {identity.Identity.Name} in cache. Authentication hashkey : {keyHash}.");
+      logger_.LogInformation("Found authenticated user {username} in cache. Authentication hashkey : {keyHash}.",
+                             identity.Identity.Name,
+                             keyHash);
       return AuthenticateResult.Success(new AuthenticationTicket(identity,
                                                                  SchemeName));
     }
@@ -246,7 +248,13 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                         impersonationId,
                                                         impersonationUsername)
                        .ConfigureAwait(false);
-          logger_.LogInformation($"User with id {(prevIdentity.Identity as UserIdentity)!.UserId} and name {(prevIdentity.Identity as UserIdentity)!.UserName} impersonated the user with id {(identity.Identity as UserIdentity)!.UserId} and name {(identity.Identity as UserIdentity)!.UserName}. Authentication key : {keyHash}");
+          logger_.LogInformation("User with id {userId} and name {userName} impersonated the user with id {impersonatedId} and name {impersonatedName}. Authentication key : {keyHash}",
+                                 (prevIdentity.Identity as UserIdentity)!.UserId,
+                                 (prevIdentity.Identity as UserIdentity)!.UserName,
+                                 (identity.Identity as UserIdentity)!.UserId,
+                                 (identity.Identity as UserIdentity)!.UserName,
+                                 keyHash
+                                 );
         }
         catch (AuthenticationException e)
         {

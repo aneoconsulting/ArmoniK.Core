@@ -42,7 +42,7 @@ namespace ArmoniK.Core.Common.Pollster;
 /// <summary>
 ///   Represents the handler that will provide servers to process requests from worker
 /// </summary>
-public class AgentHandler : IAgentHandler, IAsyncDisposable
+public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
 {
   private readonly WebApplication        app_;
   private readonly ComputePlane          computePlaneOptions_;
@@ -86,7 +86,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     {
       if (computePlaneOptions.AgentChannel?.Address == null)
       {
-        throw new ArgumentNullException(nameof(computePlaneOptions.AgentChannel));
+        throw new ArgumentNullException(nameof(computePlaneOptions), $"{nameof(computePlaneOptions.AgentChannel)} is null");
       }
 
       logger.LogDebug("Agent address is {address}",

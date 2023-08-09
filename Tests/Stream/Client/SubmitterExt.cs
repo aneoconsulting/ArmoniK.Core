@@ -66,20 +66,15 @@ public static class SubmitterExt
       case CreateTaskReply.ResponseOneofCase.None:
         throw new Exception("Issue with Server !");
       case CreateTaskReply.ResponseOneofCase.CreationStatusList:
-        return createTaskReply.CreationStatusList.CreationStatuses.Select(status =>
-                                                                          {
-                                                                            switch (status.StatusCase)
-                                                                            {
-                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.None:
-                                                                                throw new Exception("Issue with Server !");
-                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo:
-                                                                                return status.TaskInfo.TaskId;
-                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error:
-                                                                                return status.Error;
-                                                                              default:
-                                                                                throw new ArgumentOutOfRangeException();
-                                                                            }
-                                                                          });
+        return createTaskReply.CreationStatusList.CreationStatuses.Select(status => status.StatusCase switch
+                                                                                    {
+                                                                                      CreateTaskReply.Types.CreationStatus.StatusOneofCase.None =>
+                                                                                        throw new Exception("Issue with Server !"),
+                                                                                      CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo => status.TaskInfo
+                                                                                                                                                             .TaskId,
+                                                                                      CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error => status.Error,
+                                                                                      _                                                          => throw new ArgumentOutOfRangeException(),
+                                                                                    });
       case CreateTaskReply.ResponseOneofCase.Error:
         throw new Exception("Error : " + createTaskReply.Error);
       default:

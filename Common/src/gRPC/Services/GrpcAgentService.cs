@@ -29,12 +29,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [IgnoreAuthentication]
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
-  private readonly ILogger<GrpcAgentService> logger_;
   private          IAgent?                   agent_;
-
-
-  public GrpcAgentService(ILogger<GrpcAgentService> logger)
-    => logger_ = logger;
 
   public Task Start(IAgent agent)
   {

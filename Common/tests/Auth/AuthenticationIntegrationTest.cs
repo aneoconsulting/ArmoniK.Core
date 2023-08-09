@@ -108,11 +108,11 @@ public class AuthenticationIntegrationTest
 
   [SetUp]
   public void BeforeEach()
-    => singleThreadSemaphore.Wait();
+    => SingleThreadSemaphore.Wait();
 
   [TearDown]
   public void AfterEach()
-    => singleThreadSemaphore.Release();
+    => SingleThreadSemaphore.Release();
 
   private const string SessionId   = "MySession";
   private const string ResultKey   = "ResultKey";
@@ -406,7 +406,7 @@ public class AuthenticationIntegrationTest
                   ? "DoesntExistCN"
                   : Identities[(int)index]
                     .Certificates.FirstOrDefault(defaultCertificate)
-                    .CN);
+                    .Cn);
     headers.Add(AuthenticatorOptions.DefaultAuth.FingerprintHeader,
                 index == IdentityIndex.DoesntExist
                   ? "DoesntExistFingerprint"
@@ -653,8 +653,7 @@ public class AuthenticationIntegrationTest
                                                                                                                        new()
                                                                                                                        {
                                                                                                                          Id =
-                                                                                                                           new UploadResultDataRequest.Types.
-                                                                                                                           ResultIdentifier
+                                                                                                                           new UploadResultDataRequest.Types.ResultIdentifier
                                                                                                                            {
                                                                                                                              ResultId  = ResultKey,
                                                                                                                              SessionId = SessionId,
@@ -670,8 +669,7 @@ public class AuthenticationIntegrationTest
                                                                                                                      typeof(TaskFilter), new TaskFilter
                                                                                                                                          {
                                                                                                                                            Session =
-                                                                                                                                             new TaskFilter.Types.
-                                                                                                                                             IdsRequest
+                                                                                                                                             new TaskFilter.Types.IdsRequest
                                                                                                                                              {
                                                                                                                                                Ids =
                                                                                                                                                {
@@ -894,8 +892,7 @@ public class AuthenticationIntegrationTest
   public static readonly IReadOnlyDictionary<Type, Type> ClientServerTypeMapping = new ReadOnlyDictionary<Type, Type>(new Dictionary<Type, Type>
                                                                                                                       {
                                                                                                                         {
-                                                                                                                          typeof(Api.gRPC.V1.Submitter.Submitter.
-                                                                                                                            SubmitterClient),
+                                                                                                                          typeof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient),
                                                                                                                           typeof(GrpcSubmitterService)
                                                                                                                         },
                                                                                                                         {
@@ -979,7 +976,7 @@ public class AuthenticationIntegrationTest
                                            client,
                                            args));
 
-  private static readonly SemaphoreSlim singleThreadSemaphore = new(1,
+  private static readonly SemaphoreSlim SingleThreadSemaphore = new(1,
                                                                     1);
 
   /// <summary>
@@ -1182,9 +1179,7 @@ public class AuthenticationIntegrationTest
                     false,
                     true,
                   })]
-  public void AuthenticationShouldMatch<TRequest, TReply>(CaseParameters parameters,
-                                                          TRequest       requestExample,
-                                                          TReply         replyExample)
+  public void AuthenticationShouldMatch<TRequest, TReply>(CaseParameters parameters)
   {
     TransformResult(parameters.IdentityIndex,
                     parameters.ImpersonationType,
@@ -1201,38 +1196,6 @@ public class AuthenticationIntegrationTest
                                           channel);
     Assert.IsNotNull(client);
     Assert.IsInstanceOf<ClientBase>(client);
-
-    async Task TestFunction()
-    {
-      if (parameters.IsAsync)
-      {
-        await AsyncTestFunction(parameters.Method,
-                                (ClientBase)client!,
-                                parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else if (parameters.ClientStream)
-      {
-        await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
-                                                         (ClientBase)client!,
-                                                         parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else if (parameters.ServerStream)
-      {
-        await ServerStreamTestFunction<TReply>(parameters.Method,
-                                               (ClientBase)client!,
-                                               parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else
-      {
-        await SyncTestFunction(parameters.Method,
-                               (ClientBase)client!,
-                               parameters.Args)
-          .ConfigureAwait(false);
-      }
-    }
 
     var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
 
@@ -1278,6 +1241,39 @@ public class AuthenticationIntegrationTest
 
     helper_.DeleteChannel(channel)
            .Wait();
+    return;
+
+    async Task TestFunction()
+    {
+      if (parameters.IsAsync)
+      {
+        await AsyncTestFunction(parameters.Method,
+                                (ClientBase)client!,
+                                parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else if (parameters.ClientStream)
+      {
+        await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
+                                                         (ClientBase)client!,
+                                                         parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else if (parameters.ServerStream)
+      {
+        await ServerStreamTestFunction<TReply>(parameters.Method,
+                                               (ClientBase)client!,
+                                               parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        await SyncTestFunction(parameters.Method,
+                               (ClientBase)client!,
+                               parameters.Args)
+          .ConfigureAwait(false);
+      }
+    }
   }
 
   /// <summary>
@@ -1301,9 +1297,7 @@ public class AuthenticationIntegrationTest
   }
 
   [TestCaseSource(nameof(GetAuthServiceTestCaseSource))]
-  public async Task AuthServiceShouldGiveUserInfo(CaseParameters parameters,
-                                                  object         _,
-                                                  object         __)
+  public async Task AuthServiceShouldGiveUserInfo(CaseParameters parameters)
   {
     TransformResult(parameters.IdentityIndex,
                     parameters.ImpersonationType,

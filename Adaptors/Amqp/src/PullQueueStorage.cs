@@ -141,7 +141,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                              sender,
                                              receiver,
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
-                                             logger_,
                                              cancellationToken);
 
         break;

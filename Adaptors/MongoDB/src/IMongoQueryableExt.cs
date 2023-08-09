@@ -46,7 +46,7 @@ internal static class IMongoQueryableExt
   }
 
 
-  public static async IAsyncEnumerable<U> ToAsyncEnumerable<T, U>(this                     IFindFluent<T, U> findFluent,
+  public static async IAsyncEnumerable<TU> ToAsyncEnumerable<T, TU>(this                     IFindFluent<T, TU> findFluent,
                                                                   [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var cursor = await findFluent.ToCursorAsync(cancellationToken)

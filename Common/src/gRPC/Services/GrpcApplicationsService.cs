@@ -54,7 +54,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
-    var tasks = await taskTable_.ListApplicationsAsync(request.Filters is null
+    var (applications, totalCount) = await taskTable_.ListApplicationsAsync(request.Filters is null
                                                          ? data => true
                                                          : request.Filters.ToApplicationFilter(),
                                                        request.Sort is null
@@ -75,7 +75,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
              PageSize = request.PageSize,
              Applications =
              {
-               tasks.applications.Select(data => new ApplicationRaw
+               applications.Select(data => new ApplicationRaw
                                                  {
                                                    Name      = data.Name,
                                                    Namespace = data.Namespace,
@@ -83,7 +83,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
                                                    Service   = data.Service,
                                                  }),
              },
-             Total = tasks.totalCount,
+             Total = totalCount,
            };
   }
 }

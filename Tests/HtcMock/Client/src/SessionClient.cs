@@ -36,7 +36,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Samples.HtcMock.Client;
 
-public class SessionClient : ISessionClient
+public sealed class SessionClient : ISessionClient
 {
   private readonly ChannelBase               channel_;
   private readonly ILogger<GridClient>       logger_;
@@ -75,7 +75,9 @@ public class SessionClient : ISessionClient
                           Session  = sessionId_,
                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     switch (availabilityReply.TypeCase)
     {
@@ -103,7 +105,9 @@ public class SessionClient : ISessionClient
                           Session  = sessionId_,
                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     switch (availabilityReply.TypeCase)
     {
