@@ -1182,6 +1182,9 @@ public class AuthenticationIntegrationTest
                     false,
                     true,
                   })]
+  [SuppressMessage("Style",
+                   "IDE0060:Remove unused parameter",
+                   Justification = "Required for TestCaseSource")]
   public void AuthenticationShouldMatch<TRequest, TReply>(CaseParameters parameters,
                                                           TRequest       requestExample,
                                                           TReply         replyExample)
@@ -1301,8 +1304,14 @@ public class AuthenticationIntegrationTest
     return GetCases(methodObjectList);
   }
 
+  [PublicAPI]
   [TestCaseSource(nameof(GetAuthServiceTestCaseSource))]
-  public async Task AuthServiceShouldGiveUserInfo(CaseParameters parameters)
+  [SuppressMessage("Style",
+                   "IDE0060:Remove unused parameter",
+                   Justification = "Required for reflexion")]
+  public async Task AuthServiceShouldGiveUserInfo(CaseParameters parameters,
+                                                  object         exampleRequest,
+                                                  object         exampleReply)
   {
     TransformResult(parameters.IdentityIndex,
                     parameters.ImpersonationType,
