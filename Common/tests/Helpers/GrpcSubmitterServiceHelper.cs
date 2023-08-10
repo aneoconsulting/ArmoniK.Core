@@ -27,6 +27,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -116,8 +117,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public void Dispose()
   {
     app_.DisposeAsync()
-        .GetAwaiter()
-        .GetResult();
+        .WaitSync();
     server_?.Dispose();
     server_ = null;
     handler_?.Dispose();
@@ -159,7 +159,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     ;
   }
 
-  public async Task DeleteChannel(ChannelBase channel)
+  public static async Task DeleteChannel(ChannelBase channel)
     => await channel.ShutdownAsync()
                     .ConfigureAwait(false);
 

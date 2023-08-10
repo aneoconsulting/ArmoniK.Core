@@ -115,7 +115,9 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
     var e = new ArmoniKException("Could not get grpc channel");
     logger_.LogError(e,
+#pragma warning disable CA2254 // string.Empty is constant
                      string.Empty);
+#pragma warning restore CA2254
     throw e;
   }
 

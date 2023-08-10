@@ -40,6 +40,9 @@ public class WorkerService : WorkerStreamWrapper
   {
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+                                                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
+                                                   Justification = "taskHandler.ExpectedResults.Count is not a real argument")]
   public override async Task<Output> Process(ITaskHandler taskHandler)
   {
     var output = new Output();
@@ -112,7 +115,7 @@ public class WorkerService : WorkerStreamWrapper
                                                  req,
                                                })
                              .ConfigureAwait(false);
-            logger_.LogDebug("Sub Task created : {subtaskid}",
+            logger_.LogDebug("Sub Task created : {subtaskId}",
                              taskId);
             output = new Output
                      {
@@ -122,7 +125,7 @@ public class WorkerService : WorkerStreamWrapper
             break;
           case TestPayload.TaskType.DatadepTransfer:
           {
-            var         taskId = "DatadepTransfer-" + Guid.NewGuid();
+            var         taskId = "DataDepTransfer-" + Guid.NewGuid();
             TaskRequest req;
             if (taskHandler.ExpectedResults.Count != 2)
             {
@@ -164,7 +167,7 @@ public class WorkerService : WorkerStreamWrapper
                                                  req,
                                                })
                              .ConfigureAwait(false);
-            logger_.LogDebug("Sub Task created : {subtaskid}",
+            logger_.LogDebug("Sub Task created : {subtaskId}",
                              taskId);
 
             output = new Output

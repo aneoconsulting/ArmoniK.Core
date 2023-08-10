@@ -67,6 +67,9 @@ public sealed class SessionClient : ISessionClient
             .Wait();
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+                                                   "CA2208",
+                                                   Justification = "availabilityReply.TypeCase is not a real argument")]
   public byte[] GetResult(string id)
   {
     var resultRequest = new ResultRequest
@@ -97,6 +100,9 @@ public sealed class SessionClient : ISessionClient
     return response.Result;
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+                                                   "CA2208",
+                                                   Justification = "availabilityReply.TypeCase is not a real argument")]
   public Task WaitSubtasksCompletion(string id)
   {
     var resultRequest = new ResultRequest
@@ -126,6 +132,9 @@ public sealed class SessionClient : ISessionClient
     return Task.CompletedTask;
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
+                                                   "CA2208",
+                                                   Justification = "createTaskReply.ResponseCase is not a real argument")]
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
     var taskRequests = new List<TaskRequest>();
@@ -180,7 +189,7 @@ public sealed class SessionClient : ISessionClient
       case CreateTaskReply.ResponseOneofCase.Error:
         throw new Exception("Error : " + createTaskReply.Error);
       default:
-        throw new ArgumentOutOfRangeException();
+        throw new ArgumentOutOfRangeException(nameof(createTaskReply.ResponseCase));
     }
   }
 }

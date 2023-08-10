@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// In benchmarks, Random can be used
-#pragma warning disable SEC0115
 
 using System;
 using System.Diagnostics;
@@ -384,7 +382,9 @@ internal static class Program
                                                           Session  = createSessionReply.SessionId,
                                                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
                                     var availabilityReply = await submitterClient.WaitForAvailabilityAsync(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                                     switch (availabilityReply.TypeCase)
                                     {

@@ -52,6 +52,10 @@ public static class SubmitterExt
     return session.SessionId;
   }
 
+
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability",
+                                                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
+                                                   Justification = "createTaskReply.ResponseCase is not a real argument")]
   public static async Task<IEnumerable<string>> CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,
                                                                               string                         sessionId,
                                                                               TaskOptions?                   taskOptions,
@@ -61,24 +65,22 @@ public static class SubmitterExt
                                                         taskOptions,
                                                         taskRequestList)
                                       .ConfigureAwait(false);
-    switch (createTaskReply.ResponseCase)
-    {
-      case CreateTaskReply.ResponseOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.ResponseOneofCase.CreationStatusList:
-        return createTaskReply.CreationStatusList.CreationStatuses.Select(status => status.StatusCase switch
-                                                                                    {
-                                                                                      CreateTaskReply.Types.CreationStatus.StatusOneofCase.None =>
-                                                                                        throw new Exception("Issue with Server !"),
-                                                                                      CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo => status.TaskInfo
-                                                                                                                                                             .TaskId,
-                                                                                      CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error => status.Error,
-                                                                                      _                                                          => throw new ArgumentOutOfRangeException(),
-                                                                                    });
-      case CreateTaskReply.ResponseOneofCase.Error:
-        throw new Exception("Error : " + createTaskReply.Error);
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
+
+    return createTaskReply.ResponseCase switch
+           {
+             CreateTaskReply.ResponseOneofCase.None               => throw new Exception("Issue with Server !"),
+             CreateTaskReply.ResponseOneofCase.CreationStatusList => createTaskReply.CreationStatusList.CreationStatuses.Select(StatusToString),
+             CreateTaskReply.ResponseOneofCase.Error              => throw new Exception("Error : " + createTaskReply.Error),
+             _                                                    => throw new ArgumentOutOfRangeException(),
+           };
   }
+
+  private static string StatusToString(CreateTaskReply.Types.CreationStatus status)
+    => status.StatusCase switch
+       {
+         CreateTaskReply.Types.CreationStatus.StatusOneofCase.None     => throw new Exception("Issue with Server !"),
+         CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo => status.TaskInfo.TaskId,
+         CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error    => status.Error,
+         _                                                             => throw new ArgumentOutOfRangeException(nameof(status)),
+       };
 }

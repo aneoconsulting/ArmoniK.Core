@@ -1248,7 +1248,7 @@ public class AuthenticationIntegrationTest
                       ((RpcException)finalException!).StatusCode);
     }
 
-    helper_.DeleteChannel(channel)
+    GrpcSubmitterServiceHelper.DeleteChannel(channel)
            .Wait();
     return;
 
@@ -1391,7 +1391,7 @@ public class AuthenticationIntegrationTest
                       ((RpcException)exception.InnerException!).StatusCode);
     }
 
-    await helper_.DeleteChannel(channel)
+    await GrpcSubmitterServiceHelper.DeleteChannel(channel)
                  .ConfigureAwait(false);
   }
 }

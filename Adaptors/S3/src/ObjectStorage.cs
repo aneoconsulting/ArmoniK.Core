@@ -161,10 +161,13 @@ public class ObjectStorage : IObjectStorage
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
     var value = await s3Client_.StringGetValueAsync(bucketName_,
-                                                    $"{objectStorageName_}{key}_count")
+                                                    $"{objectStorageName_}{key}_count",
+                                                    cancellationToken)
                                .ConfigureAwait(false);
 
+#pragma warning disable IDE0270 // null check can be simplifier but with a less readable approach
     if (value == null)
+#pragma warning restore IDE0270
     {
       throw new ObjectDataNotFoundException("Key not found");
     }
@@ -266,19 +269,20 @@ internal static class AmazonS3ClientExt
   }
 
   internal static async Task<string?> StringGetValueAsync(this AmazonS3Client s3Client,
-                                                          string bucketName,
-                                                          string key)
+                                                          string              bucketName,
+                                                          string              key,
+                                                          CancellationToken   cancellationToken = default)
   {
     var response = await s3Client.GetObjectAsync(bucketName,
-                                                 key);
+                                                 key,
+                                                 cancellationToken);
 
     // Get the data from the response stream
     await using var responseStream = response.ResponseStream;
-
+    
     var retrievedData = new byte[responseStream.Length];
-    _ = await responseStream.ReadAsync(retrievedData,
-                                       0,
-                                       retrievedData.Length);
+    _ = await responseStream.ReadAsync(new Memory<byte>(retrievedData),
+                                       cancellationToken);
     return Encoding.UTF8.GetString(retrievedData);
   }
 }

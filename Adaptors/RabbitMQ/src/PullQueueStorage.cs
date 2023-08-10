@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -155,6 +156,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
       consumer.Received += Subscriber;
 
+
       ConnectionRabbit.Channel!.BasicConsume(pullQueue.QueueName,
                                              false,
                                              consumer);
@@ -162,31 +164,29 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     }
   }
 
-#pragma warning disable CS1998
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
+  public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                                  CancellationToken cancellationToken = default)
   {
-    var nbPulledMessage = 0;
-
     if (!IsInitialized)
     {
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
     cancellationToken.ThrowIfCancellationRequested();
-    while (nbPulledMessage < nbMessages)
-    {
-      if (!queueMessageHandlers_!.TryDequeue(out var qmh))
-      {
-        continue;
-      }
 
-      nbPulledMessage++;
+    // using ToAsyncEnumerable avoids using a needless async operator
+    return Enumerable.Repeat(0,
+                             nbMessages)
+                     .Select(_ =>
+                             {
+                               IQueueMessageHandler? qmh;
+                               do
+                               {
+                                 cancellationToken.ThrowIfCancellationRequested();
+                               } while (!queueMessageHandlers_!.TryDequeue(out qmh));
 
-      // Pass the cancellation token to the pulled handler
-      qmh!.CancellationToken = cancellationToken;
-      yield return qmh;
-    }
+                               return qmh;
+                             })
+                     .ToAsyncEnumerable();
   }
 }

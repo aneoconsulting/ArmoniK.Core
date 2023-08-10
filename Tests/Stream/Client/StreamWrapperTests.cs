@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// In test, Random can be used
-#pragma warning disable SEC0115
 
 using System;
 using System.Collections.Generic;
@@ -146,7 +144,9 @@ internal class StreamWrapperTests
                           Session  = sessionId,
                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     Assert.AreEqual(availabilityReply.TypeCase,
                     AvailabilityReply.TypeOneofCase.Ok);
@@ -355,7 +355,9 @@ internal class StreamWrapperTests
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
                                                                             Session  = sessionId,
                                                                           };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                       return availabilityReply.TypeCase;
                                                     });
 
@@ -449,7 +451,9 @@ internal class StreamWrapperTests
                                                                              ResultId = request.ExpectedOutputKeys.First(),
                                                                              Session  = sessionId,
                                                                            };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                        var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                        return availabilityReply.TypeCase;
                                                      });
 
@@ -462,7 +466,9 @@ internal class StreamWrapperTests
                                                                              ResultId = request.ExpectedOutputKeys.Last(),
                                                                              Session  = sessionId,
                                                                            };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                        var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                        return availabilityReply.TypeCase;
                                                      });
 
@@ -562,7 +568,9 @@ internal class StreamWrapperTests
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
                                                                             Session  = sessionId,
                                                                           };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                       return availabilityReply.TypeCase;
                                                     });
 
@@ -627,7 +635,9 @@ internal class StreamWrapperTests
                           ResultId = outputId,
                           Session  = sessionId,
                         };
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     Assert.AreEqual(AvailabilityReply.TypeOneofCase.Error,
                     availabilityReply.TypeCase);
@@ -728,7 +738,9 @@ internal class StreamWrapperTests
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
                                                                             Session  = sessionId,
                                                                           };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                       return availabilityReply.TypeCase;
                                                     });
 

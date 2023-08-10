@@ -20,15 +20,34 @@ using System.Threading;
 
 namespace ArmoniK.Core.Base;
 
+/// <summary>
+/// Interface to handle queue messages lifecycle.
+/// </summary>
 public interface IQueueMessageHandler : IAsyncDisposable
 {
+  /// <summary>
+  /// Used to signal that the message ownership has been lost
+  /// </summary>
+  [Obsolete("ArmoniK now manages loss of link with the queue")]
   CancellationToken CancellationToken { get; set; }
 
+  /// <summary>
+  /// Id of the message
+  /// </summary>
   string MessageId { get; }
 
+  /// <summary>
+  /// Task Id contained in the message
+  /// </summary>
   string TaskId { get; }
 
+  /// <summary>
+  /// Status of the message. Used when the handler is disposed to notify the queue.
+  /// </summary>
   QueueMessageStatus Status { get; set; }
 
+  /// <summary>
+  /// Date of reception of the message
+  /// </summary>
   DateTime ReceptionDateTime { get; init; }
 }

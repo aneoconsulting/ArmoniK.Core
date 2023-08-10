@@ -287,8 +287,7 @@ public class TaskTable : ITaskTable
     await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
                                                .FilterQuery(filter)
                                                .Select(model => model.TaskId)
-                                               .ToAsyncEnumerable()
-                                               .WithCancellation(cancellationToken)
+                                               .ToAsyncEnumerable(cancellationToken)
                                                .ConfigureAwait(false))
     {
       yield return taskId;
