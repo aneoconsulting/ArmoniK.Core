@@ -60,7 +60,7 @@ public class TestPollingAgentProvider : IDisposable
 
   public TestPollingAgentProvider(IWorkerStreamHandler workerStreamHandler)
   {
-    var           logger = NullLogger.Instance;
+    var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
@@ -68,7 +68,7 @@ public class TestPollingAgentProvider : IDisposable
                     StandardOuputLogger = line => logger.LogInformation(line),
                     StandardErrorLogger = line => logger.LogError(line),
 #pragma warning restore CA2254
-    };
+                  };
 
     runner_ = MongoRunner.Run(options);
     IMongoClient client = new MongoClient(runner_.ConnectionString);
@@ -124,18 +124,15 @@ public class TestPollingAgentProvider : IDisposable
     builder.Services.AddSingleton(computePlanOptions);
 
     app_ = builder.Build();
-
-    app_.Services.GetRequiredService<IResultTable>();
-    app_.Services.GetRequiredService<ITaskTable>();
     var sessionTable = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter     = app_.Services.GetRequiredService<ISubmitter>();
+    Submitter = app_.Services.GetRequiredService<ISubmitter>();
     var pollster = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
 
     sessionTable.Init(CancellationToken.None)
-                 .Wait();
+                .Wait();
 
     pollsterRunningTask_ = Task.Factory.StartNew(() => pollster.MainLoop(pollsterCancellationTokenSource_.Token),
-                                                TaskCreationOptions.LongRunning);
+                                                 TaskCreationOptions.LongRunning);
   }
 
   public void Dispose()
@@ -144,7 +141,7 @@ public class TestPollingAgentProvider : IDisposable
     pollsterRunningTask_?.Wait();
     pollsterRunningTask_?.Dispose();
     pollsterCancellationTokenSource_?.Dispose();
-    ((IDisposable)app_)?.Dispose();
+    (app_ as IDisposable)?.Dispose();
     loggerFactory_?.Dispose();
     runner_?.Dispose();
     GC.SuppressFinalize(this);

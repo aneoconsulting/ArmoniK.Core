@@ -42,9 +42,9 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication      app_;
+  private readonly Mutex               channelMutex_ = new();
   private readonly ILoggerFactory      loggerFactory_;
   private          ChannelBase?        channel_;
-  private readonly Mutex              channelMutex_ = new ();
   private          HttpMessageHandler? handler_;
   private          TestServer?         server_;
 
@@ -88,8 +88,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     serviceConfigurator?.Invoke(builder.Services);
 
     builder.WebHost.UseTestServer(options => options.PreserveExecutionContext = true);
-    loggerFactory_.CreateLogger("Testing apps");
-    app_    = builder.Build();
+    app_ = builder.Build();
     app_.UseRouting();
     app_.UseAuthentication();
     app_.UseAuthorization();

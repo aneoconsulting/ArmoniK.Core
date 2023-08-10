@@ -61,17 +61,17 @@ public class ConnectionRabbit : IConnectionRabbit
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
-    {
-      HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized.")),
-      HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.IsOpen && Channel is not null && Channel.IsOpen
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped.")),
-      _ => throw new ArgumentOutOfRangeException(nameof(tag),
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.IsOpen && Channel is not null && Channel.IsOpen
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
-    };
+       };
 
   public void Dispose()
   {
@@ -128,13 +128,13 @@ public class ConnectionRabbit : IConnectionRabbit
       try
       {
         conn.Connection = factory.CreateConnection();
-        conn.Connection.ConnectionShutdown += (obj,
+        conn.Connection.ConnectionShutdown += (_,
                                                ea) => OnShutDown(ea,
                                                                  "Connection",
                                                                  logger_);
 
         Channel = conn.Connection.CreateModel();
-        Channel.ModelShutdown += (obj,
+        Channel.ModelShutdown += (_,
                                   ea) => OnShutDown(ea,
                                                     "Channel",
                                                     logger_);
@@ -164,7 +164,8 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     if (ea.Cause is null)
     {
-      logger.LogInformation("RabbitMQ {model} closed with no error", model);
+      logger.LogInformation("RabbitMQ {model} closed with no error",
+                            model);
     }
     else
     {

@@ -54,17 +54,17 @@ public class ConnectionAmqp : IConnectionAmqp
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
-    {
-      HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} is not yet initialized.")),
-      HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.ConnectionState == ConnectionState.Opened
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} not initialized or connection dropped.")),
-      _ => throw new ArgumentOutOfRangeException(nameof(tag),
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} is not yet initialized.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.ConnectionState == ConnectionState.Opened
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
-    };
+       };
 
   public async Task Init(CancellationToken cancellationToken = default)
     => await connectionTask_;
@@ -107,7 +107,7 @@ public class ConnectionAmqp : IConnectionAmqp
       {
         conn.Connection = await connectionFactory.CreateAsync(address)
                                                  .ConfigureAwait(false);
-        conn.Connection.AddClosedCallback((x,
+        conn.Connection.AddClosedCallback((_,
                                            e) => OnCloseConnection(e,
                                                                    conn.logger_));
         break;
@@ -130,8 +130,8 @@ public class ConnectionAmqp : IConnectionAmqp
     conn.isInitialized_ = true;
   }
 
-  private static void OnCloseConnection(Error?      error,
-                                        ILogger     logger)
+  private static void OnCloseConnection(Error?  error,
+                                        ILogger logger)
   {
     if (error == null)
     {
