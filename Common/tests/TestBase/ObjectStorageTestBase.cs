@@ -169,10 +169,15 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage!.GetValuesAsync("dataKey2");
-      var data = await res.SingleAsync()
-                          .ConfigureAwait(false);
-      var str = Encoding.ASCII.GetString(data);
+      var res  = ObjectStorage!.GetValuesAsync("dataKey2");
+      var data = new List<byte>();
+      foreach (var item in await res.ToListAsync()
+                                    .ConfigureAwait(false))
+      {
+        data.AddRange(item);
+      }
+
+      var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
       Assert.IsTrue(str.SequenceEqual("AAAABBBB"));
     }
