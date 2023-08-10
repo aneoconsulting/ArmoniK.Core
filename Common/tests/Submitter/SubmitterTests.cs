@@ -774,12 +774,16 @@ public class SubmitterTests
                     .ConfigureAwait(false);
 
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[0].TypeCase);
+                    writer.Messages[0]
+                          .TypeCase);
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[1].TypeCase);
+                    writer.Messages[1]
+                          .TypeCase);
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[2].TypeCase);
-    Assert.IsTrue(writer.Messages[2].Result.DataComplete);
+                    writer.Messages[2]
+                          .TypeCase);
+    Assert.IsTrue(writer.Messages[2]
+                        .Result.DataComplete);
   }
 
   [Test]

@@ -124,7 +124,8 @@ public class TaskTable : ITaskTable
                                                                   CancellationToken cancellationToken = default)
     => await ListTasksAsync(filter,
                             cancellationToken)
-             .Select(taskId => taskId2TaskData_[taskId].Status)
+             .Select(taskId => taskId2TaskData_[taskId]
+                       .Status)
              .GroupBy(status => status)
              .SelectAwait(async grouping => new TaskStatusCount(grouping.Key,
                                                                 await grouping.CountAsync(cancellationToken)
@@ -224,10 +225,12 @@ public class TaskTable : ITaskTable
 
     return rawList.Where(taskId => filter.StatusesCase switch
                                    {
-                                     TaskFilter.StatusesOneofCase.None     => true,
-                                     TaskFilter.StatusesOneofCase.Included => filter.Included.Statuses.Contains(taskId2TaskData_[taskId].Status),
-                                     TaskFilter.StatusesOneofCase.Excluded => !filter.Excluded.Statuses.Contains(taskId2TaskData_[taskId].Status),
-                                     _                                     => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
+                                     TaskFilter.StatusesOneofCase.None => true,
+                                     TaskFilter.StatusesOneofCase.Included => filter.Included.Statuses.Contains(taskId2TaskData_[taskId]
+                                                                                                                  .Status),
+                                     TaskFilter.StatusesOneofCase.Excluded => !filter.Excluded.Statuses.Contains(taskId2TaskData_[taskId]
+                                                                                                                   .Status),
+                                     _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                                    })
                   .ToAsyncEnumerable();
   }
@@ -356,7 +359,8 @@ public class TaskTable : ITaskTable
       throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
-    return Task.FromResult(taskId2TaskData_[taskId].Output);
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .Output);
   }
 
   /// <inheritdoc />
@@ -429,7 +433,8 @@ public class TaskTable : ITaskTable
       throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
-    return Task.FromResult(taskId2TaskData_[taskId].ParentTaskIds as IEnumerable<string>);
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .ParentTaskIds as IEnumerable<string>);
   }
 
   /// <inheritdoc />

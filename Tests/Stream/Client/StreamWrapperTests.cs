@@ -259,7 +259,8 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    results.Results[i].ResultId,
+                    results.Results[i]
+                           .ResultId,
                   },
                 };
       taskRequests.Add(req);
@@ -323,7 +324,8 @@ internal class StreamWrapperTests
                     {
                       Type      = taskType,
                       DataBytes = BitConverter.GetBytes(i),
-                      ResultKey = results.Results[i].ResultId,
+                      ResultKey = results.Results[i]
+                                         .ResultId,
                     };
 
       var req = new TaskRequest
@@ -331,7 +333,8 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    results.Results[i].ResultId,
+                    results.Results[i]
+                           .ResultId,
                   },
                 };
       taskRequestList.Add(req);
@@ -411,10 +414,12 @@ internal class StreamWrapperTests
     {
       var payload = new TestPayload
                     {
-                      Type       = TestPayload.TaskType.DatadepTransfer,
-                      DataBytes  = BitConverter.GetBytes(i + 5),
-                      ResultKey  = resultsMetaData.Results[2 * i].ResultId,
-                      ResultKey2 = resultsMetaData.Results[2 * i + 1].ResultId,
+                      Type      = TestPayload.TaskType.DatadepTransfer,
+                      DataBytes = BitConverter.GetBytes(i + 5),
+                      ResultKey = resultsMetaData.Results[2 * i]
+                                                 .ResultId,
+                      ResultKey2 = resultsMetaData.Results[2 * i + 1]
+                                                  .ResultId,
                     };
 
       var req = new TaskRequest
@@ -422,8 +427,10 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    resultsMetaData.Results[2 * i].ResultId,
-                    resultsMetaData.Results[2 * i + 1].ResultId,
+                    resultsMetaData.Results[2 * i]
+                                   .ResultId,
+                    resultsMetaData.Results[2 * i + 1]
+                                   .ResultId,
                   },
                 };
       taskRequestList.Add(req);
@@ -538,7 +545,8 @@ internal class StreamWrapperTests
                   Payload = byteString,
                   ExpectedOutputKeys =
                   {
-                    resultsMetaData.Results[i].ResultId,
+                    resultsMetaData.Results[i]
+                                   .ResultId,
                   },
                 };
 
@@ -700,7 +708,8 @@ internal class StreamWrapperTests
                     {
                       Type      = TestPayload.TaskType.Compute,
                       DataBytes = BitConverter.GetBytes(1),
-                      ResultKey = resultsMetaData.Results[i].ResultId,
+                      ResultKey = resultsMetaData.Results[i]
+                                                 .ResultId,
                     };
 
       var req = new TaskRequest
@@ -708,7 +717,8 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    resultsMetaData.Results[i].ResultId,
+                    resultsMetaData.Results[i]
+                                   .ResultId,
                   },
                 };
 

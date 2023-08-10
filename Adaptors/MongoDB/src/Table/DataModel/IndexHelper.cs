@@ -203,20 +203,26 @@ public class IndexHelper
 
     if (field.Length == 1)
     {
-      if (unique && field[0].type == IndexType.Hashed)
+      if (unique && field[0]
+            .type == IndexType.Hashed)
       {
         throw new ArgumentOutOfRangeException(nameof(unique),
                                               "A hashed index cannot be constrained to be unique");
       }
 
-      return field[0].type switch
+      return field[0]
+               .type switch
              {
-               IndexType.Ascending => CreateAscendingIndex(field[0].expression,
+               IndexType.Ascending => CreateAscendingIndex(field[0]
+                                                             .expression,
                                                            unique),
-               IndexType.Descending => CreateAscendingIndex(field[0].expression,
+               IndexType.Descending => CreateAscendingIndex(field[0]
+                                                              .expression,
                                                             unique),
-               IndexType.Hashed => CreateHashedIndex(field[0].expression),
-               IndexType.Text => CreateTextIndex(field[0].expression,
+               IndexType.Hashed => CreateHashedIndex(field[0]
+                                                       .expression),
+               IndexType.Text => CreateTextIndex(field[0]
+                                                   .expression,
                                                  unique),
                _ => throw new ArgumentOutOfRangeException(nameof(field),
                                                           "Invalid IndexType"),
