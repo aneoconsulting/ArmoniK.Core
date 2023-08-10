@@ -28,7 +28,6 @@ using ArmoniK.Core.Common.Exceptions;
 using Grpc.Core;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
@@ -36,8 +35,8 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
-  private readonly bool                     requireAuthentication_;
-  private readonly bool                     requireAuthorization_;
+  private readonly bool requireAuthentication_;
+  private readonly bool requireAuthorization_;
 
   public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions> options)
   {

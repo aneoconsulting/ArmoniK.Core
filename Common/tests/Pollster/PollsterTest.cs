@@ -422,9 +422,7 @@ public class PollsterTest
       => Task.CompletedTask;
 
     public void Dispose()
-    {
-      GC.SuppressFinalize(this);
-    }
+      => GC.SuppressFinalize(this);
 
     public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
@@ -479,10 +477,10 @@ public class PollsterTest
                                                              mockPullQueueStorage.Object);
 
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
-                                                              testServiceProvider.PartitionTable,
-                                                              testServiceProvider.ResultTable,
-                                                              CancellationToken.None)
-                                            .ConfigureAwait(false);
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
@@ -533,10 +531,10 @@ public class PollsterTest
                                                              mockPullQueueStorage.Object);
 
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
-                                                              testServiceProvider.PartitionTable,
-                                                              testServiceProvider.ResultTable,
-                                                              CancellationToken.None)
-                                            .ConfigureAwait(false);
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
@@ -688,10 +686,10 @@ public class PollsterTest
                                                              mockPullQueueStorage.Object);
 
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
-                                                              testServiceProvider.PartitionTable,
-                                                              testServiceProvider.ResultTable,
-                                                              CancellationToken.None)
-                                            .ConfigureAwait(false);
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))

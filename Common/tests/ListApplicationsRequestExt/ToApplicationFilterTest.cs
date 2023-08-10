@@ -157,22 +157,22 @@ public class ToApplicationFilterTest
                                                                         FilterStringOperator.Equal,
                                                                         ApplicationName));
     yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationName + "bad"));
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationName + "bad"));
 
     yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
                                                                         FilterStringOperator.Equal,
                                                                         ApplicationNamespace));
     yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationNamespace + "bad"));
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationNamespace + "bad"));
 
     yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
                                                                         FilterStringOperator.Equal,
                                                                         ApplicationVersion));
     yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationVersion + "bad"));
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationVersion + "bad"));
 
     yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
                                                                         FilterStringOperator.Equal,
@@ -190,9 +190,8 @@ public class ToApplicationFilterTest
                                                                         FilterStringOperator.NotContains,
                                                                         ApplicationService + "bad"));
     yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationService + "bad"));
-    yield break;
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationService + "bad"));
   }
 
   private static TestCaseData FieldToTestCaseFalse(FilterField filterField)

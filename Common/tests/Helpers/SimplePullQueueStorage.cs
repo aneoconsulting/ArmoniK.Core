@@ -19,7 +19,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,12 +39,13 @@ public class SimplePullQueueStorage : IPullQueueStorage
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public int MaxPriority => 10;
+  public int MaxPriority
+    => 10;
 
 
   public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
                                                                   CancellationToken cancellationToken = default)
-  // using ToAsyncEnumerable avoids using an async function needlessly
+    // using ToAsyncEnumerable avoids using an async function needlessly
     => Enumerable.Repeat(0,
                          nbMessages)
                  .Select(_ =>

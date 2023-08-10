@@ -38,12 +38,12 @@ public static class ListTasksRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<TaskData, object?>> ToField(this ListTasksRequest.Types.Sort sort)
     => sort.Field.FieldCase switch
-    {
-      TaskField.FieldOneofCase.TaskSummaryField => sort.Field.TaskSummaryField.Field.ToField(),
-      TaskField.FieldOneofCase.TaskOptionField => sort.Field.TaskOptionField.Field.ToField(),
-      TaskField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
-      _ => throw new ArgumentOutOfRangeException(nameof(sort)),
-    };
+       {
+         TaskField.FieldOneofCase.TaskSummaryField       => sort.Field.TaskSummaryField.Field.ToField(),
+         TaskField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
+         TaskField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
 
   public static Expression<Func<TaskData, object?>> ToField(this TaskField taskField)
     => taskField.FieldCase switch

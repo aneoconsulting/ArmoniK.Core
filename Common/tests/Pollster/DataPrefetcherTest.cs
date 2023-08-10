@@ -122,101 +122,73 @@ public class DataPrefetcherTest
       Console.WriteLine(request);
     }
 
-    Assert.AreEqual(computeRequests[0]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[0].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest);
-    Assert.AreEqual(computeRequests[0]
-                    .InitRequest.SessionId,
+    Assert.AreEqual(computeRequests[0].InitRequest.SessionId,
                     sessionId);
-    Assert.AreEqual(computeRequests[0]
-                    .InitRequest.TaskId,
+    Assert.AreEqual(computeRequests[0].InitRequest.TaskId,
                     taskId);
     Assert.AreEqual(computeRequests[0]
                     .InitRequest.ExpectedOutputKeys.First(),
                     output1);
 
-    Assert.AreEqual(computeRequests[1]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[1].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[1]
-                    .Payload.TypeCase,
+    Assert.AreEqual(computeRequests[1].Payload.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[2]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[2].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[2]
-                    .Payload.TypeCase,
+    Assert.AreEqual(computeRequests[2].Payload.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[3]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[3].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[3]
-                    .Payload.TypeCase,
+    Assert.AreEqual(computeRequests[3].Payload.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[4]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[4].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[4]
-                    .Payload.TypeCase,
+    Assert.AreEqual(computeRequests[4].Payload.TypeCase,
                     DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[4]
-                  .Payload.DataComplete);
+    Assert.IsTrue(computeRequests[4].Payload.DataComplete);
 
-    Assert.AreEqual(computeRequests[5]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[5].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.AreEqual(computeRequests[5]
-                    .InitData.Key,
+    Assert.AreEqual(computeRequests[5].InitData.Key,
                     dependency1);
 
-    Assert.AreEqual(computeRequests[6]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[6].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[6]
-                    .Data.TypeCase,
+    Assert.AreEqual(computeRequests[6].Data.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[7]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[7].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[7]
-                    .Data.TypeCase,
+    Assert.AreEqual(computeRequests[7].Data.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[8]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[8].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[8]
-                    .Data.TypeCase,
+    Assert.AreEqual(computeRequests[8].Data.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[9]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[9].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[9]
-                    .Data.TypeCase,
+    Assert.AreEqual(computeRequests[9].Data.TypeCase,
                     DataChunk.TypeOneofCase.Data);
 
-    Assert.AreEqual(computeRequests[10]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[10].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[10]
-                    .Data.TypeCase,
+    Assert.AreEqual(computeRequests[10].Data.TypeCase,
                     DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[10]
-                  .Data.DataComplete);
+    Assert.IsTrue(computeRequests[10].Data.DataComplete);
 
-    Assert.AreEqual(computeRequests[11]
-                      .TypeCase,
+    Assert.AreEqual(computeRequests[11].TypeCase,
                     ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.AreEqual(computeRequests[11]
-                    .InitData.TypeCase,
+    Assert.AreEqual(computeRequests[11].InitData.TypeCase,
                     ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData);
-    Assert.IsTrue(computeRequests[11]
-                  .InitData.LastData);
+    Assert.IsTrue(computeRequests[11].InitData.LastData);
   }
 
   [Test]

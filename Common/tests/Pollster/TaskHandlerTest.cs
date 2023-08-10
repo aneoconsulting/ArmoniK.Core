@@ -999,11 +999,9 @@ public class TaskHandlerTest
       => Task.CompletedTask;
 
     public void Dispose()
-    {
-      GC.SuppressFinalize(this);
-    }
+      => GC.SuppressFinalize(this);
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
 
     public void StartTaskProcessing(TaskData          taskData,
                                     CancellationToken cancellationToken)

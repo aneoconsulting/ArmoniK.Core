@@ -77,17 +77,17 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
-    {
-      HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("S3 not initialized yet.")),
-      HealthCheckTag.Liveness => Task.FromResult(isInitialized_
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped.")),
-      _ => throw new ArgumentOutOfRangeException(nameof(tag),
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("S3 not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
-    };
+       };
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
@@ -252,8 +252,8 @@ internal static class AmazonS3ClientExt
   }
 
   internal static async Task<byte[]> StringByteGetAsync(this AmazonS3Client s3Client,
-                                                        string bucketName,
-                                                        string key)
+                                                        string              bucketName,
+                                                        string              key)
   {
     var request = new GetObjectRequest
                   {
@@ -279,7 +279,7 @@ internal static class AmazonS3ClientExt
 
     // Get the data from the response stream
     await using var responseStream = response.ResponseStream;
-    
+
     var retrievedData = new byte[responseStream.Length];
     _ = await responseStream.ReadAsync(new Memory<byte>(retrievedData),
                                        cancellationToken);

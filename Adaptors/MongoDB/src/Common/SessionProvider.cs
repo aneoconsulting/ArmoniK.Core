@@ -43,17 +43,17 @@ public class SessionProvider : IInitializable
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
-    {
-      HealthCheckTag.Readiness or HealthCheckTag.Startup => Task.FromResult(clientSessionHandle_ is not null
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Degraded($"{nameof(clientSessionHandle_)} is still null")),
-      HealthCheckTag.Liveness => Task.FromResult(clientSessionHandle_ is not null && client_.Cluster.Description.State == ClusterState.Connected
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("Connection to MongoDB cluster dropped.")),
-      _ => throw new ArgumentOutOfRangeException(nameof(tag),
+       {
+         HealthCheckTag.Readiness or HealthCheckTag.Startup => Task.FromResult(clientSessionHandle_ is not null
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Degraded($"{nameof(clientSessionHandle_)} is still null")),
+         HealthCheckTag.Liveness => Task.FromResult(clientSessionHandle_ is not null && client_.Cluster.Description.State == ClusterState.Connected
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Connection to MongoDB cluster dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
-    };
+       };
 
   public Task Init(CancellationToken cancellationToken)
   {

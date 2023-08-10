@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -53,9 +54,9 @@ public static class SubmitterExt
   }
 
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability",
-                                                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
-                                                   Justification = "createTaskReply.ResponseCase is not a real argument")]
+  [SuppressMessage("Reliability",
+                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
+                   Justification = "createTaskReply.ResponseCase is not a real argument")]
   public static async Task<IEnumerable<string>> CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,
                                                                               string                         sessionId,
                                                                               TaskOptions?                   taskOptions,

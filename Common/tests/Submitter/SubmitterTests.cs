@@ -72,7 +72,7 @@ public class SubmitterTests
                     StandardOuputLogger = line => logger.LogInformation(line),
                     StandardErrorLogger = line => logger.LogError(line),
 #pragma warning restore CA2254
-    };
+                  };
 
     runner_ = MongoRunner.Run(options);
     client_ = new MongoClient(runner_.ConnectionString);
@@ -774,16 +774,12 @@ public class SubmitterTests
                     .ConfigureAwait(false);
 
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[0]
-                          .TypeCase);
+                    writer.Messages[0].TypeCase);
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[1]
-                          .TypeCase);
+                    writer.Messages[1].TypeCase);
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[2]
-                          .TypeCase);
-    Assert.IsTrue(writer.Messages[2]
-                        .Result.DataComplete);
+                    writer.Messages[2].TypeCase);
+    Assert.IsTrue(writer.Messages[2].Result.DataComplete);
   }
 
   [Test]

@@ -55,20 +55,20 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
                                                                         ServerCallContext       context)
   {
     var (applications, totalCount) = await taskTable_.ListApplicationsAsync(request.Filters is null
-                                                         ? data => true
-                                                         : request.Filters.ToApplicationFilter(),
-                                                       request.Sort is null
-                                                         ? new List<Expression<Func<Application, object?>>>
-                                                           {
-                                                             application => application.Name,
-                                                           }
-                                                         : request.Sort.Fields.Select(field => field.ToField())
-                                                                  .ToList(),
-                                                       request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                       request.Page,
-                                                       request.PageSize,
-                                                       context.CancellationToken)
-                                .ConfigureAwait(false);
+                                                                              ? data => true
+                                                                              : request.Filters.ToApplicationFilter(),
+                                                                            request.Sort is null
+                                                                              ? new List<Expression<Func<Application, object?>>>
+                                                                                {
+                                                                                  application => application.Name,
+                                                                                }
+                                                                              : request.Sort.Fields.Select(field => field.ToField())
+                                                                                       .ToList(),
+                                                                            request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                            request.Page,
+                                                                            request.PageSize,
+                                                                            context.CancellationToken)
+                                                     .ConfigureAwait(false);
     return new ListApplicationsResponse
            {
              Page     = request.Page,
@@ -76,12 +76,12 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
              Applications =
              {
                applications.Select(data => new ApplicationRaw
-                                                 {
-                                                   Name      = data.Name,
-                                                   Namespace = data.Namespace,
-                                                   Version   = data.Version,
-                                                   Service   = data.Service,
-                                                 }),
+                                           {
+                                             Name      = data.Name,
+                                             Namespace = data.Namespace,
+                                             Version   = data.Version,
+                                             Service   = data.Service,
+                                           }),
              },
              Total = totalCount,
            };

@@ -253,8 +253,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                  (prevIdentity.Identity as UserIdentity)!.UserName,
                                  (identity.Identity as UserIdentity)!.UserId,
                                  (identity.Identity as UserIdentity)!.UserName,
-                                 keyHash
-                                 );
+                                 keyHash);
         }
         catch (AuthenticationException e)
         {
@@ -363,9 +362,8 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   /// <returns>Value of the header if found and not empty, null otherwise</returns>
   private string? TryGetHeader(string headerName)
   {
-    if (!string.IsNullOrEmpty(headerName) && Request.Headers.TryGetValue(headerName,
-                                                                                                                        out var values) &&
-        !string.IsNullOrWhiteSpace(values.First()))
+    if (!string.IsNullOrEmpty(headerName)                                                && Request.Headers.TryGetValue(headerName,
+                                                                         out var values) && !string.IsNullOrWhiteSpace(values.First()))
     {
       return values.First();
     }

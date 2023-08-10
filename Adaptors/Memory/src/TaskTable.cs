@@ -81,9 +81,10 @@ public class TaskTable : ITaskTable
   public Task<TaskData> ReadTaskAsync(string            taskId,
                                       CancellationToken cancellationToken = default)
   {
-    if (taskId2TaskData_.ContainsKey(taskId))
+    if (taskId2TaskData_.TryGetValue(taskId,
+                                     out var value))
     {
-      return Task.FromResult(taskId2TaskData_[taskId]);
+      return Task.FromResult(value);
     }
 
     throw new TaskNotFoundException($"Key '{taskId}' not found");
@@ -93,26 +94,21 @@ public class TaskTable : ITaskTable
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.TryGetValue(taskId,
+                                      out var value))
     {
       throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
+    return Task.FromResult(value.Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
   }
 
   /// <inheritdoc />
   public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
-    }
-
     taskId2TaskData_.AddOrUpdate(taskData.TaskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 _ => throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found"),
                                  (_,
                                   data) => data with
                                            {
@@ -128,8 +124,7 @@ public class TaskTable : ITaskTable
                                                                   CancellationToken cancellationToken = default)
     => await ListTasksAsync(filter,
                             cancellationToken)
-             .Select(taskId => taskId2TaskData_[taskId]
-                       .Status)
+             .Select(taskId => taskId2TaskData_[taskId].Status)
              .GroupBy(status => status)
              .SelectAwait(async grouping => new TaskStatusCount(grouping.Key,
                                                                 await grouping.CountAsync(cancellationToken)
@@ -229,12 +224,10 @@ public class TaskTable : ITaskTable
 
     return rawList.Where(taskId => filter.StatusesCase switch
                                    {
-                                     TaskFilter.StatusesOneofCase.None => true,
-                                     TaskFilter.StatusesOneofCase.Included => filter.Included.Statuses.Contains(taskId2TaskData_[taskId]
-                                                                                                                  .Status),
-                                     TaskFilter.StatusesOneofCase.Excluded => !filter.Excluded.Statuses.Contains(taskId2TaskData_[taskId]
-                                                                                                                   .Status),
-                                     _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
+                                     TaskFilter.StatusesOneofCase.None     => true,
+                                     TaskFilter.StatusesOneofCase.Included => filter.Included.Statuses.Contains(taskId2TaskData_[taskId].Status),
+                                     TaskFilter.StatusesOneofCase.Excluded => !filter.Excluded.Statuses.Contains(taskId2TaskData_[taskId].Status),
+                                     _                                     => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                                    })
                   .ToAsyncEnumerable();
   }
@@ -363,8 +356,7 @@ public class TaskTable : ITaskTable
       throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Output);
+    return Task.FromResult(taskId2TaskData_[taskId].Output);
   }
 
   /// <inheritdoc />
@@ -437,8 +429,7 @@ public class TaskTable : ITaskTable
       throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .ParentTaskIds as IEnumerable<string>);
+    return Task.FromResult(taskId2TaskData_[taskId].ParentTaskIds as IEnumerable<string>);
   }
 
   /// <inheritdoc />
@@ -504,5 +495,4 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
-
 }

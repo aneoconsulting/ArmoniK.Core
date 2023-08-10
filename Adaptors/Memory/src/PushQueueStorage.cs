@@ -59,7 +59,7 @@ public class PushQueueStorage : IPushQueueStorage
   }
 
   private Task PushMessagesAsync(IEnumerable<MessageData> messages,
-                                 int                      priority          = 1)
+                                 int                      priority = 1)
   {
     var messageHandlers = messages.Select(message => new MessageHandler
                                                      {

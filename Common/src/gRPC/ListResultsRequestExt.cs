@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -36,10 +37,10 @@ public static class ListResultsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<Result, object?>> ToField(this ListResultsRequest.Types.Sort sort)
     => sort.Field.FieldCase switch
-    {
-      ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
-      _ => throw new ArgumentOutOfRangeException(nameof(sort)),
-    };
+       {
+         ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
+         _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
 
   public static Expression<Func<Result, object?>> ToField(this ResultField taskField)
     => taskField.FieldCase switch
@@ -57,7 +58,9 @@ public static class ListResultsRequestExt
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
-  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "Readibility for nested switch")]
+  [SuppressMessage("Style",
+                   "IDE0066:Convert switch statement to expression",
+                   Justification = "Readibility for nested switch")]
   public static Expression<Func<Result, bool>> ToResultFilter(this Filters filters)
   {
     Expression<Func<Result, bool>> expr = data => false;

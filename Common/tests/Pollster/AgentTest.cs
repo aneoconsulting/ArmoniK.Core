@@ -528,8 +528,7 @@ public class AgentTest
     Assert.Contains(holder.TaskWithDependencies2,
                     holder.QueueStorage.Messages[Partition]);
     Assert.AreEqual(2,
-                    holder.QueueStorage.Messages[Partition]
-                          .Count);
+                    holder.QueueStorage.Messages[Partition].Count);
 
     var taskData1 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies1,
                                                          CancellationToken.None)
@@ -720,8 +719,7 @@ public class AgentTest
                 .ConfigureAwait(false);
 
     Assert.AreEqual(3,
-                    holder.QueueStorage.Messages[Partition]
-                          .Count);
+                    holder.QueueStorage.Messages[Partition].Count);
 
     taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
                                                      CancellationToken.None)
@@ -812,13 +810,10 @@ public class AgentTest
     Assert.AreEqual(3,
                     resourceData.Messages.Count);
     Assert.AreEqual("Data1",
-                    resourceData.Messages[0]
-                                .Data.Data);
+                    resourceData.Messages[0].Data.Data);
     Assert.AreEqual("Data2",
-                    resourceData.Messages[1]
-                                .Data.Data);
-    Assert.IsTrue(resourceData.Messages[2]
-                              .Data.DataComplete);
+                    resourceData.Messages[1].Data.Data);
+    Assert.IsTrue(resourceData.Messages[2].Data.DataComplete);
   }
 
   [Test]

@@ -57,13 +57,13 @@ public class SessionTableTestBase
                        .ConfigureAwait(false);
 
     rootSessionId1_ = await SessionTable!.SetSessionDataAsync(new[]
-                                                             {
-                                                               "part1",
-                                                               "part2",
-                                                             },
-                                                             Options,
-                                                             CancellationToken.None)
-                                        .ConfigureAwait(false);
+                                                              {
+                                                                "part1",
+                                                                "part2",
+                                                              },
+                                                              Options,
+                                                              CancellationToken.None)
+                                         .ConfigureAwait(false);
 
     await SessionTable!.SetSessionDataAsync(new[]
                                             {
@@ -109,20 +109,20 @@ public class SessionTableTestBase
   }
 
   private static readonly TaskOptions Options = new(new Dictionary<string, string>
-                                                     {
-                                                       {
-                                                         "key1", "val1"
-                                                       },
-                                                     },
-                                                     TimeSpan.FromMinutes(1),
-                                                     2,
-                                                     1,
-                                                     "part1",
-                                                     "ApplicationName",
-                                                     "ApplicationVersion",
-                                                     "",
-                                                     "",
-                                                     "");
+                                                    {
+                                                      {
+                                                        "key1", "val1"
+                                                      },
+                                                    },
+                                                    TimeSpan.FromMinutes(1),
+                                                    2,
+                                                    1,
+                                                    "part1",
+                                                    "ApplicationName",
+                                                    "ApplicationVersion",
+                                                    "",
+                                                    "",
+                                                    "");
 
   private static bool CheckForSkipSetup()
   {

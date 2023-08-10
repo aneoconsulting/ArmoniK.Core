@@ -421,16 +421,14 @@ public class AuthenticationIntegrationTest
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader,
                   (int)impersonate < 0
                     ? "DoesntExist"
-                    : Identities[(int)impersonate]
-                      .UserId);
+                    : Identities[(int)impersonate].UserId);
     }
     else if (impersonationType == ImpersonationType.ImpersonateUsername)
     {
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationUsernameHeader,
                   (int)impersonate < 0
                     ? "DoesntExist"
-                    : Identities[(int)impersonate]
-                      .UserName);
+                    : Identities[(int)impersonate].UserName);
     }
 
     return headers;
@@ -656,7 +654,8 @@ public class AuthenticationIntegrationTest
                                                                                                                        new()
                                                                                                                        {
                                                                                                                          Id =
-                                                                                                                           new UploadResultDataRequest.Types.ResultIdentifier
+                                                                                                                           new UploadResultDataRequest.Types.
+                                                                                                                           ResultIdentifier
                                                                                                                            {
                                                                                                                              ResultId  = ResultKey,
                                                                                                                              SessionId = SessionId,
@@ -672,7 +671,8 @@ public class AuthenticationIntegrationTest
                                                                                                                      typeof(TaskFilter), new TaskFilter
                                                                                                                                          {
                                                                                                                                            Session =
-                                                                                                                                             new TaskFilter.Types.IdsRequest
+                                                                                                                                             new TaskFilter.Types.
+                                                                                                                                             IdsRequest
                                                                                                                                              {
                                                                                                                                                Ids =
                                                                                                                                                {
@@ -842,15 +842,13 @@ public class AuthenticationIntegrationTest
                                                                                                                  ? "Async"
                                                                                                                  : ""),
                                                                                                      // - The parameter of the method
-                                                                                                     GetParameters(m.GetParameters()[0]
-                                                                                                                    .ParameterType,
+                                                                                                     GetParameters(m.GetParameters()[0].ParameterType,
                                                                                                                    clientStream),
                                                                                                      // - The Request type
                                                                                                      clientStream
                                                                                                        ? m.GetParameters()[0]
                                                                                                           .ParameterType.GetGenericArguments()[0]
-                                                                                                       : m.GetParameters()[0]
-                                                                                                          .ParameterType,
+                                                                                                       : m.GetParameters()[0].ParameterType,
                                                                                                      // - The Response type
                                                                                                      serverStream
                                                                                                        ? m.GetParameters()[1]
@@ -895,7 +893,8 @@ public class AuthenticationIntegrationTest
   public static readonly IReadOnlyDictionary<Type, Type> ClientServerTypeMapping = new ReadOnlyDictionary<Type, Type>(new Dictionary<Type, Type>
                                                                                                                       {
                                                                                                                         {
-                                                                                                                          typeof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient),
+                                                                                                                          typeof(Api.gRPC.V1.Submitter.Submitter.
+                                                                                                                            SubmitterClient),
                                                                                                                           typeof(GrpcSubmitterService)
                                                                                                                         },
                                                                                                                         {
@@ -1249,7 +1248,7 @@ public class AuthenticationIntegrationTest
     }
 
     GrpcSubmitterServiceHelper.DeleteChannel(channel)
-           .Wait();
+                              .Wait();
     return;
 
     async Task TestFunction()
@@ -1354,8 +1353,7 @@ public class AuthenticationIntegrationTest
       var castedResponse = (GetCurrentUserResponse)response!;
       // Check if the returned username is correct
       Assert.AreEqual(options_!.RequireAuthentication
-                        ? Identities[finalUserIndex]
-                          .UserName
+                        ? Identities[finalUserIndex].UserName
                         : "Anonymous",
                       castedResponse.User.Username);
       // Check if the role list is empty when there is no authorization, otherwise returns the roles
@@ -1392,6 +1390,6 @@ public class AuthenticationIntegrationTest
     }
 
     await GrpcSubmitterServiceHelper.DeleteChannel(channel)
-                 .ConfigureAwait(false);
+                                    .ConfigureAwait(false);
   }
 }

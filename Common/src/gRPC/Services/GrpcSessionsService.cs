@@ -130,16 +130,16 @@ public class GrpcSessionsService : Sessions.SessionsBase
     try
     {
       var (sessions, totalCount) = await sessionTable_.ListSessionsAsync(request.Filters is null
-                                                                ? data => true
-                                                                : request.Filters.ToSessionDataFilter(),
-                                                              request.Sort is null
-                                                                ? data => data.SessionId
-                                                                : request.Sort.ToField(),
-                                                              request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                              request.Page,
-                                                              request.PageSize,
-                                                              context.CancellationToken)
-                                           .ConfigureAwait(false);
+                                                                           ? data => true
+                                                                           : request.Filters.ToSessionDataFilter(),
+                                                                         request.Sort is null
+                                                                           ? data => data.SessionId
+                                                                           : request.Sort.ToField(),
+                                                                         request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                         request.Page,
+                                                                         request.PageSize,
+                                                                         context.CancellationToken)
+                                                      .ConfigureAwait(false);
 
       return new ListSessionsResponse
              {

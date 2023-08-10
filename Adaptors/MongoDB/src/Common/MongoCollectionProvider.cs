@@ -36,8 +36,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  private bool                             isInitialized_;
-  private IMongoCollection<TData>?         mongoCollection_;
+  private bool                     isInitialized_;
+  private IMongoCollection<TData>? mongoCollection_;
 
   public MongoCollectionProvider(Options.MongoDB                  options,
                                  SessionProvider                  sessionProvider,
@@ -64,17 +64,17 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
-    {
-      HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("MongoCollection not initialized yet.")),
-      HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && mongoCollection_ is null
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("MongoCollection not initialized yet.")),
-      _ => throw new ArgumentOutOfRangeException(nameof(tag),
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && mongoCollection_ is null
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("MongoCollection not initialized yet.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
-    };
+       };
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)

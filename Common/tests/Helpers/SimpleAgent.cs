@@ -71,7 +71,5 @@ public class SimpleAgent : IAgent
     => Task.FromResult(new CreateResultsResponse());
 
   public void Dispose()
-  {
-    GC.SuppressFinalize(this);
-  }
+    => GC.SuppressFinalize(this);
 }

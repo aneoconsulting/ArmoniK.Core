@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -36,12 +37,12 @@ public static class ListSessionsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<SessionData, object?>> ToField(this ListSessionsRequest.Types.Sort sort)
     => sort.Field.FieldCase switch
-    {
-      SessionField.FieldOneofCase.SessionRawField => sort.Field.SessionRawField.Field.ToField(),
-      SessionField.FieldOneofCase.TaskOptionField => sort.Field.TaskOptionField.Field.ToField(),
-      SessionField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
-      _ => throw new ArgumentOutOfRangeException(nameof(sort)),
-    };
+       {
+         SessionField.FieldOneofCase.SessionRawField        => sort.Field.SessionRawField.Field.ToField(),
+         SessionField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
+         SessionField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+         _                                                  => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
 
   public static Expression<Func<SessionData, object?>> ToField(this SessionField taskField)
     => taskField.FieldCase switch
@@ -61,7 +62,9 @@ public static class ListSessionsRequestExt
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
-  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "Readibility for nested switch")]
+  [SuppressMessage("Style",
+                   "IDE0066:Convert switch statement to expression",
+                   Justification = "Readibility for nested switch")]
   public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
   {
     Expression<Func<SessionData, bool>> expr = data => false;

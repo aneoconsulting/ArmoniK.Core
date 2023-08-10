@@ -107,8 +107,7 @@ public class SessionTable : ISessionTable
       throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
 
-    return Task.FromResult(storage_[sessionId]
-                             .Options);
+    return Task.FromResult(storage_[sessionId].Options);
   }
 
   /// <inheritdoc />
@@ -161,12 +160,10 @@ public class SessionTable : ISessionTable
 
     return rawList.Where(sessionId => sessionFilter.StatusesCase switch
                                       {
-                                        SessionFilter.StatusesOneofCase.None => true,
-                                        SessionFilter.StatusesOneofCase.Included => sessionFilter.Included.Statuses.Contains(storage_[sessionId]
-                                                                                                                               .Status),
-                                        SessionFilter.StatusesOneofCase.Excluded => !sessionFilter.Excluded.Statuses.Contains(storage_[sessionId]
-                                                                                                                                .Status),
-                                        _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
+                                        SessionFilter.StatusesOneofCase.None     => true,
+                                        SessionFilter.StatusesOneofCase.Included => sessionFilter.Included.Statuses.Contains(storage_[sessionId].Status),
+                                        SessionFilter.StatusesOneofCase.Excluded => !sessionFilter.Excluded.Statuses.Contains(storage_[sessionId].Status),
+                                        _                                        => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                                       });
   }
 

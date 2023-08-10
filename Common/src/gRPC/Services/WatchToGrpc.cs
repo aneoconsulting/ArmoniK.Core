@@ -24,8 +24,6 @@ using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <summary>

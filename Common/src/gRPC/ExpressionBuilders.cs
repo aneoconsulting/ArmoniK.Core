@@ -147,10 +147,10 @@ public class ExpressionBuilders
                                        typeof(string));
 
     var methodInfo = typeof(string).GetMethods()
-                                   .First(m => m.Name == method                                   && m.GetParameters()
-                                                                                     .Length == 1 && m.GetParameters()
-                                                                                                      .First()
-                                                                                                      .ParameterType == typeof(string));
+                                   .First(m => m.Name == method                  && m.GetParameters()
+                                                                    .Length == 1 && m.GetParameters()
+                                                                                     .First()
+                                                                                     .ParameterType == typeof(string));
 
     var call = Expression.Call(member,
                                methodInfo,

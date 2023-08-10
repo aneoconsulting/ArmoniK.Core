@@ -59,7 +59,7 @@ internal class MongoDatabaseProvider : IDisposable
                     StandardOuputLogger = line => logger.LogInformation(line),
                     StandardErrorLogger = line => logger.LogError(line),
 #pragma warning restore CA2254
-      ReplicaSetSetupTimeout = TimeSpan.FromSeconds(30),
+                    ReplicaSetSetupTimeout = TimeSpan.FromSeconds(30),
                   };
 
     runner_ = MongoRunner.Run(options);

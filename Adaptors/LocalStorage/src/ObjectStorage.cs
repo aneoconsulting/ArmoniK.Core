@@ -81,17 +81,17 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
-    {
-      HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("Local storage not initialized yet.")),
-      HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Directory.Exists(path_)
-                                       ? HealthCheckResult.Healthy()
-                                       : HealthCheckResult.Unhealthy("Local storage not initialized or folder has been deleted.")),
-      _ => throw new ArgumentOutOfRangeException(nameof(tag),
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("Local storage not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Directory.Exists(path_)
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Local storage not initialized or folder has been deleted.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
-    };
+       };
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,

@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -40,9 +41,9 @@ public class WorkerService : WorkerStreamWrapper
   {
   }
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage("Style",
-                                                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
-                                                   Justification = "taskHandler.ExpectedResults.Count is not a real argument")]
+  [SuppressMessage("Style",
+                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
+                   Justification = "taskHandler.ExpectedResults.Count is not a real argument")]
   public override async Task<Output> Process(ITaskHandler taskHandler)
   {
     var output = new Output();

@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // In samples, Random can be used
+
 #pragma warning disable SEC0115
 
 using System;
@@ -32,7 +33,6 @@ using Grpc.Core;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
-
 
 namespace ArmoniK.Samples.Bench.Server;
 

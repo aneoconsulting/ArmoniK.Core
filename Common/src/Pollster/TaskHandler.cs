@@ -181,13 +181,13 @@ public sealed class TaskHandler : IAsyncDisposable
       }
 
       /*
-     * Check preconditions:
-     *  - Session is not cancelled
-     *  - Task is not cancelled
-     *  - Task status is OK
-     *  - Dependencies have been checked
-     *  - Max number of retries has not been reached
-     */
+       * Check preconditions:
+       *  - Session is not cancelled
+       *  - Task is not cancelled
+       *  - Task status is OK
+       *  - Dependencies have been checked
+       *  - Max number of retries has not been reached
+       */
 
       logger_.LogDebug("Handling the task status ({status})",
                        taskData_.Status);
@@ -632,12 +632,12 @@ public sealed class TaskHandler : IAsyncDisposable
         if (cancellationToken.IsCancellationRequested)
         {
           logger_.LogWarning(e,
-                           "Cancellation triggered, task cancelled here and re executed elsewhere");
+                             "Cancellation triggered, task cancelled here and re executed elsewhere");
         }
         else
         {
           logger_.LogWarning(e,
-                           "Worker not available, task cancelled here and re executed elsewhere");
+                             "Worker not available, task cancelled here and re executed elsewhere");
         }
 
         await taskTable_.ReleaseTask(taskData,
@@ -650,13 +650,13 @@ public sealed class TaskHandler : IAsyncDisposable
         if (resubmit)
         {
           logger_.LogError(e,
-                         "Error during task execution, retrying task");
+                           "Error during task execution, retrying task");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
         }
         else
         {
           logger_.LogError(e,
-                         "Error during task execution, cancelling task");
+                           "Error during task execution, cancelling task");
           messageHandler_.Status = QueueMessageStatus.Processed;
         }
 

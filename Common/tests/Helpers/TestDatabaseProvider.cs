@@ -64,7 +64,7 @@ public class TestDatabaseProvider : IDisposable
                     StandardOuputLogger = line => logger.LogInformation(line),
                     StandardErrorLogger = line => logger.LogError(line),
 #pragma warning restore CA2254
-    };
+                  };
 
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var loggerDb       = loggerProvider.CreateLogger("db commands");

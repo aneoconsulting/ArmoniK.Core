@@ -41,8 +41,8 @@
     <ProjectReference Include="..\..\..\Adaptors\Redis\src\ArmoniK.Core.Adapters.Redis.csproj" />
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
-	
+
   <ItemGroup>
-	<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
 </Project>

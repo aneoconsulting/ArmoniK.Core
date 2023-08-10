@@ -21,8 +21,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 
-using Microsoft.Extensions.Logging;
-
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 

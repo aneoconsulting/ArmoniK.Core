@@ -230,12 +230,12 @@ public class PartitionTableTestBase
     if (RunTests)
     {
       var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(data => data.PartitionId == "NotExisting",
-                                                                                   data => data.ParentPartitionIds,
-                                                                                   false,
-                                                                                   0,
-                                                                                   20,
-                                                                                   CancellationToken.None)
-                                                              .ConfigureAwait(false);
+                                                                      data => data.ParentPartitionIds,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(0,
                       totalCount);
@@ -248,12 +248,12 @@ public class PartitionTableTestBase
     if (RunTests)
     {
       var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(data => data.ParentPartitionIds.Contains("ParentPartitionId"),
-                                                                                   data => data.PartitionId,
-                                                                                   false,
-                                                                                   0,
-                                                                                   20,
-                                                                                   CancellationToken.None)
-                                                              .ConfigureAwait(false);
+                                                                      data => data.PartitionId,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(1,
                       totalCount);
@@ -268,12 +268,12 @@ public class PartitionTableTestBase
     if (RunTests)
     {
       var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(request.Filters.ToPartitionFilter(),
-                                                                                   data => data.PartitionId,
-                                                                                   false,
-                                                                                   0,
-                                                                                   20,
-                                                                                   CancellationToken.None)
-                                                              .ConfigureAwait(false);
+                                                                      data => data.PartitionId,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(count,
                       totalCount);

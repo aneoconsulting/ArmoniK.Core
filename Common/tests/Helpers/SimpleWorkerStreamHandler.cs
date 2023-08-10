@@ -41,9 +41,7 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
     => Task.CompletedTask;
 
   public void Dispose()
-  {
-    GC.SuppressFinalize(this);
-  }
+    => GC.SuppressFinalize(this);
 
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken)

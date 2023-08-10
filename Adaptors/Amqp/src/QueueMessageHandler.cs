@@ -24,8 +24,6 @@ using Amqp.Framing;
 
 using ArmoniK.Core.Base;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueMessageHandler : IQueueMessageHandler

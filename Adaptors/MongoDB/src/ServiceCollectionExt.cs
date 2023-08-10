@@ -242,11 +242,10 @@ public static class ServiceCollectionExt
   /// <param name="services">Services</param>
   /// <param name="configuration">Configuration</param>
   /// <param name="authCache">Created authentication cache</param>
-  /// 
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager configuration,
+                                                                  ConfigurationManager    configuration,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();

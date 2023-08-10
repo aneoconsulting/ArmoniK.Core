@@ -33,15 +33,15 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 internal class ExpressionsBuildersFieldFilterExpressionTests
 {
   private static readonly TaskOptions TaskOptions = new(new Dictionary<string, string>(),
-                                                         TimeSpan.Zero,
-                                                         0,
-                                                         0,
-                                                         "part1",
-                                                         "ApplicationName",
-                                                         "ApplicationVersion",
-                                                         "applicationNamespace",
-                                                         "applicationService",
-                                                         "engineType");
+                                                        TimeSpan.Zero,
+                                                        0,
+                                                        0,
+                                                        "part1",
+                                                        "ApplicationName",
+                                                        "ApplicationVersion",
+                                                        "applicationNamespace",
+                                                        "applicationService",
+                                                        "engineType");
 
   [Test]
   public void ShouldRecognizeSession()

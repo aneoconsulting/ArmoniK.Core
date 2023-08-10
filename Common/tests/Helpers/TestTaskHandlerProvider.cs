@@ -77,7 +77,7 @@ public class TestTaskHandlerProvider : IDisposable
                     StandardOuputLogger = line => logger.LogInformation(line),
                     StandardErrorLogger = line => logger.LogError(line),
 #pragma warning restore CA2254
-    };
+                  };
 
     runner_ = MongoRunner.Run(options);
     client_ = new MongoClient(runner_.ConnectionString);
