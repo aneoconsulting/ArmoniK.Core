@@ -58,7 +58,7 @@ public class AdapterLoadingTest
     }
   }
 
-  public static void Setup(Dictionary<string, string?> config)
+  public static void BuildServiceProvider(Dictionary<string, string?> config)
   {
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var logger         = loggerProvider.CreateLogger("root");
@@ -93,7 +93,7 @@ public class AdapterLoadingTest
                                            },
                                          };
 
-    Assert.DoesNotThrow(() => Setup(config));
+    Assert.DoesNotThrow(() => BuildServiceProvider(config));
   }
 
   public static IEnumerable ConfInvalidOperationException
@@ -163,7 +163,7 @@ public class AdapterLoadingTest
   [Test]
   [TestCaseSource(nameof(ConfInvalidOperationException))]
   public void InvalidConfShouldFail(Dictionary<string, string?> config)
-    => Assert.Throws<InvalidOperationException>(() => Setup(config));
+    => Assert.Throws<InvalidOperationException>(() => BuildServiceProvider(config));
 
   public static IEnumerable ConfTypeLoadException
   {
@@ -189,5 +189,5 @@ public class AdapterLoadingTest
   [Test]
   [TestCaseSource(nameof(ConfTypeLoadException))]
   public void InvalidTypeConfShouldFail(Dictionary<string, string?> config)
-    => Assert.Throws<TypeLoadException>(() => Setup(config));
+    => Assert.Throws<TypeLoadException>(() => BuildServiceProvider(config));
 }

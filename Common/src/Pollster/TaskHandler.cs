@@ -651,39 +651,27 @@ public sealed class TaskHandler : IAsyncDisposable
         {
           logger_.LogError(e,
                          "Error during task execution, retrying task");
-
-          await submitter_.CompleteTaskAsync(taskData,
-                                             resubmit,
-                                             new Output
-                                             {
-                                               Error = new Output.Types.Error
-                                               {
-                                                 Details = e.Message,
-                                               },
-                                             },
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
-
           messageHandler_.Status = QueueMessageStatus.Cancelled;
         }
         else
         {
           logger_.LogError(e,
                          "Error during task execution, cancelling task");
-
-          await submitter_.CompleteTaskAsync(taskData,
-                                             resubmit,
-                                             new Output
-                                             {
-                                               Error = new Output.Types.Error
-                                               {
-                                                 Details = e.Message,
-                                               },
-                                             },
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
           messageHandler_.Status = QueueMessageStatus.Processed;
         }
+
+
+        await submitter_.CompleteTaskAsync(taskData,
+                                           resubmit,
+                                           new Output
+                                           {
+                                             Error = new Output.Types.Error
+                                                     {
+                                                       Details = e.Message,
+                                                     },
+                                           },
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
       }
     }
 
