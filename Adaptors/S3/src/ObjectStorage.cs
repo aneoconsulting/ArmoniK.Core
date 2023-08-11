@@ -281,7 +281,7 @@ internal static class AmazonS3ClientExt
     await using var responseStream = response.ResponseStream;
 
     var retrievedData = new byte[responseStream.Length];
-    _ = await responseStream.ReadAsync(new Memory<byte>(retrievedData),
+    _ = await responseStream.ReadAsync(retrievedData,
                                        cancellationToken);
     return Encoding.UTF8.GetString(retrievedData);
   }
