@@ -113,39 +113,39 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
-                                                       ? data => true
-                                                       : request.Filters.ToTaskDataFilter(),
-                                                     request.Sort is null
-                                                       ? data => data.TaskId
-                                                       : request.Sort.ToField(),
-                                                     data => new TaskDataSummary(data.SessionId,
-                                                                                 data.TaskId,
-                                                                                 data.OwnerPodId,
-                                                                                 data.OwnerPodName,
-                                                                                 data.ParentTaskIds.Count,
-                                                                                 data.DataDependencies.Count,
-                                                                                 data.ExpectedOutputIds.Count,
-                                                                                 data.InitialTaskId,
-                                                                                 data.RetryOfIds.Count,
-                                                                                 data.Status,
-                                                                                 data.StatusMessage,
-                                                                                 data.Options,
-                                                                                 data.CreationDate,
-                                                                                 data.SubmittedDate,
-                                                                                 data.StartDate,
-                                                                                 data.EndDate,
-                                                                                 data.ReceptionDate,
-                                                                                 data.AcquisitionDate,
-                                                                                 data.PodTtl,
-                                                                                 data.ProcessingToEndDuration,
-                                                                                 data.CreationToEndDuration,
-                                                                                 data.Output),
-                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                     request.Page,
-                                                     request.PageSize,
-                                                     context.CancellationToken)
-                                     .ConfigureAwait(false);
+      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
+                                                                  ? data => true
+                                                                  : request.Filters.ToTaskDataFilter(),
+                                                                request.Sort is null
+                                                                  ? data => data.TaskId
+                                                                  : request.Sort.ToField(),
+                                                                data => new TaskDataSummary(data.SessionId,
+                                                                                            data.TaskId,
+                                                                                            data.OwnerPodId,
+                                                                                            data.OwnerPodName,
+                                                                                            data.ParentTaskIds.Count,
+                                                                                            data.DataDependencies.Count,
+                                                                                            data.ExpectedOutputIds.Count,
+                                                                                            data.InitialTaskId,
+                                                                                            data.RetryOfIds.Count,
+                                                                                            data.Status,
+                                                                                            data.StatusMessage,
+                                                                                            data.Options,
+                                                                                            data.CreationDate,
+                                                                                            data.SubmittedDate,
+                                                                                            data.StartDate,
+                                                                                            data.EndDate,
+                                                                                            data.ReceptionDate,
+                                                                                            data.AcquisitionDate,
+                                                                                            data.PodTtl,
+                                                                                            data.ProcessingToEndDuration,
+                                                                                            data.CreationToEndDuration,
+                                                                                            data.Output),
+                                                                request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                request.Page,
+                                                                request.PageSize,
+                                                                context.CancellationToken)
+                                                .ConfigureAwait(false);
 
       return new ListTasksResponse
              {
@@ -153,9 +153,9 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.tasks.Select(data => data.ToTaskSummary()),
+                 tasks.Select(data => data.ToTaskSummary()),
                },
-               Total = (int)taskData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)
@@ -326,18 +326,18 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var taskData = await taskTable_.ListTasksAsync(request.Filters is null
-                                                       ? data => true
-                                                       : request.Filters.ToTaskDataFilter(),
-                                                     request.Sort is null
-                                                       ? data => data.TaskId
-                                                       : request.Sort.ToField(),
-                                                     data => data,
-                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                     request.Page,
-                                                     request.PageSize,
-                                                     context.CancellationToken)
-                                     .ConfigureAwait(false);
+      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
+                                                                  ? data => true
+                                                                  : request.Filters.ToTaskDataFilter(),
+                                                                request.Sort is null
+                                                                  ? data => data.TaskId
+                                                                  : request.Sort.ToField(),
+                                                                data => data,
+                                                                request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                request.Page,
+                                                                request.PageSize,
+                                                                context.CancellationToken)
+                                                .ConfigureAwait(false);
 
       return new ListTasksRawResponse
              {
@@ -345,9 +345,9 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.tasks.Select(data => new TaskRaw(data)),
+                 tasks.Select(data => new TaskRaw(data)),
                },
-               Total = (int)taskData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)

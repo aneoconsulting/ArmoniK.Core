@@ -79,23 +79,23 @@ public class ToApplicationFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(ApplicationRawEnumField field,
-                      object?                 expected)
-      => new TestCaseData(new ApplicationRawField
-                          {
-                            Field = field,
-                          },
-                          expected).SetArgDisplayNames(field.ToString());
-
-    yield return Case(ApplicationRawEnumField.Service,
-                      Options.ApplicationService);
-    yield return Case(ApplicationRawEnumField.Name,
-                      Options.ApplicationName);
-    yield return Case(ApplicationRawEnumField.Namespace,
-                      Options.ApplicationNamespace);
-    yield return Case(ApplicationRawEnumField.Version,
-                      Options.ApplicationVersion);
+    yield return FieldToTestCase(ApplicationRawEnumField.Service,
+                                 Options.ApplicationService);
+    yield return FieldToTestCase(ApplicationRawEnumField.Name,
+                                 Options.ApplicationName);
+    yield return FieldToTestCase(ApplicationRawEnumField.Namespace,
+                                 Options.ApplicationNamespace);
+    yield return FieldToTestCase(ApplicationRawEnumField.Version,
+                                 Options.ApplicationVersion);
   }
+
+  private static TestCaseData FieldToTestCase(ApplicationRawEnumField field,
+                                              object?                 expected)
+    => new TestCaseData(new ApplicationRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
 
   [Test]
   [TestCaseSource(nameof(TestCasesInvoke))]

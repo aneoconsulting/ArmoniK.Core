@@ -194,7 +194,7 @@ public class AuthenticationTableTestBase
   protected bool RunTests;
 
   /* Function be override so it returns the suitable instance
- * of AuthenticationTable to the corresponding interface implementation */
+   * of AuthenticationTable to the corresponding interface implementation */
   public virtual void GetAuthSource()
   {
   }

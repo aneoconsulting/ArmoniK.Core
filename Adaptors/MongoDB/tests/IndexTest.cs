@@ -46,8 +46,10 @@ internal class IndexTest
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -237,10 +239,10 @@ internal class IndexTest
                       {
                         IndexHelper.CreateIndex<AuthData>(IndexType.Hashed,
                                                           model => model.Fingerprint),
-                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Ascending, model => model.CN),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Ascending, model => model.Cn),
                                                                 (IndexType.Descending, model => model.Fingerprint)),
                         IndexHelper.CreateIndex<AuthData>((IndexType.Hashed, model => model.UserId)),
-                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Text, model => model.CN)),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Text, model => model.Cn)),
                       };
 
     collection.Indexes.CreateMany(indexModels);

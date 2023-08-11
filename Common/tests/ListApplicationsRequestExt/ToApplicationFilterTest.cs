@@ -153,58 +153,58 @@ public class ToApplicationFilterTest
 
   public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    TestCaseData CaseTrue(FilterField filterField)
-      => new TestCaseData(new[]
-                          {
-                            filterField,
-                          },
-                          true).SetArgDisplayNames(filterField.ToString());
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationName));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationName + "bad"));
 
-    TestCaseData CaseFalse(FilterField filterField)
-      => new TestCaseData(new[]
-                          {
-                            filterField,
-                          },
-                          false).SetArgDisplayNames(filterField.ToString());
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationNamespace));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationNamespace + "bad"));
 
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
-                                                             FilterStringOperator.Equal,
-                                                             ApplicationName));
-    yield return CaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationName + "bad"));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationVersion));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationVersion + "bad"));
 
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
-                                                             FilterStringOperator.Equal,
-                                                             ApplicationNamespace));
-    yield return CaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationNamespace + "bad"));
-
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
-                                                             FilterStringOperator.Equal,
-                                                             ApplicationVersion));
-    yield return CaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationVersion + "bad"));
-
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                             FilterStringOperator.Equal,
-                                                             ApplicationService));
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                             FilterStringOperator.StartsWith,
-                                                             ApplicationService));
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                             FilterStringOperator.EndsWith,
-                                                             ApplicationService));
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                             FilterStringOperator.Contains,
-                                                             ApplicationService));
-    yield return CaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                             FilterStringOperator.NotContains,
-                                                             ApplicationService + "bad"));
-    yield return CaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
-                                                              FilterStringOperator.Equal,
-                                                              ApplicationService + "bad"));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.StartsWith,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.EndsWith,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.Contains,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.NotContains,
+                                                                        ApplicationService + "bad"));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationService + "bad"));
   }
+
+  private static TestCaseData FieldToTestCaseFalse(FilterField filterField)
+    => new TestCaseData(new[]
+                        {
+                          filterField,
+                        },
+                        false).SetArgDisplayNames(filterField.ToString()!);
+
+  private static TestCaseData FieldToTestCaseTrue(FilterField filterField)
+    => new TestCaseData(new[]
+                        {
+                          filterField,
+                        },
+                        true).SetArgDisplayNames(filterField.ToString()!);
 }

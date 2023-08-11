@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// In samples, Random can be used
+
+#pragma warning disable SEC0115
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

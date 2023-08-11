@@ -36,24 +36,18 @@ public static class ListPartitionsRequestExt
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<PartitionData, object?>> ToField(this ListPartitionsRequest.Types.Sort sort)
-  {
-    switch (sort.Field.FieldCase)
-    {
-      case PartitionField.FieldOneofCase.PartitionRawField:
-        return sort.Field.PartitionRawField.Field.ToField();
-
-      case PartitionField.FieldOneofCase.None:
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-  }
+    => sort.Field.FieldCase switch
+       {
+         PartitionField.FieldOneofCase.PartitionRawField => sort.Field.PartitionRawField.Field.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
 
   public static Expression<Func<PartitionData, object?>> ToField(this PartitionField taskField)
     => taskField.FieldCase switch
        {
-         PartitionField.FieldOneofCase.None              => throw new ArgumentOutOfRangeException(),
+         PartitionField.FieldOneofCase.None              => throw new ArgumentOutOfRangeException(nameof(taskField)),
          PartitionField.FieldOneofCase.PartitionRawField => taskField.PartitionRawField.Field.ToField(),
-         _                                               => throw new ArgumentOutOfRangeException(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(taskField)),
        };
 
   /// <summary>
@@ -78,28 +72,21 @@ public static class ListPartitionsRequestExt
       Expression<Func<PartitionData, bool>> exprAnd = data => true;
       foreach (var filterField in filtersAnd.And)
       {
-        switch (filterField.ValueConditionCase)
-        {
-          case FilterField.ValueConditionOneofCase.FilterString:
-            exprAnd = exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                       filterField.FilterString.Value));
-            break;
-          case FilterField.ValueConditionOneofCase.FilterNumber:
-            exprAnd = exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                       filterField.FilterNumber.Value));
-            break;
-          case FilterField.ValueConditionOneofCase.FilterBoolean:
-            exprAnd = exprAnd.ExpressionAnd(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                        filterField.FilterBoolean.Value));
-            break;
-          case FilterField.ValueConditionOneofCase.FilterArray:
-            exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                      filterField.FilterArray.Value));
-            break;
-          case FilterField.ValueConditionOneofCase.None:
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
+        exprAnd = filterField.ValueConditionCase switch
+                  {
+                    FilterField.ValueConditionOneofCase.FilterString => exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                         filterField.FilterString
+                                                                                                                                                    .Value)),
+                    FilterField.ValueConditionOneofCase.FilterNumber => exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                         filterField.FilterNumber
+                                                                                                                                                    .Value)),
+                    FilterField.ValueConditionOneofCase.FilterBoolean => exprAnd.ExpressionAnd(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                           filterField.FilterBoolean
+                                                                                                                                                      .Value)),
+                    FilterField.ValueConditionOneofCase.FilterArray => exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                       filterField.FilterArray.Value)),
+                    _ => throw new ArgumentOutOfRangeException(nameof(filters)),
+                  };
       }
 
       expr = expr.ExpressionOr(exprAnd);

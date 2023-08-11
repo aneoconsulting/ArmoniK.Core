@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -34,6 +35,9 @@ public static class ListApplicationsRequestExt
   ///   The <see cref="Expression" /> that access the field from the object
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  [SuppressMessage("Style",
+                   "IDE0066:Convert switch statement to expression",
+                   Justification = "Readibility with nested switch")]
   public static Expression<Func<Application, object?>> ToField(this ApplicationField field)
   {
     switch (field.FieldCase)
@@ -45,13 +49,13 @@ public static class ListApplicationsRequestExt
                  ApplicationRawEnumField.Version     => application => application.Version,
                  ApplicationRawEnumField.Namespace   => application => application.Namespace,
                  ApplicationRawEnumField.Service     => application => application.Service,
-                 ApplicationRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(),
-                 _                                   => throw new ArgumentOutOfRangeException(),
+                 ApplicationRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(nameof(field)),
+                 _                                   => throw new ArgumentOutOfRangeException(nameof(field)),
                };
 
       case ApplicationField.FieldOneofCase.None:
       default:
-        throw new ArgumentOutOfRangeException();
+        throw new ArgumentOutOfRangeException(nameof(field));
     }
   }
 
@@ -63,6 +67,9 @@ public static class ListApplicationsRequestExt
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  [SuppressMessage("Style",
+                   "IDE0066:Convert switch statement to expression",
+                   Justification = "Readibility with nested switch")]
   public static Expression<Func<TaskData, bool>> ToApplicationFilter(this Filters filters)
   {
     Expression<Func<TaskData, bool>> expr = data => false;
@@ -88,7 +95,7 @@ public static class ListApplicationsRequestExt
             break;
           case FilterField.ValueConditionOneofCase.None:
           default:
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(filters));
         }
       }
 

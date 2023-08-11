@@ -129,17 +129,17 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var sessionData = await sessionTable_.ListSessionsAsync(request.Filters is null
-                                                                ? data => true
-                                                                : request.Filters.ToSessionDataFilter(),
-                                                              request.Sort is null
-                                                                ? data => data.SessionId
-                                                                : request.Sort.ToField(),
-                                                              request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                              request.Page,
-                                                              request.PageSize,
-                                                              context.CancellationToken)
-                                           .ConfigureAwait(false);
+      var (sessions, totalCount) = await sessionTable_.ListSessionsAsync(request.Filters is null
+                                                                           ? data => true
+                                                                           : request.Filters.ToSessionDataFilter(),
+                                                                         request.Sort is null
+                                                                           ? data => data.SessionId
+                                                                           : request.Sort.ToField(),
+                                                                         request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                         request.Page,
+                                                                         request.PageSize,
+                                                                         context.CancellationToken)
+                                                      .ConfigureAwait(false);
 
       return new ListSessionsResponse
              {
@@ -147,9 +147,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-                 sessionData.sessions.Select(data => new SessionRaw(data)),
+                 sessions.Select(data => new SessionRaw(data)),
                },
-               Total = (int)sessionData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)

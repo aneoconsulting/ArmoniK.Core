@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,7 +37,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Samples.HtcMock.Client;
 
-public class SessionClient : ISessionClient
+public sealed class SessionClient : ISessionClient
 {
   private readonly ChannelBase               channel_;
   private readonly ILogger<GridClient>       logger_;
@@ -67,6 +68,9 @@ public class SessionClient : ISessionClient
             .Wait();
   }
 
+  [SuppressMessage("Style",
+                   "CA2208",
+                   Justification = "availabilityReply.TypeCase is not a real argument")]
   public byte[] GetResult(string id)
   {
     var resultRequest = new ResultRequest
@@ -75,7 +79,9 @@ public class SessionClient : ISessionClient
                           Session  = sessionId_,
                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     switch (availabilityReply.TypeCase)
     {
@@ -95,6 +101,9 @@ public class SessionClient : ISessionClient
     return response.Result;
   }
 
+  [SuppressMessage("Style",
+                   "CA2208",
+                   Justification = "availabilityReply.TypeCase is not a real argument")]
   public Task WaitSubtasksCompletion(string id)
   {
     var resultRequest = new ResultRequest
@@ -103,7 +112,9 @@ public class SessionClient : ISessionClient
                           Session  = sessionId_,
                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     switch (availabilityReply.TypeCase)
     {
@@ -122,6 +133,9 @@ public class SessionClient : ISessionClient
     return Task.CompletedTask;
   }
 
+  [SuppressMessage("Style",
+                   "CA2208",
+                   Justification = "createTaskReply.ResponseCase is not a real argument")]
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
     var taskRequests = new List<TaskRequest>();
@@ -176,7 +190,7 @@ public class SessionClient : ISessionClient
       case CreateTaskReply.ResponseOneofCase.Error:
         throw new Exception("Error : " + createTaskReply.Error);
       default:
-        throw new ArgumentOutOfRangeException();
+        throw new ArgumentOutOfRangeException(nameof(createTaskReply.ResponseCase));
     }
   }
 }

@@ -30,7 +30,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public class QueueStorage : IQueueStorage
+public class QueueStorage : IPullQueueStorage, IPushQueueStorage
 {
   private static readonly MessageHandler DefaultMessage = new();
 
@@ -40,10 +40,6 @@ public class QueueStorage : IQueueStorage
   private readonly ConcurrentDictionary<string, MessageHandler> id2Handlers_ = new();
 
   private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
-
-  /// <inheritdoc />
-  public string PartitionId
-    => "";
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -56,6 +52,7 @@ public class QueueStorage : IQueueStorage
   /// <inheritdoc />
   public int MaxPriority
     => 100;
+
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
@@ -96,16 +93,17 @@ public class QueueStorage : IQueueStorage
   }
 
   /// <inheritdoc />
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default)
+  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                string                   _,
+                                CancellationToken        cancellationToken = default)
   {
+    cancellationToken.ThrowIfCancellationRequested();
+
     var messageHandlers = messages.Select(message => new MessageHandler
                                                      {
                                                        IsVisible         = true,
-                                                       Priority          = priority,
-                                                       TaskId            = message,
+                                                       Priority          = message.Options.Priority,
+                                                       TaskId            = message.TaskId,
                                                        CancellationToken = CancellationToken.None,
                                                        Status            = QueueMessageStatus.Waiting,
                                                        Queues            = queues_,

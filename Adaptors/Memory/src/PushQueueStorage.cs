@@ -54,16 +54,12 @@ public class PushQueueStorage : IPushQueueStorage
   {
     var priorityGroups = messages.GroupBy(msgData => msgData.Options.Priority);
     await Task.WhenAll(priorityGroups.Select(group => PushMessagesAsync(group,
-                                                                        partitionId,
-                                                                        group.Key,
-                                                                        cancellationToken)))
+                                                                        group.Key)))
               .ConfigureAwait(false);
   }
 
   private Task PushMessagesAsync(IEnumerable<MessageData> messages,
-                                 string                   partitionId,
-                                 int                      priority          = 1,
-                                 CancellationToken        cancellationToken = default)
+                                 int                      priority = 1)
   {
     var messageHandlers = messages.Select(message => new MessageHandler
                                                      {

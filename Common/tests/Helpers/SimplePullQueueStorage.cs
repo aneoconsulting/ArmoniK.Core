@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,10 +31,7 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimplePullQueueStorage : IPullQueueStorage
 {
-  public readonly ConcurrentBag<string> Messages;
-
-  public SimplePullQueueStorage()
-    => Messages = new ConcurrentBag<string>();
+  public readonly ConcurrentBag<string> Messages = new();
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
@@ -42,27 +39,30 @@ public class SimplePullQueueStorage : IPullQueueStorage
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public int MaxPriority { get; } = 10;
+  public int MaxPriority
+    => 10;
 
-#pragma warning disable CS1998
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int nbMessages,
-#pragma warning restore CS1998
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    var i = 0;
-    while (i < nbMessages && Messages.TryTake(out var m))
-    {
-      i++;
-      cancellationToken.ThrowIfCancellationRequested();
-      yield return new SimpleQueueMessageHandler
-                   {
-                     CancellationToken = CancellationToken.None,
-                     TaskId            = m,
-                     MessageId = Guid.NewGuid()
-                                     .ToString(),
-                     Status            = QueueMessageStatus.Running,
-                     ReceptionDateTime = DateTime.UtcNow,
-                   };
-    }
-  }
+
+  public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                                  CancellationToken cancellationToken = default)
+    // using ToAsyncEnumerable avoids using an async function needlessly
+    => Enumerable.Repeat(new ValueTuple(),
+                         nbMessages)
+                 .Select(_ =>
+                         {
+                           var success = Messages.TryTake(out var m);
+                           cancellationToken.ThrowIfCancellationRequested();
+                           return (success, message: m);
+                         })
+                 .Where(tuple => tuple.success)
+                 .Select(tuple => new SimpleQueueMessageHandler
+                                  {
+                                    CancellationToken = CancellationToken.None,
+                                    TaskId            = tuple.message!,
+                                    MessageId = Guid.NewGuid()
+                                                    .ToString(),
+                                    Status            = QueueMessageStatus.Running,
+                                    ReceptionDateTime = DateTime.UtcNow,
+                                  } as IQueueMessageHandler)
+                 .ToAsyncEnumerable();
 }

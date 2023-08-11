@@ -126,7 +126,7 @@ public class PartitionTable : IPartitionTable
 
     return taskCollection.AsQueryable(sessionHandle)
                          .Where(tdm => tdm.PodMax > 0)
-                         .ToAsyncEnumerable();
+                         .ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />

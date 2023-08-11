@@ -40,7 +40,7 @@ public class LocalIPv4
   /// <exception cref="ArmoniKException"></exception>
   public static string GetLocalIPv4(NetworkInterfaceType type)
   {
-    var output = "";
+    var output = string.Empty;
     foreach (var item in NetworkInterface.GetAllNetworkInterfaces())
     {
       if (item.NetworkInterfaceType == type && item.OperationalStatus == OperationalStatus.Up)
@@ -56,7 +56,7 @@ public class LocalIPv4
       }
     }
 
-    if (output == "")
+    if (string.IsNullOrEmpty(output))
     {
       throw new ArmoniKException("No local IPv4 found");
     }

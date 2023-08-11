@@ -42,7 +42,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
                                 string? impersonateUsername = "")
   {
     ConnectionId        = connectionId;
-    CN                  = cn                  ?? "";
+    Cn                  = cn                  ?? "";
     Fingerprint         = fingerprint         ?? "";
     ImpersonateId       = impersonateId       ?? "";
     ImpersonateUsername = impersonateUsername ?? "";
@@ -56,7 +56,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
   /// <summary>
   ///   Certificate common name
   /// </summary>
-  public string CN { get; }
+  public string Cn { get; }
 
   /// <summary>
   ///   Certificate fingerprint
@@ -87,7 +87,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
       return true;
     }
 
-    return ConnectionId        == other.ConnectionId && CN == other.CN && Fingerprint == other.Fingerprint && ImpersonateId == other.ImpersonateId &&
+    return ConnectionId        == other.ConnectionId && Cn == other.Cn && Fingerprint == other.Fingerprint && ImpersonateId == other.ImpersonateId &&
            ImpersonateUsername == other.ImpersonateUsername;
   }
 
@@ -111,7 +111,7 @@ public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
   /// <inheritdoc />
   public override int GetHashCode()
     => HashCode.Combine(ConnectionId,
-                        CN,
+                        Cn,
                         Fingerprint,
                         ImpersonateId,
                         ImpersonateUsername);

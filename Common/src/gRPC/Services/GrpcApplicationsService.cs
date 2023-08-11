@@ -54,36 +54,36 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
-    var tasks = await taskTable_.ListApplicationsAsync(request.Filters is null
-                                                         ? data => true
-                                                         : request.Filters.ToApplicationFilter(),
-                                                       request.Sort is null
-                                                         ? new List<Expression<Func<Application, object?>>>
-                                                           {
-                                                             application => application.Name,
-                                                           }
-                                                         : request.Sort.Fields.Select(field => field.ToField())
-                                                                  .ToList(),
-                                                       request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                       request.Page,
-                                                       request.PageSize,
-                                                       context.CancellationToken)
-                                .ConfigureAwait(false);
+    var (applications, totalCount) = await taskTable_.ListApplicationsAsync(request.Filters is null
+                                                                              ? data => true
+                                                                              : request.Filters.ToApplicationFilter(),
+                                                                            request.Sort is null
+                                                                              ? new List<Expression<Func<Application, object?>>>
+                                                                                {
+                                                                                  application => application.Name,
+                                                                                }
+                                                                              : request.Sort.Fields.Select(field => field.ToField())
+                                                                                       .ToList(),
+                                                                            request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                            request.Page,
+                                                                            request.PageSize,
+                                                                            context.CancellationToken)
+                                                     .ConfigureAwait(false);
     return new ListApplicationsResponse
            {
              Page     = request.Page,
              PageSize = request.PageSize,
              Applications =
              {
-               tasks.applications.Select(data => new ApplicationRaw
-                                                 {
-                                                   Name      = data.Name,
-                                                   Namespace = data.Namespace,
-                                                   Version   = data.Version,
-                                                   Service   = data.Service,
-                                                 }),
+               applications.Select(data => new ApplicationRaw
+                                           {
+                                             Name      = data.Name,
+                                             Namespace = data.Namespace,
+                                             Version   = data.Version,
+                                             Service   = data.Service,
+                                           }),
              },
-             Total = tasks.totalCount,
+             Total = totalCount,
            };
   }
 }

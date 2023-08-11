@@ -617,6 +617,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                   nameof(TestCasesOutputSessionNotFoundInternal))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
                   nameof(TestCasesOutputTaskNotFound))]
+  [Obsolete("Method tested is obsolete")]
   public async Task<StatusCode?> WaitForAvailabilityThrowsException(ISubmitter submitter)
   {
     helper_ = new GrpcSubmitterServiceHelper(submitter);
@@ -686,6 +687,7 @@ internal class IntegrationGrpcSubmitterServiceTest
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
                   nameof(TestCasesResultTable))]
+  [Obsolete("Method tested is obsolete")]
   public async Task<StatusCode?> GetResultStatusAsyncThrowsException(IResultTable resultTable)
   {
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter_.Object,

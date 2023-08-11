@@ -42,7 +42,7 @@ public class MockIdentity : UserIdentity
 
   public bool HasCertificate(string cn,
                              string fingerprint)
-    => Certificates.Any(t => t.CN == cn && t.Fingerprint == fingerprint);
+    => Certificates.Any(t => t.Cn == cn && t.Fingerprint == fingerprint);
 
   public UserAuthenticationResult ToUserAuthenticationResult()
     => new(UserId,
@@ -50,6 +50,6 @@ public class MockIdentity : UserIdentity
            Roles,
            Permissions.Select(perm => perm.ToString()));
 
-  public record MockCertificate(string CN,
+  public record MockCertificate(string Cn,
                                 string Fingerprint);
 }

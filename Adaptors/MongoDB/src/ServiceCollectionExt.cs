@@ -221,12 +221,10 @@ public static class ServiceCollectionExt
   /// </summary>
   /// <param name="services">Services</param>
   /// <param name="configuration">Configuration</param>
-  /// <param name="logger">Logger</param>
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager    configuration,
-                                                                           ILogger                 logger)
+                                                                           ConfigurationManager    configuration)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -243,13 +241,11 @@ public static class ServiceCollectionExt
   /// </summary>
   /// <param name="services">Services</param>
   /// <param name="configuration">Configuration</param>
-  /// <param name="logger">Logger</param>
   /// <param name="authCache">Created authentication cache</param>
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
                                                                   ConfigurationManager    configuration,
-                                                                  ILogger                 logger,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();

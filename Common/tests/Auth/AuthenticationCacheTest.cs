@@ -35,11 +35,11 @@ public class AuthenticationCacheTest
   }
 
   private const string ConnectionId = "TestConnectionId";
-  private const string CN           = "CN1";
+  private const string Cn           = "CN1";
   private const string Fingerprint  = "Fingerprint1";
 
   private static readonly AuthenticationCacheKey BaseKey = new(ConnectionId,
-                                                               CN,
+                                                               Cn,
                                                                Fingerprint);
 
   private static readonly ClaimsPrincipal BaseIdentity = new(new UserIdentity(new UserAuthenticationResult(),
@@ -58,32 +58,32 @@ public class AuthenticationCacheTest
 
   [Test]
   [TestCase(ConnectionId,
-            CN,
+            Cn,
             Fingerprint,
             "ImpId",
             null)]
   [TestCase(ConnectionId,
-            CN,
+            Cn,
             Fingerprint,
             null,
             "ImpName")]
   [TestCase(ConnectionId,
-            CN          + "0",
+            Cn          + "0",
             Fingerprint + "0",
             null,
             null)]
   [TestCase(ConnectionId,
-            CN + "0",
+            Cn + "0",
             null,
             null,
             null)]
   [TestCase(ConnectionId + "0",
-            CN,
+            Cn,
             Fingerprint,
             null,
             null)]
   [TestCase(ConnectionId + "0",
-            CN           + "0",
+            Cn           + "0",
             Fingerprint  + "0",
             null,
             null)]
@@ -124,11 +124,11 @@ public class AuthenticationCacheTest
   {
     Assert.IsTrue(BaseKey.Equals(BaseKey));
     Assert.IsTrue(BaseKey.Equals(new AuthenticationCacheKey(ConnectionId,
-                                                            CN,
+                                                            Cn,
                                                             Fingerprint)));
     Assert.IsFalse(BaseKey.Equals(null));
     Assert.IsFalse(BaseKey!.Equals(new AuthenticationCacheKey(ConnectionId,
-                                                              CN + "0",
+                                                              Cn + "0",
                                                               Fingerprint)));
     Assert.IsFalse(BaseKey.Equals(new object()));
   }

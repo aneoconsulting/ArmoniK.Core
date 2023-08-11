@@ -42,24 +42,18 @@ public class SessionProvider : IInitializable
     => client_ = client;
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Readiness:
-      case HealthCheckTag.Startup:
-        return Task.FromResult(clientSessionHandle_ is not null
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Degraded($"{nameof(clientSessionHandle_)} is still null"));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(clientSessionHandle_ is not null && client_.Cluster.Description.State == ClusterState.Connected
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Connection to MongoDB cluster dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
+    => tag switch
+       {
+         HealthCheckTag.Readiness or HealthCheckTag.Startup => Task.FromResult(clientSessionHandle_ is not null
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Degraded($"{nameof(clientSessionHandle_)} is still null")),
+         HealthCheckTag.Liveness => Task.FromResult(clientSessionHandle_ is not null && client_.Cluster.Description.State == ClusterState.Connected
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Connection to MongoDB cluster dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   public Task Init(CancellationToken cancellationToken)
   {
