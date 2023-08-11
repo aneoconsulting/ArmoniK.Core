@@ -46,7 +46,7 @@ public class SimplePullQueueStorage : IPullQueueStorage
   public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
                                                                   CancellationToken cancellationToken = default)
     // using ToAsyncEnumerable avoids using an async function needlessly
-    => Enumerable.Repeat(0,
+    => Enumerable.Repeat(new ValueTuple(),
                          nbMessages)
                  .Select(_ =>
                          {
