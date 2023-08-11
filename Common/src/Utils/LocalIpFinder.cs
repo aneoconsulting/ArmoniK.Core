@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
@@ -28,48 +32,33 @@ namespace ArmoniK.Core.Common.Utils;
 ///   Helper to get local IP address.
 /// </summary>
 [PublicAPI]
-public class LocalIPv4
+public class LocalIpFinder
 {
   /// <summary>
-  ///   Get local IP from a network interface.
+  ///   Get local IPv4 address from a network interface.
   /// </summary>
   /// <param name="type">Interface type from which to get the IP.</param>
   /// <returns>
   ///   <see cref="string" /> representing the IP.
   /// </returns>
   /// <exception cref="ArmoniKException"></exception>
-  public static string GetLocalIPv4(NetworkInterfaceType type)
+  public static string LocalIpv4Address(NetworkInterfaceType type = NetworkInterfaceType.Ethernet)
   {
-    var output = string.Empty;
-    foreach (var item in NetworkInterface.GetAllNetworkInterfaces())
+    var result = NetworkInterface.GetAllNetworkInterfaces()
+                                 .Where(@interface => @interface.OperationalStatus == OperationalStatus.Up)
+                                 .SelectMany(@interface => @interface.GetIPProperties()
+                                                                     .UnicastAddresses.Select(information => information.Address)
+                                                                     .Where(address => address.AddressFamily == AddressFamily.InterNetwork)
+                                                                     .Select(address => (@interface.NetworkInterfaceType, address: address.ToString())))
+                                 .ToImmutableDictionary(tuple => tuple.NetworkInterfaceType,
+                                                        tuple => tuple.address);
+
+    if (result.TryGetValue(type,
+                           out var ethernet))
     {
-      if (item.NetworkInterfaceType == type && item.OperationalStatus == OperationalStatus.Up)
-      {
-        foreach (var ip in item.GetIPProperties()
-                               .UnicastAddresses)
-        {
-          if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-          {
-            output = ip.Address.ToString();
-          }
-        }
-      }
+      return ethernet;
     }
 
-    if (string.IsNullOrEmpty(output))
-    {
-      throw new ArmoniKException("No local IPv4 found");
-    }
-
-    return output;
+    return result.Values.FirstOrDefault("127.0.0.1");
   }
-
-  /// <summary>
-  ///   Get local IP from Ethernet network interface.
-  /// </summary>
-  /// <returns>
-  ///   <see cref="string" /> representing the IP.
-  /// </returns>
-  public static string GetLocalIPv4Ethernet()
-    => GetLocalIPv4(NetworkInterfaceType.Ethernet);
 }
