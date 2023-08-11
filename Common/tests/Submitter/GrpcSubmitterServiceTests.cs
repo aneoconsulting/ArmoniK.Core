@@ -1346,6 +1346,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task WaitForAvailabilityShouldSucceed()
   {
     var mockSubmitter = new Mock<ISubmitter>();
@@ -1376,6 +1377,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task WaitForAvailabilityExceptionShouldThrow()
   {
     var mockSubmitter = new Mock<ISubmitter>();
@@ -1410,6 +1412,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task WaitForAvailabilityArmonikExceptionShouldThrow()
   {
     var mockSubmitter = new Mock<ISubmitter>();
@@ -1444,6 +1447,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task WaitForAvailabilityTaskNotFoundExceptionShouldThrow()
   {
     var mockSubmitter = new Mock<ISubmitter>();
@@ -1478,6 +1482,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task WaitForAvailabilityResultNotFoundExceptionShouldThrow()
   {
     var mockSubmitter = new Mock<ISubmitter>();
@@ -1804,6 +1809,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow()
   {
     var mock = new Mock<IResultTable>();
@@ -1841,6 +1847,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  [Obsolete("Method tested is obsolete")]
   public async Task GetResultStatusShouldSucceed()
   {
     var mock = new Mock<IResultTable>();

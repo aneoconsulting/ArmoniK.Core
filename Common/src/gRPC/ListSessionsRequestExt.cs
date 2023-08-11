@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -35,29 +36,22 @@ public static class ListSessionsRequestExt
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<SessionData, object?>> ToField(this ListSessionsRequest.Types.Sort sort)
-  {
-    switch (sort.Field.FieldCase)
-    {
-      case SessionField.FieldOneofCase.SessionRawField:
-        return sort.Field.SessionRawField.Field.ToField();
-      case SessionField.FieldOneofCase.TaskOptionField:
-        return sort.Field.TaskOptionField.Field.ToField();
-      case SessionField.FieldOneofCase.TaskOptionGenericField:
-        return sort.Field.TaskOptionGenericField.ToField();
-      case SessionField.FieldOneofCase.None:
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-  }
+    => sort.Field.FieldCase switch
+       {
+         SessionField.FieldOneofCase.SessionRawField        => sort.Field.SessionRawField.Field.ToField(),
+         SessionField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
+         SessionField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+         _                                                  => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
 
   public static Expression<Func<SessionData, object?>> ToField(this SessionField taskField)
     => taskField.FieldCase switch
        {
-         SessionField.FieldOneofCase.None                   => throw new ArgumentOutOfRangeException(),
+         SessionField.FieldOneofCase.None                   => throw new ArgumentOutOfRangeException(nameof(taskField)),
          SessionField.FieldOneofCase.SessionRawField        => taskField.SessionRawField.Field.ToField(),
          SessionField.FieldOneofCase.TaskOptionField        => taskField.TaskOptionField.Field.ToField(),
          SessionField.FieldOneofCase.TaskOptionGenericField => taskField.TaskOptionGenericField.ToField(),
-         _                                                  => throw new ArgumentOutOfRangeException(),
+         _                                                  => throw new ArgumentOutOfRangeException(nameof(taskField)),
        };
 
   /// <summary>
@@ -68,6 +62,9 @@ public static class ListSessionsRequestExt
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  [SuppressMessage("Style",
+                   "IDE0066:Convert switch statement to expression",
+                   Justification = "Readability for nested switch")]
   public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
   {
     Expression<Func<SessionData, bool>> expr = data => false;
@@ -110,7 +107,7 @@ public static class ListSessionsRequestExt
             break;
           case FilterField.ValueConditionOneofCase.None:
           default:
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(filters));
         }
       }
 

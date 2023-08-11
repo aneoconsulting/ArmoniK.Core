@@ -35,7 +35,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
     RunTests      = false;
   }
 
-  public override void GetObjectStorageInstance()
+  protected override void GetObjectStorageInstance()
   {
     var rootPath = Path.Combine(Path.GetTempPath(),
                                 $"ArmoniK.{Environment.ProcessId}");

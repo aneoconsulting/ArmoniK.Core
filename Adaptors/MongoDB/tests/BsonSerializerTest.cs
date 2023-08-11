@@ -307,8 +307,8 @@ internal class BsonSerializerTest
                     deserialized.AuthId);
     Assert.AreEqual(adm.UserId,
                     deserialized.UserId);
-    Assert.AreEqual(adm.CN,
-                    deserialized.CN);
+    Assert.AreEqual(adm.Cn,
+                    deserialized.Cn);
     Assert.AreEqual(adm.Fingerprint,
                     deserialized.Fingerprint);
   }

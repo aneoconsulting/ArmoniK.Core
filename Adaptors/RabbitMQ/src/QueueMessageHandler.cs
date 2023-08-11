@@ -21,8 +21,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 
-using Microsoft.Extensions.Logging;
-
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -32,15 +30,12 @@ public class QueueMessageHandler : IQueueMessageHandler
 {
   private readonly IModel                channel_;
   private readonly BasicDeliverEventArgs deliverEvent_;
-  private readonly ILogger               logger_;
 
   public QueueMessageHandler(IModel                channel,
                              BasicDeliverEventArgs deliverEvent,
                              string                taskId,
-                             ILogger               logger,
                              CancellationToken     cancellationToken)
   {
-    logger_           = logger;
     TaskId            = taskId;
     deliverEvent_     = deliverEvent;
     CancellationToken = cancellationToken;

@@ -45,14 +45,6 @@ public class ToPartitionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(PartitionRawEnumField field,
-                      object?               expected)
-      => new TestCaseData(new PartitionRawField
-                          {
-                            Field = field,
-                          },
-                          expected).SetArgDisplayNames(field.ToString());
-
     yield return Case(PartitionRawEnumField.ParentPartitionIds,
                       PartitionData.ParentPartitionIds);
     yield return Case(PartitionRawEnumField.Id,
@@ -66,6 +58,14 @@ public class ToPartitionDataFieldTest
     yield return Case(PartitionRawEnumField.PreemptionPercentage,
                       PartitionData.PreemptionPercentage);
   }
+
+  private static TestCaseData Case(PartitionRawEnumField field,
+                                   object?               expected)
+    => new TestCaseData(new PartitionRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
 
   [Test]
   [TestCaseSource(nameof(TestCasesInvoke))]

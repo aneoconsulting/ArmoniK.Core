@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -15,25 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
-using ArmoniK.Core.Base;
-
-namespace ArmoniK.Core.Common.Tests.Helpers;
-
-public class SimpleQueueMessageHandler : IQueueMessageHandler
-{
-  public ValueTask DisposeAsync()
-  {
-    GC.SuppressFinalize(this);
-    return ValueTask.CompletedTask;
-  }
-
-  public CancellationToken  CancellationToken { get; set; }
-  public string             MessageId         { get; init; } = "";
-  public string             TaskId            { get; set; }  = "";
-  public QueueMessageStatus Status            { get; set; }
-  public DateTime           ReceptionDateTime { get; init; } = DateTime.UtcNow;
-}
+[assembly: SuppressMessage("CodeQuality",
+                           "IDE0079:Remove unnecessary suppression",
+                           Justification = "<Pending>")]

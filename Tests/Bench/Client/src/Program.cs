@@ -84,7 +84,7 @@ internal static class Program
                           benchOptions);
     using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
-    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options));
+    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options!));
 
     // Get List of partitions for logging purpose
     var partitions = await channelPool.WithInstanceAsync(async channel =>
@@ -381,7 +381,9 @@ internal static class Program
                                                           Session  = createSessionReply.SessionId,
                                                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
                                     var availabilityReply = await submitterClient.WaitForAvailabilityAsync(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                                     switch (availabilityReply.TypeCase)
                                     {

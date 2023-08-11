@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -176,6 +177,9 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  [SuppressMessage("Usage",
+                   "CA2208:Instantiate argument exceptions correctly",
+                   Justification = $"{nameof(ArgumentOutOfRangeException)} is used in nested code")]
   public async Task TryGetResult(ResultRequest                    request,
                                  IServerStreamWriter<ResultReply> responseStream,
                                  CancellationToken                cancellationToken)
@@ -232,9 +236,10 @@ public class Submitter : ISubmitter
                               .ConfigureAwait(false);
           return;
 
+        case TaskStatus.Retried: // TODO: If this case is not used, maybe remove it completely?
         case TaskStatus.Unspecified:
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(taskData.Status));
       }
     }
 
@@ -450,6 +455,9 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  [SuppressMessage("Usage",
+                   "CA2208:Instantiate argument exceptions correctly",
+                   Justification = $"{nameof(ArgumentOutOfRangeException)} is used in nested code")]
   public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                                 CancellationToken contextCancellationToken)
   {
@@ -498,8 +506,9 @@ public class Submitter : ISubmitter
                            },
                  };
         case ResultStatus.Unspecified:
+        case ResultStatus.Notfound: // TODO: define a specific error type ?
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(result.Status));
       }
 
       await Task.Delay(currentPollingDelay,

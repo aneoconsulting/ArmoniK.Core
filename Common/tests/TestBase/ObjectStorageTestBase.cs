@@ -98,7 +98,7 @@ public class ObjectStorageTestBase
 
   /* Function be override so it returns the suitable instance
    * of TaskTable to the corresponding interface implementation */
-  public virtual void GetObjectStorageInstance()
+  protected virtual void GetObjectStorageInstance()
   {
   }
 

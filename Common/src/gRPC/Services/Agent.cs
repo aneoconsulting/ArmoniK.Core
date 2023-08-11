@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -49,7 +50,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// <summary>
 ///   Represents the internal processing requests received by the agent. Provides methods to process those requests
 /// </summary>
-public class Agent : IAgent
+public sealed class Agent : IAgent
 {
   private readonly List<TaskCreationRequest> createdTasks_;
   private readonly ILogger                   logger_;
@@ -187,6 +188,9 @@ public class Agent : IAgent
   }
 
   /// <inheritdoc />
+  [SuppressMessage("Usage",
+                   "CA2208:Instantiate argument exceptions correctly",
+                   Justification = "No correct value for ArgumentOutOfRange Exception in nested code")]
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
@@ -308,7 +312,7 @@ public class Agent : IAgent
                                                 {
                                                   currentTasks!.Select(_ => new CreateTaskReply.Types.CreationStatus
                                                                             {
-                                                                              Error = "An error occured during task creation",
+                                                                              Error = "An error occurred during task creation",
                                                                             }),
                                                 },
                                               },
@@ -317,7 +321,7 @@ public class Agent : IAgent
 
             case InitTaskRequest.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(InitTaskRequest.TypeOneofCase.LastTask));
           }
 
           break;
@@ -338,13 +342,13 @@ public class Agent : IAgent
               break;
             case DataChunk.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(request.TaskPayload.TypeCase));
           }
 
           break;
         case CreateTaskRequest.TypeOneofCase.None:
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(CreateTaskRequest.TypeOneofCase.InitTask));
       }
     }
 
@@ -508,6 +512,9 @@ public class Agent : IAgent
   }
 
   /// <inheritdoc />
+  [SuppressMessage("Usage",
+                   "CA2208:Instantiate argument exceptions correctly",
+                   Justification = "<Pending>")]
   public async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
                                             CancellationToken          cancellationToken)
   {
@@ -582,7 +589,7 @@ public class Agent : IAgent
 
             case InitKeyedDataStream.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(request.Init.TypeCase));
           }
 
           break;
@@ -602,13 +609,13 @@ public class Agent : IAgent
 
             case DataChunk.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(request.Data.TypeCase));
           }
 
           break;
         case Result.TypeOneofCase.None:
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(request.TypeCase));
       }
     }
 

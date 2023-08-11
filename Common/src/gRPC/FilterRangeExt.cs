@@ -51,7 +51,7 @@ public static class FilterRangeExt
          FilterStatusOperator.NotEqual => ExpressionBuilders.MakeBinary(field,
                                                                         value,
                                                                         ExpressionType.NotEqual),
-         _ => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
 
   /// <summary>
@@ -87,7 +87,7 @@ public static class FilterRangeExt
          FilterDateOperator.NotEqual => ExpressionBuilders.MakeBinary(field,
                                                                       value,
                                                                       ExpressionType.NotEqual),
-         _ => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
 
 
@@ -124,7 +124,7 @@ public static class FilterRangeExt
          FilterNumberOperator.GreaterThan => ExpressionBuilders.MakeBinary(field,
                                                                            value,
                                                                            ExpressionType.GreaterThan),
-         _ => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
 
 
@@ -162,7 +162,7 @@ public static class FilterRangeExt
          FilterStringOperator.EndsWith => ExpressionBuilders.MakeCallString(field,
                                                                             value,
                                                                             nameof(string.EndsWith)),
-         _ => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
 
   /// <summary>
@@ -189,7 +189,7 @@ public static class FilterRangeExt
                                                                         typeof(Enumerable),
                                                                         nameof(Enumerable.Contains),
                                                                         true),
-         _ => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
 
   /// <summary>
@@ -210,6 +210,6 @@ public static class FilterRangeExt
          FilterBooleanOperator.Is => ExpressionBuilders.MakeBinary(field,
                                                                    value,
                                                                    ExpressionType.Equal),
-         _ => throw new ArgumentOutOfRangeException(),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
 }

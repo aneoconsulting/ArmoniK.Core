@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -40,6 +41,9 @@ public class WorkerService : WorkerStreamWrapper
   {
   }
 
+  [SuppressMessage("Style",
+                   "CA2208: Call the ArgumentOutOfRangeException constructor that contains a message and/or paramName parameter",
+                   Justification = "taskHandler.ExpectedResults.Count is not a real argument")]
   public override async Task<Output> Process(ITaskHandler taskHandler)
   {
     var output = new Output();
@@ -112,7 +116,7 @@ public class WorkerService : WorkerStreamWrapper
                                                  req,
                                                })
                              .ConfigureAwait(false);
-            logger_.LogDebug("Sub Task created : {subtaskid}",
+            logger_.LogDebug("Sub Task created : {subtaskId}",
                              taskId);
             output = new Output
                      {
@@ -122,11 +126,10 @@ public class WorkerService : WorkerStreamWrapper
             break;
           case TestPayload.TaskType.DatadepTransfer:
           {
-            var         taskId = "DatadepTransfer-" + Guid.NewGuid();
-            TaskRequest req;
+            var taskId = "DataDepTransfer-" + Guid.NewGuid();
             if (taskHandler.ExpectedResults.Count != 2)
             {
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(payload.Type));
             }
 
             var resId = taskHandler.ExpectedResults.First();
@@ -135,18 +138,18 @@ public class WorkerService : WorkerStreamWrapper
 
             payload.Type = TestPayload.TaskType.DatadepCompute;
 
-            req = new TaskRequest
-                  {
-                    Payload = ByteString.CopyFrom(payload.Serialize()),
-                    ExpectedOutputKeys =
-                    {
-                      resId,
-                    },
-                    DataDependencies =
-                    {
-                      depId,
-                    },
-                  };
+            var req = new TaskRequest
+                      {
+                        Payload = ByteString.CopyFrom(payload.Serialize()),
+                        ExpectedOutputKeys =
+                        {
+                          resId,
+                        },
+                        DataDependencies =
+                        {
+                          depId,
+                        },
+                      };
 
             logger_.LogDebug("DataDepTransfer Input {input}",
                              input);
@@ -164,7 +167,7 @@ public class WorkerService : WorkerStreamWrapper
                                                  req,
                                                })
                              .ConfigureAwait(false);
-            logger_.LogDebug("Sub Task created : {subtaskid}",
+            logger_.LogDebug("Sub Task created : {subtaskId}",
                              taskId);
 
             output = new Output
@@ -175,14 +178,9 @@ public class WorkerService : WorkerStreamWrapper
             break;
           case TestPayload.TaskType.DatadepCompute:
           {
-            if (taskHandler.ExpectedResults.Count != 1)
+            if (taskHandler.ExpectedResults.Count != 1 || taskHandler.DataDependencies.Count != 1)
             {
-              throw new ArgumentOutOfRangeException();
-            }
-
-            if (taskHandler.DataDependencies.Count != 1)
-            {
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(payload.Type));
             }
 
             var resId    = taskHandler.ExpectedResults.First();
@@ -243,7 +241,7 @@ public class WorkerService : WorkerStreamWrapper
                      };
             break;
           default:
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(payload.Type));
         }
       }
     }

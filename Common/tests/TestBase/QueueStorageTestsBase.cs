@@ -201,7 +201,6 @@ public class QueueStorageTestsBase
       await PullQueueStorage!.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-      const int priority = 1;
       var testTaskOptions = new TaskOptions(new Dictionary<string, string>
                                             {
                                               {

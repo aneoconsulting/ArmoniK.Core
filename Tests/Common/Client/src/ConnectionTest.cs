@@ -43,7 +43,7 @@ internal class ConnectionTest
     channel_ = null;
   }
 
-  private const string rootFolder = "../../../../../../../";
+  private const string RootFolder = "../../../../../../../";
 
   private ChannelBase? channel_;
 
@@ -99,7 +99,7 @@ internal class ConnectionTest
                                                {
                                                  "GrpcClient:CertP12", string.IsNullOrEmpty(clientCertP12)
                                                                          ? ""
-                                                                         : Path.GetFullPath(Path.Combine(rootFolder,
+                                                                         : Path.GetFullPath(Path.Combine(RootFolder,
                                                                                                          clientCertP12))
                                                },
                                                {
@@ -107,7 +107,7 @@ internal class ConnectionTest
                                                                         ? ""
                                                                         : string.IsNullOrEmpty(caFile)
                                                                           ? ""
-                                                                          : Path.GetFullPath(Path.Combine(rootFolder,
+                                                                          : Path.GetFullPath(Path.Combine(RootFolder,
                                                                                                           caFile))
                                                },
                                                {

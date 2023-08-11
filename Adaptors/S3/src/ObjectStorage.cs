@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -77,24 +77,18 @@ public class ObjectStorage : IObjectStorage
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("S3 not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("S3 not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,

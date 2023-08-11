@@ -355,7 +355,7 @@ public class ResultTable : IResultTable
                                                     cancellationToken: cancellationToken)
                                     .ConfigureAwait(false);
 
-    if (res.ModifiedCount != requests.Count())
+    if (res.ModifiedCount != requests.Count)
     {
       throw new ResultNotFoundException("One of the requested result was not found");
     }
@@ -450,7 +450,6 @@ public class ResultTable : IResultTable
     await foreach (var result in resultCollection.Find(model => model.SessionId == sessionId)
                                                  .Project(model => model.ResultId)
                                                  .ToAsyncEnumerable(cancellationToken)
-                                                 .WithCancellation(cancellationToken)
                                                  .ConfigureAwait(false))
     {
       yield return result;

@@ -115,7 +115,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
     var e = new ArmoniKException("Could not get grpc channel");
     logger_.LogError(e,
-                     string.Empty);
+                     "Could not get grpc channel");
     throw e;
   }
 

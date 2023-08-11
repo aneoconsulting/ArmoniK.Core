@@ -56,14 +56,23 @@ public class SessionTableTestBase
     await SessionTable!.Init(CancellationToken.None)
                        .ConfigureAwait(false);
 
-    rootSessionId_ = await SessionTable!.SetSessionDataAsync(new[]
-                                                             {
-                                                               "part1",
-                                                               "part2",
-                                                             },
-                                                             Options,
-                                                             CancellationToken.None)
-                                        .ConfigureAwait(false);
+    rootSessionId1_ = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "part1",
+                                                                "part2",
+                                                              },
+                                                              Options,
+                                                              CancellationToken.None)
+                                         .ConfigureAwait(false);
+
+    await SessionTable!.SetSessionDataAsync(new[]
+                                            {
+                                              "part1",
+                                              "part2",
+                                            },
+                                            Options,
+                                            CancellationToken.None)
+                       .ConfigureAwait(false);
 
     rootSessionId2_ = await SessionTable!.SetSessionDataAsync(new[]
                                                               {
@@ -74,29 +83,20 @@ public class SessionTableTestBase
                                                               CancellationToken.None)
                                          .ConfigureAwait(false);
 
-    rootSessionId3_ = await SessionTable!.SetSessionDataAsync(new[]
-                                                              {
-                                                                "part1",
-                                                                "part2",
-                                                              },
-                                                              Options,
-                                                              CancellationToken.None)
-                                         .ConfigureAwait(false);
+    await SessionTable!.SetSessionDataAsync(new[]
+                                            {
+                                              "part1",
+                                              "part2",
+                                            },
+                                            Options with
+                                            {
+                                              ApplicationName = "ApplicationName2",
+                                              ApplicationVersion = "ApplicationVersion2",
+                                            },
+                                            CancellationToken.None)
+                       .ConfigureAwait(false);
 
-    rootSessionId4_ = await SessionTable!.SetSessionDataAsync(new[]
-                                                              {
-                                                                "part1",
-                                                                "part2",
-                                                              },
-                                                              Options with
-                                                              {
-                                                                ApplicationName = "ApplicationName2",
-                                                                ApplicationVersion = "ApplicationVersion2",
-                                                              },
-                                                              CancellationToken.None)
-                                         .ConfigureAwait(false);
-
-    await SessionTable.CancelSessionAsync(rootSessionId3_,
+    await SessionTable.CancelSessionAsync(rootSessionId2_,
                                           CancellationToken.None)
                       .ConfigureAwait(false);
   }
@@ -108,21 +108,21 @@ public class SessionTableTestBase
     RunTests     = false;
   }
 
-  public static TaskOptions Options = new(new Dictionary<string, string>
-                                          {
-                                            {
-                                              "key1", "val1"
-                                            },
-                                          },
-                                          TimeSpan.FromMinutes(1),
-                                          2,
-                                          1,
-                                          "part1",
-                                          "ApplicationName",
-                                          "ApplicationVersion",
-                                          "",
-                                          "",
-                                          "");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+                                                    {
+                                                      {
+                                                        "key1", "val1"
+                                                      },
+                                                    },
+                                                    TimeSpan.FromMinutes(1),
+                                                    2,
+                                                    1,
+                                                    "part1",
+                                                    "ApplicationName",
+                                                    "ApplicationVersion",
+                                                    "",
+                                                    "",
+                                                    "");
 
   private static bool CheckForSkipSetup()
   {
@@ -134,10 +134,8 @@ public class SessionTableTestBase
 
   protected bool RunTests;
 
-  private string? rootSessionId_;
+  private string? rootSessionId1_;
   private string? rootSessionId2_;
-  private string? rootSessionId3_;
-  private string? rootSessionId4_;
 
   public virtual void GetSessionTableInstance()
   {
@@ -179,7 +177,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.IsSessionCancelledAsync(rootSessionId_!,
+      var res = await SessionTable!.IsSessionCancelledAsync(rootSessionId1_!,
                                                             CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.IsFalse(res);
@@ -205,7 +203,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.GetDefaultTaskOptionAsync(rootSessionId_!,
+      var res = await SessionTable!.GetDefaultTaskOptionAsync(rootSessionId1_!,
                                                               CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.NotNull(res);
@@ -231,14 +229,14 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var sessionData = await SessionTable!.CancelSessionAsync(rootSessionId_!,
+      var sessionData = await SessionTable!.CancelSessionAsync(rootSessionId1_!,
                                                                CancellationToken.None)
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(SessionStatus.Cancelled,
                       sessionData.Status);
 
-      var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(rootSessionId_!,
+      var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(rootSessionId1_!,
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
       Assert.IsTrue(wasSessionCanceled);
@@ -264,13 +262,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      await SessionTable!.CancelSessionAsync(rootSessionId_!,
+      await SessionTable!.CancelSessionAsync(rootSessionId1_!,
                                              CancellationToken.None)
                          .ConfigureAwait(false);
 
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable.CancelSessionAsync(rootSessionId_!,
+                                                     await SessionTable.CancelSessionAsync(rootSessionId1_!,
                                                                                            CancellationToken.None)
                                                                        .ConfigureAwait(false);
                                                    });
@@ -283,7 +281,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable!.DeleteSessionAsync(rootSessionId_!,
+      var res = SessionTable!.DeleteSessionAsync(rootSessionId1_!,
                                                  CancellationToken.None);
       await res.ConfigureAwait(false);
 
@@ -338,7 +336,7 @@ public class SessionTableTestBase
                                                       {
                                                         Sessions =
                                                         {
-                                                          rootSessionId_!,
+                                                          rootSessionId1_!,
                                                         },
                                                       },
                                                       CancellationToken.None)
@@ -394,7 +392,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = (await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName" && data.SessionId == rootSessionId_!,
+      var res = (await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "ApplicationName" && data.SessionId == rootSessionId1_!,
                                                        data => data.Status,
                                                        true,
                                                        0,

@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Configuration>
-    <CodeCoverage>
-        <ModulePaths>
-            <Include>
-                <ModulePath>.*\.dll$</ModulePath>
-                <ModulePath>.*\.exe$</ModulePath>
-            </Include>
-            <Exclude>
-                <ModulePath>.*Moq.dll$</ModulePath>
-                <ModulePath>.*Mongo2Go.dll$</ModulePath>
-                <ModulePath>.*FluentValidation.dll$</ModulePath>
-                <ModulePath>.*NUnit3.TestAdapter.dll$</ModulePath>
-                <ModulePath>.*System.*\.dll$</ModulePath>
-                <ModulePath>.*StackExchange.Redis.dll$</ModulePath>
-                <ModulePath>.*Protobuf.MSBuild.dll$</ModulePath>
-                <ModulePath>.*Pipelines.Sockets.Unofficial.dll$</ModulePath>
-            </Exclude>
-        </ModulePaths>
-        <Attributes>
-            <Exclude>
-                <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
-            </Exclude>
-        </Attributes>
-    </CodeCoverage>
+  <CodeCoverage>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*\.dll$</ModulePath>
+        <ModulePath>.*\.exe$</ModulePath>
+      </Include>
+      <Exclude>
+        <ModulePath>.*Moq.dll$</ModulePath>
+        <ModulePath>.*Mongo2Go.dll$</ModulePath>
+        <ModulePath>.*FluentValidation.dll$</ModulePath>
+        <ModulePath>.*NUnit3.TestAdapter.dll$</ModulePath>
+        <ModulePath>.*System.*\.dll$</ModulePath>
+        <ModulePath>.*StackExchange.Redis.dll$</ModulePath>
+        <ModulePath>.*Protobuf.MSBuild.dll$</ModulePath>
+        <ModulePath>.*Pipelines.Sockets.Unofficial.dll$</ModulePath>
+      </Exclude>
+    </ModulePaths>
+    <Attributes>
+      <Exclude>
+        <Attribute>^System\.Diagnostics\.CodeAnalysis\.ExcludeFromCodeCoverageAttribute$</Attribute>
+      </Exclude>
+    </Attributes>
+  </CodeCoverage>
 </Configuration>
