@@ -23,8 +23,8 @@ using System.Threading.Tasks;
 using Armonik.Api.gRPC.V1;
 
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 
-using Armonik.Api.Grpc.V1.SortDirection;
 using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Tasks;

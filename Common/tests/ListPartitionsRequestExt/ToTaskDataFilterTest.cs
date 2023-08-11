@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 
 using Armonik.Api.gRPC.V1;
-using Armonik.Api.Grpc.V1.Partitions;
-using Armonik.Api.Grpc.V1.SortDirection;
 
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 

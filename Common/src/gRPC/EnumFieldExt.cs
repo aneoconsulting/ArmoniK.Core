@@ -19,9 +19,7 @@ using System;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1.Applications;
-
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 

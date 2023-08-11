@@ -22,9 +22,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;

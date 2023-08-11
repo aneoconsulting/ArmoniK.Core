@@ -22,9 +22,7 @@ using Armonik.Api.gRPC.V1;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
