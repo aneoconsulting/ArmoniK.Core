@@ -441,7 +441,7 @@ public class PollsterTest
     public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(delay_),
-                       cancellationToken)
+                       CancellationToken.None)
                 .ConfigureAwait(false);
       return new ProcessReply
              {
