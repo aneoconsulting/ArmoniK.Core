@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -15,15 +15,47 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace ArmoniK.Core.Base;
 
+/// <summary>
+/// Represents the status of a queue message
+/// </summary>
 public enum QueueMessageStatus
 {
+  /// <summary>
+  /// Message is waiting for being processed.
+  /// </summary>
   Waiting,
+
+  /// <summary>
+  /// Message processing has failed. The message should be put back at the begin of the queue.
+  /// </summary>
   Failed,
+
+  /// <summary>
+  /// The message is being processed.
+  /// </summary>
   Running,
+
+  /// <summary>
+  /// Task is not ready to be processed. The message should be put at the end of the queue.
+  /// </summary>
   Postponed,
+
+  /// <summary>
+  /// The message has been processed. It can safely be removed from the queue.
+  /// </summary>
   Processed,
+
+  /// <summary>
+  /// The message processing has been cancelled. the message can safely be removed from the queue.
+  /// </summary>
   Cancelled,
+
+  /// <summary>
+  /// Message has been retried too many times and is considered as poisonous for the queue
+  /// </summary>
   Poisonous,
 }

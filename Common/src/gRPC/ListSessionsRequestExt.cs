@@ -64,7 +64,7 @@ public static class ListSessionsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   [SuppressMessage("Style",
                    "IDE0066:Convert switch statement to expression",
-                   Justification = "Readibility for nested switch")]
+                   Justification = "Readability for nested switch")]
   public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
   {
     Expression<Func<SessionData, bool>> expr = data => false;

@@ -647,7 +647,11 @@ public sealed class TaskHandler : IAsyncDisposable
       }
       else
       {
-        logger_.LogError(e, "Error during task execution: {Decision}", resubmit ? "retrying task" : "cancelling task");
+        logger_.LogError(e,
+                         "Error during task execution: {Decision}",
+                         resubmit
+                           ? "retrying task"
+                           : "cancelling task");
 
         await submitter_.CompleteTaskAsync(taskData,
                                            resubmit,
@@ -665,7 +669,6 @@ public sealed class TaskHandler : IAsyncDisposable
         messageHandler_.Status = resubmit
                                    ? QueueMessageStatus.Cancelled
                                    : QueueMessageStatus.Processed;
-
       }
     }
 
