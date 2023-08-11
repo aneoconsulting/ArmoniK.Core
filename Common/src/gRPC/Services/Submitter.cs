@@ -236,9 +236,10 @@ public class Submitter : ISubmitter
                               .ConfigureAwait(false);
           return;
 
+        case TaskStatus.Retried: // TODO: If this case is not used, maybe remove it completely?
         case TaskStatus.Unspecified:
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(taskData.Status));
       }
     }
 
@@ -505,8 +506,9 @@ public class Submitter : ISubmitter
                            },
                  };
         case ResultStatus.Unspecified:
+        case ResultStatus.Notfound: // TODO: define a specific error type ?
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(result.Status));
       }
 
       await Task.Delay(currentPollingDelay,

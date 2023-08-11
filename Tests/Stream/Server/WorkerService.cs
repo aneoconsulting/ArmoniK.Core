@@ -126,11 +126,10 @@ public class WorkerService : WorkerStreamWrapper
             break;
           case TestPayload.TaskType.DatadepTransfer:
           {
-            var         taskId = "DataDepTransfer-" + Guid.NewGuid();
-            TaskRequest req;
+            var taskId = "DataDepTransfer-" + Guid.NewGuid();
             if (taskHandler.ExpectedResults.Count != 2)
             {
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(payload.Type));
             }
 
             var resId = taskHandler.ExpectedResults.First();
@@ -139,18 +138,18 @@ public class WorkerService : WorkerStreamWrapper
 
             payload.Type = TestPayload.TaskType.DatadepCompute;
 
-            req = new TaskRequest
-                  {
-                    Payload = ByteString.CopyFrom(payload.Serialize()),
-                    ExpectedOutputKeys =
-                    {
-                      resId,
-                    },
-                    DataDependencies =
-                    {
-                      depId,
-                    },
-                  };
+            var req = new TaskRequest
+                      {
+                        Payload = ByteString.CopyFrom(payload.Serialize()),
+                        ExpectedOutputKeys =
+                        {
+                          resId,
+                        },
+                        DataDependencies =
+                        {
+                          depId,
+                        },
+                      };
 
             logger_.LogDebug("DataDepTransfer Input {input}",
                              input);
@@ -179,14 +178,9 @@ public class WorkerService : WorkerStreamWrapper
             break;
           case TestPayload.TaskType.DatadepCompute:
           {
-            if (taskHandler.ExpectedResults.Count != 1)
+            if (taskHandler.ExpectedResults.Count != 1 || taskHandler.DataDependencies.Count != 1)
             {
-              throw new ArgumentOutOfRangeException();
-            }
-
-            if (taskHandler.DataDependencies.Count != 1)
-            {
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(payload.Type));
             }
 
             var resId    = taskHandler.ExpectedResults.First();
@@ -247,7 +241,7 @@ public class WorkerService : WorkerStreamWrapper
                      };
             break;
           default:
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(payload.Type));
         }
       }
     }

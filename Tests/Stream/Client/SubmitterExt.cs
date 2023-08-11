@@ -72,7 +72,7 @@ public static class SubmitterExt
              CreateTaskReply.ResponseOneofCase.None               => throw new Exception("Issue with Server !"),
              CreateTaskReply.ResponseOneofCase.CreationStatusList => createTaskReply.CreationStatusList.CreationStatuses.Select(StatusToString),
              CreateTaskReply.ResponseOneofCase.Error              => throw new Exception("Error : " + createTaskReply.Error),
-             _                                                    => throw new ArgumentOutOfRangeException(),
+             _                                                    => throw new ArgumentOutOfRangeException(nameof(createTaskReply.ResponseCase)),
            };
   }
 

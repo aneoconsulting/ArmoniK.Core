@@ -312,7 +312,7 @@ public sealed class Agent : IAgent
                                                 {
                                                   currentTasks!.Select(_ => new CreateTaskReply.Types.CreationStatus
                                                                             {
-                                                                              Error = "An error occured during task creation",
+                                                                              Error = "An error occurred during task creation",
                                                                             }),
                                                 },
                                               },
@@ -321,7 +321,7 @@ public sealed class Agent : IAgent
 
             case InitTaskRequest.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(InitTaskRequest.TypeOneofCase.LastTask));
           }
 
           break;
@@ -342,13 +342,13 @@ public sealed class Agent : IAgent
               break;
             case DataChunk.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(request.TaskPayload.TypeCase));
           }
 
           break;
         case CreateTaskRequest.TypeOneofCase.None:
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(CreateTaskRequest.TypeOneofCase.InitTask));
       }
     }
 
@@ -589,7 +589,7 @@ public sealed class Agent : IAgent
 
             case InitKeyedDataStream.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(request.Init.TypeCase));
           }
 
           break;
@@ -609,13 +609,13 @@ public sealed class Agent : IAgent
 
             case DataChunk.TypeOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              throw new ArgumentOutOfRangeException(nameof(request.Data.TypeCase));
           }
 
           break;
         case Result.TypeOneofCase.None:
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(request.TypeCase));
       }
     }
 
