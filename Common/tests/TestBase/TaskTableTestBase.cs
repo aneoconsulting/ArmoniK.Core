@@ -921,7 +921,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodid    = LocalIpFinder.LocalIpv4Address();
       var ownerpodname  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
 
@@ -955,7 +955,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var ownerpodid    = LocalIPv4.GetLocalIPv4Ethernet();
+      var ownerpodid    = LocalIpFinder.LocalIpv4Address();
       var ownerpodname  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
       var taskSubmitted = taskSubmittedData_ with
@@ -1004,7 +1004,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
+      var hostname = LocalIpFinder.LocalIpv4Address();
 
       var taskSubmitted = taskSubmittedData_ with
                           {
@@ -1050,7 +1050,7 @@ public class TaskTableTestBase
     {
       var task = taskFailedData_ with
                  {
-                   OwnerPodId = LocalIPv4.GetLocalIPv4Ethernet(),
+                   OwnerPodId = LocalIpFinder.LocalIpv4Address(),
                    OwnerPodName = Dns.GetHostName(),
                    ReceptionDate = DateTime.UtcNow,
                    AcquisitionDate = DateTime.UtcNow,
@@ -1060,7 +1060,7 @@ public class TaskTableTestBase
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
+      Assert.AreNotEqual(LocalIpFinder.LocalIpv4Address(),
                          result.OwnerPodId);
 
       Assert.AreEqual(TaskStatus.Error,
@@ -1075,7 +1075,7 @@ public class TaskTableTestBase
     {
       var task = taskCreatingData_ with
                  {
-                   OwnerPodId = LocalIPv4.GetLocalIPv4Ethernet(),
+                   OwnerPodId = LocalIpFinder.LocalIpv4Address(),
                    OwnerPodName = Dns.GetHostName(),
                    ReceptionDate = DateTime.UtcNow,
                    AcquisitionDate = DateTime.UtcNow,
@@ -1085,7 +1085,7 @@ public class TaskTableTestBase
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
+      Assert.AreNotEqual(LocalIpFinder.LocalIpv4Address(),
                          result.OwnerPodId);
 
       Assert.AreEqual(TaskStatus.Creating,
