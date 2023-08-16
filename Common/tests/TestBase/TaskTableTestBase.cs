@@ -26,16 +26,10 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1;
-
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
@@ -53,6 +47,8 @@ using NUnit.Framework;
 using FilterField = ArmoniK.Api.gRPC.V1.Applications.FilterField;
 using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Applications.FiltersAnd;
+using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
@@ -1567,15 +1563,15 @@ public class TaskTableTestBase
     {
       var req = new ListTasksRequest
                 {
-                  Filters = new Armonik.Api.gRPC.V1.Tasks.Filters
+                  Filters = new Api.gRPC.V1.Tasks.Filters
                             {
                               Or =
                               {
-                                new Armonik.Api.gRPC.V1.Tasks.FiltersAnd
+                                new Api.gRPC.V1.Tasks.FiltersAnd
                                 {
                                   And =
                                   {
-                                    new Armonik.Api.gRPC.V1.Tasks.FilterField
+                                    new Api.gRPC.V1.Tasks.FilterField
                                     {
                                       Field = new TaskField
                                               {
@@ -1689,7 +1685,7 @@ public class TaskTableTestBase
 
   public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    TestCaseData CaseTrue(Armonik.Api.gRPC.V1.Tasks.FilterField filterField)
+    TestCaseData CaseTrue(Api.gRPC.V1.Tasks.FilterField filterField)
       => new TestCaseData(ListTasksHelper.CreateListSessionsRequest(new ListTasksRequest.Types.Sort(),
                                                                     new[]
                                                                     {
@@ -1700,7 +1696,7 @@ public class TaskTableTestBase
                                                                     }),
                           1).SetArgDisplayNames(filterField + " true");
 
-    TestCaseData CaseFalse(Armonik.Api.gRPC.V1.Tasks.FilterField filterField)
+    TestCaseData CaseFalse(Api.gRPC.V1.Tasks.FilterField filterField)
       => new TestCaseData(ListTasksHelper.CreateListSessionsRequest(new ListTasksRequest.Types.Sort(),
                                                                     new[]
                                                                     {
@@ -1727,7 +1723,7 @@ public class TaskTableTestBase
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
-    yield return CaseTrue(new Armonik.Api.gRPC.V1.Tasks.FilterField
+    yield return CaseTrue(new Api.gRPC.V1.Tasks.FilterField
                           {
                             Field = new TaskField
                                     {

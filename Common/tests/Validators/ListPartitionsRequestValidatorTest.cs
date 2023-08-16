@@ -17,9 +17,8 @@
 
 using System;
 
-using Armonik.Api.Grpc.V1.Partitions;
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;

@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Armonik.Api.Grpc.V1.Partitions;
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;

@@ -20,13 +20,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1;
-
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using Google.Protobuf.WellKnownTypes;
@@ -35,10 +31,10 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using FilterField = Armonik.Api.gRPC.V1.Tasks.FilterField;
-using Filters = Armonik.Api.gRPC.V1.Tasks.Filters;
-using FiltersAnd = Armonik.Api.gRPC.V1.Tasks.FiltersAnd;
-using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
+using FilterField = ArmoniK.Api.gRPC.V1.Tasks.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
+using FilterStatus = ArmoniK.Api.gRPC.V1.Tasks.FilterStatus;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Client;

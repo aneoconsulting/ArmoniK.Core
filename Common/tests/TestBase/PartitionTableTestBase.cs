@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1;
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;

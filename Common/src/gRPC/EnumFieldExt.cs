@@ -19,18 +19,14 @@ using System;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1.Applications;
-
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 
-using TaskOptionEnumField = Armonik.Api.gRPC.V1.Tasks.TaskOptionEnumField;
-using TaskOptionGenericField = Armonik.Api.gRPC.V1.Tasks.TaskOptionGenericField;
+using TaskOptionEnumField = ArmoniK.Api.gRPC.V1.Tasks.TaskOptionEnumField;
+using TaskOptionGenericField = ArmoniK.Api.gRPC.V1.Tasks.TaskOptionGenericField;
 
 namespace ArmoniK.Core.Common.gRPC;
 

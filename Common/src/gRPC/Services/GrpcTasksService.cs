@@ -20,10 +20,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
