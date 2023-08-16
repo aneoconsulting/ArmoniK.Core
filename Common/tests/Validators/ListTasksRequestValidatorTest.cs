@@ -18,9 +18,6 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.SortDirection;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Validators;
 

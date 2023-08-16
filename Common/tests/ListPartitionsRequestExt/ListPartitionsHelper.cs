@@ -17,8 +17,7 @@
 
 using System.Collections.Generic;
 
-using Armonik.Api.gRPC.V1;
-
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Partitions;
 
 namespace ArmoniK.Core.Common.Tests.ListPartitionsRequestExt;

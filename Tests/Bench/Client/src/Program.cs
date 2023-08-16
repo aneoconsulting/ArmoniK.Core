@@ -24,9 +24,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
-
-using Armonik.Api.gRPC.V1;
-
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Partitions;
