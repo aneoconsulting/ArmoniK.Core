@@ -24,8 +24,6 @@ using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <summary>
@@ -35,7 +33,6 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class WatchToGrpc
 {
   private const    int            PageSize = 100;
-  private readonly ILogger        logger_;
   private readonly IResultTable   resultTable_;
   private readonly IResultWatcher resultWatcher_;
   private readonly ITaskTable     taskTable_;
@@ -52,14 +49,12 @@ public class WatchToGrpc
   public WatchToGrpc(ITaskTable     taskTable,
                      ITaskWatcher   taskWatcher,
                      IResultTable   resultTable,
-                     IResultWatcher resultWatcher,
-                     ILogger        logger)
+                     IResultWatcher resultWatcher)
   {
     taskTable_     = taskTable;
     taskWatcher_   = taskWatcher;
     resultTable_   = resultTable;
     resultWatcher_ = resultWatcher;
-    logger_        = logger;
   }
 
   /// <summary>

@@ -168,7 +168,7 @@ public class AuthenticationTable : IAuthenticationTable
     return (await GetIdentityFromPipelineAsync(sessionHandle,
                                                authCollection,
                                                GetAuthToIdentityPipeline(),
-                                               auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
+                                               auth => auth.Cn == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
                                                cancellationToken)
               .ConfigureAwait(false))?.ToUserAuthenticationResult();
   }

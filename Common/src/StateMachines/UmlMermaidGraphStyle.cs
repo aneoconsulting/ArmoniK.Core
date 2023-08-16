@@ -85,7 +85,7 @@ public class UmlMermaidGraphStyle : GraphStyleBase
       {
         if (bld.Length > 0)
         {
-          bld.Append(" ");
+          bld.Append(' ');
         }
 
         bld.Append(info);

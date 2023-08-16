@@ -501,6 +501,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(WaitForAvailability))]
+  [Obsolete($"{nameof(ISubmitter.WaitForAvailabilityAsync)} is obsolete")]
   public override async Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
                                                                     ServerCallContext context)
   {
@@ -582,6 +583,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetResultStatus))]
+  [Obsolete($"{nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterBase.GetResultStatus)} is obsolete")]
   public override async Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
                                                                    ServerCallContext      context)
   {

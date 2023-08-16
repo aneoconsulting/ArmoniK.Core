@@ -422,8 +422,7 @@ public class PollsterTest
       => Task.CompletedTask;
 
     public void Dispose()
-    {
-    }
+      => GC.SuppressFinalize(this);
 
     public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
@@ -441,7 +440,8 @@ public class PollsterTest
 
     public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
     {
-      await Task.Delay(TimeSpan.FromMilliseconds(delay_))
+      await Task.Delay(TimeSpan.FromMilliseconds(delay_),
+                       CancellationToken.None)
                 .ConfigureAwait(false);
       return new ProcessReply
              {
@@ -476,11 +476,11 @@ public class PollsterTest
                                                              simpleAgentHandler,
                                                              mockPullQueueStorage.Object);
 
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    testServiceProvider.ResultTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
@@ -492,7 +492,7 @@ public class PollsterTest
                                            Status            = QueueMessageStatus.Waiting,
                                            MessageId = Guid.NewGuid()
                                                            .ToString(),
-                                           TaskId = tuple.taskSubmitted,
+                                           TaskId = taskSubmitted,
                                          },
                                        }.ToAsyncEnumerable());
 
@@ -508,7 +508,7 @@ public class PollsterTest
     Assert.AreEqual(TaskStatus.Completed,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
-                                                                         tuple.taskSubmitted,
+                                                                         taskSubmitted,
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
@@ -530,11 +530,11 @@ public class PollsterTest
                                                              simpleAgentHandler,
                                                              mockPullQueueStorage.Object);
 
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    testServiceProvider.ResultTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
@@ -546,7 +546,7 @@ public class PollsterTest
                                            Status            = QueueMessageStatus.Waiting,
                                            MessageId = Guid.NewGuid()
                                                            .ToString(),
-                                           TaskId = tuple.taskSubmitted,
+                                           TaskId = taskSubmitted,
                                          },
                                        }.ToAsyncEnumerable());
 
@@ -563,7 +563,7 @@ public class PollsterTest
 
     await testServiceProvider.TaskTable.CancelTaskAsync(new List<string>
                                                         {
-                                                          tuple.taskSubmitted,
+                                                          taskSubmitted,
                                                         },
                                                         CancellationToken.None)
                              .ConfigureAwait(false);
@@ -582,7 +582,7 @@ public class PollsterTest
     Assert.AreEqual(TaskStatus.Cancelled,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
-                                                                         tuple.taskSubmitted,
+                                                                         taskSubmitted,
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
@@ -685,11 +685,11 @@ public class PollsterTest
                                                              simpleAgentHandler,
                                                              mockPullQueueStorage.Object);
 
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    testServiceProvider.ResultTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
@@ -701,7 +701,7 @@ public class PollsterTest
                                            Status            = QueueMessageStatus.Waiting,
                                            MessageId = Guid.NewGuid()
                                                            .ToString(),
-                                           TaskId = tuple.taskSubmitted,
+                                           TaskId = taskSubmitted,
                                          },
                                        }.ToAsyncEnumerable());
 
@@ -717,7 +717,7 @@ public class PollsterTest
     Assert.AreEqual(TaskStatus.Submitted,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
-                                                                         tuple.taskSubmitted,
+                                                                         taskSubmitted,
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()

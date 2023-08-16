@@ -269,7 +269,9 @@ internal class TaskSubmissionTests
                       TaskStatus.Processing,
                     });
 
+#pragma warning disable CS0612 // Type or member is obsolete
     await submitterClient.WaitForAvailabilityAsync(new ResultRequest
+#pragma warning restore CS0612 // Type or member is obsolete
                                                    {
                                                      ResultId = results.Results.Single()
                                                                        .ResultId,

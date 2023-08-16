@@ -20,9 +20,7 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -55,14 +53,6 @@ public class ToSessionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(SessionRawEnumField field,
-                      object?             expected)
-      => new TestCaseData(new SessionRawField
-                          {
-                            Field = field,
-                          },
-                          expected).SetArgDisplayNames(field.ToString());
-
     // TODO add Duration
     yield return Case(SessionRawEnumField.Status,
                       SessionData.Status);
@@ -77,6 +67,14 @@ public class ToSessionDataFieldTest
     yield return Case(SessionRawEnumField.PartitionIds,
                       SessionData.PartitionIds);
   }
+
+  private static TestCaseData Case(SessionRawEnumField field,
+                                   object?             expected)
+    => new TestCaseData(new SessionRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
 
   [Test]
   [TestCaseSource(nameof(TestCasesInvoke))]

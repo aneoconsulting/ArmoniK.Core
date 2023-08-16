@@ -22,19 +22,12 @@ using ArmoniK.Core.Common.Auth.Authorization;
 
 using Grpc.Core;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [IgnoreAuthentication]
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
-  private readonly ILogger<GrpcAgentService> logger_;
-  private          IAgent?                   agent_;
-
-
-  public GrpcAgentService(ILogger<GrpcAgentService> logger)
-    => logger_ = logger;
+  private IAgent? agent_;
 
   public Task Start(IAgent agent)
   {

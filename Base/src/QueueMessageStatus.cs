@@ -15,39 +15,45 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
-
 namespace ArmoniK.Core.Base;
 
 /// <summary>
-///   Interface to handle queue messages lifecycle.
+///   Represents the status of a queue message
 /// </summary>
-public interface IQueueMessageHandler : IAsyncDisposable
+public enum QueueMessageStatus
 {
   /// <summary>
-  ///   Used to signal that the message ownership has been lost
+  ///   Message is waiting for being processed.
   /// </summary>
-  [Obsolete("ArmoniK now manages loss of link with the queue")]
-  CancellationToken CancellationToken { get; set; }
+  Waiting,
 
   /// <summary>
-  ///   Id of the message
+  ///   Message processing has failed. The message should be put back at the begin of the queue.
   /// </summary>
-  string MessageId { get; }
+  Failed,
 
   /// <summary>
-  ///   Task Id contained in the message
+  ///   The message is being processed.
   /// </summary>
-  string TaskId { get; }
+  Running,
 
   /// <summary>
-  ///   Status of the message. Used when the handler is disposed to notify the queue.
+  ///   Task is not ready to be processed. The message should be put at the end of the queue.
   /// </summary>
-  QueueMessageStatus Status { get; set; }
+  Postponed,
 
   /// <summary>
-  ///   Date of reception of the message
+  ///   The message has been processed. It can safely be removed from the queue.
   /// </summary>
-  DateTime ReceptionDateTime { get; init; }
+  Processed,
+
+  /// <summary>
+  ///   The message processing has been cancelled. the message can safely be removed from the queue.
+  /// </summary>
+  Cancelled,
+
+  /// <summary>
+  ///   Message has been retried too many times and is considered as poisonous for the queue
+  /// </summary>
+  Poisonous,
 }

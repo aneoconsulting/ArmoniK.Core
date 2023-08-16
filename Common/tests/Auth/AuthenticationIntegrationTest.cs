@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -28,16 +29,12 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Auth;
 using ArmoniK.Api.gRPC.V1.Events;
-
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
-
-using Armonik.Api.Grpc.V1.Versions;
-
+using ArmoniK.Api.gRPC.V1.Versions;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
@@ -51,6 +48,8 @@ using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
+
+using JetBrains.Annotations;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -108,11 +107,11 @@ public class AuthenticationIntegrationTest
 
   [SetUp]
   public void BeforeEach()
-    => singleThreadSemaphore.Wait();
+    => SingleThreadSemaphore.Wait();
 
   [TearDown]
   public void AfterEach()
-    => singleThreadSemaphore.Release();
+    => SingleThreadSemaphore.Release();
 
   private const string SessionId   = "MySession";
   private const string ResultKey   = "ResultKey";
@@ -406,7 +405,7 @@ public class AuthenticationIntegrationTest
                   ? "DoesntExistCN"
                   : Identities[(int)index]
                     .Certificates.FirstOrDefault(defaultCertificate)
-                    .CN);
+                    .Cn);
     headers.Add(AuthenticatorOptions.DefaultAuth.FingerprintHeader,
                 index == IdentityIndex.DoesntExist
                   ? "DoesntExistFingerprint"
@@ -979,7 +978,7 @@ public class AuthenticationIntegrationTest
                                            client,
                                            args));
 
-  private static readonly SemaphoreSlim singleThreadSemaphore = new(1,
+  private static readonly SemaphoreSlim SingleThreadSemaphore = new(1,
                                                                     1);
 
   /// <summary>
@@ -1154,6 +1153,7 @@ public class AuthenticationIntegrationTest
   }
 
   [NonParallelizable]
+  [PublicAPI] // removes a warning about unused parameter
   [TestCaseSource(nameof(GetTestReflectionCases),
                   new object?[]
                   {
@@ -1182,6 +1182,9 @@ public class AuthenticationIntegrationTest
                     false,
                     true,
                   })]
+  [SuppressMessage("Style",
+                   "IDE0060:Remove unused parameter",
+                   Justification = "Required for TestCaseSource")]
   public void AuthenticationShouldMatch<TRequest, TReply>(CaseParameters parameters,
                                                           TRequest       requestExample,
                                                           TReply         replyExample)
@@ -1201,38 +1204,6 @@ public class AuthenticationIntegrationTest
                                           channel);
     Assert.IsNotNull(client);
     Assert.IsInstanceOf<ClientBase>(client);
-
-    async Task TestFunction()
-    {
-      if (parameters.IsAsync)
-      {
-        await AsyncTestFunction(parameters.Method,
-                                (ClientBase)client!,
-                                parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else if (parameters.ClientStream)
-      {
-        await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
-                                                         (ClientBase)client!,
-                                                         parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else if (parameters.ServerStream)
-      {
-        await ServerStreamTestFunction<TReply>(parameters.Method,
-                                               (ClientBase)client!,
-                                               parameters.Args)
-          .ConfigureAwait(false);
-      }
-      else
-      {
-        await SyncTestFunction(parameters.Method,
-                               (ClientBase)client!,
-                               parameters.Args)
-          .ConfigureAwait(false);
-      }
-    }
 
     var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
 
@@ -1276,8 +1247,41 @@ public class AuthenticationIntegrationTest
                       ((RpcException)finalException!).StatusCode);
     }
 
-    helper_.DeleteChannel(channel)
-           .Wait();
+    GrpcSubmitterServiceHelper.DeleteChannel(channel)
+                              .Wait();
+    return;
+
+    async Task TestFunction()
+    {
+      if (parameters.IsAsync)
+      {
+        await AsyncTestFunction(parameters.Method,
+                                (ClientBase)client!,
+                                parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else if (parameters.ClientStream)
+      {
+        await ClientStreamTestFunction<TRequest, TReply>(parameters.Method,
+                                                         (ClientBase)client!,
+                                                         parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else if (parameters.ServerStream)
+      {
+        await ServerStreamTestFunction<TReply>(parameters.Method,
+                                               (ClientBase)client!,
+                                               parameters.Args)
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        await SyncTestFunction(parameters.Method,
+                               (ClientBase)client!,
+                               parameters.Args)
+          .ConfigureAwait(false);
+      }
+    }
   }
 
   /// <summary>
@@ -1300,10 +1304,14 @@ public class AuthenticationIntegrationTest
     return GetCases(methodObjectList);
   }
 
+  [PublicAPI]
   [TestCaseSource(nameof(GetAuthServiceTestCaseSource))]
+  [SuppressMessage("Style",
+                   "IDE0060:Remove unused parameter",
+                   Justification = "Required for reflexion")]
   public async Task AuthServiceShouldGiveUserInfo(CaseParameters parameters,
-                                                  object         _,
-                                                  object         __)
+                                                  object         exampleRequest,
+                                                  object         exampleReply)
   {
     TransformResult(parameters.IdentityIndex,
                     parameters.ImpersonationType,
@@ -1382,7 +1390,7 @@ public class AuthenticationIntegrationTest
                       ((RpcException)exception.InnerException!).StatusCode);
     }
 
-    await helper_.DeleteChannel(channel)
-                 .ConfigureAwait(false);
+    await GrpcSubmitterServiceHelper.DeleteChannel(channel)
+                                    .ConfigureAwait(false);
   }
 }

@@ -45,7 +45,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
   private RedisInside.Redis? redis_;
 
-  public override void GetObjectStorageInstance()
+  protected override void GetObjectStorageInstance()
   {
     redis_ = new RedisInside.Redis(configuration => configuration.Port(Random.Shared.Next(1000,
                                                                                           2000)));

@@ -73,24 +73,18 @@ public class ObjectStorage : IObjectStorage
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Redis not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("Redis not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,

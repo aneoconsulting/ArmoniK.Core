@@ -17,10 +17,9 @@
 
 using System.Collections.Generic;
 
-using Armonik.Api.gRPC.V1;
-using Armonik.Api.Grpc.V1.Partitions;
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -45,14 +44,6 @@ public class ToPartitionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    TestCaseData Case(PartitionRawEnumField field,
-                      object?               expected)
-      => new TestCaseData(new PartitionRawField
-                          {
-                            Field = field,
-                          },
-                          expected).SetArgDisplayNames(field.ToString());
-
     yield return Case(PartitionRawEnumField.ParentPartitionIds,
                       PartitionData.ParentPartitionIds);
     yield return Case(PartitionRawEnumField.Id,
@@ -66,6 +57,14 @@ public class ToPartitionDataFieldTest
     yield return Case(PartitionRawEnumField.PreemptionPercentage,
                       PartitionData.PreemptionPercentage);
   }
+
+  private static TestCaseData Case(PartitionRawEnumField field,
+                                   object?               expected)
+    => new TestCaseData(new PartitionRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
 
   [Test]
   [TestCaseSource(nameof(TestCasesInvoke))]

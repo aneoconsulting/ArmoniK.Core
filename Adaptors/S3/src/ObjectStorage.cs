@@ -76,24 +76,18 @@ public class ObjectStorage : IObjectStorage
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("S3 not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("S3 not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("S3 not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
@@ -154,8 +148,7 @@ public class ObjectStorage : IObjectStorage
     foreach (var chunkTask in Enumerable.Range(0,
                                                valuesCount)
                                         .Select(index => s3Client_.StringByteGetAsync(bucketName_,
-                                                                                      $"{objectStorageName_}{key}_{index}",
-                                                                                      logger_))
+                                                                                      $"{objectStorageName_}{key}_{index}"))
                                         .ToList())
     {
       yield return (await chunkTask.ConfigureAwait(false))!;
@@ -169,10 +162,12 @@ public class ObjectStorage : IObjectStorage
     using var _ = logger_.LogFunction(objectStorageName_ + key);
     var value = await s3Client_.StringGetValueAsync(bucketName_,
                                                     $"{objectStorageName_}{key}_count",
-                                                    logger_)
+                                                    cancellationToken)
                                .ConfigureAwait(false);
 
+#pragma warning disable IDE0270 // null check can be simplifier but with a less readable approach
     if (value == null)
+#pragma warning restore IDE0270
     {
       throw new ObjectDataNotFoundException("Key not found");
     }
@@ -256,10 +251,9 @@ internal static class AmazonS3ClientExt
     return s3Client.PutObjectAsync(requestCount);
   }
 
-  internal static async Task<byte[]> StringByteGetAsync(this AmazonS3Client    s3Client,
-                                                        string                 bucketName,
-                                                        string                 key,
-                                                        ILogger<ObjectStorage> logger)
+  internal static async Task<byte[]> StringByteGetAsync(this AmazonS3Client s3Client,
+                                                        string              bucketName,
+                                                        string              key)
   {
     var request = new GetObjectRequest
                   {
@@ -274,21 +268,21 @@ internal static class AmazonS3ClientExt
     return fileContent;
   }
 
-  internal static async Task<string?> StringGetValueAsync(this AmazonS3Client    s3Client,
-                                                          string                 bucketName,
-                                                          string                 key,
-                                                          ILogger<ObjectStorage> logger)
+  internal static async Task<string?> StringGetValueAsync(this AmazonS3Client s3Client,
+                                                          string              bucketName,
+                                                          string              key,
+                                                          CancellationToken   cancellationToken = default)
   {
     var response = await s3Client.GetObjectAsync(bucketName,
-                                                 key);
+                                                 key,
+                                                 cancellationToken);
 
     // Get the data from the response stream
     await using var responseStream = response.ResponseStream;
 
     var retrievedData = new byte[responseStream.Length];
     _ = await responseStream.ReadAsync(retrievedData,
-                                       0,
-                                       retrievedData.Length);
+                                       cancellationToken);
     return Encoding.UTF8.GetString(retrievedData);
   }
 }

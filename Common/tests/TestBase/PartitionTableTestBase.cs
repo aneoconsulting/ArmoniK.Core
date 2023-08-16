@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1;
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
@@ -229,16 +228,16 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await PartitionTable!.ListPartitionsAsync(data => data.PartitionId == "NotExisting",
-                                                                data => data.ParentPartitionIds,
-                                                                false,
-                                                                0,
-                                                                20,
-                                                                CancellationToken.None)
-                                           .ConfigureAwait(false);
+      var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(data => data.PartitionId == "NotExisting",
+                                                                      data => data.ParentPartitionIds,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(0,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -247,16 +246,16 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await PartitionTable!.ListPartitionsAsync(data => data.ParentPartitionIds.Contains("ParentPartitionId"),
-                                                                data => data.PartitionId,
-                                                                false,
-                                                                0,
-                                                                20,
-                                                                CancellationToken.None)
-                                           .ConfigureAwait(false);
+      var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(data => data.ParentPartitionIds.Contains("ParentPartitionId"),
+                                                                      data => data.PartitionId,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(1,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -267,16 +266,16 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await PartitionTable!.ListPartitionsAsync(request.Filters.ToPartitionFilter(),
-                                                                data => data.PartitionId,
-                                                                false,
-                                                                0,
-                                                                20,
-                                                                CancellationToken.None)
-                                           .ConfigureAwait(false);
+      var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(request.Filters.ToPartitionFilter(),
+                                                                      data => data.PartitionId,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(count,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 

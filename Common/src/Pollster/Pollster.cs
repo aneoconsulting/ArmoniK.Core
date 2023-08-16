@@ -104,7 +104,7 @@ public class Pollster : IInitializable
     workerStreamHandler_   = workerStreamHandler;
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
-    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    ownerPodId_            = LocalIpFinder.LocalIpv4Address();
     ownerPodName_          = Dns.GetHostName();
     Failed                 = false;
   }
@@ -249,8 +249,7 @@ public class Pollster : IInitializable
           var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
                                                              cancellationToken);
 
-          await foreach (var message in messages.WithCancellation(cancellationToken)
-                                                .ConfigureAwait(false))
+          await foreach (var message in messages.ConfigureAwait(false))
           {
             using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                              ("messageHandler", message.MessageId),

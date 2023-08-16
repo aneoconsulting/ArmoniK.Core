@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 
 namespace ArmoniK.Core.Utils;
 
-public static class IQueryableExt
+public static class QueryableExt
 {
   public static IOrderedQueryable<T> OrderByList<T>(this IQueryable<T>                        queryable,
                                                     ICollection<Expression<Func<T, object?>>> orderFields,

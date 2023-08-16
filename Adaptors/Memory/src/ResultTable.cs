@@ -302,18 +302,18 @@ public class ResultTable : IResultTable
       throw new SessionNotFoundException($"Session '{session}' not found");
     }
 
-    foreach (var req in requests)
+    foreach (var (resultId, taskId) in requests)
     {
-      if (!session.TryGetValue(req.resultId,
+      if (!session.TryGetValue(resultId,
                                out var result))
       {
-        throw new ResultNotFoundException($"Key '{req.resultId}' not found");
+        throw new ResultNotFoundException($"Key '{resultId}' not found");
       }
 
-      session.TryUpdate(req.resultId,
+      session.TryUpdate(resultId,
                         result with
                         {
-                          OwnerTaskId = req.taskId,
+                          OwnerTaskId = taskId,
                         },
                         result);
     }

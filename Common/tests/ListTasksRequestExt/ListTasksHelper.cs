@@ -18,12 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-using Armonik.Api.gRPC.V1;
-
 using ArmoniK.Api.gRPC.V1;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;

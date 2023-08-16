@@ -27,6 +27,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -42,23 +43,21 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication      app_;
+  private readonly Mutex               channelMutex_ = new();
   private readonly ILoggerFactory      loggerFactory_;
   private          ChannelBase?        channel_;
-  private          Mutex               channelMutex_;
   private          HttpMessageHandler? handler_;
-  private          ILogger             logger_;
-  private          int                 nChannels;
   private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
                                     List<MockIdentity>          authIdentities,
                                     AuthenticatorOptions        authOptions,
-                                    LogLevel                    loglevel,
+                                    LogLevel                    logLevel,
                                     Action<IServiceCollection>? serviceConfigurator  = null,
                                     bool                        validateGrpcRequests = true)
   {
     loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(logLevel));
 
     var builder = WebApplication.CreateBuilder();
 
@@ -71,7 +70,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddSingleton<IResultTable, SimpleResultTable>()
            .AddSingleton<ISessionTable, SimpleSessionTable>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
-           .AddLogging(build => build.SetMinimumLevel(loglevel)
+           .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
@@ -90,8 +89,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     serviceConfigurator?.Invoke(builder.Services);
 
     builder.WebHost.UseTestServer(options => options.PreserveExecutionContext = true);
-    logger_ = loggerFactory_.CreateLogger("Testing apps");
-    app_    = builder.Build();
+    app_ = builder.Build();
     app_.UseRouting();
     app_.UseAuthentication();
     app_.UseAuthorization();
@@ -119,8 +117,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public void Dispose()
   {
     app_.DisposeAsync()
-        .GetAwaiter()
-        .GetResult();
+        .WaitSync();
     server_?.Dispose();
     server_ = null;
     handler_?.Dispose();
@@ -129,6 +126,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
             .Wait();
     channel_ = null;
     loggerFactory_.Dispose();
+    channelMutex_?.Dispose();
     GC.SuppressFinalize(this);
   }
 
@@ -161,7 +159,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     ;
   }
 
-  public async Task DeleteChannel(ChannelBase channel)
+  public static async Task DeleteChannel(ChannelBase channel)
     => await channel.ShutdownAsync()
                     .ConfigureAwait(false);
 

@@ -145,8 +145,7 @@ public class ObjectStorage : IObjectStorage
                                                 .Where(odm => odm.Key == objectStorageName_ + key)
                                                 .OrderBy(odm => odm.ChunkIdx)
                                                 .Select(odm => odm.Chunk)
-                                                .ToAsyncEnumerable()
-                                                .WithCancellation(cancellationToken)
+                                                .ToAsyncEnumerable(cancellationToken)
                                                 .ConfigureAwait(false))
     {
       throwException = false;
@@ -182,8 +181,7 @@ public class ObjectStorage : IObjectStorage
     await foreach (var key in objectCollection.AsQueryable(sessionHandle)
                                               .Where(odm => odm.ChunkIdx == 0)
                                               .Select(odm => odm.Key)
-                                              .ToAsyncEnumerable()
-                                              .WithCancellation(cancellationToken)
+                                              .ToAsyncEnumerable(cancellationToken)
                                               .ConfigureAwait(false))
     {
       yield return key;

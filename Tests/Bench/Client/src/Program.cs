@@ -24,18 +24,11 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
-
-using Armonik.Api.gRPC.V1;
-
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
-
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
@@ -52,9 +45,9 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
 
-using FilterField = Armonik.Api.Grpc.V1.Partitions.FilterField;
-using Filters = Armonik.Api.Grpc.V1.Partitions.Filters;
-using FiltersAnd = Armonik.Api.Grpc.V1.Partitions.FiltersAnd;
+using FilterField = ArmoniK.Api.gRPC.V1.Partitions.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Partitions.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Partitions.FiltersAnd;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Samples.Bench.Client;
@@ -84,7 +77,7 @@ internal static class Program
                           benchOptions);
     using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
-    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options));
+    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options!));
 
     // Get List of partitions for logging purpose
     var partitions = await channelPool.WithInstanceAsync(async channel =>
@@ -381,7 +374,9 @@ internal static class Program
                                                           Session  = createSessionReply.SessionId,
                                                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
                                     var availabilityReply = await submitterClient.WaitForAvailabilityAsync(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                                     switch (availabilityReply.TypeCase)
                                     {

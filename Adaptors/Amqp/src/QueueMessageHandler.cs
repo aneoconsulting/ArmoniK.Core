@@ -24,13 +24,10 @@ using Amqp.Framing;
 
 using ArmoniK.Core.Base;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly ILogger       logger_;
   private readonly Message       message_;
   private readonly IReceiverLink receiver_;
   private readonly ISenderLink   sender_;
@@ -39,13 +36,11 @@ public class QueueMessageHandler : IQueueMessageHandler
                              ISenderLink       sender,
                              IReceiverLink     receiver,
                              string            taskId,
-                             ILogger           logger,
                              CancellationToken cancellationToken)
   {
     message_          = message;
     sender_           = sender;
     receiver_         = receiver;
-    logger_           = logger;
     TaskId            = taskId;
     CancellationToken = cancellationToken;
     ReceptionDateTime = DateTime.UtcNow;

@@ -179,7 +179,9 @@ public class SessionTable : ISessionTable
                                                                    cancellationToken)
                                             .ConfigureAwait(false);
 
+#pragma warning disable IDE0270 // null check can be simplified with a less readable approach
     if (resSession is null)
+#pragma warning restore IDE0270
     {
       throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
     }

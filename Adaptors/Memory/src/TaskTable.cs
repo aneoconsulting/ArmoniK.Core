@@ -81,9 +81,10 @@ public class TaskTable : ITaskTable
   public Task<TaskData> ReadTaskAsync(string            taskId,
                                       CancellationToken cancellationToken = default)
   {
-    if (taskId2TaskData_.ContainsKey(taskId))
+    if (taskId2TaskData_.TryGetValue(taskId,
+                                     out var value))
     {
-      return Task.FromResult(taskId2TaskData_[taskId]);
+      return Task.FromResult(value);
     }
 
     throw new TaskNotFoundException($"Key '{taskId}' not found");
@@ -93,26 +94,21 @@ public class TaskTable : ITaskTable
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskId))
+    if (!taskId2TaskData_.TryGetValue(taskId,
+                                      out var value))
     {
       throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
+    return Task.FromResult(value.Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
   }
 
   /// <inheritdoc />
   public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskData.TaskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found");
-    }
-
     taskId2TaskData_.AddOrUpdate(taskData.TaskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 _ => throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found"),
                                  (_,
                                   data) => data with
                                            {
@@ -504,27 +500,4 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
-
-  private bool UpdateTaskToSubmitted(string id)
-  {
-    var updated = false;
-    taskId2TaskData_.AddOrUpdate(id,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.Status != TaskStatus.Creating)
-                                   {
-                                     return data;
-                                   }
-
-                                   updated = true;
-                                   return data with
-                                          {
-                                            Status = TaskStatus.Submitted,
-                                            SubmittedDate = DateTime.UtcNow,
-                                          };
-                                 });
-    return updated;
-  }
 }

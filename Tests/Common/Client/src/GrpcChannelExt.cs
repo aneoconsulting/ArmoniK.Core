@@ -20,13 +20,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1;
-
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
-
-using Armonik.Api.Grpc.V1.SortDirection;
-using Armonik.Api.gRPC.V1.Tasks;
-
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 
 using Google.Protobuf.WellKnownTypes;
@@ -35,19 +31,19 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using FilterField = Armonik.Api.gRPC.V1.Tasks.FilterField;
-using Filters = Armonik.Api.gRPC.V1.Tasks.Filters;
-using FiltersAnd = Armonik.Api.gRPC.V1.Tasks.FiltersAnd;
-using FilterStatus = Armonik.Api.gRPC.V1.Tasks.FilterStatus;
+using FilterField = ArmoniK.Api.gRPC.V1.Tasks.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
+using FilterStatus = ArmoniK.Api.gRPC.V1.Tasks.FilterStatus;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Client;
 
 public static class GrpcChannelExt
 {
-  public static async IAsyncEnumerable<TaskRaw> ListTasksAsync(this ChannelBase            channel,
-                                                               Filters                     filters,
-                                                               ListTasksRequest.Types.Sort sort)
+  public static async IAsyncEnumerable<TaskDetailed> ListTasksAsync(this ChannelBase            channel,
+                                                                    Filters                     filters,
+                                                                    ListTasksRequest.Types.Sort sort)
   {
     var               read       = 0;
     var               page       = 0;
@@ -65,13 +61,13 @@ public static class GrpcChannelExt
     {
       foreach (var taskSummary in res.Tasks)
       {
-        var taskRaw = taskClient.GetTask(new GetTaskRequest
-                                         {
-                                           TaskId = taskSummary.Id,
-                                         })
-                                .Task;
+        var taskDetailed = taskClient.GetTask(new GetTaskRequest
+                                              {
+                                                TaskId = taskSummary.Id,
+                                              })
+                                     .Task;
         read++;
-        yield return taskRaw;
+        yield return taskDetailed;
       }
 
       page++;
@@ -85,67 +81,67 @@ public static class GrpcChannelExt
   {
     var resultClient = new Results.ResultsClient(channel);
 
-    var taskDependencies = new Dictionary<string, TaskRaw>();
-    var taskAggregation  = new List<TaskRaw>();
+    var taskDependencies = new Dictionary<string, TaskDetailed>();
+    var taskAggregation  = new List<TaskDetailed>();
     var usageRatio       = new List<double>();
 
 
-    await foreach (var taskRaw in channel.ListTasksAsync(new Filters
-                                                         {
-                                                           Or =
-                                                           {
-                                                             new FiltersAnd
-                                                             {
-                                                               And =
-                                                               {
-                                                                 new FilterField
-                                                                 {
-                                                                   Field = new TaskField
-                                                                           {
-                                                                             TaskSummaryField = new TaskSummaryField
-                                                                                                {
-                                                                                                  Field = TaskSummaryEnumField.SessionId,
-                                                                                                },
-                                                                           },
-                                                                   FilterString = new FilterString
-                                                                                  {
-                                                                                    Value    = sessionId,
-                                                                                    Operator = FilterStringOperator.Equal,
-                                                                                  },
-                                                                 },
-                                                               },
-                                                             },
-                                                           },
-                                                         },
-                                                         new ListTasksRequest.Types.Sort
-                                                         {
-                                                           Direction = SortDirection.Asc,
-                                                           Field = new TaskField
-                                                                   {
-                                                                     TaskSummaryField = new TaskSummaryField
-                                                                                        {
-                                                                                          Field = TaskSummaryEnumField.TaskId,
-                                                                                        },
-                                                                   },
-                                                         })
-                                         .ConfigureAwait(false))
+    await foreach (var taskDetailed in channel.ListTasksAsync(new Filters
+                                                              {
+                                                                Or =
+                                                                {
+                                                                  new FiltersAnd
+                                                                  {
+                                                                    And =
+                                                                    {
+                                                                      new FilterField
+                                                                      {
+                                                                        Field = new TaskField
+                                                                                {
+                                                                                  TaskSummaryField = new TaskSummaryField
+                                                                                                     {
+                                                                                                       Field = TaskSummaryEnumField.SessionId,
+                                                                                                     },
+                                                                                },
+                                                                        FilterString = new FilterString
+                                                                                       {
+                                                                                         Value    = sessionId,
+                                                                                         Operator = FilterStringOperator.Equal,
+                                                                                       },
+                                                                      },
+                                                                    },
+                                                                  },
+                                                                },
+                                                              },
+                                                              new ListTasksRequest.Types.Sort
+                                                              {
+                                                                Direction = SortDirection.Asc,
+                                                                Field = new TaskField
+                                                                        {
+                                                                          TaskSummaryField = new TaskSummaryField
+                                                                                             {
+                                                                                               Field = TaskSummaryEnumField.TaskId,
+                                                                                             },
+                                                                        },
+                                                              })
+                                              .ConfigureAwait(false))
     {
-      if (taskRaw.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
+      if (taskDetailed.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
       {
-        var useRatio = (taskRaw.EndedAt - taskRaw.StartedAt).ToTimeSpan()
-                                                            .TotalMilliseconds / (taskRaw.EndedAt - taskRaw.ReceivedAt).ToTimeSpan()
-                                                                                                                       .TotalMilliseconds;
+        var useRatio = (taskDetailed.EndedAt - taskDetailed.StartedAt).ToTimeSpan()
+                                                                      .TotalMilliseconds / (taskDetailed.EndedAt - taskDetailed.ReceivedAt).ToTimeSpan()
+                                                                                                                                           .TotalMilliseconds;
 
         usageRatio.Add(useRatio);
       }
 
-      if (taskRaw.DataDependencies.Count > 0)
+      if (taskDetailed.DataDependencies.Count > 0)
       {
-        taskAggregation.Add(taskRaw);
+        taskAggregation.Add(taskDetailed);
       }
 
-      taskDependencies.Add(taskRaw.Id,
-                           taskRaw);
+      taskDependencies.Add(taskDetailed.Id,
+                           taskDetailed);
     }
 
     var timediff = new List<double>();
