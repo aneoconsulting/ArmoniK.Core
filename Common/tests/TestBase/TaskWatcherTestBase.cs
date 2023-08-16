@@ -389,22 +389,29 @@ public class TaskWatcherTestBase
                                                            cts.Token)
                                               .ConfigureAwait(false);
 
+      var newResults = new List<NewTask>();
+      var watch = Task.Run(async () =>
+                           {
+                             await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                      .ConfigureAwait(false))
+                             {
+                               Console.WriteLine(cur);
+                               newResults.Add(cur);
+                             }
+                           },
+                           CancellationToken.None);
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+
       await ProduceEvents(TaskTable!,
                           cts.Token)
         .ConfigureAwait(false);
 
       cts.CancelAfter(TimeSpan.FromSeconds(1));
 
-      var newResults = new List<NewTask>();
-      Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                     {
-                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
-                                                                                                .ConfigureAwait(false))
-                                                       {
-                                                         Console.WriteLine(cur);
-                                                         newResults.Add(cur);
-                                                       }
-                                                     });
+      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
       Assert.AreEqual(2,
                       newResults.Count);
@@ -426,22 +433,29 @@ public class TaskWatcherTestBase
                                                                     cts.Token)
                                               .ConfigureAwait(false);
 
+      var newResults = new List<TaskStatusUpdate>();
+      var watch = Task.Run(async () =>
+                           {
+                             await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                      .ConfigureAwait(false))
+                             {
+                               Console.WriteLine(cur);
+                               newResults.Add(cur);
+                             }
+                           },
+                           CancellationToken.None);
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+
       await ProduceEvents(TaskTable!,
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromSeconds(2));
+      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      var newResults = new List<TaskStatusUpdate>();
-      Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                     {
-                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
-                                                                                                .ConfigureAwait(false))
-                                                       {
-                                                         Console.WriteLine(cur);
-                                                         newResults.Add(cur);
-                                                       }
-                                                     });
+      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
       Assert.AreEqual(3,
                       newResults.Count);
@@ -451,7 +465,7 @@ public class TaskWatcherTestBase
                       newResults[0]);
       Assert.AreEqual(new TaskStatusUpdate("SessionId",
                                            TaskSubmittedData.TaskId,
-                                           TaskStatus.Cancelling),
+                                           TaskStatus.Processing),
                       newResults[1]);
       Assert.AreEqual(new TaskStatusUpdate("SessionId",
                                            TaskSubmittedData.TaskId,
