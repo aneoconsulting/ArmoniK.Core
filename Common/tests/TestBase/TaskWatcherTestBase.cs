@@ -230,53 +230,53 @@ public class TaskWatcherTestBase
                                                   new Output(false,
                                                              "sad task"));
 
-  private static readonly TaskData TaskEventCreating1 = new TaskData("SessionId",
-                                                                     "TaskEventCreating1",
-                                                                     "OwnerPodId",
-                                                                     "OwnerPodName",
-                                                                     "PayloadId",
-                                                                     new[]
-                                                                     {
-                                                                       "parent1",
-                                                                     },
-                                                                     new[]
-                                                                     {
-                                                                       "dependency1",
-                                                                     },
-                                                                     new[]
-                                                                     {
-                                                                       "output1",
-                                                                       "output2",
-                                                                     },
-                                                                     Array.Empty<string>(),
-                                                                     TaskStatus.Creating,
-                                                                     Options,
-                                                                     new Output(true,
-                                                                                ""));
+  private static readonly TaskData TaskEventCreating1 = new("SessionId",
+                                                            "TaskEventCreating1",
+                                                            "OwnerPodId",
+                                                            "OwnerPodName",
+                                                            "PayloadId",
+                                                            new[]
+                                                            {
+                                                              "parent1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "dependency1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "output1",
+                                                              "output2",
+                                                            },
+                                                            Array.Empty<string>(),
+                                                            TaskStatus.Creating,
+                                                            Options,
+                                                            new Output(true,
+                                                                       ""));
 
-  private static readonly TaskData TaskEventCreating2 = new TaskData("SessionId",
-                                                                     "TaskEventCreating2",
-                                                                     "OwnerPodId",
-                                                                     "OwnerPodName",
-                                                                     "PayloadId",
-                                                                     new[]
-                                                                     {
-                                                                       "parent2",
-                                                                     },
-                                                                     new[]
-                                                                     {
-                                                                       "dependency1",
-                                                                     },
-                                                                     new[]
-                                                                     {
-                                                                       "output1",
-                                                                       "output2",
-                                                                     },
-                                                                     Array.Empty<string>(),
-                                                                     TaskStatus.Creating,
-                                                                     Options,
-                                                                     new Output(true,
-                                                                                ""));
+  private static readonly TaskData TaskEventCreating2 = new("SessionId",
+                                                            "TaskEventCreating2",
+                                                            "OwnerPodId",
+                                                            "OwnerPodName",
+                                                            "PayloadId",
+                                                            new[]
+                                                            {
+                                                              "parent2",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "dependency1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "output1",
+                                                              "output2",
+                                                            },
+                                                            Array.Empty<string>(),
+                                                            TaskStatus.Creating,
+                                                            Options,
+                                                            new Output(true,
+                                                                       ""));
 
   private static bool CheckForSkipSetup()
   {
