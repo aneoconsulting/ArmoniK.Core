@@ -19,8 +19,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC;

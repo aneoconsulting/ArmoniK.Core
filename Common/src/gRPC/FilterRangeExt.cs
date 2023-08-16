@@ -19,7 +19,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-using Armonik.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.gRPC;
 

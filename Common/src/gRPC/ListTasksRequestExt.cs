@@ -19,8 +19,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 

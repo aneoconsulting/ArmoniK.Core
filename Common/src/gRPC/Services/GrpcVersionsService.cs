@@ -17,8 +17,7 @@
 
 using System.Threading.Tasks;
 
-using Armonik.Api.Grpc.V1.Versions;
-
+using ArmoniK.Api.gRPC.V1.Versions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 
