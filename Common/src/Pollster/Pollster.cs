@@ -104,7 +104,7 @@ public class Pollster : IInitializable
     workerStreamHandler_   = workerStreamHandler;
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
-    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    ownerPodId_            = LocalIpFinder.LocalIpv4Address();
     ownerPodName_          = Dns.GetHostName();
     Failed                 = false;
   }
