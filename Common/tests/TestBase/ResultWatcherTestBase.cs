@@ -179,6 +179,48 @@ public class ResultWatcherTestBase
     }
   }
 
+  private static readonly Result NewResult1 = new("SessionId",
+                                                  "NewResult",
+                                                  "",
+                                                  "OwnerId",
+                                                  ResultStatus.Created,
+                                                  new List<string>(),
+                                                  DateTime.Today,
+                                                  new[]
+                                                  {
+                                                    (byte)1,
+                                                  });
+
+  private static readonly Result NewResult2 = new("SessionId",
+                                                  "NewResult2",
+                                                  "",
+                                                  "OwnerId",
+                                                  ResultStatus.Created,
+                                                  new List<string>(),
+                                                  DateTime.Today,
+                                                  new[]
+                                                  {
+                                                    (byte)1,
+                                                  });
+
+  private static readonly Result NewResult3 = new("SessionId2",
+                                                  "NewResult3",
+                                                  "",
+                                                  "OwnerId",
+                                                  ResultStatus.Created,
+                                                  new List<string>(),
+                                                  DateTime.Today,
+                                                  new[]
+                                                  {
+                                                    (byte)1,
+                                                  });
+
+  private NewResult ResultToNewResult(Result result)
+    => new(result.SessionId,
+           result.ResultId,
+           result.OwnerTaskId,
+           result.Status);
+
   /// <summary>
   ///   This method produces the events (new results, owner id updates and status update)
   ///   that will be used to test the IResultWatcher interface.
@@ -193,46 +235,16 @@ public class ResultWatcherTestBase
   {
     await resultTable.Create(new[]
                              {
-                               new Result("SessionId",
-                                          "NewResult",
-                                          "",
-                                          "OwnerId",
-                                          ResultStatus.Created,
-                                          new List<string>(),
-                                          DateTime.Today,
-                                          new[]
-                                          {
-                                            (byte)1,
-                                          }),
+                               NewResult1,
                              },
                              cancellationToken)
                      .ConfigureAwait(false);
 
     await resultTable.Create(new[]
                              {
-                               new Result("SessionId",
-                                          "NewResult2",
-                                          "",
-                                          "OwnerId",
-                                          ResultStatus.Created,
-                                          new List<string>(),
-                                          DateTime.Today,
-                                          new[]
-                                          {
-                                            (byte)1,
-                                          }),
+                               NewResult2,
                                // we also create results in another session to check if the filter works
-                               new Result("SessionId2",
-                                          "NewResult3",
-                                          "",
-                                          "OwnerId",
-                                          ResultStatus.Created,
-                                          new List<string>(),
-                                          DateTime.Today,
-                                          new[]
-                                          {
-                                            (byte)1,
-                                          }),
+                               NewResult3,
                              },
                              cancellationToken)
                      .ConfigureAwait(false);
@@ -272,25 +284,37 @@ public class ResultWatcherTestBase
                                                                cts.Token)
                                                 .ConfigureAwait(false);
 
+      var newResults = new List<NewResult>();
+      var watch = Task.Run(async () =>
+                           {
+                             await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                      .ConfigureAwait(false))
+                             {
+                               Console.WriteLine(cur);
+                               newResults.Add(cur);
+                             }
+                           },
+                           CancellationToken.None);
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+
       await ProduceEvents(ResultTable!,
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromSeconds(1));
+      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      var newResults = new List<NewResult>();
-      Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                     {
-                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
-                                                                                                .ConfigureAwait(false))
-                                                       {
-                                                         Console.WriteLine(cur);
-                                                         newResults.Add(cur);
-                                                       }
-                                                     });
+      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
       Assert.AreEqual(2,
                       newResults.Count);
+
+      Assert.AreEqual(ResultToNewResult(NewResult1),
+                      newResults[0]);
+      Assert.AreEqual(ResultToNewResult(NewResult2),
+                      newResults[1]);
     }
   }
 
@@ -305,25 +329,45 @@ public class ResultWatcherTestBase
                                                                         cts.Token)
                                                 .ConfigureAwait(false);
 
+      var newResults = new List<ResultStatusUpdate>();
+      var watch = Task.Run(async () =>
+                           {
+                             await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                      .ConfigureAwait(false))
+                             {
+                               Console.WriteLine(cur);
+                               newResults.Add(cur);
+                             }
+                           },
+                           CancellationToken.None);
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+
       await ProduceEvents(ResultTable!,
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromSeconds(2));
+      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      var newResults = new List<ResultStatusUpdate>();
-      Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                     {
-                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
-                                                                                                .ConfigureAwait(false))
-                                                       {
-                                                         Console.WriteLine(cur);
-                                                         newResults.Add(cur);
-                                                       }
-                                                     });
+      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
       Assert.AreEqual(3,
                       newResults.Count);
+
+      Assert.AreEqual(new ResultStatusUpdate("SessionId",
+                                             "ResultIsCreated",
+                                             ResultStatus.Aborted),
+                      newResults[0]);
+      Assert.AreEqual(new ResultStatusUpdate("SessionId",
+                                             "ResultIsCreated2",
+                                             ResultStatus.Aborted),
+                      newResults[1]);
+      Assert.AreEqual(new ResultStatusUpdate("SessionId",
+                                             "ResultIsCreated3",
+                                             ResultStatus.Aborted),
+                      newResults[2]);
     }
   }
 
@@ -339,32 +383,38 @@ public class ResultWatcherTestBase
                                                                        cts.Token)
                                                 .ConfigureAwait(false);
 
+      var newResults = new List<ResultOwnerUpdate>();
+      var watch = Task.Run(async () =>
+                           {
+                             await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                      .ConfigureAwait(false))
+                             {
+                               Console.WriteLine(cur);
+                               newResults.Add(cur);
+                             }
+                           },
+                           CancellationToken.None);
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+
       await ProduceEvents(ResultTable!,
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromSeconds(2));
+      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      var newResults = new List<ResultOwnerUpdate>();
-      Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                     {
-                                                       await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
-                                                                                                .ConfigureAwait(false))
-                                                       {
-                                                         Console.WriteLine(cur);
-                                                         newResults.Add(cur);
-                                                       }
-                                                     });
+      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
       Assert.AreEqual(1,
                       newResults.Count);
 
-      Assert.AreEqual("NewOwnerId",
-                      newResults.Single()
-                                .NewOwner);
-      Assert.AreEqual("ResultIsCreated3",
-                      newResults.Single()
-                                .ResultId);
+      Assert.AreEqual(new ResultOwnerUpdate("SessionId",
+                                            "ResultIsCreated3",
+                                            "",
+                                            "NewOwnerId"),
+                      newResults.Single());
     }
   }
 }
