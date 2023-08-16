@@ -65,10 +65,10 @@ public record Output(bool   Success,
        };
 
   /// <summary>
-  ///   Convert the <see cref="Output" /> to <see cref="TaskRaw.Types.Output" />
+  ///   Convert the <see cref="Output" /> to <see cref="TaskDetailed.Types.Output" />
   /// </summary>
   /// <param name="output">The object to convert</param>
-  public static implicit operator TaskRaw.Types.Output(Output output)
+  public static implicit operator TaskDetailed.Types.Output(Output output)
     => new()
        {
          Error   = output.Error,
@@ -76,10 +76,10 @@ public record Output(bool   Success,
        };
 
   /// <summary>
-  ///   Convert the <see cref="TaskRaw.Types.Output" /> to <see cref="Output" />
+  ///   Convert the <see cref="TaskDetailed.Types.Output" /> to <see cref="Output" />
   /// </summary>
   /// <param name="output">The object to convert</param>
-  public static implicit operator Output(TaskRaw.Types.Output output)
+  public static implicit operator Output(TaskDetailed.Types.Output output)
     => new(output.Success,
            output.Error);
 }
