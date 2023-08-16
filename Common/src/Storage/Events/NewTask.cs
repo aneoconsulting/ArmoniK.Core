@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Api.gRPC.V1;
 
@@ -44,4 +46,26 @@ public record NewTask(string              SessionId,
                       IEnumerable<string> ExpectedOutputKeys,
                       IEnumerable<string> DataDependencies,
                       IEnumerable<string> RetryOfIds,
-                      TaskStatus          Status);
+                      TaskStatus          Status)
+{
+  public virtual bool Equals(NewTask? other)
+    => !ReferenceEquals(null,
+                        other) && SessionId.Equals(other.SessionId) && TaskId.Equals(other.TaskId) && OriginTaskId.Equals(other.OriginTaskId) &&
+       PayloadId.Equals(other.PayloadId) && ParentTaskIds.SequenceEqual(other.ParentTaskIds) && ExpectedOutputKeys.SequenceEqual(other.ExpectedOutputKeys) &&
+       DataDependencies.SequenceEqual(other.DataDependencies) && RetryOfIds.SequenceEqual(other.RetryOfIds) && Status == other.Status;
+
+  public override int GetHashCode()
+  {
+    var hashCode = new HashCode();
+    hashCode.Add(SessionId);
+    hashCode.Add(TaskId);
+    hashCode.Add(OriginTaskId);
+    hashCode.Add(PayloadId);
+    hashCode.Add(ParentTaskIds);
+    hashCode.Add(ExpectedOutputKeys);
+    hashCode.Add(DataDependencies);
+    hashCode.Add(RetryOfIds);
+    hashCode.Add((int)Status);
+    return hashCode.ToHashCode();
+  }
+}

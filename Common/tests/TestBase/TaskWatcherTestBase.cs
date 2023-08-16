@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -229,6 +230,54 @@ public class TaskWatcherTestBase
                                                   new Output(false,
                                                              "sad task"));
 
+  private static readonly TaskData TaskEventCreating1 = new TaskData("SessionId",
+                                                                     "TaskEventCreating1",
+                                                                     "OwnerPodId",
+                                                                     "OwnerPodName",
+                                                                     "PayloadId",
+                                                                     new[]
+                                                                     {
+                                                                       "parent1",
+                                                                     },
+                                                                     new[]
+                                                                     {
+                                                                       "dependency1",
+                                                                     },
+                                                                     new[]
+                                                                     {
+                                                                       "output1",
+                                                                       "output2",
+                                                                     },
+                                                                     Array.Empty<string>(),
+                                                                     TaskStatus.Creating,
+                                                                     Options,
+                                                                     new Output(true,
+                                                                                ""));
+
+  private static readonly TaskData TaskEventCreating2 = new TaskData("SessionId",
+                                                                     "TaskEventCreating2",
+                                                                     "OwnerPodId",
+                                                                     "OwnerPodName",
+                                                                     "PayloadId",
+                                                                     new[]
+                                                                     {
+                                                                       "parent2",
+                                                                     },
+                                                                     new[]
+                                                                     {
+                                                                       "dependency1",
+                                                                     },
+                                                                     new[]
+                                                                     {
+                                                                       "output1",
+                                                                       "output2",
+                                                                     },
+                                                                     Array.Empty<string>(),
+                                                                     TaskStatus.Creating,
+                                                                     Options,
+                                                                     new Output(true,
+                                                                                ""));
+
   private static bool CheckForSkipSetup()
   {
     var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
@@ -295,52 +344,8 @@ public class TaskWatcherTestBase
   {
     await taskTable.CreateTasks(new[]
                                 {
-                                  new TaskData("SessionId",
-                                               "TaskEventCreating1",
-                                               "OwnerPodId",
-                                               "OwnerPodName",
-                                               "PayloadId",
-                                               new[]
-                                               {
-                                                 "parent1",
-                                               },
-                                               new[]
-                                               {
-                                                 "dependency1",
-                                               },
-                                               new[]
-                                               {
-                                                 "output1",
-                                                 "output2",
-                                               },
-                                               Array.Empty<string>(),
-                                               TaskStatus.Creating,
-                                               Options,
-                                               new Output(true,
-                                                          "")),
-                                  new TaskData("SessionId",
-                                               "TaskEventCreating2",
-                                               "OwnerPodId",
-                                               "OwnerPodName",
-                                               "PayloadId",
-                                               new[]
-                                               {
-                                                 "parent1",
-                                               },
-                                               new[]
-                                               {
-                                                 "dependency1",
-                                               },
-                                               new[]
-                                               {
-                                                 "output1",
-                                                 "output2",
-                                               },
-                                               Array.Empty<string>(),
-                                               TaskStatus.Creating,
-                                               Options,
-                                               new Output(true,
-                                                          "")),
+                                  TaskEventCreating1,
+                                  TaskEventCreating2,
                                 },
                                 cancellationToken)
                    .ConfigureAwait(false);
@@ -362,8 +367,19 @@ public class TaskWatcherTestBase
                    .ConfigureAwait(false);
   }
 
+  private static NewTask TaskDataToNewTask(TaskData taskData)
+    => new(taskData.SessionId,
+           taskData.TaskId,
+           taskData.InitialTaskId,
+           taskData.PayloadId,
+           taskData.ParentTaskIds.ToList(),
+           taskData.ExpectedOutputIds.ToList(),
+           taskData.DataDependencies.ToList(),
+           taskData.RetryOfIds.ToList(),
+           taskData.Status);
+
   [Test]
-  public async Task WatchNewResultShouldSucceed()
+  public async Task WatchNewTaskShouldSucceed()
   {
     if (RunTests)
     {
@@ -392,11 +408,15 @@ public class TaskWatcherTestBase
 
       Assert.AreEqual(2,
                       newResults.Count);
+      Assert.AreEqual(TaskDataToNewTask(TaskEventCreating1),
+                      newResults[0]);
+      Assert.AreEqual(TaskDataToNewTask(TaskEventCreating2),
+                      newResults[1]);
     }
   }
 
   [Test]
-  public async Task WatchResultStatusUpdateShouldSucceed()
+  public async Task WatchTaskStatusUpdateShouldSucceed()
   {
     if (RunTests)
     {
@@ -425,6 +445,18 @@ public class TaskWatcherTestBase
 
       Assert.AreEqual(3,
                       newResults.Count);
+      Assert.AreEqual(new TaskStatusUpdate("SessionId",
+                                           TaskProcessingData.TaskId,
+                                           TaskStatus.Error),
+                      newResults[0]);
+      Assert.AreEqual(new TaskStatusUpdate("SessionId",
+                                           TaskSubmittedData.TaskId,
+                                           TaskStatus.Cancelling),
+                      newResults[1]);
+      Assert.AreEqual(new TaskStatusUpdate("SessionId",
+                                           TaskSubmittedData.TaskId,
+                                           TaskStatus.Cancelling),
+                      newResults[2]);
     }
   }
 }
