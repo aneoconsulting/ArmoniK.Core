@@ -41,9 +41,9 @@ namespace ArmoniK.Core.Common.Tests.Client;
 
 public static class GrpcChannelExt
 {
-  public static async IAsyncEnumerable<TaskRaw> ListTasksAsync(this ChannelBase            channel,
-                                                               Filters                     filters,
-                                                               ListTasksRequest.Types.Sort sort)
+  public static async IAsyncEnumerable<TaskDetailed> ListTasksAsync(this ChannelBase            channel,
+                                                                    Filters                     filters,
+                                                                    ListTasksRequest.Types.Sort sort)
   {
     var               read       = 0;
     var               page       = 0;
@@ -81,8 +81,8 @@ public static class GrpcChannelExt
   {
     var resultClient = new Results.ResultsClient(channel);
 
-    var taskDependencies = new Dictionary<string, TaskRaw>();
-    var taskAggregation  = new List<TaskRaw>();
+    var taskDependencies = new Dictionary<string, TaskDetailed>();
+    var taskAggregation  = new List<TaskDetailed>();
     var usageRatio       = new List<double>();
 
 

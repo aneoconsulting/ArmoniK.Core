@@ -311,9 +311,9 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(ListTasksRaw))]
-  public override async Task<ListTasksRawResponse> ListTasksRaw(ListTasksRequest  request,
-                                                                ServerCallContext context)
+                      nameof(ListTasksDetailed))]
+  public override async Task<ListTasksDetailedResponse> ListTasksDetailed(ListTasksRequest  request,
+                                                                          ServerCallContext context)
   {
     try
     {
@@ -336,13 +336,13 @@ public class GrpcTasksService : Task.TasksBase
                                                                 context.CancellationToken)
                                                 .ConfigureAwait(false);
 
-      return new ListTasksRawResponse
+      return new ListTasksDetailedResponse
              {
                Page     = request.Page,
                PageSize = request.PageSize,
                Tasks =
                {
-                 tasks.Select(data => new TaskRaw(data)),
+                 tasks.Select(data => new TaskDetailed(data)),
                },
                Total = (int)totalCount,
              };
