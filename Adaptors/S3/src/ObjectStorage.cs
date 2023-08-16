@@ -177,6 +177,7 @@ public class ObjectStorage : IObjectStorage
       logger_.LogError(ex,
                        "Error deleting S3 bucket : {bucketName}",
                        bucketName_);
+      return false;
     }
 
     return true;
@@ -243,6 +244,7 @@ public class ObjectStorage : IObjectStorage
                             };
       await s3Client_.AbortMultipartUploadAsync(abortMpuRequest,
                                                 cancellationToken);
+      throw;
     }
   }
 }
