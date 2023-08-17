@@ -130,49 +130,16 @@ public class Submitter : ISubmitter
                                                       CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
-    if (!partitionIds.Any())
-    {
-      partitionIds.Add(submitterOptions_.DefaultPartition);
-    }
 
-    if (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()))
-    {
-      partitionIds.Clear();
-      partitionIds.Add(submitterOptions_.DefaultPartition);
-    }
-
-    if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
-                                                          cancellationToken)
-                              .ConfigureAwait(false))
-    {
-      throw new PartitionNotFoundException("One of the partitions does not exist");
-    }
-
-    if (string.IsNullOrEmpty(defaultTaskOptions.PartitionId))
-    {
-      defaultTaskOptions = defaultTaskOptions with
-                           {
-                             PartitionId = submitterOptions_.DefaultPartition,
-                           };
-    }
-
-    if (!await partitionTable_.ArePartitionsExistingAsync(new[]
-                                                          {
-                                                            defaultTaskOptions.PartitionId,
-                                                          },
-                                                          cancellationToken)
-                              .ConfigureAwait(false))
-    {
-      throw new PartitionNotFoundException("The partition in the task options does not exist");
-    }
-
-    var sessionId = await sessionTable_.SetSessionDataAsync(partitionIds,
-                                                            defaultTaskOptions,
-                                                            cancellationToken)
-                                       .ConfigureAwait(false);
     return new CreateSessionReply
            {
-             SessionId = sessionId,
+             SessionId = await SessionLifeCycleHelper.CreateSession(sessionTable_,
+                                                                    partitionTable_,
+                                                                    partitionIds,
+                                                                    defaultTaskOptions,
+                                                                    submitterOptions_.DefaultPartition,
+                                                                    cancellationToken)
+                                                     .ConfigureAwait(false),
            };
   }
 

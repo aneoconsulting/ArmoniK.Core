@@ -86,7 +86,12 @@ public class AuthenticationIntegrationTest
                                                 .AddSingleton<IPushQueueStorage>(new SimplePushQueueStorage())
                                                 .AddSingleton<IPullQueueStorage>(new SimplePullQueueStorage())
                                                 .AddSingleton<IObjectStorage>(new SimpleObjectStorage())
-                                                .AddSingleton<IResultWatcher>(new SimpleResultWatcher());
+                                                .AddSingleton<IResultWatcher>(new SimpleResultWatcher())
+                                                .AddSingleton(new Injection.Options.Submitter
+                                                              {
+                                                                DefaultPartition = "defaultPartition",
+                                                                MaxErrorAllowed  = 5,
+                                                              });
                                              },
                                              false);
   }
@@ -583,8 +588,15 @@ public class AuthenticationIntegrationTest
   public static readonly IReadOnlyDictionary<Type, object> ManualRequests = new ReadOnlyDictionary<Type, object>(new Dictionary<Type, object>
                                                                                                                  {
                                                                                                                    {
-                                                                                                                     typeof(CreateSessionRequest),
-                                                                                                                     new CreateSessionRequest
+                                                                                                                     typeof(Api.gRPC.V1.Submitter.CreateSessionRequest),
+                                                                                                                     new Api.gRPC.V1.Submitter.CreateSessionRequest
+                                                                                                                     {
+                                                                                                                       DefaultTaskOption = TaskOptions,
+                                                                                                                     }
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                     typeof(Api.gRPC.V1.Sessions.CreateSessionRequest),
+                                                                                                                     new Api.gRPC.V1.Sessions.CreateSessionRequest
                                                                                                                      {
                                                                                                                        DefaultTaskOption = TaskOptions,
                                                                                                                      }

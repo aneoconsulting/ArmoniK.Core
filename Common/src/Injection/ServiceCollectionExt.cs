@@ -147,6 +147,7 @@ public static class ServiceCollectionExt
                .Services.AddValidator<CreateLargeTaskRequestValidator>()
                .AddValidator<CreateSmallTaskRequestValidator>()
                .AddValidator<CreateSessionRequestValidator>()
+               .AddValidator<gRPC.Validators.SessionsService.CreateSessionRequestValidator>()
                .AddValidator<CancelTasksRequestValidator>()
                .AddValidator<TaskOptionsValidator>()
                .AddValidator<TaskFilterValidator>()
