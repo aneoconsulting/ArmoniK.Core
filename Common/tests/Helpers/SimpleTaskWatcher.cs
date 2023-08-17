@@ -52,6 +52,10 @@ internal class SimpleTaskWatcher : ITaskWatcher
                                      PayloadId,
                                      new List<string>
                                      {
+                                       sessionId,
+                                     },
+                                     new List<string>
+                                     {
                                        OutputId,
                                      },
                                      new List<string>(),
