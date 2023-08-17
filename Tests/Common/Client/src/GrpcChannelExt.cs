@@ -43,30 +43,24 @@ public static class GrpcChannelExt
 {
   public static async IAsyncEnumerable<TaskDetailed> ListTasksAsync(this ChannelBase            channel,
                                                                     Filters                     filters,
-                                                                    ListTasksRequest.Types.Sort sort)
+                                                                    ListTasksRequest.Types.Sort sort,
+                                                                    int                         pageSize = 50)
   {
-    var               read       = 0;
-    var               page       = 0;
-    var               taskClient = new Tasks.TasksClient(channel);
-    ListTasksResponse res;
+    var                       page       = 0;
+    var                       taskClient = new Tasks.TasksClient(channel);
+    ListTasksDetailedResponse res;
 
-    while ((res = await taskClient.ListTasksAsync(new ListTasksRequest
-                                                  {
-                                                    Filters  = filters,
-                                                    Sort     = sort,
-                                                    PageSize = 50,
-                                                    Page     = page,
-                                                  })
-                                  .ConfigureAwait(false)).Total > read)
+    while ((res = await taskClient.ListTasksDetailedAsync(new ListTasksRequest
+                                                          {
+                                                            Filters  = filters,
+                                                            Sort     = sort,
+                                                            PageSize = pageSize,
+                                                            Page     = page,
+                                                          })
+                                  .ConfigureAwait(false)).Tasks.Any())
     {
-      foreach (var taskSummary in res.Tasks)
+      foreach (var taskDetailed in res.Tasks)
       {
-        var taskDetailed = taskClient.GetTask(new GetTaskRequest
-                                              {
-                                                TaskId = taskSummary.Id,
-                                              })
-                                     .Task;
-        read++;
         yield return taskDetailed;
       }
 
