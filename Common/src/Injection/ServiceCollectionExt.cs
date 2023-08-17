@@ -34,6 +34,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using CreateSessionRequestValidator = ArmoniK.Core.Common.gRPC.Validators.SessionsService.CreateSessionRequestValidator;
+
 namespace ArmoniK.Core.Common.Injection;
 
 /// <summary>
@@ -146,8 +148,8 @@ public static class ServiceCollectionExt
                         })
                .Services.AddValidator<CreateLargeTaskRequestValidator>()
                .AddValidator<CreateSmallTaskRequestValidator>()
+               .AddValidator<gRPC.Validators.CreateSessionRequestValidator>()
                .AddValidator<CreateSessionRequestValidator>()
-               .AddValidator<gRPC.Validators.SessionsService.CreateSessionRequestValidator>()
                .AddValidator<CancelTasksRequestValidator>()
                .AddValidator<TaskOptionsValidator>()
                .AddValidator<TaskFilterValidator>()

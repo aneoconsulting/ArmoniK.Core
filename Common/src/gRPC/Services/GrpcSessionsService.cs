@@ -37,8 +37,8 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
-  private readonly ISessionTable                sessionTable_;
   private readonly IPartitionTable              partitionTable_;
+  private readonly ISessionTable                sessionTable_;
   private readonly Injection.Options.Submitter  submitterOptions_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
@@ -202,7 +202,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
       logger_.LogWarning(e,
                          "Error while creating session");
       throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
+                                        "Internal ArmoniK Exception, see Submitter logs"));
     }
     catch (Exception e)
     {

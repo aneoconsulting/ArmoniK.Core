@@ -56,6 +56,7 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
+using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Submitter.CreateSessionRequest;
 using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
@@ -588,8 +589,8 @@ public class AuthenticationIntegrationTest
   public static readonly IReadOnlyDictionary<Type, object> ManualRequests = new ReadOnlyDictionary<Type, object>(new Dictionary<Type, object>
                                                                                                                  {
                                                                                                                    {
-                                                                                                                     typeof(Api.gRPC.V1.Submitter.CreateSessionRequest),
-                                                                                                                     new Api.gRPC.V1.Submitter.CreateSessionRequest
+                                                                                                                     typeof(CreateSessionRequest),
+                                                                                                                     new CreateSessionRequest
                                                                                                                      {
                                                                                                                        DefaultTaskOption = TaskOptions,
                                                                                                                      }
