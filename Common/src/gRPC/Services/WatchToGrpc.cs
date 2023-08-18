@@ -90,6 +90,10 @@ public class WatchToGrpc
                                                                 {
                                                                   NewTask = new EventSubscriptionResponse.Types.NewTask
                                                                             {
+                                                                              ParentTaskIds =
+                                                                              {
+                                                                                cur.ParentTaskIds,
+                                                                              },
                                                                               DataDependencies =
                                                                               {
                                                                                 cur.DataDependencies,
@@ -170,6 +174,10 @@ public class WatchToGrpc
                                                               {
                                                                 NewTask = new EventSubscriptionResponse.Types.NewTask
                                                                           {
+                                                                            ParentTaskIds =
+                                                                            {
+                                                                              cur.ParentTaskIds,
+                                                                            },
                                                                             DataDependencies =
                                                                             {
                                                                               cur.DataDependencies,

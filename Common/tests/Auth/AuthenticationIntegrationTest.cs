@@ -56,6 +56,7 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
+using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Submitter.CreateSessionRequest;
 using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
@@ -86,7 +87,12 @@ public class AuthenticationIntegrationTest
                                                 .AddSingleton<IPushQueueStorage>(new SimplePushQueueStorage())
                                                 .AddSingleton<IPullQueueStorage>(new SimplePullQueueStorage())
                                                 .AddSingleton<IObjectStorage>(new SimpleObjectStorage())
-                                                .AddSingleton<IResultWatcher>(new SimpleResultWatcher());
+                                                .AddSingleton<IResultWatcher>(new SimpleResultWatcher())
+                                                .AddSingleton(new Injection.Options.Submitter
+                                                              {
+                                                                DefaultPartition = "defaultPartition",
+                                                                MaxErrorAllowed  = 5,
+                                                              });
                                              },
                                              false);
   }
@@ -585,6 +591,13 @@ public class AuthenticationIntegrationTest
                                                                                                                    {
                                                                                                                      typeof(CreateSessionRequest),
                                                                                                                      new CreateSessionRequest
+                                                                                                                     {
+                                                                                                                       DefaultTaskOption = TaskOptions,
+                                                                                                                     }
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                     typeof(Api.gRPC.V1.Sessions.CreateSessionRequest),
+                                                                                                                     new Api.gRPC.V1.Sessions.CreateSessionRequest
                                                                                                                      {
                                                                                                                        DefaultTaskOption = TaskOptions,
                                                                                                                      }

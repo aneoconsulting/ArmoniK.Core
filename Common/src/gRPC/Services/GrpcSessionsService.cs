@@ -37,13 +37,19 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
+  private readonly IPartitionTable              partitionTable_;
   private readonly ISessionTable                sessionTable_;
+  private readonly Injection.Options.Submitter  submitterOptions_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
+                             IPartitionTable              partitionTable,
+                             Injection.Options.Submitter  submitterOptions,
                              ILogger<GrpcSessionsService> logger)
   {
-    logger_       = logger;
-    sessionTable_ = sessionTable;
+    logger_           = logger;
+    sessionTable_     = sessionTable;
+    partitionTable_   = partitionTable;
+    submitterOptions_ = submitterOptions;
   }
 
   [RequiresPermission(typeof(GrpcSessionsService),
@@ -163,6 +169,47 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          "Error while listing sessions");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(CreateSession))]
+  public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
+                                                               ServerCallContext    context)
+  {
+    try
+    {
+      return new CreateSessionReply
+             {
+               SessionId = await SessionLifeCycleHelper.CreateSession(sessionTable_,
+                                                                      partitionTable_,
+                                                                      request.PartitionIds,
+                                                                      request.DefaultTaskOption.ToTaskOptions(),
+                                                                      submitterOptions_.DefaultPartition,
+                                                                      context.CancellationToken)
+                                                       .ConfigureAwait(false),
+             };
+    }
+    catch (PartitionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Partition not found while creating session");
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Partition not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while creating session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal ArmoniK Exception, see Submitter logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while creating session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
     }
   }
 }
