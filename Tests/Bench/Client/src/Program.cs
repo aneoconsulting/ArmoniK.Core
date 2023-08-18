@@ -28,6 +28,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Tests.Client;
@@ -45,6 +46,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
 
+using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
 using FilterField = ArmoniK.Api.gRPC.V1.Partitions.FilterField;
 using Filters = ArmoniK.Api.gRPC.V1.Partitions.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Partitions.FiltersAnd;
@@ -215,7 +217,7 @@ internal static class Program
     var start = Stopwatch.GetTimestamp();
     var createSessionReply = await channelPool.WithInstanceAsync(async channel =>
                                                                  {
-                                                                   var client = new Submitter.SubmitterClient(channel);
+                                                                   var client = new Sessions.SessionsClient(channel);
 
                                                                    var req = new CreateSessionRequest
                                                                              {
