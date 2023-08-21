@@ -202,7 +202,7 @@ public class Pollster : IInitializable
     var cts = new CancellationTokenSource();
     cancellationToken.Register(() =>
                                {
-                                 logger_.LogError("Global cancellation has been triggered.");
+                                 logger_.LogTrace("Global cancellation has been triggered.");
                                  cts.Cancel();
                                });
     var recordedErrors = new Queue<Exception>();
