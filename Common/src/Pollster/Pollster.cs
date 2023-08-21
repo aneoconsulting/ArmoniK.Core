@@ -296,14 +296,10 @@ public class Pollster : IInitializable
                 await taskHandler.ExecuteTask()
                                  .ConfigureAwait(false);
 
-                logger_.LogDebug("Complete task processing");
-
                 await taskHandler.PostProcessing()
                                  .ConfigureAwait(false);
 
                 StopCancelledTask = null;
-
-                logger_.LogDebug("Task returned");
 
                 // If the task was successful, we can remove a failure
                 if (recordedErrors.Count > 0)
