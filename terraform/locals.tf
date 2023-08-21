@@ -2,10 +2,16 @@ locals {
   partitions = toset([for s in range(var.num_partitions) : tostring(s)])
   replicas   = toset([for s in range(var.num_replicas) : tostring(s)])
   logging_env_vars = { "Serilog__MinimumLevel" = "${var.serilog.loggin_level}",
-    "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Hosting.Diagnostics"        = "${var.serilog.loggin_level_routing}",
-    "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Routing.EndpointMiddleware" = "${var.serilog.loggin_level_routing}",
-    "Serilog__MinimumLevel__Override__Serilog.AspNetCore.RequestLoggingMiddleware"     = "${var.serilog.loggin_level_routing}",
-    "ASPNETCORE_ENVIRONMENT"                                                           = "${var.aspnet_core_env}"
+    "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Hosting.Diagnostics"              = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Routing"                          = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Serilog.AspNetCore.RequestLoggingMiddleware"           = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Server.Kestrel"                   = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Grpc.AspNetCore.Server.ServerCallHandler"              = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Microsoft.Extensions.Diagnostics.HealthChecks"         = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Authorization"                    = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__Microsoft.Extensions.Http.DefaultHttpClientFactory"    = "${var.serilog.loggin_level_routing}",
+    "Serilog__MinimumLevel__Override__ArmoniK.Core.Common.Auth.Authentication.Authenticator" = "${var.serilog.loggin_level_routing}",
+    "ASPNETCORE_ENVIRONMENT"                                                                 = "${var.aspnet_core_env}"
   }
   worker         = merge(var.compute_plane.worker, { image = var.worker_image, docker_file_path = var.worker_docker_file_path })
   queue          = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_none))

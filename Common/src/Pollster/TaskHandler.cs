@@ -118,7 +118,8 @@ public sealed class TaskHandler : IAsyncDisposable
   public async ValueTask DisposeAsync()
   {
     using var _ = logger_.BeginNamedScope("DisposeAsync",
-                                          ("taskId", messageHandler_.TaskId));
+                                          ("taskId", messageHandler_.TaskId),
+                                          ("sessionId", taskData_?.SessionId ?? ""));
 
     logger_.LogDebug("MessageHandler status is {status}",
                      messageHandler_.Status);
@@ -166,12 +167,14 @@ public sealed class TaskHandler : IAsyncDisposable
     using var _ = logger_.BeginNamedScope("Acquiring task",
                                           ("taskId", messageHandler_.TaskId));
 
-    logger_.LogInformation("Acquire task");
     try
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
+
+      using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData_.SessionId));
+      logger_.LogInformation("Start task acquisition");
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
@@ -299,7 +302,6 @@ public sealed class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      logger_.LogDebug("Trying to acquire task");
       taskData_ = taskData_ with
                   {
                     OwnerPodId = ownerPodId_,
@@ -403,7 +405,7 @@ public sealed class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      logger_.LogInformation("Task preconditions are OK");
+      logger_.LogDebug("Task preconditions are OK");
       return true;
     }
     catch (TaskNotFoundException e)
@@ -436,13 +438,15 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   public async Task PreProcessing()
   {
-    logger_.LogDebug("Start prefetch data");
-    using var _ = logger_.BeginNamedScope("PreProcessing",
-                                          ("taskId", messageHandler_.TaskId));
     if (taskData_ == null)
     {
       throw new NullReferenceException();
     }
+
+    using var _ = logger_.BeginNamedScope("PreProcessing",
+                                          ("taskId", messageHandler_.TaskId),
+                                          ("sessionId", taskData_.SessionId));
+    logger_.LogDebug("Start prefetch data");
 
     try
     {
@@ -469,12 +473,14 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
   public async Task ExecuteTask()
   {
-    using var _ = logger_.BeginNamedScope("TaskExecution",
-                                          ("taskId", messageHandler_.TaskId));
     if (computeRequestStream_ == null || taskData_ == null || sessionData_ == null)
     {
       throw new NullReferenceException();
     }
+
+    using var _ = logger_.BeginNamedScope("TaskExecution",
+                                          ("taskId", messageHandler_.TaskId),
+                                          ("sessionId", taskData_.SessionId));
 
     try
     {
@@ -488,7 +494,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                          cancellationTokenSource_.Token)
                                   .ConfigureAwait(false);
 
-      logger_.LogInformation("Start processing task");
+      logger_.LogInformation("Start executing task");
       taskData_ = taskData_ with
                   {
                     StartDate = DateTime.UtcNow,
@@ -536,9 +542,6 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing()
   {
-    using var _ = logger_.BeginNamedScope("PostProcessing",
-                                          ("taskId", messageHandler_.TaskId));
-
     if (workerStreamHandler_.Pipe is null)
     {
       throw new NullReferenceException(nameof(workerStreamHandler_.Pipe) + " is null.");
@@ -554,10 +557,14 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(agent_) + " is null.");
     }
 
+    using var _ = logger_.BeginNamedScope("PostProcessing",
+                                          ("taskId", messageHandler_.TaskId),
+                                          ("sessionId", taskData_.SessionId));
+
     try
     {
       // at this point worker requests should have ended
-      logger_.LogDebug("Waiting for task output");
+      logger_.LogDebug("Wait for task output");
       var reply = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_.Token)
                                             .ConfigureAwait(false);
 
