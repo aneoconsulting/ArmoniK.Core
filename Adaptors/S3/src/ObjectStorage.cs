@@ -93,12 +93,13 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var          _        = logger_.LogFunction(objectStorageName_ + key);
-    GetObjectResponse? response = null;
+    var                objectStorageFullName = $"{objectStorageName_}{key}";
+    using var          _                     = logger_.LogFunction(objectStorageFullName);
+    GetObjectResponse? response              = null;
     try
     {
       response = await s3Client_.GetObjectAsync(bucketName_,
-                                                $"{objectStorageName_}{key}",
+                                                objectStorageFullName,
                                                 cancellationToken);
     }
     catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
@@ -110,18 +111,17 @@ public class ObjectStorage : IObjectStorage
 
     var metaDataRequest = new GetObjectMetadataRequest
                           {
-                            Key        = $"{objectStorageName_}{key}",
+                            Key        = objectStorageFullName,
                             BucketName = bucketName_,
                           };
     var objectMetaData = await s3Client_.GetObjectMetadataAsync(metaDataRequest,
                                                                 cancellationToken);
     var contentLength = objectMetaData.ContentLength;
-    var nbChunks      = (contentLength + chunkDownloadSize_ - 1) / chunkDownloadSize_;
 
     var getObjectRequest = new GetObjectRequest
                            {
                              BucketName = bucketName_,
-                             Key        = $"{objectStorageName_}{key}",
+                             Key        = objectStorageFullName,
                            };
     var objectResponse = await s3Client_.GetObjectAsync(getObjectRequest,
                                                         cancellationToken);
@@ -159,13 +159,14 @@ public class ObjectStorage : IObjectStorage
   public async Task<bool> TryDeleteAsync(string            key,
                                          CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var       objectStorageFullName = $"{objectStorageName_}{key}";
+    using var _                     = logger_.LogFunction(objectStorageFullName);
     try
     {
       var objectDeleteRequest = new DeleteObjectRequest
                                 {
                                   BucketName = bucketName_,
-                                  Key        = $"{objectStorageName_}{key}",
+                                  Key        = objectStorageFullName,
                                 };
       var deleteObjectResponse = await s3Client_.DeleteObjectAsync(objectDeleteRequest,
                                                                    cancellationToken)
@@ -190,12 +191,14 @@ public class ObjectStorage : IObjectStorage
   public async Task AddOrUpdateAsync(string                                 key,
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)
+
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var       objectStorageFullName = $"{objectStorageName_}{key}";
+    using var _                     = logger_.LogFunction(objectStorageFullName);
     var initRequest = new InitiateMultipartUploadRequest
                       {
                         BucketName = bucketName_,
-                        Key        = $"{objectStorageName_}{key}",
+                        Key        = objectStorageFullName,
                       };
     var initResponse = await s3Client_.InitiateMultipartUploadAsync(initRequest,
                                                                     cancellationToken)
@@ -203,7 +206,7 @@ public class ObjectStorage : IObjectStorage
     try
     {
       var uploadRequests = await UploadMultiPartHelper.PreparePartRequestsAsync(bucketName_,
-                                                                                $"{objectStorageName_}{key}",
+                                                                                objectStorageFullName,
                                                                                 initResponse.UploadId,
                                                                                 valueChunks,
                                                                                 cancellationToken)
@@ -223,7 +226,7 @@ public class ObjectStorage : IObjectStorage
       var compRequest = new CompleteMultipartUploadRequest
                         {
                           BucketName = bucketName_,
-                          Key        = $"{objectStorageName_}{key}",
+                          Key        = objectStorageFullName,
                           UploadId   = initResponse.UploadId,
                         };
       compRequest.AddPartETags(uploadResponses);
@@ -238,7 +241,7 @@ public class ObjectStorage : IObjectStorage
       var abortMpuRequest = new AbortMultipartUploadRequest
                             {
                               BucketName = bucketName_,
-                              Key        = $"{objectStorageName_}{key}",
+                              Key        = objectStorageFullName,
                               UploadId   = initResponse.UploadId,
                             };
       await s3Client_.AbortMultipartUploadAsync(abortMpuRequest,
