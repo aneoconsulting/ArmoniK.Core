@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
@@ -92,7 +93,8 @@ public class DataPrefetcher : IInitializable
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
                                                                                   CancellationToken cancellationToken)
   {
-    using var activity = activitySource_?.StartActivity();
+    using var activity     = activitySource_?.StartActivity();
+    using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData.SessionId));
 
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
