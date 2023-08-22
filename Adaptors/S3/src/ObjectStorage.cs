@@ -34,7 +34,6 @@ namespace ArmoniK.Core.Adapters.S3;
 
 public class ObjectStorage : IObjectStorage
 {
-  private const    int                    MaxAllowedKeysPerDelete = 1000;
   private readonly string                 bucketName_;
   private readonly int                    chunkDownloadSize_;
   private readonly int                    degreeOfParallelism_;
