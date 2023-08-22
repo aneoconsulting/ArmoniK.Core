@@ -30,7 +30,6 @@
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.8" />
   </ItemGroup>
 
   <ItemGroup>
