@@ -25,13 +25,12 @@ internal class UploadMultiPartHelper
   private const int  MaxPartCount = 10000;
   private const long MaxPartSize  = 5L * 1024 * 1024 * 1024; // 5 GiB
 
-  public static async Task<List<UploadPartRequest>> PreparePartRequestsAsync(string                                 bucketName,
-                                                                             string                                 objectKey,
-                                                                             string                                 uploadId,
-                                                                             IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                                                             CancellationToken                      cancellationToken)
+  public static async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                 bucketName,
+                                                                                   string                                 objectKey,
+                                                                                   string                                 uploadId,
+                                                                                   IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                                                   CancellationToken                      cancellationToken)
   {
-    var  partRequests      = new List<UploadPartRequest>();
     var  partNumber        = 1;
     long bytesRead         = 0;
     var  currentPartSize   = MinPartSize;
@@ -75,7 +74,7 @@ internal class UploadMultiPartHelper
                             InputStream = new MemoryStream(currentPartStream.ToArray()),
                             UploadId    = uploadId,
                           };
-        partRequests.Add(partRequest);
+        yield return partRequest;
         currentPartStream = new MemoryStream();
         await remainingStream.CopyToAsync(currentPartStream,
                                           cancellationToken)
@@ -104,9 +103,7 @@ internal class UploadMultiPartHelper
                           InputStream = new MemoryStream(currentPartStream.ToArray()),
                           UploadId    = uploadId,
                         };
-      partRequests.Add(partRequest);
+      yield return partRequest;
     }
-
-    return partRequests;
   }
 }

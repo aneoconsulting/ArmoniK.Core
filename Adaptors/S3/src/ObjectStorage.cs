@@ -205,23 +205,21 @@ public class ObjectStorage : IObjectStorage
                                       .ConfigureAwait(false);
     try
     {
-      var uploadRequests = await UploadMultiPartHelper.PreparePartRequestsAsync(bucketName_,
-                                                                                objectStorageFullName,
-                                                                                initResponse.UploadId,
-                                                                                valueChunks,
-                                                                                cancellationToken)
-                                                      .ConfigureAwait(false);
-
-      var uploadResponses = await uploadRequests.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
-                                                                async uploadPartRequest =>
-                                                                {
-                                                                  var uploadPartResponse = await s3Client_.UploadPartAsync(uploadPartRequest,
-                                                                                                                           cancellationToken)
-                                                                                                          .ConfigureAwait(false);
-                                                                  return uploadPartResponse;
-                                                                })
-                                                .ToListAsync(cancellationToken)
-                                                .ConfigureAwait(false);
+      var uploadRequest = UploadMultiPartHelper.PreparePartRequestsAsync(bucketName_,
+                                                                         objectStorageFullName,
+                                                                         initResponse.UploadId,
+                                                                         valueChunks,
+                                                                         cancellationToken);
+      var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
+                                                               async uploadPartRequest =>
+                                                               {
+                                                                 var uploadPartResponse = await s3Client_.UploadPartAsync(uploadPartRequest,
+                                                                                                                          cancellationToken)
+                                                                                                         .ConfigureAwait(false);
+                                                                 return uploadPartResponse;
+                                                               })
+                                               .ToListAsync(cancellationToken)
+                                               .ConfigureAwait(false);
 
       var compRequest = new CompleteMultipartUploadRequest
                         {
