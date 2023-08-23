@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Runtime.CompilerServices;
+
 using Amazon.S3.Model;
 
 namespace ArmoniK.Core.Adapters.S3;
@@ -25,11 +27,12 @@ internal class UploadMultiPartHelper
   private const int  MaxPartCount = 10000;
   private const long MaxPartSize  = 5L * 1024 * 1024 * 1024; // 5 GiB
 
-  public static async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                 bucketName,
-                                                                                   string                                 objectKey,
-                                                                                   string                                 uploadId,
-                                                                                   IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                                                                   CancellationToken                      cancellationToken)
+
+  public static async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     bucketName,
+                                                                                   string                                     objectKey,
+                                                                                   string                                     uploadId,
+                                                                                   IAsyncEnumerable<ReadOnlyMemory<byte>>     valueChunks,
+                                                                                   [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var  partNumber        = 1;
     long bytesRead         = 0;
