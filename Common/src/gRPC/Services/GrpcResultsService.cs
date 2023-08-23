@@ -26,6 +26,7 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -191,18 +192,28 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<DeleteResultsDataResponse> DeleteResultsData(DeleteResultsDataRequest request,
                                                                           ServerCallContext        context)
   {
-    await request.ResultId.Select(resultId => objectStorage_.TryDeleteAsync(resultId,
-                                                                            context.CancellationToken))
-                 .WhenAll()
-                 .ConfigureAwait(false);
+    try
+    {
+      await request.ResultId.Select(resultId => objectStorage_.TryDeleteAsync(resultId,
+                                                                              context.CancellationToken))
+                   .WhenAll()
+                   .ConfigureAwait(false);
 
-    return new DeleteResultsDataResponse
-           {
-             ResultId =
+      return new DeleteResultsDataResponse
              {
-               request.ResultId,
-             },
-           };
+               ResultId =
+               {
+                 request.ResultId,
+               },
+             };
+    }
+    catch (ObjectDataNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while downloading results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result data not found"));
+    }
   }
 
   [RequiresPermission(typeof(GrpcResultsService),
@@ -211,15 +222,25 @@ public class GrpcResultsService : Results.ResultsBase
                                                 IServerStreamWriter<DownloadResultDataResponse> responseStream,
                                                 ServerCallContext                               context)
   {
-    await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
-                                                              context.CancellationToken)
-                                              .ConfigureAwait(false))
+    try
     {
-      await responseStream.WriteAsync(new DownloadResultDataResponse
-                                      {
-                                        DataChunk = UnsafeByteOperations.UnsafeWrap(chunk),
-                                      })
-                          .ConfigureAwait(false);
+      await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+                                                                context.CancellationToken)
+                                                .ConfigureAwait(false))
+      {
+        await responseStream.WriteAsync(new DownloadResultDataResponse
+                                        {
+                                          DataChunk = UnsafeByteOperations.UnsafeWrap(chunk),
+                                        })
+                            .ConfigureAwait(false);
+      }
+    }
+    catch (ObjectDataNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while downloading results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result data not found"));
     }
   }
 
@@ -264,15 +285,25 @@ public class GrpcResultsService : Results.ResultsBase
                                           context.CancellationToken)
                         .ConfigureAwait(false);
 
-    var resultData = await resultTable_.CompleteResult(id.SessionId,
-                                                       id.ResultId,
-                                                       context.CancellationToken)
-                                       .ConfigureAwait(false);
+    try
+    {
+      var resultData = await resultTable_.CompleteResult(id.SessionId,
+                                                         id.ResultId,
+                                                         context.CancellationToken)
+                                         .ConfigureAwait(false);
 
-    return new UploadResultDataResponse
-           {
-             Result = resultData,
-           };
+      return new UploadResultDataResponse
+             {
+               Result = resultData,
+             };
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while downloading results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result data not found"));
+    }
   }
 
   [RequiresPermission(typeof(GrpcResultsService),

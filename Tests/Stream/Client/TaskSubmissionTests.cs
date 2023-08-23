@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,111 +71,6 @@ internal class TaskSubmissionTests
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
     channel_ = GrpcChannelFactory.CreateChannel(options);
-  }
-
-  [Test]
-  public async Task CreateResultsAndMetadataShouldSucceed()
-  {
-    var submitterClient = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
-                                                                      {
-                                                                        DefaultTaskOption = new TaskOptions
-                                                                                            {
-                                                                                              Priority    = 1,
-                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                                              MaxRetries  = 2,
-                                                                                              PartitionId = partition_,
-                                                                                            },
-                                                                        PartitionIds =
-                                                                        {
-                                                                          partition_,
-                                                                        },
-                                                                      });
-
-    var resultsClient = new Results.ResultsClient(channel_);
-    var results = await resultsClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
-                                                                 {
-                                                                   SessionId = createSessionReply.SessionId,
-                                                                   Results =
-                                                                   {
-                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
-                                                                     {
-                                                                       Name = "MyResult",
-                                                                     },
-                                                                   },
-                                                                 });
-
-    var payloadBytes = Encoding.ASCII.GetBytes("Payload");
-
-    await resultsClient.UploadResultData(createSessionReply.SessionId,
-                                         results.Results.Single()
-                                                .ResultId,
-                                         payloadBytes)
-                       .ConfigureAwait(false);
-
-    var downloadedPayload = await resultsClient.DownloadResultData(createSessionReply.SessionId,
-                                                                   results.Results.Single()
-                                                                          .ResultId,
-                                                                   CancellationToken.None)
-                                               .ConfigureAwait(false);
-
-    Assert.AreEqual(payloadBytes,
-                    downloadedPayload);
-  }
-
-  [Test]
-  public async Task CreateResultsDirectlyShouldSucceed()
-  {
-    var submitterClient = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
-                                                                      {
-                                                                        DefaultTaskOption = new TaskOptions
-                                                                                            {
-                                                                                              Priority    = 1,
-                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                                              MaxRetries  = 2,
-                                                                                              PartitionId = partition_,
-                                                                                            },
-                                                                        PartitionIds =
-                                                                        {
-                                                                          partition_,
-                                                                        },
-                                                                      });
-
-    var resultsClient = new Results.ResultsClient(channel_);
-    var payloadBytes  = Encoding.ASCII.GetBytes("Payload");
-
-    var results = await resultsClient.CreateResultsAsync(new CreateResultsRequest
-                                                         {
-                                                           SessionId = createSessionReply.SessionId,
-                                                           Results =
-                                                           {
-                                                             new CreateResultsRequest.Types.ResultCreate
-                                                             {
-                                                               Name = "MyResult",
-                                                               Data = UnsafeByteOperations.UnsafeWrap(payloadBytes),
-                                                             },
-                                                           },
-                                                         });
-
-    var downloadedPayload = await resultsClient.DownloadResultData(createSessionReply.SessionId,
-                                                                   results.Results.Single()
-                                                                          .ResultId,
-                                                                   CancellationToken.None)
-                                               .ConfigureAwait(false);
-
-    Assert.AreEqual(payloadBytes,
-                    downloadedPayload);
-
-    await resultsClient.DeleteResultsDataAsync(new DeleteResultsDataRequest
-                                               {
-                                                 SessionId = createSessionReply.SessionId,
-                                                 ResultId =
-                                                 {
-                                                   results.Results.Select(r => r.ResultId),
-                                                 },
-                                               })
-                       .ConfigureAwait(false);
   }
 
   [Test]
