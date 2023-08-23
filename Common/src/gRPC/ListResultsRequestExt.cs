@@ -39,6 +39,7 @@ public static class ListResultsRequestExt
     => sort.Field.FieldCase switch
        {
          ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
+         ResultField.FieldOneofCase.None           => throw new ArgumentOutOfRangeException(nameof(sort)),
          _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
        };
 
