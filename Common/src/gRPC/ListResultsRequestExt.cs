@@ -60,7 +60,7 @@ public static class ListResultsRequestExt
   /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   [SuppressMessage("Style",
                    "IDE0066:Convert switch statement to expression",
-                   Justification = "Readibility for nested switch")]
+                   Justification = "Readability for nested switch")]
   public static Expression<Func<Result, bool>> ToResultFilter(this Filters filters)
   {
     Expression<Func<Result, bool>> expr = data => false;
