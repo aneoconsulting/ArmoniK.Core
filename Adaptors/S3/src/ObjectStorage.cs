@@ -211,13 +211,9 @@ public class ObjectStorage : IObjectStorage
                                                                          valueChunks,
                                                                          cancellationToken);
       var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
-                                                               async uploadPartRequest =>
-                                                               {
-                                                                 var uploadPartResponse = await s3Client_.UploadPartAsync(uploadPartRequest,
+                                                               async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
                                                                                                                           cancellationToken)
-                                                                                                         .ConfigureAwait(false);
-                                                                 return uploadPartResponse;
-                                                               })
+                                                                                                         .ConfigureAwait(false))
                                                .ToListAsync(cancellationToken)
                                                .ConfigureAwait(false);
 
