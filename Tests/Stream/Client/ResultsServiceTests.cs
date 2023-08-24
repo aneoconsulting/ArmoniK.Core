@@ -217,7 +217,7 @@ internal class ResultsServiceTests
                                        }
                                      });
     Assert.NotNull(ex);
-    Assert.Equals(StatusCode.NotFound,
-                  ex!.StatusCode);
+    Assert.AreEqual(StatusCode.NotFound,
+                    ex!.StatusCode);
   }
 }
