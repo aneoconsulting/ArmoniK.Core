@@ -63,7 +63,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -107,7 +107,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -137,7 +137,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -174,7 +174,7 @@ jobs:
 
     - name: Build the package
       run: |
-        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Pack the package
       run: |
@@ -416,7 +416,7 @@ jobs:
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
           export Partition=TestPartition0
-          dotnet test --logger "trx;LogFileName=test-results.trx"
+          dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -647,7 +647,7 @@ jobs:
          sudo update-ca-certificates
 
       - name: Run connection test
-        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx"
+        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
         uses: dorny/test-reporter@v1

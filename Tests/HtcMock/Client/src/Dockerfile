@@ -13,7 +13,7 @@ COPY ["Tests/HtcMock/Client/src", "Tests/HtcMock/Client/src"]
 COPY ["Tests/Common/Client/src", "Tests/Common/Client/src"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Client/src"
-RUN dotnet build "ArmoniK.Samples.HtcMock.Client.csproj" -c Release -o /app/build
+RUN dotnet build "ArmoniK.Samples.HtcMock.Client.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 FROM build AS publish
 ARG VERSION=1.0.0.0

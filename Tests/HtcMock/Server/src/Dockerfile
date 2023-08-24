@@ -11,7 +11,7 @@ RUN dotnet restore "Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.cspr
 COPY ["Tests/HtcMock/Server/src", "Tests/HtcMock/Server/src"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Server/src"
-RUN dotnet build "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/build
+RUN dotnet build "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 FROM build AS publish
 ARG VERSION=1.0.0.0
