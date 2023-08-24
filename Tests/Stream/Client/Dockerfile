@@ -12,7 +12,7 @@ COPY ["Tests/Stream/Client", "Tests/Stream/Client"]
 COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/Stream/Client"
-RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build
+RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 
 FROM base as final
