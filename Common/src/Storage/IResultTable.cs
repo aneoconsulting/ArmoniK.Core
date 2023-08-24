@@ -215,6 +215,7 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   The new version of the result metadata
   /// </returns>
+  /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
   Task<Result> CompleteResult(string            sessionId,
                               string            resultId,
                               CancellationToken cancellationToken = default);
