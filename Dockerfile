@@ -45,27 +45,27 @@ COPY ["Control/Submitter/src", "Control/Submitter/src"]
 COPY ["Utils/src", "Utils/src"]
 
 WORKDIR /src/Adaptors/Amqp/src
-RUN dotnet build -c Release --no-restore "ArmoniK.Core.Adapters.Amqp.csproj"
+RUN dotnet build -c Release --no-restore "ArmoniK.Core.Adapters.Amqp.csproj" -p:RunAnalyzers=false -p:WarningLevel=0
 RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -c Release -o /app/publish/amqp /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Adaptors/RabbitMQ/src
-RUN dotnet build -c Release --no-restore "ArmoniK.Core.Adapters.RabbitMQ.csproj"
+RUN dotnet build -c Release --no-restore "ArmoniK.Core.Adapters.RabbitMQ.csproj" -p:RunAnalyzers=false -p:WarningLevel=0
 RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -c Release -o /app/publish/rabbit /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Compute/PollingAgent/src
-RUN dotnet build -c Release --no-restore "ArmoniK.Core.Compute.PollingAgent.csproj"
+RUN dotnet build -c Release --no-restore "ArmoniK.Core.Compute.PollingAgent.csproj" -p:RunAnalyzers=false -p:WarningLevel=0
 RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -c Release -o /app/publish/polling_agent /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/Metrics/src
-RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.Metrics.csproj"
+RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.Metrics.csproj" -p:RunAnalyzers=false -p:WarningLevel=0
 RUN dotnet publish "ArmoniK.Core.Control.Metrics.csproj" -c Release -o /app/publish/metrics /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/PartitionMetrics/src
-RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.PartitionMetrics.csproj"
+RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.PartitionMetrics.csproj" -p:RunAnalyzers=false -p:WarningLevel=0
 RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -c Release -o /app/publish/partition_metrics /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/Submitter/src
-RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.Submitter.csproj"
+RUN dotnet build -c Release --no-restore "ArmoniK.Core.Control.Submitter.csproj" -p:RunAnalyzers=false -p:WarningLevel=0
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -c Release -o /app/publish/submitter /p:UseAppHost=false -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 FROM base as polling_agent

@@ -16,7 +16,7 @@ COPY ["Tests/Stream/Server", "Tests/Stream/Server"]
 COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/Stream/Server"
-RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" -c Release -o /app/build
+RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 FROM build AS publish
 ARG VERSION=1.0.0.0
