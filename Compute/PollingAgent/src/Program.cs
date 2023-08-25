@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -106,7 +107,9 @@ public static class Program
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
 
-      if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
+      var endpoint = builder.Configuration["OTLP:Uri"];
+      var token    = builder.Configuration["OTLP:AuthToken"];
+      if (!string.IsNullOrEmpty(endpoint))
       {
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
@@ -127,11 +130,22 @@ public static class Program
                .WithTracing(b =>
                             {
                               b.AddSource(ActivitySource.Name);
-                              b.AddAspNetCoreInstrumentation();
                               b.AddMongoDBInstrumentation();
-                              b.AddZipkinExporter(options => options.Endpoint =
-                                                               new Uri(builder.Configuration["Zipkin:Uri"] ??
-                                                                       throw new InvalidOperationException("Zipkin uri should not be null")));
+                              b.AddOtlpExporter(options =>
+                                                {
+                                                  options.HttpClientFactory = () =>
+                                                                              {
+                                                                                var client = new HttpClient();
+                                                                                if (!string.IsNullOrEmpty(token))
+                                                                                {
+                                                                                  client.DefaultRequestHeaders.Add("Authorization",
+                                                                                                                   $"Bearer {token}");
+                                                                                }
+
+                                                                                return client;
+                                                                              };
+                                                  options.Endpoint = new Uri(endpoint);
+                                                });
                             });
       }
 
