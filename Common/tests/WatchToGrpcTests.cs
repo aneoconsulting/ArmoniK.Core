@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
@@ -47,8 +48,11 @@ public class WatchToGrpcTests
 
     Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                    {
-                                                     // Simple* that are used to create this instance do not check the session in their implementation
+                                                     // Simple* that are used to create this instance return static events
                                                      await foreach (var eventSubscriptionResponse in watchToGrpcInstance.GetEvents("",
+                                                                                                                                   new List<EventsEnum>(),
+                                                                                                                                   new Filters(),
+                                                                                                                                   new Api.gRPC.V1.Results.Filters(),
                                                                                                                                    cts.Token)
                                                                                                                         .ConfigureAwait(false))
                                                      {
@@ -80,9 +84,15 @@ public class WatchToGrpcTests
 
                                            Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                                                           {
-                                                                                            // Simple* that are used to create this instance do not check the session in their implementation
+                                                                                            // Simple* that are used to create this instance return static events
                                                                                             await foreach (var eventSubscriptionResponse in watchToGrpcInstance
                                                                                                                                             .GetEvents("",
+                                                                                                                                                       new List<
+                                                                                                                                                         EventsEnum>(),
+                                                                                                                                                       new Filters(),
+                                                                                                                                                       new Api.gRPC.V1.
+                                                                                                                                                         Results.
+                                                                                                                                                         Filters(),
                                                                                                                                                        cts.Token)
                                                                                                                                             .ConfigureAwait(false))
                                                                                             {

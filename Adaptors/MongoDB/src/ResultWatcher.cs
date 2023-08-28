@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,16 +87,14 @@ public class ResultWatcher : IResultWatcher
 
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
-                                                               CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
+                                                               CancellationToken              cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetNewResults)}");
-    activity?.SetTag($"{nameof(GetNewResults)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetNewResults)}");
+    var       sessionHandle = sessionProvider_.Get();
 
-    var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<Result>>().Match(input => input.OperationType          == ChangeStreamOperationType.Insert &&
-                                                                                              input.FullDocument.SessionId == sessionId);
+    var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<Result>>().Match(input => input.OperationType == ChangeStreamOperationType.Insert)
+                                                                              .Match(filter.Convert());
 
     var changeStreamCursor = await resultCollectionProvider_.Get()
                                                             .WatchAsync(sessionHandle,
@@ -114,17 +114,15 @@ public class ResultWatcher : IResultWatcher
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
-                                                                               CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
+                                                                               CancellationToken              cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResultOwnerUpdates)}");
-    activity?.SetTag($"{nameof(GetResultOwnerUpdates)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetResultOwnerUpdates)}");
+    var       sessionHandle = sessionProvider_.Get();
 
     var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get(),
                                                                  sessionHandle,
-                                                                 document => document.FullDocument.SessionId == sessionId,
+                                                                 filter,
                                                                  new[]
                                                                  {
                                                                    nameof(Result.OwnerTaskId),
@@ -140,17 +138,15 @@ public class ResultWatcher : IResultWatcher
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
-                                                                                 CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
+                                                                                 CancellationToken              cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusUpdates)}");
-    activity?.SetTag($"{nameof(GetResultStatusUpdates)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetResultStatusUpdates)}");
+    var       sessionHandle = sessionProvider_.Get();
 
     var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get(),
                                                                  sessionHandle,
-                                                                 document => document.FullDocument.SessionId == sessionId,
+                                                                 filter,
                                                                  new[]
                                                                  {
                                                                    nameof(Result.Status),
