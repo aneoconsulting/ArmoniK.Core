@@ -25,4 +25,14 @@ public class S3
   public       string Password           { get; set; } = "";
   public       bool   MustForcePathStyle { get; set; } = false;
   public       string BucketName         { get; set; } = "";
+
+  /// <summary>
+  ///   Number of tasks to be used in parallel execution
+  /// </summary>
+  public int DegreeOfParallelism { get; set; } = 0;
+
+  /// <summary>
+  ///   Size of one chunk when downloading an object by chunks
+  /// </summary>
+  public int ChunkDownloadSize { get; set; } = 65536;
 }
