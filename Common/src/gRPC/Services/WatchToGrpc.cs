@@ -70,17 +70,21 @@ public class WatchToGrpc
   /// <returns>
   ///   An <see cref="IAsyncEnumerable{EventSubscriptionResponse}" /> that contains the update events
   /// </returns>
-  public IAsyncEnumerable<EventSubscriptionResponse> GetEvents(string                      sessionId,
-                                                               ICollection<EventsEnum>     events,
-                                                               Filters                     tasksFilters,
-                                                               Api.gRPC.V1.Results.Filters resultsFilters,
-                                                               CancellationToken           cancellationToken)
+  public IAsyncEnumerable<EventSubscriptionResponse> GetEvents(string                       sessionId,
+                                                               ICollection<EventsEnum>      events,
+                                                               Filters?                     tasksFilters,
+                                                               Api.gRPC.V1.Results.Filters? resultsFilters,
+                                                               CancellationToken            cancellationToken)
   {
     var channel = Channel.CreateUnbounded<EventSubscriptionResponse>();
-    var internalTasksFilter = tasksFilters.ToTaskDataFilter()
-                                          .ExpressionAnd(data => data.SessionId == sessionId);
-    var internalResultsFilter = resultsFilters.ToResultFilter()
+    var internalTasksFilter = tasksFilters is null
+                                ? data => data.SessionId == sessionId
+                                : tasksFilters.ToTaskDataFilter()
                                               .ExpressionAnd(data => data.SessionId == sessionId);
+    var internalResultsFilter = resultsFilters is null
+                                  ? data => data.SessionId == sessionId
+                                  : resultsFilters.ToResultFilter()
+                                                  .ExpressionAnd(data => data.SessionId == sessionId);
 
     if (!events.Any() || events.Contains(EventsEnum.NewTask))
     {
