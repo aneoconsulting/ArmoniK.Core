@@ -49,7 +49,6 @@ public class ObjectStorage : IObjectStorage
   ///   <see cref="IObjectStorage" /> implementation for S3
   /// </summary>
   /// <param name="s3Client">Connection to S3</param>
-  /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
   /// <param name="options">S3 object storage options</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(AmazonS3Client         s3Client,
@@ -96,14 +95,13 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var                objectStorageFullName = $"{objectStorageName_}{key}";
-    using var          _                     = logger_.LogFunction(objectStorageFullName);
-    GetObjectResponse? response              = null;
+    var       objectStorageFullName = $"{objectStorageName_}{key}";
+    using var _                     = logger_.LogFunction(objectStorageFullName);
     try
     {
-      response = await s3Client_.GetObjectAsync(bucketName_,
-                                                objectStorageFullName,
-                                                cancellationToken);
+      await s3Client_.GetObjectAsync(bucketName_,
+                                     objectStorageFullName,
+                                     cancellationToken);
     }
     catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
     {
