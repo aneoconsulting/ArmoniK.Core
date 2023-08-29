@@ -13,11 +13,18 @@ locals {
     "Serilog__MinimumLevel__Override__ArmoniK.Core.Common.Auth.Authentication.Authenticator" = "${var.serilog.loggin_level_routing}",
     "ASPNETCORE_ENVIRONMENT"                                                                 = "${var.aspnet_core_env}"
   }
-  worker         = merge(var.compute_plane.worker, { image = var.worker_image, docker_file_path = var.worker_docker_file_path })
-  queue          = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_none))
-  database       = module.database
-  object         = one(concat(module.object_redis, module.object_minio, module.object_local))
-  environment    = merge(local.queue.generated_env_vars, local.object.generated_env_vars, local.database.generated_env_vars, local.logging_env_vars, var.custom_env_vars)
+  worker   = merge(var.compute_plane.worker, { image = var.worker_image, docker_file_path = var.worker_docker_file_path })
+  queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_none))
+  database = module.database
+  object   = one(concat(module.object_redis, module.object_minio, module.object_local))
+  env_maps = concat([
+    local.queue.generated_env_vars,
+    local.object.generated_env_vars,
+    local.database.generated_env_vars,
+    local.logging_env_vars,
+    var.custom_env_vars
+  ], module.tracing[*].generated_env_vars)
+  environment    = merge(local.env_maps...)
   volumes        = local.object.volumes
   submitter      = merge(var.submitter, { tag = var.core_tag })
   compute_plane  = merge(var.compute_plane, { tag = var.core_tag }, { worker = local.worker })

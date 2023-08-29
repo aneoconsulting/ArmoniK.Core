@@ -194,6 +194,12 @@ variable "database_image" {
   default = "mongo"
 }
 
+variable "otel_collector_image" {
+  type    = string
+  default = "otel/opentelemetry-collector-contrib:0.83.0"
+}
+
+
 variable "ingress" {
   type = object({
     image = optional(string, "nginxinc/nginx-unprivileged"),
@@ -222,6 +228,23 @@ variable "ingress" {
 
 variable "custom_env_vars" {
   type = map(string)
+  default = {
+  }
+}
+
+variable "tracing_exporters" {
+  type = object({
+    file   = optional(bool, true)
+    zipkin = optional(bool, false)
+  })
+  default = null
+}
+
+variable "tracing_ingestion_ports" {
+  type = object({
+    http   = optional(number, 4317)
+    zipkin = optional(number, 9411)
+  })
   default = {
   }
 }

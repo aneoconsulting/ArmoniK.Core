@@ -10,12 +10,6 @@ module "seq" {
   network = docker_network.armonik.id
 }
 
-module "zipkin" {
-  source  = "./modules/monitoring/zipkin"
-  image   = var.zipkin_image
-  network = docker_network.armonik.id
-}
-
 module "grafana" {
   source  = "./modules/monitoring/grafana"
   image   = var.grafana_image
@@ -98,7 +92,6 @@ module "submitter" {
   docker_image       = local.submitter.image
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
-  zipkin_uri         = module.zipkin.zipkin_uri
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
 }
@@ -115,7 +108,6 @@ module "compute_plane" {
   generated_env_vars = local.environment
   volumes            = local.volumes
   network            = docker_network.armonik.id
-  zipkin_uri         = module.zipkin.zipkin_uri
   log_driver         = module.fluenbit.log_driver
 }
 
@@ -154,4 +146,14 @@ module "ingress" {
   network    = docker_network.armonik.id
   submitter  = module.submitter
   log_driver = module.fluenbit.log_driver
+}
+
+module "tracing" {
+  source               = "./modules/tracing"
+  network              = docker_network.armonik.id
+  count                = var.tracing_exporters == null ? 0 : 1
+  exporters            = var.tracing_exporters
+  zipkin_image         = var.zipkin_image
+  otel_collector_image = var.otel_collector_image
+  ingestion_ports      = var.tracing_ingestion_ports
 }
