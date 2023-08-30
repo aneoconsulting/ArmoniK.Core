@@ -48,10 +48,6 @@ variable "network" {
   type = string
 }
 
-variable "zipkin_uri" {
-  type = string
-}
-
 variable "log_driver" {
   type = object({
     name    = string,

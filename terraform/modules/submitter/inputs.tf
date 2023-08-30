@@ -19,10 +19,6 @@ variable "network" {
   type = string
 }
 
-variable "zipkin_uri" {
-  type = string
-}
-
 variable "generated_env_vars" {
   type = map(string)
 }
