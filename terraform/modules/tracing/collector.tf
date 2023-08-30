@@ -31,22 +31,16 @@ resource "docker_container" "otel_collector" {
 
 locals {
   exporters = [
-    for key in keys(var.exporters) : key if var.exporters[key]
+    for key, value in var.exporters : key if value
   ]
-  exporters_conf = [
-    {
-      key = "file"
-      value = {
-        path = "/etc/logs/traces.json"
-      }
-    },
-    {
-      key = "zipkin"
-      value = {
-        endpoint = var.exporters.zipkin ? "http://${docker_container.zipkin.0.name}:${var.ingestion_ports.zipkin}/api/v2/spans" : ""
-      }
+  exporters_conf = {
+    file = {
+      path = "/etc/logs/traces.json"
     }
-  ]
+    zipkin = {
+      endpoint = "http://${docker_container.zipkin.0.name}:${var.ingestion_ports.zipkin}/api/v2/spans"
+    }
+  }
 }
 
 resource "local_file" "config" {
@@ -70,8 +64,8 @@ resource "local_file" "config" {
       }
     }
     exporters = {
-      for e in local.exporters_conf :
-      e.key => e.value if contains(local.exporters, e.key)
+      for key, value in local.exporters_conf :
+      key => value if contains(local.exporters, key)
     }
   })
 
