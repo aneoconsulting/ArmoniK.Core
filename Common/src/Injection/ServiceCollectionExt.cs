@@ -159,5 +159,6 @@ public static class ServiceCollectionExt
                .AddValidator<ListResultsRequestValidator>()
                .AddValidator<ListApplicationsRequestValidator>()
                .AddValidator<ListPartitionsRequestValidator>()
+               .AddValidator<EventSubscriptionRequestValidator>()
                .AddGrpcValidation();
 }

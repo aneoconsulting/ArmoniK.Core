@@ -26,8 +26,6 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
-using static Google.Protobuf.WellKnownTypes.Timestamp;
-
 namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 
 [TestFixture(TestOf = typeof(ToResultFilterTest))]
@@ -56,108 +54,11 @@ public class ToResultFilterTest
 
   private static Func<Result, bool> RequestToFunc(ListResultsRequest.Types.Sort sort,
                                                   IEnumerable<FilterField>      filterFields)
-    => CreateListResultsRequest(sort,
-                                filterFields)
-       .Filters.ToResultFilter()
-       .Compile();
+    => ListResultsHelper.CreateListResultsRequest(sort,
+                                                  filterFields)
+                        .Filters.ToResultFilter()
+                        .Compile();
 
-
-  public static ListResultsRequest CreateListResultsRequest(ListResultsRequest.Types.Sort sort,
-                                                            IEnumerable<FilterField>      filterFields)
-    => new()
-       {
-         Filters = new Filters
-                   {
-                     Or =
-                     {
-                       new FiltersAnd
-                       {
-                         And =
-                         {
-                           filterFields,
-                         },
-                       },
-                     },
-                   },
-         Sort = sort,
-       };
-
-  public static FilterField CreateListResultsFilterString(ResultRawEnumField   field,
-                                                          FilterStringOperator op,
-                                                          string               value)
-    => new()
-       {
-         Field = new ResultField
-                 {
-                   ResultRawField = new ResultRawField
-                                    {
-                                      Field = field,
-                                    },
-                 },
-         FilterString = new FilterString
-                        {
-                          Operator = op,
-                          Value    = value,
-                        },
-       };
-
-
-  public static FilterField CreateListResultsFilterArray(ResultRawEnumField  field,
-                                                         FilterArrayOperator op,
-                                                         string              value)
-    => new()
-       {
-         Field = new ResultField
-                 {
-                   ResultRawField = new ResultRawField
-                                    {
-                                      Field = field,
-                                    },
-                 },
-         FilterArray = new FilterArray
-                       {
-                         Operator = op,
-                         Value    = value,
-                       },
-       };
-
-  public static FilterField CreateListResultsFilterStatus(ResultRawEnumField   field,
-                                                          FilterStatusOperator op,
-                                                          ResultStatus         value)
-    => new()
-       {
-         Field = new ResultField
-                 {
-                   ResultRawField = new ResultRawField
-                                    {
-                                      Field = field,
-                                    },
-                 },
-         FilterStatus = new FilterStatus
-                        {
-                          Operator = op,
-                          Value    = value,
-                        },
-       };
-
-  public static FilterField CreateListResultsFilterDate(ResultRawEnumField field,
-                                                        FilterDateOperator op,
-                                                        DateTime           value)
-    => new()
-       {
-         Field = new ResultField
-                 {
-                   ResultRawField = new ResultRawField
-                                    {
-                                      Field = field,
-                                    },
-                 },
-         FilterDate = new FilterDate
-                      {
-                        Operator = op,
-                        Value    = FromDateTime(value),
-                      },
-       };
 
   [Test]
   [TestCaseSource(nameof(TestCasesFilter))]
@@ -187,42 +88,42 @@ public class ToResultFilterTest
                           },
                           false).SetArgDisplayNames(filterField.ToString());
 
-    yield return CaseTrue(CreateListResultsFilterStatus(ResultRawEnumField.Status,
-                                                        FilterStatusOperator.Equal,
-                                                        ResultStatus.Created));
-    yield return CaseFalse(CreateListResultsFilterStatus(ResultRawEnumField.Status,
-                                                         FilterStatusOperator.Equal,
-                                                         ResultStatus.Aborted));
-    yield return CaseTrue(CreateListResultsFilterStatus(ResultRawEnumField.Status,
-                                                        FilterStatusOperator.NotEqual,
-                                                        ResultStatus.Aborted));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                                          FilterStatusOperator.Equal,
+                                                                          ResultStatus.Created));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                                           FilterStatusOperator.Equal,
+                                                                           ResultStatus.Aborted));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                                          FilterStatusOperator.NotEqual,
+                                                                          ResultStatus.Aborted));
 
-    yield return CaseTrue(CreateListResultsFilterString(ResultRawEnumField.SessionId,
-                                                        FilterStringOperator.Equal,
-                                                        "SessionId"));
-    yield return CaseFalse(CreateListResultsFilterString(ResultRawEnumField.SessionId,
-                                                         FilterStringOperator.Equal,
-                                                         "BadSessionId"));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.SessionId,
+                                                                          FilterStringOperator.Equal,
+                                                                          "SessionId"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.SessionId,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadSessionId"));
 
-    yield return CaseTrue(CreateListResultsFilterString(ResultRawEnumField.Name,
-                                                        FilterStringOperator.Equal,
-                                                        "Name"));
-    yield return CaseFalse(CreateListResultsFilterString(ResultRawEnumField.Name,
-                                                         FilterStringOperator.Equal,
-                                                         "BadName"));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.Name,
+                                                                          FilterStringOperator.Equal,
+                                                                          "Name"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.Name,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadName"));
 
-    yield return CaseTrue(CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
-                                                        FilterStringOperator.Equal,
-                                                        "OwnerTaskId"));
-    yield return CaseFalse(CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
-                                                         FilterStringOperator.Equal,
-                                                         "BadOwnerTaskId"));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
+                                                                          FilterStringOperator.Equal,
+                                                                          "OwnerTaskId"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadOwnerTaskId"));
 
-    yield return CaseTrue(CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
-                                                      FilterDateOperator.After,
-                                                      DateTime.UtcNow));
-    yield return CaseFalse(CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
-                                                       FilterDateOperator.Before,
-                                                       DateTime.UtcNow));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
+                                                                        FilterDateOperator.After,
+                                                                        DateTime.UtcNow));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
+                                                                         FilterDateOperator.Before,
+                                                                         DateTime.UtcNow));
   }
 }
