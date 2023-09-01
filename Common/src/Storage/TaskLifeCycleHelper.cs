@@ -39,6 +39,19 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class TaskLifeCycleHelper
 {
+  /// <summary>
+  ///   Validate and merge task data from the session with the given options
+  /// </summary>
+  /// <param name="sessionData">Session Metadata</param>
+  /// <param name="submissionOptions">Incoming task options</param>
+  /// <param name="parentTaskId">Id of the tasks that creates the tasks</param>
+  /// <param name="maxPriority">Max priority managed by the queue</param>
+  /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Merged task options
+  /// </returns>
+  /// <exception cref="InvalidOperationException">when partition in incoming tasks options is not allowed in the session</exception>
   public static TaskOptions ValidateSession(SessionData       sessionData,
                                             TaskOptions?      submissionOptions,
                                             string            parentTaskId,
@@ -80,6 +93,19 @@ public static class TaskLifeCycleHelper
     return localOptions;
   }
 
+  /// <summary>
+  ///   Initiate task creation
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="sessionId">Session Id of the completed results</param>
+  /// <param name="parentTaskId">Id of the tasks that creates the tasks</param>
+  /// <param name="taskCreationRequests">Tasks to create</param>
+  /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   public static async Task CreateTasks(ITaskTable                       taskTable,
                                        IResultTable                     resultTable,
                                        string                           sessionId,
@@ -159,6 +185,20 @@ public static class TaskLifeCycleHelper
                      .ConfigureAwait(false);
   }
 
+  /// <summary>
+  ///   Finalize task creation
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
+  /// <param name="taskRequests">Tasks requests to finalize</param>
+  /// <param name="sessionId">Session Id of the completed results</param>
+  /// <param name="parentTaskId">Id of the tasks that creates the tasks</param>
+  /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   public static async Task FinalizeTaskCreation(ITaskTable                       taskTable,
                                                 IResultTable                     resultTable,
                                                 IPushQueueStorage                pushQueueStorage,
@@ -302,7 +342,19 @@ public static class TaskLifeCycleHelper
     }
   }
 
-
+  /// <summary>
+  ///   Remove completed results from dependent tasks and submit tasks which dependencies are completed
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
+  /// <param name="sessionId">Session Id of the completed results</param>
+  /// <param name="results">Collection of completed results</param>
+  /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   public static async Task ResolveDependencies(ITaskTable          taskTable,
                                                IResultTable        resultTable,
                                                IPushQueueStorage   pushQueueStorage,
