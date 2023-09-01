@@ -40,24 +40,28 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
       {
         foreach (var filterField in filtersAnd.And)
         {
+          if (filterField?.Field is null)
+          {
+            continue;
+          }
+
           switch (filterField.Field.FieldCase)
           {
             case ResultField.FieldOneofCase.ResultRawField:
               switch (filterField.Field.ResultRawField.Field)
               {
-                case ResultRawEnumField.Status:
-                case ResultRawEnumField.CreatedAt:
-                case ResultRawEnumField.CompletedAt:
-                case ResultRawEnumField.Unspecified:
-                  context.AddFailure($"Cannot filter {filterField.Field.ResultRawField.Field} on in this API");
-                  break;
                 case ResultRawEnumField.OwnerTaskId:
                 case ResultRawEnumField.SessionId:
                 case ResultRawEnumField.Name:
                 case ResultRawEnumField.ResultId:
                   break;
                 default:
-                  throw new ArgumentOutOfRangeException();
+                case ResultRawEnumField.Status:
+                case ResultRawEnumField.CreatedAt:
+                case ResultRawEnumField.CompletedAt:
+                case ResultRawEnumField.Unspecified:
+                  context.AddFailure($"Cannot filter {filterField.Field.ResultRawField.Field} on in this API");
+                  break;
               }
 
               break;
@@ -76,6 +80,11 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
       {
         foreach (var filterField in filtersAnd.And)
         {
+          if (filterField?.Field is null)
+          {
+            continue;
+          }
+
           switch (filterField.Field.FieldCase)
           {
             case TaskField.FieldOneofCase.TaskSummaryField:
@@ -100,11 +109,9 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
                 case TaskSummaryEnumField.ProcessingToEndDuration:
                 case TaskSummaryEnumField.Error:
                 case TaskSummaryEnumField.PodTtl:
+                default:
                   context.AddFailure($"Cannot filter {filterField.Field.TaskSummaryField.Field} on in this API");
                   break;
-
-                default:
-                  throw new ArgumentOutOfRangeException();
               }
 
               break;
