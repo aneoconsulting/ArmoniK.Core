@@ -365,7 +365,7 @@ public static class TaskLifeCycleHelper
   {
     logger.LogDebug("Submit tasks which new data are available");
 
-    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
+    // Get all tasks that depend on the results that were completed by the given results (removing duplicates)
     var dependentTasks = await resultTable.GetResults(sessionId,
                                                       results,
                                                       cancellationToken)
