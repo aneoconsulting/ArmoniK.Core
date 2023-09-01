@@ -313,7 +313,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                     resultTable_,
                                                     pushQueueStorage_,
                                                     id.SessionId,
-                                                    new List<string>
+                                                    new[]
                                                     {
                                                       id.ResultId,
                                                     },
