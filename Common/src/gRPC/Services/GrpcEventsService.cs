@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
@@ -68,7 +67,7 @@ public class GrpcEventsService : Events.EventsBase
     try
     {
       await foreach (var eventSubscriptionResponse in wtg.GetEvents(request.SessionId,
-                                                                    request.ReturnedEvents.ToList(),
+                                                                    request.ReturnedEvents,
                                                                     request.TasksFilters,
                                                                     request.ResultsFilters,
                                                                     context.CancellationToken)
