@@ -27,7 +27,6 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
@@ -43,7 +42,6 @@ using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -123,68 +121,14 @@ public sealed class Agent : IAgent
                         .ConfigureAwait(false);
     }
 
-    logger_.LogDebug("Submit tasks which new data are available");
-
-    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
-    var dependentTasks = await resultTable_.GetResults(sessionData_.SessionId,
-                                                       sentResults_,
-                                                       cancellationToken)
-                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
-                                           .ToHashSetAsync(cancellationToken)
-                                           .ConfigureAwait(false);
-
-    if (!dependentTasks.Any())
-    {
-      return;
-    }
-
-    if (logger_.IsEnabled(LogLevel.Debug))
-    {
-      logger_.LogDebug("Dependent Tasks Dictionary {@dependents}",
-                       dependentTasks);
-    }
-
-    // Remove all results that were completed by the current task from their dependents.
-    // This will try to remove more results than strictly necessary.
-    // This is completely safe and should be optimized by the DB.
-    await taskTable_.RemoveRemainingDataDependenciesAsync(dependentTasks,
-                                                          sentResults_,
-                                                          cancellationToken)
-                    .ConfigureAwait(false);
-
-    // Find all tasks whose dependencies are now complete in order to start them.
-    // Multiple agents can see the same task as ready and will try to start it multiple times.
-    // This is benign as it will be handled during dequeue with message deduplication.
-    var groups = (await taskTable_.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
-                                                          data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
-                                                  data => new
-                                                          {
-                                                            data.TaskId,
-                                                            data.SessionId,
-                                                            data.Options,
-                                                            data.Options.PartitionId,
-                                                            data.Options.Priority,
-                                                          },
+    await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
+                                                  resultTable_,
+                                                  pushQueueStorage_,
+                                                  sessionData_.SessionId,
+                                                  sentResults_,
+                                                  logger_,
                                                   cancellationToken)
-                                  .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
-
-    foreach (var group in groups)
-    {
-      var ids = group.Select(data => data.TaskId)
-                     .ToList();
-
-      var msgsData = group.Select(data => new MessageData(data.TaskId,
-                                                          data.SessionId,
-                                                          data.Options));
-      await pushQueueStorage_.PushMessagesAsync(msgsData,
-                                                group.Key.PartitionId,
-                                                cancellationToken)
                              .ConfigureAwait(false);
-
-      await taskTable_.FinalizeTaskCreation(ids,
-                                            cancellationToken)
-                      .ConfigureAwait(false);
-    }
   }
 
   /// <inheritdoc />

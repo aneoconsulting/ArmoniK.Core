@@ -541,19 +541,32 @@ public class Submitter : ISubmitter
     {
       var taskId = Guid.NewGuid()
                        .ToString();
+      var payloadId = Guid.NewGuid()
+                          .ToString();
 
       requests.Add(new TaskCreationRequest(taskId,
-                                           taskId,
+                                           payloadId,
                                            options,
                                            taskRequest.ExpectedOutputKeys.ToList(),
                                            taskRequest.DataDependencies.ToList()));
-      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(taskId,
+      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(payloadId,
                                                              taskRequest.PayloadChunks,
                                                              cancellationToken));
     }
 
     await payloadUploadTasks.WhenAll()
                             .ConfigureAwait(false);
+
+    await resultTable_.Create(requests.Select(request => new Result(sessionId,
+                                                                    request.PayloadId,
+                                                                    "",
+                                                                    parentTaskId,
+                                                                    ResultStatus.Completed,
+                                                                    new List<string>(),
+                                                                    DateTime.UtcNow,
+                                                                    Array.Empty<byte>())),
+                              cancellationToken)
+                      .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.CreateTasks(taskTable_,
                                           resultTable_,

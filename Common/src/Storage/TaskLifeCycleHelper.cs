@@ -196,9 +196,11 @@ public static class TaskLifeCycleHelper
     foreach (var request in taskRequests)
     {
       var dependencies = request.DataDependencies.ToList();
+      dependencies.Add(request.PayloadId);
 
-      logger.LogDebug("Process task request {request}",
-                      request);
+      logger.LogDebug("Process task request {request} with dependencies {dependencies}",
+                      request,
+                      dependencies);
 
       if (dependencies.Any())
       {
@@ -297,6 +299,79 @@ public static class TaskLifeCycleHelper
                                              cancellationToken)
                        .ConfigureAwait(false);
       }
+    }
+  }
+
+
+  public static async Task ResolveDependencies(ITaskTable          taskTable,
+                                               IResultTable        resultTable,
+                                               IPushQueueStorage   pushQueueStorage,
+                                               string              sessionId,
+                                               ICollection<string> results,
+                                               ILogger             logger,
+                                               CancellationToken   cancellationToken)
+  {
+    logger.LogDebug("Submit tasks which new data are available");
+
+    // Get all tasks that depend on the results that were completed by the current task (removing duplicates)
+    var dependentTasks = await resultTable.GetResults(sessionId,
+                                                      results,
+                                                      cancellationToken)
+                                          .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
+                                          .ToHashSetAsync(cancellationToken)
+                                          .ConfigureAwait(false);
+
+    if (!dependentTasks.Any())
+    {
+      return;
+    }
+
+    if (logger.IsEnabled(LogLevel.Debug))
+    {
+      logger.LogDebug("Dependent Tasks Dictionary {@dependents}",
+                      dependentTasks);
+    }
+
+    // Remove all results that were completed by the current task from their dependents.
+    // This will try to remove more results than strictly necessary.
+    // This is completely safe and should be optimized by the DB.
+    await taskTable.RemoveRemainingDataDependenciesAsync(dependentTasks,
+                                                         results,
+                                                         cancellationToken)
+                   .ConfigureAwait(false);
+
+    // Find all tasks whose dependencies are now complete in order to start them.
+    // Multiple agents can see the same task as ready and will try to start it multiple times.
+    // This is benign as it will be handled during dequeue with message deduplication.
+    var groups = (await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+                                                         data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+                                                 data => new
+                                                         {
+                                                           data.TaskId,
+                                                           data.SessionId,
+                                                           data.Options,
+                                                           data.Options.PartitionId,
+                                                           data.Options.Priority,
+                                                         },
+                                                 cancellationToken)
+                                 .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
+
+    foreach (var group in groups)
+    {
+      var ids = group.Select(data => data.TaskId)
+                     .ToList();
+
+      var msgsData = group.Select(data => new MessageData(data.TaskId,
+                                                          data.SessionId,
+                                                          data.Options));
+      await pushQueueStorage.PushMessagesAsync(msgsData,
+                                               group.Key.PartitionId,
+                                               cancellationToken)
+                            .ConfigureAwait(false);
+
+      await taskTable.FinalizeTaskCreation(ids,
+                                           cancellationToken)
+                     .ConfigureAwait(false);
     }
   }
 }

@@ -193,4 +193,139 @@ internal class TaskSubmissionTests
                     BitConverter.ToInt32(TestPayload.Deserialize(data)
                                                     ?.DataBytes));
   }
+
+  [Test]
+  public async Task SubmitTasksBeforePayloadShouldSucceed()
+  {
+    var submitterClient = new Submitter.SubmitterClient(channel_);
+    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
+                                                                      {
+                                                                        DefaultTaskOption = new TaskOptions
+                                                                                            {
+                                                                                              Priority    = 1,
+                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                                              MaxRetries  = 2,
+                                                                                              PartitionId = partition_,
+                                                                                            },
+                                                                        PartitionIds =
+                                                                        {
+                                                                          partition_,
+                                                                        },
+                                                                      });
+
+    var resultsClient = new Results.ResultsClient(channel_);
+
+    var results = await resultsClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                 {
+                                                                   SessionId = createSessionReply.SessionId,
+                                                                   Results =
+                                                                   {
+                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                     {
+                                                                       Name = "MyResult",
+                                                                     },
+                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                     {
+                                                                       Name = "MyPayload",
+                                                                     },
+                                                                   },
+                                                                 });
+
+    var resultId = results.Results.Single(raw => raw.Name == "MyResult")
+                          .ResultId;
+    var payloadId = results.Results.Single(raw => raw.Name == "MyPayload")
+                           .ResultId;
+
+    var payload = new TestPayload
+                  {
+                    Type      = TestPayload.TaskType.Compute,
+                    DataBytes = BitConverter.GetBytes(3),
+                    ResultKey = resultId,
+                  };
+
+    var tasksClient = new Tasks.TasksClient(channel_);
+
+    var tasks = await tasksClient.SubmitTasksAsync(new SubmitTasksRequest
+                                                   {
+                                                     SessionId = createSessionReply.SessionId,
+                                                     TaskCreations =
+                                                     {
+                                                       new SubmitTasksRequest.Types.TaskCreation
+                                                       {
+                                                         ExpectedOutputKeys =
+                                                         {
+                                                           results.Results.Select(r => r.ResultId),
+                                                         },
+                                                         PayloadId = payloadId,
+                                                       },
+                                                     },
+                                                   })
+                                 .ConfigureAwait(false);
+
+    var taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
+                                                  {
+                                                    TaskId = tasks.TaskInfos.Single()
+                                                                  .TaskId,
+                                                  })
+                                    .ConfigureAwait(false);
+
+    Assert.Contains(taskData.Task.Status,
+                    new List<TaskStatus>
+                    {
+                      TaskStatus.Creating,
+                    });
+
+    var uploadStream = resultsClient.UploadResultData();
+    await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                {
+                                                  Id = new UploadResultDataRequest.Types.ResultIdentifier
+                                                       {
+                                                         ResultId  = payloadId,
+                                                         SessionId = createSessionReply.SessionId,
+                                                       },
+                                                })
+                      .ConfigureAwait(false);
+
+    await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                {
+                                                  DataChunk = UnsafeByteOperations.UnsafeWrap(payload.Serialize()),
+                                                })
+                      .ConfigureAwait(false);
+
+    await uploadStream.RequestStream.CompleteAsync()
+                      .ConfigureAwait(false);
+
+    var uploadStreamResponse = await uploadStream.ResponseAsync.ConfigureAwait(false);
+
+    Assert.AreEqual(ResultStatus.Completed,
+                    uploadStreamResponse.Result.Status);
+
+#pragma warning disable CS0612 // Type or member is obsolete
+    await submitterClient.WaitForAvailabilityAsync(new ResultRequest
+#pragma warning restore CS0612 // Type or member is obsolete
+                                                   {
+                                                     ResultId = resultId,
+                                                     Session  = createSessionReply.SessionId,
+                                                   })
+                         .ConfigureAwait(false);
+
+    taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
+                                              {
+                                                TaskId = tasks.TaskInfos.Single()
+                                                              .TaskId,
+                                              })
+                                .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Completed,
+                    taskData.Task.Status);
+
+    var data = await resultsClient.DownloadResultData(createSessionReply.SessionId,
+                                                      resultId,
+                                                      CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+    Assert.AreEqual(9,
+                    BitConverter.ToInt32(TestPayload.Deserialize(data)
+                                                    ?.DataBytes));
+  }
 }
