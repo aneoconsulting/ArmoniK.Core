@@ -24,6 +24,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -44,15 +45,21 @@ public class GrpcResultsService : Results.ResultsBase
 {
   private readonly ILogger<GrpcResultsService> logger_;
   private readonly IObjectStorage              objectStorage_;
+  private readonly IPushQueueStorage           pushQueueStorage_;
   private readonly IResultTable                resultTable_;
+  private readonly ITaskTable                  taskTable_;
 
   public GrpcResultsService(IResultTable                resultTable,
+                            ITaskTable                  taskTable,
                             IObjectStorage              objectStorage,
+                            IPushQueueStorage           pushQueueStorage,
                             ILogger<GrpcResultsService> logger)
   {
-    logger_        = logger;
-    resultTable_   = resultTable;
-    objectStorage_ = objectStorage;
+    logger_           = logger;
+    resultTable_      = resultTable;
+    taskTable_        = taskTable;
+    objectStorage_    = objectStorage;
+    pushQueueStorage_ = pushQueueStorage;
   }
 
   [RequiresPermission(typeof(GrpcResultsService),
@@ -178,6 +185,16 @@ public class GrpcResultsService : Results.ResultsBase
                                   .WhenAll()
                                   .ConfigureAwait(false);
 
+    await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
+                                                  resultTable_,
+                                                  pushQueueStorage_,
+                                                  request.SessionId,
+                                                  resultList.Select(result => result.ResultId)
+                                                            .AsICollection(),
+                                                  logger_,
+                                                  context.CancellationToken)
+                             .ConfigureAwait(false);
+
     return new CreateResultsResponse
            {
              Results =
@@ -291,6 +308,19 @@ public class GrpcResultsService : Results.ResultsBase
                                                          id.ResultId,
                                                          context.CancellationToken)
                                          .ConfigureAwait(false);
+
+      await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
+                                                    resultTable_,
+                                                    pushQueueStorage_,
+                                                    id.SessionId,
+                                                    new[]
+                                                    {
+                                                      id.ResultId,
+                                                    },
+                                                    logger_,
+                                                    context.CancellationToken)
+                               .ConfigureAwait(false);
+
 
       return new UploadResultDataResponse
              {
