@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -42,6 +40,7 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
         {
           if (filterField?.Field is null)
           {
+            context.AddFailure("Field should not be null");
             continue;
           }
 
@@ -55,11 +54,11 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
                 case ResultRawEnumField.Name:
                 case ResultRawEnumField.ResultId:
                   break;
-                default:
                 case ResultRawEnumField.Status:
                 case ResultRawEnumField.CreatedAt:
                 case ResultRawEnumField.CompletedAt:
                 case ResultRawEnumField.Unspecified:
+                default:
                   context.AddFailure($"Cannot filter {filterField.Field.ResultRawField.Field} on in this API");
                   break;
               }
@@ -67,7 +66,8 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
               break;
             case ResultField.FieldOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              context.AddFailure($"Cannot filter {filterField.Field} on in this API");
+              break;
           }
         }
       }
@@ -82,6 +82,7 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
         {
           if (filterField?.Field is null)
           {
+            context.AddFailure("Field should not be null");
             continue;
           }
 
@@ -120,7 +121,8 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
               break;
             case TaskField.FieldOneofCase.None:
             default:
-              throw new ArgumentOutOfRangeException();
+              context.AddFailure($"Cannot filter {filterField.Field} on in this API");
+              break;
           }
         }
       }

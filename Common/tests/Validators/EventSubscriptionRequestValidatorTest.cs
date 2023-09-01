@@ -162,6 +162,18 @@ public class EventSubscriptionRequestValidatorTest
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.ProcessingToEndDuration,
                                                                      FilterDateOperator.After,
                                                                      DateToCompare));
+    yield return CaseFalse(new FilterField());
+    yield return CaseFalse(new FilterField
+                           {
+                             Field = new TaskField(),
+                           });
+    yield return CaseFalse(new FilterField
+                           {
+                             Field = new TaskField
+                                     {
+                                       TaskSummaryField = new TaskSummaryField(),
+                                     },
+                           });
   }
 
   public static IEnumerable<TestCaseData> TestCasesResults()
@@ -230,5 +242,27 @@ public class EventSubscriptionRequestValidatorTest
     yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.Name,
                                                                           FilterStringOperator.Equal,
                                                                           string.Empty));
+    yield return CaseFalse(new Api.gRPC.V1.Results.FilterField());
+    yield return CaseFalse(new Api.gRPC.V1.Results.FilterField
+                           {
+                             Field = new ResultField(),
+                           });
+    yield return CaseFalse(new Api.gRPC.V1.Results.FilterField
+                           {
+                             Field = new ResultField
+                                     {
+                                       ResultRawField = new ResultRawField
+                                                        {
+                                                          Field = ResultRawEnumField.Unspecified,
+                                                        },
+                                     },
+                           });
+    yield return CaseFalse(new Api.gRPC.V1.Results.FilterField
+                           {
+                             Field = new ResultField
+                                     {
+                                       ResultRawField = new ResultRawField(),
+                                     },
+                           });
   }
 }
