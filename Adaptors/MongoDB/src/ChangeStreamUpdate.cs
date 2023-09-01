@@ -55,7 +55,7 @@ public static class ChangeStreamUpdate
                                                                                 .Exists("updateDescription.updatedFields." + f)));
 
     var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<T>>().Match(document => document.OperationType == ChangeStreamOperationType.Update)
-                                                                         .Match(filter.Convert())
+                                                                         .Match(filter.ToChangeStreamDocumentExpression())
                                                                          .Match(matchUpdatedFields);
 
     return await collection.WatchAsync(sessionHandle,
@@ -68,7 +68,7 @@ public static class ChangeStreamUpdate
                            .ConfigureAwait(false);
   }
 
-  internal static Expression<Func<ChangeStreamDocument<T>, bool>> Convert<T>(this Expression<Func<T, bool>> expression)
+  internal static Expression<Func<ChangeStreamDocument<T>, bool>> ToChangeStreamDocumentExpression<T>(this Expression<Func<T, bool>> expression)
   {
     var type = typeof(ChangeStreamDocument<T>);
     var parameter = Expression.Parameter(type,

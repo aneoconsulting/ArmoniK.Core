@@ -94,7 +94,7 @@ public class ResultWatcher : IResultWatcher
     var       sessionHandle = sessionProvider_.Get();
 
     var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<Result>>().Match(input => input.OperationType == ChangeStreamOperationType.Insert)
-                                                                              .Match(filter.Convert());
+                                                                              .Match(filter.ToChangeStreamDocumentExpression());
 
     var changeStreamCursor = await resultCollectionProvider_.Get()
                                                             .WatchAsync(sessionHandle,

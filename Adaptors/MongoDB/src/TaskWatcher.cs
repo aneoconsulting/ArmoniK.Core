@@ -93,7 +93,7 @@ public class TaskWatcher : ITaskWatcher
     var       sessionHandle = sessionProvider_.Get();
 
     var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<TaskData>>().Match(input => input.OperationType == ChangeStreamOperationType.Insert)
-                                                                                .Match(filter.Convert());
+                                                                                .Match(filter.ToChangeStreamDocumentExpression());
 
     var changeStreamCursor = await taskCollectionProvider_.Get()
                                                           .WatchAsync(sessionHandle,
