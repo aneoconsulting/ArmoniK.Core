@@ -15,12 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -33,6 +36,7 @@ internal class SimpleTaskWatcher : ITaskWatcher
 {
   public const string PayloadId    = "MyPayloadId";
   public const string OutputId     = "MyOutputId";
+  public const string SessionId    = "MySessionId";
   public const string TaskId       = "MyTaskId";
   public const string OriginTaskId = "MyOriginTaskId";
 
@@ -42,17 +46,17 @@ internal class SimpleTaskWatcher : ITaskWatcher
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<IAsyncEnumerable<NewTask>> GetNewTasks(string            sessionId,
-                                                     CancellationToken cancellationToken = default)
+  public Task<IAsyncEnumerable<NewTask>> GetNewTasks(Expression<Func<TaskData, bool>> filter,
+                                                     CancellationToken                cancellationToken = default)
     => Task.FromResult(new[]
                        {
-                         new NewTask(sessionId,
+                         new NewTask(SessionId,
                                      TaskId,
                                      OriginTaskId,
                                      PayloadId,
                                      new List<string>
                                      {
-                                       sessionId,
+                                       SessionId,
                                      },
                                      new List<string>
                                      {
@@ -63,17 +67,17 @@ internal class SimpleTaskWatcher : ITaskWatcher
                                      TaskStatus.Creating),
                        }.ToAsyncEnumerable());
 
-  public Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
-                                                                       CancellationToken cancellationToken = default)
+  public Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(Expression<Func<TaskData, bool>> filter,
+                                                                       CancellationToken                cancellationToken = default)
     => Task.FromResult(new[]
                        {
-                         new TaskStatusUpdate(sessionId,
+                         new TaskStatusUpdate(SessionId,
                                               TaskId,
                                               TaskStatus.Submitted),
-                         new TaskStatusUpdate(sessionId,
+                         new TaskStatusUpdate(SessionId,
                                               TaskId,
                                               TaskStatus.Processing),
-                         new TaskStatusUpdate(sessionId,
+                         new TaskStatusUpdate(SessionId,
                                               TaskId,
                                               TaskStatus.Completed),
                        }.ToAsyncEnumerable());

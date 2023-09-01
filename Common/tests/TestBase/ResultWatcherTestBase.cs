@@ -280,7 +280,7 @@ public class ResultWatcherTestBase
     {
       var cts = new CancellationTokenSource();
 
-      var watchEnumerator = await ResultWatcher!.GetNewResults("SessionId",
+      var watchEnumerator = await ResultWatcher!.GetNewResults(result => result.SessionId == "SessionId",
                                                                cts.Token)
                                                 .ConfigureAwait(false);
 
@@ -325,7 +325,7 @@ public class ResultWatcherTestBase
     {
       var cts = new CancellationTokenSource();
 
-      var watchEnumerator = await ResultWatcher!.GetResultStatusUpdates("SessionId",
+      var watchEnumerator = await ResultWatcher!.GetResultStatusUpdates(result => result.SessionId == "SessionId",
                                                                         cts.Token)
                                                 .ConfigureAwait(false);
 
@@ -379,7 +379,7 @@ public class ResultWatcherTestBase
     {
       var cts = new CancellationTokenSource();
 
-      var watchEnumerator = await ResultWatcher!.GetResultOwnerUpdates("SessionId",
+      var watchEnumerator = await ResultWatcher!.GetResultOwnerUpdates(result => result.SessionId == "SessionId",
                                                                        cts.Token)
                                                 .ConfigureAwait(false);
 

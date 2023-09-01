@@ -385,7 +385,7 @@ public class TaskWatcherTestBase
     {
       var cts = new CancellationTokenSource();
 
-      var watchEnumerator = await TaskWatcher!.GetNewTasks("SessionId",
+      var watchEnumerator = await TaskWatcher!.GetNewTasks(data => data.SessionId == "SessionId",
                                                            cts.Token)
                                               .ConfigureAwait(false);
 
@@ -429,7 +429,7 @@ public class TaskWatcherTestBase
     {
       var cts = new CancellationTokenSource();
 
-      var watchEnumerator = await TaskWatcher!.GetTaskStatusUpdates("SessionId",
+      var watchEnumerator = await TaskWatcher!.GetTaskStatusUpdates(data => data.SessionId == "SessionId",
                                                                     cts.Token)
                                               .ConfigureAwait(false);
 
@@ -471,6 +471,52 @@ public class TaskWatcherTestBase
                                            TaskSubmittedData.TaskId,
                                            TaskStatus.Cancelling),
                       newResults[2]);
+    }
+  }
+
+  [Test]
+  public async Task WatchTaskStatusUpdateWithComplexFilterShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var cts = new CancellationTokenSource();
+
+      var watchEnumerator = await TaskWatcher!
+                                  .GetTaskStatusUpdates(data => data.SessionId               == "SessionId" && data.Options.PartitionId == "part1" &&
+                                                                data.Options.Options["key1"] == "val1",
+                                                        cts.Token)
+                                  .ConfigureAwait(false);
+
+      var newResults = new List<TaskStatusUpdate>();
+      var watch = Task.Run(async () =>
+                           {
+                             await foreach (var cur in watchEnumerator.WithCancellation(cts.Token)
+                                                                      .ConfigureAwait(false))
+                             {
+                               Console.WriteLine(cur);
+                               newResults.Add(cur);
+                             }
+                           },
+                           CancellationToken.None);
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+
+      await ProduceEvents(TaskTable!,
+                          cts.Token)
+        .ConfigureAwait(false);
+
+      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+
+      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+
+      Assert.AreEqual(1,
+                      newResults.Count);
+      Assert.AreEqual(new TaskStatusUpdate("SessionId",
+                                           TaskProcessingData.TaskId,
+                                           TaskStatus.Error),
+                      newResults[0]);
     }
   }
 }

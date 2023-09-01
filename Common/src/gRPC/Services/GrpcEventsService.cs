@@ -67,6 +67,9 @@ public class GrpcEventsService : Events.EventsBase
     try
     {
       await foreach (var eventSubscriptionResponse in wtg.GetEvents(request.SessionId,
+                                                                    request.ReturnedEvents,
+                                                                    request.TasksFilters,
+                                                                    request.ResultsFilters,
                                                                     context.CancellationToken)
                                                          .ConfigureAwait(false))
       {
