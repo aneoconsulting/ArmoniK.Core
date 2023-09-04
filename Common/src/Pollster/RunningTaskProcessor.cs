@@ -55,12 +55,21 @@ public class RunningTaskProcessor : BackgroundService
 
         var taskHandler = await runningTaskQueue_.ReadAsync(stoppingToken)
                                                  .ConfigureAwait(false);
-        CurrentTask = taskHandler.GetAcquiredTask();
-        await taskHandler.ExecuteTask()
-                         .ConfigureAwait(false);
-        await postProcessingTaskQueue_.WriteAsync(taskHandler,
-                                                  stoppingToken)
-                                      .ConfigureAwait(false);
+        try
+        {
+          CurrentTask = taskHandler.GetAcquiredTask();
+          await taskHandler.ExecuteTask()
+                           .ConfigureAwait(false);
+          await postProcessingTaskQueue_.WriteAsync(taskHandler,
+                                                    stoppingToken)
+                                        .ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+          await taskHandler.DisposeAsync()
+                           .ConfigureAwait(false);
+          throw;
+        }
       }
       catch (Exception e)
       {
