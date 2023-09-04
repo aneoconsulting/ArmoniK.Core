@@ -185,16 +185,6 @@ public class GrpcResultsService : Results.ResultsBase
                                   .WhenAll()
                                   .ConfigureAwait(false);
 
-    await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
-                                                  resultTable_,
-                                                  pushQueueStorage_,
-                                                  request.SessionId,
-                                                  resultList.Select(result => result.ResultId)
-                                                            .AsICollection(),
-                                                  logger_,
-                                                  context.CancellationToken)
-                             .ConfigureAwait(false);
-
     return new CreateResultsResponse
            {
              Results =
