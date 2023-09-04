@@ -32,6 +32,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -146,7 +147,8 @@ public class TaskTable : ITaskTable
     Logger.LogInformation("update task {taskId} to status {status}",
                           taskData.TaskId,
                           TaskStatus.Processing);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskData.TaskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled,
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskData.TaskId  && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled &&
+                                                        x.Status != TaskStatus.Error && x.Status != TaskStatus.Retried,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
@@ -154,19 +156,19 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        var taskStatus = await GetTaskStatus(new[]
-                                             {
-                                               taskData.TaskId,
-                                             },
-                                             cancellationToken)
-                           .ConfigureAwait(false);
+        var taskStatus = (await GetTaskStatus(new[]
+                                              {
+                                                taskData.TaskId,
+                                              },
+                                              cancellationToken)
+                            .ConfigureAwait(false)).AsICollection();
 
         if (!taskStatus.Any())
         {
           throw new TaskNotFoundException($"Task {taskData.TaskId} not found");
         }
 
-        throw new ArmoniKException($"Task already in a terminal state - {taskStatus.Single()} to {TaskStatus.Processing}");
+        throw new TaskAlreadyInFinalStateException($"Task already in a terminal state - {taskStatus.Single()} to {TaskStatus.Processing}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }

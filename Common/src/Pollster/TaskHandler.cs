@@ -300,13 +300,6 @@ public sealed class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      if (cancellationTokenSource_.IsCancellationRequested)
-      {
-        messageHandler_.Status = QueueMessageStatus.Postponed;
-        logger_.LogDebug("Dependencies resolved but execution cancellation requested");
-        return false;
-      }
-
       taskData_ = taskData_ with
                   {
                     OwnerPodId = ownerPodId_,
@@ -314,9 +307,18 @@ public sealed class TaskHandler : IAsyncDisposable
                     AcquisitionDate = DateTime.UtcNow,
                     ReceptionDate = messageHandler_.ReceptionDateTime,
                   };
-      taskData_ = await taskTable_.AcquireTask(taskData_,
-                                               CancellationToken.None)
-                                  .ConfigureAwait(false);
+      try
+      {
+        taskData_ = await taskTable_.AcquireTask(taskData_,
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
+      }
+      catch (TaskAlreadyInFinalStateException)
+      {
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        logger_.LogDebug("Task already in a final state");
+        return false;
+      }
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
