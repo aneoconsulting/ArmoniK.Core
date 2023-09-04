@@ -156,7 +156,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                                          Guid.NewGuid()
                                                                              .ToString(),
                                                                          rc.Name,
-                                                                         "",
+                                                                         request.SessionId,
                                                                          ResultStatus.Created,
                                                                          new List<string>(),
                                                                          DateTime.UtcNow,
