@@ -468,13 +468,13 @@ public class PollsterTest
   [TestCase(5000)] // task should be longer than the grace delay
   public async Task ExecuteTaskShouldSucceed(double delay)
   {
-    var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new WaitWorkerStreamHandler(delay);
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
                                                              simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
+                                                             mockPullQueueStorage);
 
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
@@ -482,19 +482,15 @@ public class PollsterTest
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -505,7 +501,9 @@ public class PollsterTest
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(TaskStatus.Completed,
+    Assert.AreEqual(delay < 1000
+                      ? TaskStatus.Completed
+                      : TaskStatus.Processing,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
                                                                          taskSubmitted,
@@ -579,14 +577,15 @@ public class PollsterTest
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(TaskStatus.Cancelled,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskSubmitted,
-                                                                       },
-                                                                       CancellationToken.None)
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+    Assert.That((await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                                   {
+                                                                     taskSubmitted,
+                                                                   },
+                                                                   CancellationToken.None)
+                                          .ConfigureAwait(false)).Single()
+                                                                 .Status,
+                Is.AnyOf(TaskStatus.Cancelled,
+                         TaskStatus.Cancelling));
     Assert.AreEqual(string.Empty,
                     testServiceProvider.Pollster.TaskProcessing);
     Assert.AreSame(string.Empty,
@@ -672,7 +671,7 @@ public class PollsterTest
   [Test]
   public async Task UnavailableWorkerShouldFail()
   {
-    var mockPullQueueStorage = new Mock<IPullQueueStorage>();
+    var mockPullQueueStorage = new SimplePullQueueStorageChannel();
     var simpleAgentHandler   = new SimpleAgentHandler();
 
     var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
@@ -683,7 +682,7 @@ public class PollsterTest
 
     using var testServiceProvider = new TestPollsterProvider(mockStreamHandlerFail.Object,
                                                              simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
+                                                             mockPullQueueStorage);
 
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
@@ -691,19 +690,15 @@ public class PollsterTest
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -711,8 +706,6 @@ public class PollsterTest
     var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
-    Assert.True(testServiceProvider.Pollster.Failed);
-    Assert.False(source.Token.IsCancellationRequested);
 
     Assert.AreEqual(TaskStatus.Submitted,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]

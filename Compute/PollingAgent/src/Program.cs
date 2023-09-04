@@ -96,6 +96,10 @@ public static class Program
              .AddLocalStorage(builder.Configuration,
                               logger.GetLogger())
              .AddHostedService<Worker>()
+             .AddHostedService<RunningTaskProcessor>()
+             .AddHostedService<PostProcessor>()
+             .AddSingleton<RunningTaskQueue>()
+             .AddSingleton<PostProcessingTaskQueue>()
              .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()

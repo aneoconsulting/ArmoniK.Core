@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,7 @@ public class Pollster : IInitializable
   private readonly Injection.Options.Pollster pollsterOptions_;
   private readonly IPullQueueStorage          pullQueueStorage_;
   private readonly IResultTable               resultTable_;
+  private readonly RunningTaskQueue           runningTaskQueue_;
   private readonly ISessionTable              sessionTable_;
   private readonly ISubmitter                 submitter_;
   private readonly ITaskProcessingChecker     taskProcessingChecker_;
@@ -80,7 +82,8 @@ public class Pollster : IInitializable
                   ITaskTable                 taskTable,
                   ITaskProcessingChecker     taskProcessingChecker,
                   IWorkerStreamHandler       workerStreamHandler,
-                  IAgentHandler              agentHandler)
+                  IAgentHandler              agentHandler,
+                  RunningTaskQueue           runningTaskQueue)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -103,6 +106,7 @@ public class Pollster : IInitializable
     taskProcessingChecker_ = taskProcessingChecker;
     workerStreamHandler_   = workerStreamHandler;
     agentHandler_          = agentHandler;
+    runningTaskQueue_      = runningTaskQueue;
     TaskProcessing         = "";
     ownerPodId_            = LocalIpFinder.LocalIpv4Address();
     ownerPodName_          = Dns.GetHostName();
@@ -265,24 +269,37 @@ public class Pollster : IInitializable
 
             logger_.LogDebug("Start a new Task to process the messageHandler");
 
+            while (runningTaskQueue_.RemoveException(out var exception))
+            {
+              if (exception is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
+              {
+                // This exception should stop pollster
+                Console.WriteLine(exception);
+                ExceptionDispatchInfo.Capture(exception)
+                                     .Throw();
+              }
+
+              RecordError(exception);
+            }
+
+            var taskHandler = new TaskHandler(sessionTable_,
+                                              taskTable_,
+                                              resultTable_,
+                                              submitter_,
+                                              dataPrefetcher_,
+                                              workerStreamHandler_,
+                                              message,
+                                              taskProcessingChecker_,
+                                              ownerPodId_,
+                                              ownerPodName_,
+                                              activitySource_,
+                                              agentHandler_,
+                                              logger_,
+                                              pollsterOptions_,
+                                              cts);
+
             try
             {
-              await using var taskHandler = new TaskHandler(sessionTable_,
-                                                            taskTable_,
-                                                            resultTable_,
-                                                            submitter_,
-                                                            dataPrefetcher_,
-                                                            workerStreamHandler_,
-                                                            message,
-                                                            taskProcessingChecker_,
-                                                            ownerPodId_,
-                                                            ownerPodName_,
-                                                            activitySource_,
-                                                            agentHandler_,
-                                                            logger_,
-                                                            pollsterOptions_,
-                                                            cts);
-
               StopCancelledTask = taskHandler.StopCancelledTask;
 
               var precondition = await taskHandler.AcquireTask()
@@ -293,11 +310,13 @@ public class Pollster : IInitializable
                 await taskHandler.PreProcessing()
                                  .ConfigureAwait(false);
 
-                await taskHandler.ExecuteTask()
-                                 .ConfigureAwait(false);
+                await runningTaskQueue_.WriteAsync(taskHandler,
+                                                   cancellationToken)
+                                       .ConfigureAwait(false);
 
-                await taskHandler.PostProcessing()
-                                 .ConfigureAwait(false);
+                await runningTaskQueue_.WaitForNextWriteAsync(TimeSpan.FromMinutes(1),
+                                                              cancellationToken)
+                                       .ConfigureAwait(false);
 
                 StopCancelledTask = null;
 
@@ -306,6 +325,11 @@ public class Pollster : IInitializable
                 {
                   recordedErrors.Dequeue();
                 }
+              }
+              else
+              {
+                await taskHandler.DisposeAsync()
+                                 .ConfigureAwait(false);
               }
             }
             catch (RpcException e) when (TaskHandler.IsStatusFatal(e.StatusCode))

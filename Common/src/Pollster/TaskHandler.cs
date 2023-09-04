@@ -62,6 +62,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private          IAgent?                                     agent_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
+  private          ProcessReply?                               reply_;
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
 
@@ -506,6 +507,17 @@ public sealed class TaskHandler : IAsyncDisposable
 
       workerStreamHandler_.StartTaskProcessing(taskData_,
                                                workerConnectionCts_.Token);
+    }
+    catch (Exception e)
+    {
+      await HandleErrorRequeueAsync(e,
+                                    taskData_,
+                                    cancellationTokenSource_.Token)
+        .ConfigureAwait(false);
+    }
+
+    try
+    {
       if (workerStreamHandler_.Pipe is null)
       {
         throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
@@ -523,12 +535,21 @@ public sealed class TaskHandler : IAsyncDisposable
 
       await workerStreamHandler_.Pipe.CompleteAsync()
                                 .ConfigureAwait(false);
+
+      // at this point worker requests should have ended
+      logger_.LogDebug("Wait for task output");
+      reply_ = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_.Token)
+                                         .ConfigureAwait(false);
+
+      logger_.LogDebug("Stop agent server");
+      await agentHandler_.Stop(workerConnectionCts_.Token)
+                         .ConfigureAwait(false);
     }
     catch (Exception e)
     {
-      await HandleErrorRequeueAsync(e,
-                                    taskData_,
-                                    cancellationTokenSource_.Token)
+      await HandleErrorResubmitAsync(e,
+                                     taskData_,
+                                     cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -557,25 +578,21 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(agent_) + " is null.");
     }
 
+    if (reply_ is null)
+    {
+      throw new NullReferenceException(nameof(reply_) + " is null.");
+    }
+
     using var _ = logger_.BeginNamedScope("PostProcessing",
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
 
     try
     {
-      // at this point worker requests should have ended
-      logger_.LogDebug("Wait for task output");
-      var reply = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_.Token)
-                                            .ConfigureAwait(false);
-
-      logger_.LogDebug("Stop agent server");
-      await agentHandler_.Stop(workerConnectionCts_.Token)
-                         .ConfigureAwait(false);
-
       logger_.LogInformation("Process task output of type {type}",
-                             reply.Output.TypeCase);
+                             reply_.Output.TypeCase);
 
-      if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
+      if (reply_.Output.TypeCase is Output.TypeOneofCase.Ok)
       {
         logger_.LogDebug("Complete processing of the request");
         await agent_.FinalizeTaskCreation(CancellationToken.None)
@@ -584,7 +601,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          false,
-                                         reply.Output,
+                                         reply_.Output,
                                          CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
