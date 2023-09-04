@@ -271,10 +271,10 @@ public class Pollster : IInitializable
           await foreach (var message in messages.ConfigureAwait(false))
           {
             var taskHandlerLogger = loggerFactory_.CreateLogger<TaskHandler>();
-            taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
-                                              ("messageHandler", message.MessageId),
-                                              ("taskId", message.TaskId),
-                                              ("ownerPodId", ownerPodId_));
+            using var _ = taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
+                                                            ("messageHandler", message.MessageId),
+                                                            ("taskId", message.TaskId),
+                                                            ("ownerPodId", ownerPodId_));
 
             // ReSharper disable once ExplicitCallerInfoArgument
             using var activity = activitySource_.StartActivity("ProcessQueueMessage");

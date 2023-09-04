@@ -123,6 +123,7 @@ public sealed class TaskHandler : IAsyncDisposable
   {
     using var _ = logger_.BeginNamedScope("DisposeAsync",
                                           ("taskId", messageHandler_.TaskId),
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
 
     onDispose_.Invoke();
@@ -170,6 +171,7 @@ public sealed class TaskHandler : IAsyncDisposable
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
     using var _ = logger_.BeginNamedScope("Acquiring task",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId));
 
     try
@@ -449,6 +451,7 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     using var _ = logger_.BeginNamedScope("PreProcessing",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
     logger_.LogDebug("Start prefetch data");
@@ -484,6 +487,7 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     using var _ = logger_.BeginNamedScope("TaskExecution",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
 
@@ -588,6 +592,7 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     using var _ = logger_.BeginNamedScope("PostProcessing",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
 
