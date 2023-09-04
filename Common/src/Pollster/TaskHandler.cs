@@ -307,18 +307,9 @@ public sealed class TaskHandler : IAsyncDisposable
                     AcquisitionDate = DateTime.UtcNow,
                     ReceptionDate = messageHandler_.ReceptionDateTime,
                   };
-      try
-      {
-        taskData_ = await taskTable_.AcquireTask(taskData_,
-                                                 CancellationToken.None)
-                                    .ConfigureAwait(false);
-      }
-      catch (TaskAlreadyInFinalStateException)
-      {
-        messageHandler_.Status = QueueMessageStatus.Processed;
-        logger_.LogDebug("Task already in a final state");
-        return false;
-      }
+      taskData_ = await taskTable_.AcquireTask(taskData_,
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
@@ -398,6 +389,13 @@ public sealed class TaskHandler : IAsyncDisposable
 
         // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
         // and do not acquire the task
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        return false;
+      }
+
+      if (taskData_.OwnerPodId == ownerPodId_ && taskData_.Status != TaskStatus.Dispatched)
+      {
+        logger_.LogInformation("Task is already managed by this agent; message likely to be duplicated");
         messageHandler_.Status = QueueMessageStatus.Processed;
         return false;
       }

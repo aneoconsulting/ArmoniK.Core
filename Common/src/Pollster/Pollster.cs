@@ -50,6 +50,7 @@ public class Pollster : IInitializable
   private readonly DataPrefetcher                  dataPrefetcher_;
   private readonly IHostApplicationLifetime        lifeTime_;
   private readonly ILogger<Pollster>               logger_;
+  private readonly ILoggerFactory                  loggerFactory_;
   private readonly int                             messageBatchSize_;
   private readonly IObjectStorage                  objectStorage_;
   private readonly string                          ownerPodId_;
@@ -75,6 +76,7 @@ public class Pollster : IInitializable
                   IHostApplicationLifetime   lifeTime,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
+                  ILoggerFactory             loggerFactory,
                   IObjectStorage             objectStorage,
                   IResultTable               resultTable,
                   ISubmitter                 submitter,
@@ -92,6 +94,7 @@ public class Pollster : IInitializable
     }
 
     logger_                = logger;
+    loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
     pullQueueStorage_      = pullQueueStorage;
     lifeTime_              = lifeTime;
@@ -267,10 +270,11 @@ public class Pollster : IInitializable
 
           await foreach (var message in messages.ConfigureAwait(false))
           {
-            using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
-                                                             ("messageHandler", message.MessageId),
-                                                             ("taskId", message.TaskId),
-                                                             ("ownerPodId", ownerPodId_));
+            var taskHandlerLogger = loggerFactory_.CreateLogger<TaskHandler>();
+            taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
+                                              ("messageHandler", message.MessageId),
+                                              ("taskId", message.TaskId),
+                                              ("ownerPodId", ownerPodId_));
 
             // ReSharper disable once ExplicitCallerInfoArgument
             using var activity = activitySource_.StartActivity("ProcessQueueMessage");
@@ -279,7 +283,7 @@ public class Pollster : IInitializable
             activity?.SetBaggage("messageId",
                                  message.MessageId);
 
-            logger_.LogDebug("Start a new Task to process the messageHandler");
+            taskHandlerLogger.LogDebug("Start a new Task to process the messageHandler");
 
             while (runningTaskQueue_.RemoveException(out var exception))
             {
@@ -306,7 +310,7 @@ public class Pollster : IInitializable
                                               ownerPodName_,
                                               activitySource_,
                                               agentHandler_,
-                                              logger_,
+                                              taskHandlerLogger,
                                               pollsterOptions_,
                                               () => taskProcessingDict_.Remove(message.TaskId),
                                               cts);
