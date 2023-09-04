@@ -514,13 +514,13 @@ public class PollsterTest
   [Test]
   public async Task CancelLongTaskShouldSucceed()
   {
-    var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new ExceptionWorkerStreamHandler<Exception>(15000);
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
                                                              simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
+                                                             mockPullQueueStorage);
 
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
@@ -528,19 +528,15 @@ public class PollsterTest
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -580,6 +576,9 @@ public class PollsterTest
                                                                  .Status,
                 Is.AnyOf(TaskStatus.Cancelled,
                          TaskStatus.Cancelling));
+
+    Assert.AreEqual(Array.Empty<string>(),
+                    testServiceProvider.Pollster.TaskProcessing);
   }
 
   public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
