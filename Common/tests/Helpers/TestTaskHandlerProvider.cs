@@ -135,15 +135,27 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
-           .AddSingleton("ownerpodid")
-           .AddSingleton<TaskHandler>()
+           .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
+                                                     provider.GetRequiredService<ITaskTable>(),
+                                                     provider.GetRequiredService<IResultTable>(),
+                                                     provider.GetRequiredService<ISubmitter>(),
+                                                     provider.GetRequiredService<DataPrefetcher>(),
+                                                     workerStreamHandler,
+                                                     queueStorage,
+                                                     provider.GetRequiredService<ITaskProcessingChecker>(),
+                                                     "ownerpodid",
+                                                     "ownerpodname",
+                                                     provider.GetRequiredService<ActivitySource>(),
+                                                     agentHandler,
+                                                     provider.GetRequiredService<ILogger>(),
+                                                     provider.GetRequiredService<Injection.Options.Pollster>(),
+                                                     () =>
+                                                     {
+                                                     },
+                                                     cancellationTokenSource))
            .AddSingleton<DataPrefetcher>()
-           .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
-           .AddSingleton(workerStreamHandler)
-           .AddSingleton(agentHandler)
-           .AddSingleton(queueStorage);
+           .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>();
 
     if (inputTaskTable is not null)
     {

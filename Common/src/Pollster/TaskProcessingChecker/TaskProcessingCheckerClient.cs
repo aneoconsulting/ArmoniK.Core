@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,8 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
                                .ConfigureAwait(false);
       logger_.LogDebug("Result from other polling agent: {result}",
                        result);
-      return result.Equals(taskId);
+      return result.Split(",")
+                   .Contains(taskId);
     }
     catch (InvalidOperationException ex)
     {

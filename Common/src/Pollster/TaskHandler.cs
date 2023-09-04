@@ -49,6 +49,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly DataPrefetcher                              dataPrefetcher_;
   private readonly ILogger                                     logger_;
   private readonly IQueueMessageHandler                        messageHandler_;
+  private readonly Action                                      onDispose_;
   private readonly string                                      ownerPodId_;
   private readonly string                                      ownerPodName_;
   private readonly CancellationTokenRegistration               reg1_;
@@ -80,6 +81,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      IAgentHandler              agentHandler,
                      ILogger                    logger,
                      Injection.Options.Pollster pollsterOptions,
+                     Action                     onDispose,
                      CancellationTokenSource    cancellationTokenSource)
   {
     sessionTable_          = sessionTable;
@@ -93,6 +95,7 @@ public sealed class TaskHandler : IAsyncDisposable
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
+    onDispose_             = onDispose;
     ownerPodId_            = ownerPodId;
     ownerPodName_          = ownerPodName;
     taskData_              = null;
@@ -122,6 +125,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
 
+    onDispose_.Invoke();
     logger_.LogDebug("MessageHandler status is {status}",
                      messageHandler_.Status);
     await messageHandler_.DisposeAsync()

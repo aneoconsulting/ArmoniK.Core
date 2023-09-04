@@ -402,10 +402,8 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
     Assert.True(source.Token.IsCancellationRequested);
-    Assert.AreEqual(string.Empty,
+    Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   public class WaitWorkerStreamHandler : IWorkerStreamHandler
@@ -511,10 +509,6 @@ public class PollsterTest
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
-    Assert.AreEqual(string.Empty,
-                    testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   [Test]
@@ -570,7 +564,7 @@ public class PollsterTest
                      CancellationToken.None)
               .ConfigureAwait(false);
 
-    await testServiceProvider.Pollster.StopCancelledTask!.Invoke()
+    await testServiceProvider.Pollster.StopCancelledTask.Invoke()
                              .ConfigureAwait(false);
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
@@ -586,10 +580,6 @@ public class PollsterTest
                                                                  .Status,
                 Is.AnyOf(TaskStatus.Cancelled,
                          TaskStatus.Cancelling));
-    Assert.AreEqual(string.Empty,
-                    testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
@@ -661,10 +651,8 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => pollster.MainLoop(source.Token));
     Assert.True(pollster.Failed);
     Assert.False(source.Token.IsCancellationRequested);
-    Assert.AreEqual(string.Empty,
-                    pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   pollster.TaskProcessing);
+    Assert.AreEqual(Array.Empty<string>(),
+                    testServiceProvider.Pollster.TaskProcessing);
   }
 
 
@@ -715,9 +703,7 @@ public class PollsterTest
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
-    Assert.AreEqual(string.Empty,
+    Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 }

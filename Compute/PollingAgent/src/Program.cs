@@ -186,19 +186,17 @@ public static class Program
                                                    });
 
                          endpoints.MapGet("/taskprocessing",
-                                          () => Task.FromResult(app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                                   .TaskProcessing));
+                                          () => Task.FromResult(string.Join(",",
+                                                                            app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                                                               .TaskProcessing)));
 
                          endpoints.MapGet("/stopcancelledtask",
                                           async () =>
                                           {
                                             var stopCancelledTask = app.Services.GetRequiredService<Common.Pollster.Pollster>()
                                                                        .StopCancelledTask;
-                                            if (stopCancelledTask != null)
-                                            {
-                                              await stopCancelledTask.Invoke()
-                                                                     .ConfigureAwait(false);
-                                            }
+                                            await stopCancelledTask.Invoke()
+                                                                   .ConfigureAwait(false);
                                           });
                        });
 

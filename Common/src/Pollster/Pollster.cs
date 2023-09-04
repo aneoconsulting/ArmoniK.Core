@@ -45,28 +45,28 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster : IInitializable
 {
-  private readonly ActivitySource             activitySource_;
-  private readonly IAgentHandler              agentHandler_;
-  private readonly DataPrefetcher             dataPrefetcher_;
-  private readonly IHostApplicationLifetime   lifeTime_;
-  private readonly ILogger<Pollster>          logger_;
-  private readonly int                        messageBatchSize_;
-  private readonly IObjectStorage             objectStorage_;
-  private readonly string                     ownerPodId_;
-  private readonly string                     ownerPodName_;
-  private readonly Injection.Options.Pollster pollsterOptions_;
-  private readonly IPullQueueStorage          pullQueueStorage_;
-  private readonly IResultTable               resultTable_;
-  private readonly RunningTaskQueue           runningTaskQueue_;
-  private readonly ISessionTable              sessionTable_;
-  private readonly ISubmitter                 submitter_;
-  private readonly ITaskProcessingChecker     taskProcessingChecker_;
-  private readonly ITaskTable                 taskTable_;
-  private readonly IWorkerStreamHandler       workerStreamHandler_;
-  private          bool                       endLoopReached_;
-  private          HealthCheckResult?         healthCheckFailedResult_;
-  public           Func<Task>?                StopCancelledTask;
-  public           string                     TaskProcessing;
+  private readonly ActivitySource                  activitySource_;
+  private readonly IAgentHandler                   agentHandler_;
+  private readonly DataPrefetcher                  dataPrefetcher_;
+  private readonly IHostApplicationLifetime        lifeTime_;
+  private readonly ILogger<Pollster>               logger_;
+  private readonly int                             messageBatchSize_;
+  private readonly IObjectStorage                  objectStorage_;
+  private readonly string                          ownerPodId_;
+  private readonly string                          ownerPodName_;
+  private readonly Injection.Options.Pollster      pollsterOptions_;
+  private readonly IPullQueueStorage               pullQueueStorage_;
+  private readonly IResultTable                    resultTable_;
+  private readonly RunningTaskQueue                runningTaskQueue_;
+  private readonly ISessionTable                   sessionTable_;
+  private readonly ISubmitter                      submitter_;
+  private readonly ITaskProcessingChecker          taskProcessingChecker_;
+  private readonly Dictionary<string, TaskHandler> taskProcessingDict_ = new();
+  private readonly ITaskTable                      taskTable_;
+  private readonly IWorkerStreamHandler            workerStreamHandler_;
+  private          bool                            endLoopReached_;
+  private          HealthCheckResult?              healthCheckFailedResult_;
+
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
                   DataPrefetcher             dataPrefetcher,
@@ -107,11 +107,23 @@ public class Pollster : IInitializable
     workerStreamHandler_   = workerStreamHandler;
     agentHandler_          = agentHandler;
     runningTaskQueue_      = runningTaskQueue;
-    TaskProcessing         = "";
     ownerPodId_            = LocalIpFinder.LocalIpv4Address();
     ownerPodName_          = Dns.GetHostName();
     Failed                 = false;
   }
+
+  public Func<Task> StopCancelledTask
+    => async () =>
+       {
+         foreach (var taskHandler in taskProcessingDict_)
+         {
+           await taskHandler.Value.StopCancelledTask()
+                            .ConfigureAwait(false);
+         }
+       };
+
+  public ICollection<string> TaskProcessing
+    => taskProcessingDict_.Keys;
 
   /// <summary>
   ///   Is true when the MainLoop exited with an error
@@ -259,7 +271,7 @@ public class Pollster : IInitializable
                                                              ("messageHandler", message.MessageId),
                                                              ("taskId", message.TaskId),
                                                              ("ownerPodId", ownerPodId_));
-            TaskProcessing = message.TaskId;
+
             // ReSharper disable once ExplicitCallerInfoArgument
             using var activity = activitySource_.StartActivity("ProcessQueueMessage");
             activity?.SetBaggage("TaskId",
@@ -296,12 +308,14 @@ public class Pollster : IInitializable
                                               agentHandler_,
                                               logger_,
                                               pollsterOptions_,
+                                              () => taskProcessingDict_.Remove(message.TaskId),
                                               cts);
+
+            taskProcessingDict_.TryAdd(message.TaskId,
+                                       taskHandler);
 
             try
             {
-              StopCancelledTask = taskHandler.StopCancelledTask;
-
               var precondition = await taskHandler.AcquireTask()
                                                   .ConfigureAwait(false);
 
@@ -317,8 +331,6 @@ public class Pollster : IInitializable
                 await runningTaskQueue_.WaitForNextWriteAsync(TimeSpan.FromMinutes(1),
                                                               cancellationToken)
                                        .ConfigureAwait(false);
-
-                StopCancelledTask = null;
 
                 // If the task was successful, we can remove a failure
                 if (recordedErrors.Count > 0)
@@ -340,11 +352,6 @@ public class Pollster : IInitializable
             catch (Exception e)
             {
               RecordError(e);
-            }
-            finally
-            {
-              StopCancelledTask = null;
-              TaskProcessing    = string.Empty;
             }
           }
         }
