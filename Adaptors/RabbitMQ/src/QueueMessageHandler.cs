@@ -41,14 +41,15 @@ public class QueueMessageHandler : IQueueMessageHandler
     CancellationToken = cancellationToken;
     channel_          = channel;
     ReceptionDateTime = DateTime.UtcNow;
+    MessageId = Guid.NewGuid()
+                    .ToString();
   }
 
   /// <inheritdoc />
   public CancellationToken CancellationToken { get; set; }
 
   /// <inheritdoc />
-  public string MessageId
-    => deliverEvent_.BasicProperties.MessageId;
+  public string MessageId { get; }
 
   /// <inheritdoc />
   public string TaskId { get; }
