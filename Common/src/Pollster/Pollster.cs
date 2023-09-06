@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -290,9 +289,7 @@ public class Pollster : IInitializable
               if (exception is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
               {
                 // This exception should stop pollster
-                Console.WriteLine(exception);
-                ExceptionDispatchInfo.Capture(exception)
-                                     .Throw();
+                exception.RethrowWithStacktrace();
               }
 
               RecordError(exception);
