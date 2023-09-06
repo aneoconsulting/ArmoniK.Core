@@ -332,7 +332,7 @@ public class Pollster : IInitializable
                                                    cancellationToken)
                                        .ConfigureAwait(false);
 
-                await runningTaskQueue_.WaitForNextWriteAsync(TimeSpan.FromMinutes(1),
+                await runningTaskQueue_.WaitForNextWriteAsync(pollsterOptions_.TimeoutBeforeNextAcquisition,
                                                               cancellationToken)
                                        .ConfigureAwait(false);
 
