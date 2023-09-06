@@ -314,8 +314,15 @@ public class Pollster : IInitializable
                                                                                   out var _),
                                               cts);
 
-            taskProcessingDict_.TryAdd(message.TaskId,
-                                       taskHandler);
+            if (!taskProcessingDict_.TryAdd(message.TaskId,
+                                            taskHandler))
+            {
+              message.Status = QueueMessageStatus.Processed;
+              await taskHandler.DisposeAsync()
+                               .ConfigureAwait(false);
+              continue;
+            }
+
 
             try
             {
