@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -44,28 +45,28 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster : IInitializable
 {
-  private readonly ActivitySource                  activitySource_;
-  private readonly IAgentHandler                   agentHandler_;
-  private readonly DataPrefetcher                  dataPrefetcher_;
-  private readonly IHostApplicationLifetime        lifeTime_;
-  private readonly ILogger<Pollster>               logger_;
-  private readonly ILoggerFactory                  loggerFactory_;
-  private readonly int                             messageBatchSize_;
-  private readonly IObjectStorage                  objectStorage_;
-  private readonly string                          ownerPodId_;
-  private readonly string                          ownerPodName_;
-  private readonly Injection.Options.Pollster      pollsterOptions_;
-  private readonly IPullQueueStorage               pullQueueStorage_;
-  private readonly IResultTable                    resultTable_;
-  private readonly RunningTaskQueue                runningTaskQueue_;
-  private readonly ISessionTable                   sessionTable_;
-  private readonly ISubmitter                      submitter_;
-  private readonly ITaskProcessingChecker          taskProcessingChecker_;
-  private readonly Dictionary<string, TaskHandler> taskProcessingDict_ = new();
-  private readonly ITaskTable                      taskTable_;
-  private readonly IWorkerStreamHandler            workerStreamHandler_;
-  private          bool                            endLoopReached_;
-  private          HealthCheckResult?              healthCheckFailedResult_;
+  private readonly ActivitySource                            activitySource_;
+  private readonly IAgentHandler                             agentHandler_;
+  private readonly DataPrefetcher                            dataPrefetcher_;
+  private readonly IHostApplicationLifetime                  lifeTime_;
+  private readonly ILogger<Pollster>                         logger_;
+  private readonly ILoggerFactory                            loggerFactory_;
+  private readonly int                                       messageBatchSize_;
+  private readonly IObjectStorage                            objectStorage_;
+  private readonly string                                    ownerPodId_;
+  private readonly string                                    ownerPodName_;
+  private readonly Injection.Options.Pollster                pollsterOptions_;
+  private readonly IPullQueueStorage                         pullQueueStorage_;
+  private readonly IResultTable                              resultTable_;
+  private readonly RunningTaskQueue                          runningTaskQueue_;
+  private readonly ISessionTable                             sessionTable_;
+  private readonly ISubmitter                                submitter_;
+  private readonly ITaskProcessingChecker                    taskProcessingChecker_;
+  private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
+  private readonly ITaskTable                                taskTable_;
+  private readonly IWorkerStreamHandler                      workerStreamHandler_;
+  private          bool                                      endLoopReached_;
+  private          HealthCheckResult?                        healthCheckFailedResult_;
 
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
@@ -309,7 +310,8 @@ public class Pollster : IInitializable
                                               agentHandler_,
                                               taskHandlerLogger,
                                               pollsterOptions_,
-                                              () => taskProcessingDict_.Remove(message.TaskId),
+                                              () => taskProcessingDict_.TryRemove(message.TaskId,
+                                                                                  out var _),
                                               cts);
 
             taskProcessingDict_.TryAdd(message.TaskId,
