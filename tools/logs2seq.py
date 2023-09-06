@@ -67,7 +67,7 @@ def process_json_log(url, file_name: IO[bytes]):
                 ctr = ctr + 1
                 log_message = bytes(line, "utf-8")
                 if len(tosend) + len(log_message) > 100000:
-                    requests.post(url, tosend)
+                    requests.post(url, data=tosend)
                     tosend = log_message
                 else:
                     tosend += log_message
@@ -85,7 +85,7 @@ def process_jsongz_log(url, file_name: IO[bytes]):
                 ctr = ctr + 1
                 log_message = bytes(line, "utf-8")
                 if len(tosend) + len(log_message) > 100000:
-                    requests.post(url, tosend)
+                    requests.post(url, data=tosend)
                     tosend = log_message
                 else:
                     tosend += log_message
