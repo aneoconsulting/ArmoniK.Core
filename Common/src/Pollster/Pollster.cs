@@ -331,8 +331,17 @@ public class Pollster : IInitializable
 
               if (precondition)
               {
-                await taskHandler.PreProcessing()
-                                 .ConfigureAwait(false);
+                try
+                {
+                  await taskHandler.PreProcessing()
+                                   .ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                  await taskHandler.DisposeAsync()
+                                   .ConfigureAwait(false);
+                  throw;
+                }
 
                 await runningTaskQueue_.WriteAsync(taskHandler,
                                                    cancellationToken)
