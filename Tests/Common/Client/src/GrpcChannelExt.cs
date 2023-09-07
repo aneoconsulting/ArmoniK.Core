@@ -120,22 +120,32 @@ public static class GrpcChannelExt
                                                               })
                                               .ConfigureAwait(false))
     {
-      if (taskDetailed.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
+      try
       {
-        var useRatio = (taskDetailed.EndedAt - taskDetailed.StartedAt).ToTimeSpan()
-                                                                      .TotalMilliseconds / (taskDetailed.EndedAt - taskDetailed.ReceivedAt).ToTimeSpan()
-                                                                                                                                           .TotalMilliseconds;
+        if (taskDetailed.Status is TaskStatus.Completed or TaskStatus.Error or TaskStatus.Retried)
+        {
+          var useRatio = (taskDetailed.EndedAt - taskDetailed.StartedAt).ToTimeSpan()
+                                                                        .TotalMilliseconds / (taskDetailed.EndedAt - taskDetailed.ReceivedAt).ToTimeSpan()
+                                                                                                                                             .TotalMilliseconds;
 
-        usageRatio.Add(useRatio);
+          usageRatio.Add(useRatio);
+        }
+
+        if (taskDetailed.DataDependencies.Count > 0)
+        {
+          taskAggregation.Add(taskDetailed);
+        }
+
+        taskDependencies.Add(taskDetailed.Id,
+                             taskDetailed);
       }
-
-      if (taskDetailed.DataDependencies.Count > 0)
+      catch (Exception e)
       {
-        taskAggregation.Add(taskDetailed);
+        logger.LogError(e,
+                        "Cannot process {@task}",
+                        taskDetailed);
+        throw;
       }
-
-      taskDependencies.Add(taskDetailed.Id,
-                           taskDetailed);
     }
 
     var timediff = new List<double>();
