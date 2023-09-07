@@ -47,6 +47,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IAgentHandler                               agentHandler_;
   private readonly CancellationTokenSource                     cancellationTokenSource_;
   private readonly DataPrefetcher                              dataPrefetcher_;
+  private readonly TimeSpan                                    delayBeforeAcquisition_;
   private readonly ILogger                                     logger_;
   private readonly IQueueMessageHandler                        messageHandler_;
   private readonly Action                                      onDispose_;
@@ -102,6 +103,7 @@ public sealed class TaskHandler : IAsyncDisposable
     sessionData_           = null;
     token_ = Guid.NewGuid()
                  .ToString();
+    delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
     workerConnectionCts_     = new CancellationTokenSource();
     cancellationTokenSource_ = new CancellationTokenSource();
@@ -352,6 +354,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                       .ConfigureAwait(false);
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                  taskData_.Status);
+
+          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate < DateTime.UtcNow + delayBeforeAcquisition_)
+
+          {
+            messageHandler_.Status = QueueMessageStatus.Postponed;
+            logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
+            return false;
+          }
+
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
             logger_.LogDebug("Resubmitting task {task} on another pod",
@@ -368,6 +379,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                CancellationToken.None)
                             .ConfigureAwait(false);
           }
+
 
           if (taskData_.Status is TaskStatus.Cancelling)
           {
