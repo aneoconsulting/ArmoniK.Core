@@ -52,7 +52,7 @@ os.makedirs(tmp_dir + dir_name, exist_ok=True)
 s3 = boto3.client('s3')
 s3.download_file(args.bucket_name, obj_name, file_name)
 
-def process_json_log(url, file_name: IO[bytes]):
+def process_json_log(url: str, file_name: str):
     ctr = 0
     tosend = b""
     with open(file_name, "r") as file:
