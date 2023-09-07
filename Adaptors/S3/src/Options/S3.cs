@@ -35,4 +35,9 @@ public class S3
   ///   Size of one chunk when downloading an object by chunks
   /// </summary>
   public int ChunkDownloadSize { get; set; } = 65536;
+
+  /// <summary>
+  ///   Use Chunk Encoding during upload
+  /// </summary>
+  public bool UseChunkEncoding { get; set; } = true;
 }

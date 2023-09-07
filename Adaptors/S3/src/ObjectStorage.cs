@@ -43,6 +43,7 @@ public class ObjectStorage : IObjectStorage
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
   private readonly AmazonS3Client         s3Client_;
+  private readonly bool                   useChunkEncoding_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -61,6 +62,7 @@ public class ObjectStorage : IObjectStorage
     chunkDownloadSize_   = options.ChunkDownloadSize;
     logger_              = logger;
     degreeOfParallelism_ = options.DegreeOfParallelism;
+    useChunkEncoding_    = options.UseChunkEncoding;
   }
 
   /// <inheritdoc />
@@ -210,6 +212,7 @@ public class ObjectStorage : IObjectStorage
                                                    objectStorageFullName,
                                                    initResponse.UploadId,
                                                    valueChunks,
+                                                   useChunkEncoding_,
                                                    cancellationToken);
       var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
@@ -249,6 +252,7 @@ public class ObjectStorage : IObjectStorage
                                                                                     string                                     objectKey,
                                                                                     string                                     uploadId,
                                                                                     IAsyncEnumerable<ReadOnlyMemory<byte>>     valueChunks,
+                                                                                    bool                                       useChunkEncoding,
                                                                                     [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var  partNumber        = 1;
@@ -288,11 +292,12 @@ public class ObjectStorage : IObjectStorage
       {
         var partRequest = new UploadPartRequest
                           {
-                            BucketName  = bucketName,
-                            Key         = objectKey,
-                            PartNumber  = partNumber,
-                            InputStream = new MemoryStream(currentPartStream.ToArray()),
-                            UploadId    = uploadId,
+                            BucketName       = bucketName,
+                            Key              = objectKey,
+                            PartNumber       = partNumber,
+                            InputStream      = new MemoryStream(currentPartStream.ToArray()),
+                            UploadId         = uploadId,
+                            UseChunkEncoding = useChunkEncoding,
                           };
         yield return partRequest;
         currentPartStream = new MemoryStream();
@@ -317,11 +322,12 @@ public class ObjectStorage : IObjectStorage
     {
       var partRequest = new UploadPartRequest
                         {
-                          BucketName  = bucketName,
-                          Key         = objectKey,
-                          PartNumber  = partNumber,
-                          InputStream = new MemoryStream(currentPartStream.ToArray()),
-                          UploadId    = uploadId,
+                          BucketName       = bucketName,
+                          Key              = objectKey,
+                          PartNumber       = partNumber,
+                          InputStream      = new MemoryStream(currentPartStream.ToArray()),
+                          UploadId         = uploadId,
+                          UseChunkEncoding = useChunkEncoding,
                         };
       yield return partRequest;
     }
