@@ -515,17 +515,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
       workerStreamHandler_.StartTaskProcessing(taskData_,
                                                workerConnectionCts_.Token);
-    }
-    catch (Exception e)
-    {
-      await HandleErrorRequeueAsync(e,
-                                    taskData_,
-                                    cancellationTokenSource_.Token)
-        .ConfigureAwait(false);
-    }
 
-    try
-    {
       if (workerStreamHandler_.Pipe is null)
       {
         throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
@@ -543,10 +533,25 @@ public sealed class TaskHandler : IAsyncDisposable
 
       await workerStreamHandler_.Pipe.CompleteAsync()
                                 .ConfigureAwait(false);
+    }
+    catch (TaskAlreadyInFinalStateException)
+    {
+      messageHandler_.Status = QueueMessageStatus.Processed;
+      throw;
+    }
+    catch (Exception e)
+    {
+      await HandleErrorRequeueAsync(e,
+                                    taskData_,
+                                    cancellationTokenSource_.Token)
+        .ConfigureAwait(false);
+    }
 
+    try
+    {
       // at this point worker requests should have ended
       logger_.LogDebug("Wait for task output");
-      reply_ = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_.Token)
+      reply_ = await workerStreamHandler_.Pipe!.ReadAsync(workerConnectionCts_.Token)
                                          .ConfigureAwait(false);
 
       logger_.LogDebug("Stop agent server");
