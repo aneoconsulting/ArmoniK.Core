@@ -144,7 +144,7 @@ public class TaskTable : ITaskTable
                                                                        taskData.StartDate)
                                                                   .Set(tdm => tdm.PodTtl,
                                                                        taskData.PodTtl);
-    Logger.LogInformation("update task {taskId} to status {status}",
+    Logger.LogInformation("Trying to start task {taskId} and update to status {status}",
                           taskData.TaskId,
                           TaskStatus.Processing);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskData.TaskId  && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled &&

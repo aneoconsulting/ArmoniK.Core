@@ -534,9 +534,11 @@ public sealed class TaskHandler : IAsyncDisposable
       await workerStreamHandler_.Pipe.CompleteAsync()
                                 .ConfigureAwait(false);
     }
-    catch (TaskAlreadyInFinalStateException)
+    catch (TaskAlreadyInFinalStateException e)
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
+      logger_.LogWarning(e,
+                         "Task already in a final state, removing it from the queue");
       throw;
     }
     catch (Exception e)
