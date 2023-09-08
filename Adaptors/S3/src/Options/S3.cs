@@ -41,5 +41,8 @@ public class S3
   /// </summary>
   public bool UseChunkEncoding { get; set; } = true;
 
-  public bool UseMd5Stream { get; set; } = true;
+  /// <summary>
+  ///   If true, checksum will be verified by the client during upload
+  /// </summary>
+  public bool UseChecksum { get; set; } = true;
 }

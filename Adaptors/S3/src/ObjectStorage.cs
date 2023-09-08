@@ -37,14 +37,10 @@ public class ObjectStorage : IObjectStorage
   private const    long                   MinPartSize  = 5 * 1024 * 1024; // 5 MiB
   private const    int                    MaxPartCount = 10000;
   private const    long                   MaxPartSize  = 5L * 1024 * 1024 * 1024; // 5 GiB
-  private readonly string                 bucketName_;
-  private readonly int                    chunkDownloadSize_;
-  private readonly int                    degreeOfParallelism_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
+  private readonly Options.S3             options_;
   private readonly AmazonS3Client         s3Client_;
-  private readonly bool                   useChunkEncoding_;
-  private readonly bool                   useMd5Stream_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -57,14 +53,10 @@ public class ObjectStorage : IObjectStorage
                        Options.S3             options,
                        ILogger<ObjectStorage> logger)
   {
-    s3Client_            = s3Client;
-    objectStorageName_   = "objectStorageName";
-    bucketName_          = options.BucketName;
-    chunkDownloadSize_   = options.ChunkDownloadSize;
-    logger_              = logger;
-    degreeOfParallelism_ = options.DegreeOfParallelism;
-    useChunkEncoding_    = options.UseChunkEncoding;
-    useMd5Stream_        = options.UseMd5Stream;
+    s3Client_          = s3Client;
+    objectStorageName_ = "objectStorageName";
+    options_           = options;
+    logger_            = logger;
   }
 
   /// <inheritdoc />
@@ -73,7 +65,7 @@ public class ObjectStorage : IObjectStorage
     if (!isInitialized_)
     {
       await AmazonS3Util.DoesS3BucketExistV2Async(s3Client_,
-                                                  bucketName_);
+                                                  options_.BucketName);
     }
 
     logger_.LogInformation("ObjectStorageFactory has correctly been initialized.");
@@ -103,7 +95,7 @@ public class ObjectStorage : IObjectStorage
     using var _                     = logger_.LogFunction(objectStorageFullName);
     try
     {
-      await s3Client_.GetObjectAsync(bucketName_,
+      await s3Client_.GetObjectAsync(options_.BucketName,
                                      objectStorageFullName,
                                      cancellationToken);
     }
@@ -117,7 +109,7 @@ public class ObjectStorage : IObjectStorage
     var metaDataRequest = new GetObjectMetadataRequest
                           {
                             Key        = objectStorageFullName,
-                            BucketName = bucketName_,
+                            BucketName = options_.BucketName,
                           };
     var objectMetaData = await s3Client_.GetObjectMetadataAsync(metaDataRequest,
                                                                 cancellationToken);
@@ -125,7 +117,7 @@ public class ObjectStorage : IObjectStorage
 
     var getObjectRequest = new GetObjectRequest
                            {
-                             BucketName = bucketName_,
+                             BucketName = options_.BucketName,
                              Key        = objectStorageFullName,
                            };
     var objectResponse = await s3Client_.GetObjectAsync(getObjectRequest,
@@ -135,7 +127,7 @@ public class ObjectStorage : IObjectStorage
     while (totalBytesRead < contentLength)
     {
       var downloadedChunkSize = Math.Min(contentLength - totalBytesRead,
-                                         chunkDownloadSize_);
+                                         options_.ChunkDownloadSize);
       var downloadedChunk = new byte[downloadedChunkSize];
       var bytesRead = await responseStream.ReadAsync(downloadedChunk,
                                                      cancellationToken)
@@ -170,7 +162,7 @@ public class ObjectStorage : IObjectStorage
     {
       var objectDeleteRequest = new DeleteObjectRequest
                                 {
-                                  BucketName = bucketName_,
+                                  BucketName = options_.BucketName,
                                   Key        = objectStorageFullName,
                                 };
       var deleteObjectResponse = await s3Client_.DeleteObjectAsync(objectDeleteRequest,
@@ -181,7 +173,7 @@ public class ObjectStorage : IObjectStorage
     {
       logger_.LogError(ex,
                        "Error deleting S3 bucket : {bucketName}",
-                       bucketName_);
+                       options_.BucketName);
       return false;
     }
 
@@ -200,12 +192,12 @@ public class ObjectStorage : IObjectStorage
   {
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var _                     = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext         = logger_.BeginPropertyScope(("key", key), ("chunkEncoding", useChunkEncoding_),
-                                                                 ("md5Stream", useMd5Stream_));
+    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
+                                                         ("@S3Options", options_));
     logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
                       {
-                        BucketName = bucketName_,
+                        BucketName = options_.BucketName,
                         Key        = objectStorageFullName,
                       };
     var initResponse = await s3Client_.InitiateMultipartUploadAsync(initRequest,
@@ -213,14 +205,11 @@ public class ObjectStorage : IObjectStorage
                                       .ConfigureAwait(false);
     try
     {
-      var uploadRequest = PreparePartRequestsAsync(bucketName_,
-                                                   objectStorageFullName,
+      var uploadRequest = PreparePartRequestsAsync(objectStorageFullName,
                                                    initResponse.UploadId,
                                                    valueChunks,
-                                                   useChunkEncoding_,
-                                                   useMd5Stream_,
                                                    cancellationToken);
-      var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
+      var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
                                                                                                                           cancellationToken)
                                                                                                          .ConfigureAwait(false))
@@ -229,7 +218,7 @@ public class ObjectStorage : IObjectStorage
 
       var compRequest = new CompleteMultipartUploadRequest
                         {
-                          BucketName = bucketName_,
+                          BucketName = options_.BucketName,
                           Key        = objectStorageFullName,
                           UploadId   = initResponse.UploadId,
                         };
@@ -244,7 +233,7 @@ public class ObjectStorage : IObjectStorage
                        "Multipart upload is being aborted");
       var abortMpuRequest = new AbortMultipartUploadRequest
                             {
-                              BucketName = bucketName_,
+                              BucketName = options_.BucketName,
                               Key        = objectStorageFullName,
                               UploadId   = initResponse.UploadId,
                             };
@@ -254,13 +243,10 @@ public class ObjectStorage : IObjectStorage
     }
   }
 
-  private static async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     bucketName,
-                                                                                    string                                     objectKey,
-                                                                                    string                                     uploadId,
-                                                                                    IAsyncEnumerable<ReadOnlyMemory<byte>>     valueChunks,
-                                                                                    bool                                       useChunkEncoding,
-                                                                                    bool useMd5Stream,
-                                                                                    [EnumeratorCancellation] CancellationToken cancellationToken)
+  private async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     objectKey,
+                                                                             string                                     uploadId,
+                                                                             IAsyncEnumerable<ReadOnlyMemory<byte>>     valueChunks,
+                                                                             [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var  partNumber        = 1;
     long bytesRead         = 0;
@@ -299,13 +285,13 @@ public class ObjectStorage : IObjectStorage
       {
         var partRequest = new UploadPartRequest
                           {
-                            BucketName       = bucketName,
+                            BucketName       = options_.BucketName,
                             Key              = objectKey,
                             PartNumber       = partNumber,
                             InputStream      = new MemoryStream(currentPartStream.ToArray()),
                             UploadId         = uploadId,
-                            UseChunkEncoding = useChunkEncoding,
-                            DisableMD5Stream = useMd5Stream,
+                            UseChunkEncoding = options_.UseChunkEncoding,
+                            DisableMD5Stream = !options_.UseChecksum,
                           };
         yield return partRequest;
         currentPartStream = new MemoryStream();
@@ -330,13 +316,13 @@ public class ObjectStorage : IObjectStorage
     {
       var partRequest = new UploadPartRequest
                         {
-                          BucketName       = bucketName,
+                          BucketName       = options_.BucketName,
                           Key              = objectKey,
                           PartNumber       = partNumber,
                           InputStream      = new MemoryStream(currentPartStream.ToArray()),
                           UploadId         = uploadId,
-                          UseChunkEncoding = useChunkEncoding,
-                          DisableMD5Stream = useMd5Stream,
+                          UseChunkEncoding = options_.UseChunkEncoding,
+                          DisableMD5Stream = !options_.UseChecksum,
                         };
       yield return partRequest;
     }
