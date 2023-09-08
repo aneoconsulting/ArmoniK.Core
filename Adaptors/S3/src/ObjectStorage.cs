@@ -68,7 +68,8 @@ public class ObjectStorage : IObjectStorage
                                                   options_.BucketName);
     }
 
-    logger_.LogInformation("ObjectStorageFactory has correctly been initialized.");
+    logger_.LogInformation("ObjectStorage has correctly been initialized with options {@Options}",
+                           options_);
     isInitialized_ = true;
   }
 
@@ -92,7 +93,9 @@ public class ObjectStorage : IObjectStorage
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var _                     = logger_.LogFunction(objectStorageFullName);
+    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
+    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
+                                                         ("@S3Options", options_));
     try
     {
       await s3Client_.GetObjectAsync(options_.BucketName,
@@ -101,7 +104,7 @@ public class ObjectStorage : IObjectStorage
     }
     catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
     {
-      logger_.LogError("The key {key} was not found.",
+      logger_.LogError("The key {Key} was not found",
                        key);
       throw new ObjectDataNotFoundException("Key not found");
     }
@@ -157,7 +160,9 @@ public class ObjectStorage : IObjectStorage
                                          CancellationToken cancellationToken = default)
   {
     var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var _                     = logger_.LogFunction(objectStorageFullName);
+    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
+    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
+                                                         ("@S3Options", options_));
     try
     {
       var objectDeleteRequest = new DeleteObjectRequest
@@ -165,14 +170,14 @@ public class ObjectStorage : IObjectStorage
                                   BucketName = options_.BucketName,
                                   Key        = objectStorageFullName,
                                 };
-      var deleteObjectResponse = await s3Client_.DeleteObjectAsync(objectDeleteRequest,
-                                                                   cancellationToken)
-                                                .ConfigureAwait(false);
+      await s3Client_.DeleteObjectAsync(objectDeleteRequest,
+                                        cancellationToken)
+                     .ConfigureAwait(false);
     }
     catch (Exception ex)
     {
       logger_.LogError(ex,
-                       "Error deleting S3 bucket : {bucketName}",
+                       "Error deleting S3 bucket : {BucketName}",
                        options_.BucketName);
       return false;
     }
@@ -191,7 +196,7 @@ public class ObjectStorage : IObjectStorage
 
   {
     var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var _                     = logger_.LogFunction(objectStorageFullName);
+    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
     using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
                                                          ("@S3Options", options_));
     logger_.LogDebug("Upload object");
@@ -223,9 +228,9 @@ public class ObjectStorage : IObjectStorage
                           UploadId   = initResponse.UploadId,
                         };
       compRequest.AddPartETags(uploadResponses);
-      var compResponse = await s3Client_.CompleteMultipartUploadAsync(compRequest,
-                                                                      cancellationToken)
-                                        .ConfigureAwait(false);
+      await s3Client_.CompleteMultipartUploadAsync(compRequest,
+                                                   cancellationToken)
+                     .ConfigureAwait(false);
     }
     catch (Exception e)
     {

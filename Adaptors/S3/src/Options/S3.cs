@@ -38,6 +38,7 @@ public class S3
 
   /// <summary>
   ///   Use Chunk Encoding during upload
+  ///   Should be disabled for GCS
   /// </summary>
   public bool UseChunkEncoding { get; set; } = true;
 
