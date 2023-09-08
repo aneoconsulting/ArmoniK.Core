@@ -80,11 +80,13 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     ConnectionRabbit.Channel!.ExchangeDeclare("ArmoniK.QueueExchange",
                                               "direct");
 
-    var basicProperties = ConnectionRabbit.Channel!.CreateBasicProperties();
-    basicProperties.Priority = Convert.ToByte(priority);
 
     foreach (var msg in messages)
     {
+      var basicProperties = ConnectionRabbit.Channel!.CreateBasicProperties();
+      basicProperties.Priority = Convert.ToByte(priority);
+      basicProperties.MessageId = Guid.NewGuid()
+                                      .ToString();
       ConnectionRabbit.Channel.BasicPublish("ArmoniK.QueueExchange",
                                             partitionId,
                                             basicProperties,
