@@ -69,7 +69,7 @@ public class ObjectStorage : IObjectStorage
     }
 
     logger_.LogInformation("ObjectStorage has correctly been initialized with options {@Options}",
-                           options_);
+                           options_.Confidential());
     isInitialized_ = true;
   }
 
@@ -95,7 +95,7 @@ public class ObjectStorage : IObjectStorage
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
     using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_));
+                                                         ("@S3Options", options_.Confidential()));
     try
     {
       await s3Client_.GetObjectAsync(options_.BucketName,
@@ -162,7 +162,7 @@ public class ObjectStorage : IObjectStorage
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
     using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_));
+                                                         ("@S3Options", options_.Confidential()));
     try
     {
       var objectDeleteRequest = new DeleteObjectRequest
@@ -198,7 +198,7 @@ public class ObjectStorage : IObjectStorage
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
     using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_));
+                                                         ("@S3Options", options_.Confidential()));
     logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
                       {
