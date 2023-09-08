@@ -202,6 +202,7 @@ public class ObjectStorage : IObjectStorage
     using var _                     = logger_.LogFunction(objectStorageFullName);
     using var loggerContext         = logger_.BeginPropertyScope(("key", key), ("chunkEncoding", useChunkEncoding_),
                                                                  ("md5Stream", useMd5Stream_));
+    logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
                       {
                         BucketName = bucketName_,
