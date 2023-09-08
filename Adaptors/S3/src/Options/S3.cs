@@ -40,4 +40,6 @@ public class S3
   ///   Use Chunk Encoding during upload
   /// </summary>
   public bool UseChunkEncoding { get; set; } = true;
+
+  public bool UseMd5Stream { get; set; } = true;
 }

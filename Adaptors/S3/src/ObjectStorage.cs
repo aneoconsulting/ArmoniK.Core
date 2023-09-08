@@ -44,6 +44,7 @@ public class ObjectStorage : IObjectStorage
   private readonly string                 objectStorageName_;
   private readonly AmazonS3Client         s3Client_;
   private readonly bool                   useChunkEncoding_;
+  private readonly bool                   useMd5Stream_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -63,6 +64,7 @@ public class ObjectStorage : IObjectStorage
     logger_              = logger;
     degreeOfParallelism_ = options.DegreeOfParallelism;
     useChunkEncoding_    = options.UseChunkEncoding;
+    useMd5Stream_        = options.UseMd5Stream;
   }
 
   /// <inheritdoc />
@@ -198,6 +200,8 @@ public class ObjectStorage : IObjectStorage
   {
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var _                     = logger_.LogFunction(objectStorageFullName);
+    using var loggerContext         = logger_.BeginPropertyScope(("key", key), ("chunkEncoding", useChunkEncoding_),
+                                                                 ("md5Stream", useMd5Stream_));
     var initRequest = new InitiateMultipartUploadRequest
                       {
                         BucketName = bucketName_,
@@ -213,6 +217,7 @@ public class ObjectStorage : IObjectStorage
                                                    initResponse.UploadId,
                                                    valueChunks,
                                                    useChunkEncoding_,
+                                                   useMd5Stream_,
                                                    cancellationToken);
       var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(degreeOfParallelism_),
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
@@ -253,6 +258,7 @@ public class ObjectStorage : IObjectStorage
                                                                                     string                                     uploadId,
                                                                                     IAsyncEnumerable<ReadOnlyMemory<byte>>     valueChunks,
                                                                                     bool                                       useChunkEncoding,
+                                                                                    bool useMd5Stream,
                                                                                     [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var  partNumber        = 1;
@@ -298,6 +304,7 @@ public class ObjectStorage : IObjectStorage
                             InputStream      = new MemoryStream(currentPartStream.ToArray()),
                             UploadId         = uploadId,
                             UseChunkEncoding = useChunkEncoding,
+                            DisableMD5Stream = useMd5Stream,
                           };
         yield return partRequest;
         currentPartStream = new MemoryStream();
@@ -328,6 +335,7 @@ public class ObjectStorage : IObjectStorage
                           InputStream      = new MemoryStream(currentPartStream.ToArray()),
                           UploadId         = uploadId,
                           UseChunkEncoding = useChunkEncoding,
+                          DisableMD5Stream = useMd5Stream,
                         };
       yield return partRequest;
     }
