@@ -336,7 +336,7 @@ public class Pollster : IInitializable
                   await taskHandler.PreProcessing()
                                    .ConfigureAwait(false);
                 }
-                catch (Exception)
+                catch
                 {
                   await taskHandler.DisposeAsync()
                                    .ConfigureAwait(false);
