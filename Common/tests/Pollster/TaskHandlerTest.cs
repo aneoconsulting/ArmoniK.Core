@@ -1500,8 +1500,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    var exec = testServiceProvider.TaskHandler.ExecuteTask()
-                                  .ConfigureAwait(false);
+    var exec = testServiceProvider.TaskHandler.ExecuteTask();
 
     // Cancel task for test
 
@@ -1528,7 +1527,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.StopCancelledTask()
                              .ConfigureAwait(false);
 
-    Assert.ThrowsAsync<TaskCanceledException>(async () => await exec);
+    Assert.ThrowsAsync<TaskCanceledException>(() => exec);
 
     Assert.AreEqual(TaskStatus.Cancelling,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
