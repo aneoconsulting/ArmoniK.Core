@@ -45,8 +45,8 @@ public class RunningTaskQueue
   public async Task WaitForNextWriteAsync(TimeSpan          timeout,
                                           CancellationToken cancellationToken)
   {
-    var             cts          = new CancellationTokenSource(timeout);
-    await using var registration = cancellationToken.Register(() => cts.Cancel());
+    using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    cts.CancelAfter(timeout);
 
     await channel_.Writer.WaitToWriteAsync(cts.Token)
                   .ConfigureAwait(false);
