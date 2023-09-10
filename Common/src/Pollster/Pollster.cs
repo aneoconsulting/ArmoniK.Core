@@ -115,16 +115,6 @@ public class Pollster : IInitializable
     Failed                 = false;
   }
 
-  public Func<Task> StopCancelledTask
-    => async () =>
-       {
-         foreach (var taskHandler in taskProcessingDict_)
-         {
-           await taskHandler.Value.StopCancelledTask()
-                            .ConfigureAwait(false);
-         }
-       };
-
   public ICollection<string> TaskProcessing
     => taskProcessingDict_.Keys;
 
@@ -211,6 +201,15 @@ public class Pollster : IInitializable
     }
 
     return result;
+  }
+
+  public async Task StopCancelledTask()
+  {
+    foreach (var taskHandler in taskProcessingDict_.Values)
+    {
+      await taskHandler.StopCancelledTask()
+                       .ConfigureAwait(false);
+    }
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)

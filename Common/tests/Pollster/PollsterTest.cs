@@ -560,7 +560,7 @@ public class PollsterTest
                      CancellationToken.None)
               .ConfigureAwait(false);
 
-    await testServiceProvider.Pollster.StopCancelledTask.Invoke()
+    await testServiceProvider.Pollster.StopCancelledTask()
                              .ConfigureAwait(false);
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
