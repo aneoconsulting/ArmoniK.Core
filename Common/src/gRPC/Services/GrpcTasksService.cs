@@ -232,18 +232,9 @@ public class GrpcTasksService : Task.TasksBase
                                         .ConfigureAwait(false);
       foreach (var ownerPodId in ownerPodIds)
       {
-        try
-        {
-          await httpClient.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
-                          .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-          logger_.LogWarning(e,
-                             "Failed to cancel tasks");
-        }
+        await httpClient.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
+                        .ConfigureAwait(false);
       }
-
 
       return new CancelTasksResponse
              {
