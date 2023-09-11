@@ -192,8 +192,7 @@ public static class Program
 
                          endpoints.MapGet("/stopcancelledtask",
                                           () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                   .StopCancelledTask()
-                                                   .ConfigureAwait(false));
+                                                   .StopCancelledTask());
                        });
 
       var pushQueueStorage = app.Services.GetRequiredService<IPushQueueStorage>();
