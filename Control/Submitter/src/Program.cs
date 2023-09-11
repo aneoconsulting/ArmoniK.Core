@@ -82,6 +82,7 @@ public static class Program
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
+             .AddHttpClient()
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
              .AddQueue(builder.Configuration,
@@ -228,6 +229,7 @@ public static class Program
       var resultCollectionProvider    = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
       var taskObjectFactory           = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
+      var httpClient                  = app.Services.GetRequiredService<HttpClient>();
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
