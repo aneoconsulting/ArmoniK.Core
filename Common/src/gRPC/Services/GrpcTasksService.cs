@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -27,6 +28,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -218,11 +220,30 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
                                                               ServerCallContext  context)
   {
+    await taskTable_.CancelTaskAsync(request.TaskIds,
+                                     context.CancellationToken)
+                    .ConfigureAwait(false);
     try
     {
-      await taskTable_.CancelTaskAsync(request.TaskIds,
-                                       context.CancellationToken)
-                      .ConfigureAwait(false);
+      var httpClient = new HttpClient();
+      var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                        data => data.OwnerPodId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+      foreach (var ownerPodId in ownerPodIds)
+      {
+        try
+        {
+          await httpClient.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
+                          .ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+          logger_.LogWarning(e,
+                             "Failed to cancel tasks");
+        }
+      }
+
 
       return new CancelTasksResponse
              {
