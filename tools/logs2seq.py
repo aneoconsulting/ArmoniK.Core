@@ -70,14 +70,14 @@ def process_json_log(url: str, file_name: str):
             requests.post(url, data=tosend)
 
 
-def process_jsongz_log(url, file_name: IO[bytes]):
+def process_jsongz_log(url: str, file_name: str):
     ctr = 0
     tosend = b""
     with gzip.open(file_name, "r") as file:
         for line in file.read().decode("utf-8").split("\n"):
             if line.startswith("{"):
                 ctr = ctr + 1
-                log_message = bytes(line, "utf-8")
+                log_message = bytes(line + "\n", "utf-8")
                 if len(tosend) + len(log_message) > 100000:
                     requests.post(url, data=tosend)
                     tosend = log_message
