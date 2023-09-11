@@ -9,6 +9,7 @@ import gzip
 import logging
 from pathlib import Path
 from typing import IO
+from json.decoder import JSONDecodeError
 
 
 # How to run seq in docker
@@ -58,13 +59,19 @@ def process_json_log(url: str, file_name: str):
     with open(file_name, "r") as file:
         for line in file.readlines():
             if line.startswith("{"):
-                ctr = ctr + 1
-                log_message = bytes(line + "\n", "utf-8")
-                if len(tosend) + len(log_message) > 100000:
-                    requests.post(url, data=tosend)
-                    tosend = log_message
-                else:
-                    tosend += log_message
+                try:
+                    parsed = json.loads(line)
+                    if "@t" not in parsed:
+                        continue
+                    ctr = ctr + 1
+                    log_message = bytes(line + "\n", "utf-8")
+                    if len(tosend) + len(log_message) > 100000:
+                        requests.post(url, data=tosend)
+                        tosend = log_message
+                    else:
+                        tosend += log_message
+                except JSONDecodeError as e:
+                    logger.warning(f"Failed to parse JSON: {e}")
         logger.info(f"sent : {ctr}")
         if tosend != b"":
             requests.post(url, data=tosend)
@@ -76,13 +83,19 @@ def process_jsongz_log(url: str, file_name: str):
     with gzip.open(file_name, "r") as file:
         for line in file.read().decode("utf-8").split("\n"):
             if line.startswith("{"):
-                ctr = ctr + 1
-                log_message = bytes(line + "\n", "utf-8")
-                if len(tosend) + len(log_message) > 100000:
-                    requests.post(url, data=tosend)
-                    tosend = log_message
-                else:
-                    tosend += log_message
+                try:
+                    parsed = json.loads(line)
+                    if "@t" not in parsed:
+                        continue
+                    ctr = ctr + 1
+                    log_message = bytes(line + "\n", "utf-8")
+                    if len(tosend) + len(log_message) > 100000:
+                        requests.post(url, data=tosend)
+                        tosend = log_message
+                    else:
+                        tosend += log_message
+                except JSONDecodeError as e:
+                    logger.warning(f"Failed to parse JSON: {e}")
         logger.info(f"sent : {ctr}")
         if tosend != b"":
             requests.post(url, data=tosend)
