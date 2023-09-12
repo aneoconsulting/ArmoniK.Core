@@ -72,6 +72,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
+           .AddHttpClient()
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                            _ =>
