@@ -39,6 +39,7 @@ public class GrpcTasksServiceTests
   public void Setup()
     => helper_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                  .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
