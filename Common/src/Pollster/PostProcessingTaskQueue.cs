@@ -15,48 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-
 namespace ArmoniK.Core.Common.Pollster;
 
-public class PostProcessingTaskQueue
+public sealed class PostProcessingTaskQueue : TaskQueueBase
 {
-  private readonly Channel<TaskHandler> channel_ = Channel.CreateBounded<TaskHandler>(new BoundedChannelOptions(1)
-                                                                                      {
-                                                                                        Capacity     = 1,
-                                                                                        FullMode     = BoundedChannelFullMode.Wait,
-                                                                                        SingleReader = true,
-                                                                                        SingleWriter = true,
-                                                                                      });
-
-  private readonly Queue<Exception> exceptions_ = new();
-
-  public async Task WriteAsync(TaskHandler       handler,
-                               CancellationToken cancellationToken)
-    => await channel_.Writer.WriteAsync(handler,
-                                        cancellationToken)
-                     .ConfigureAwait(false);
-
-  public async Task<TaskHandler> ReadAsync(CancellationToken cancellationToken)
-    => await channel_.Reader.ReadAsync(cancellationToken)
-                     .ConfigureAwait(false);
-
-  public void AddException(Exception e)
-    => exceptions_.Enqueue(e);
-
-  public bool RemoveException([MaybeNullWhen(false)] out Exception e)
+  public PostProcessingTaskQueue()
+    : base(true)
   {
-    var r = exceptions_.Count > 0;
-
-    e = r
-          ? exceptions_.Dequeue()
-          : null;
-
-    return r;
   }
 }
