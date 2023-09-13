@@ -223,11 +223,11 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
                                                               ServerCallContext  context)
   {
-    await taskTable_.CancelTaskAsync(request.TaskIds,
-                                     context.CancellationToken)
-                    .ConfigureAwait(false);
     try
     {
+      await taskTable_.CancelTaskAsync(request.TaskIds,
+                                       context.CancellationToken)
+                      .ConfigureAwait(false);
       var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
                                                         data => data.OwnerPodId)
                                         .ToListAsync()

@@ -229,7 +229,6 @@ public static class Program
       var resultCollectionProvider    = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
       var taskObjectFactory           = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
-      var httpClient                  = app.Services.GetRequiredService<HttpClient>();
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
