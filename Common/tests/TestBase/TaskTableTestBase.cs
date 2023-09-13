@@ -1168,6 +1168,48 @@ public class TaskTableTestBase
   }
 
   [Test]
+  [TestCase(TaskStatus.Completed)]
+  [TestCase(TaskStatus.Retried)]
+  [TestCase(TaskStatus.Error)]
+  [TestCase(TaskStatus.Cancelled)]
+  public async Task StartTaskInFinalStateShouldThrow(TaskStatus status)
+  {
+    if (RunTests)
+    {
+      var taskId = Guid.NewGuid()
+                       .ToString();
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("session",
+                                                  taskId,
+                                                  "owner",
+                                                  "owner",
+                                                  "payload",
+                                                  new List<string>(),
+                                                  new List<string>(),
+                                                  new List<string>(),
+                                                  new List<string>(),
+                                                  status,
+                                                  Options,
+                                                  new Output(false,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      Assert.ThrowsAsync<TaskAlreadyInFinalStateException>(async () =>
+                                                           {
+                                                             await TaskTable!.StartTask(taskSubmittedData_ with
+                                                                                        {
+                                                                                          TaskId = taskId,
+                                                                                        },
+                                                                                        CancellationToken.None)
+                                                                             .ConfigureAwait(false);
+                                                           });
+    }
+  }
+
+  [Test]
   public void DeleteTaskShouldFail()
   {
     if (RunTests)

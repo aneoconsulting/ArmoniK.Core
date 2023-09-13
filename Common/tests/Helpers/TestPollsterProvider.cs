@@ -36,6 +36,7 @@ using EphemeralMongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -123,12 +124,17 @@ public class TestPollsterProvider : IDisposable
                                       NullLogger.Instance)
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_)
+           .AddLogging()
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<DataPrefetcher>()
+           .AddHostedService<RunningTaskProcessor>()
+           .AddHostedService<PostProcessor>()
+           .AddSingleton<RunningTaskQueue>()
+           .AddSingleton<PostProcessingTaskQueue>()
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
@@ -141,6 +147,7 @@ public class TestPollsterProvider : IDisposable
     builder.Services.AddSingleton(computePlanOptions);
 
     app_ = builder.Build();
+    app_.Start();
 
     ResultTable    = app_.Services.GetRequiredService<IResultTable>();
     TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
@@ -164,6 +171,8 @@ public class TestPollsterProvider : IDisposable
 
   public void Dispose()
   {
+    app_.StopAsync()
+        .Wait();
     ((IDisposable)app_)?.Dispose();
     runner_?.Dispose();
     GC.SuppressFinalize(this);

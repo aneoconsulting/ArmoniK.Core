@@ -44,4 +44,10 @@ public class Pollster
   ///   Negative values disable the check
   /// </summary>
   public int MaxErrorAllowed { get; set; } = 5;
+
+  /// <summary>
+  ///   Timeout before releasing the current acquired task and acquiring a new one
+  ///   This happens in parallel of the execution of another task
+  /// </summary>
+  public TimeSpan TimeoutBeforeNextAcquisition { get; set; } = TimeSpan.FromSeconds(10);
 }

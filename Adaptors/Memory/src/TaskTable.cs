@@ -110,12 +110,20 @@ public class TaskTable : ITaskTable
     taskId2TaskData_.AddOrUpdate(taskData.TaskId,
                                  _ => throw new TaskNotFoundException($"Key '{taskData.TaskId}' not found"),
                                  (_,
-                                  data) => data with
-                                           {
-                                             Status = TaskStatus.Processing,
-                                             StartDate = taskData.StartDate,
-                                             PodTtl = taskData.PodTtl,
-                                           });
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Error or TaskStatus.Completed or TaskStatus.Retried or TaskStatus.Cancelled)
+                                   {
+                                     throw new TaskAlreadyInFinalStateException($"{taskData.TaskId} is already in a final state : {data.Status}");
+                                   }
+
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Processing,
+                                            StartDate = taskData.StartDate,
+                                            PodTtl = taskData.PodTtl,
+                                          };
+                                 });
     return Task.CompletedTask;
   }
 

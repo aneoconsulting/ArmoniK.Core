@@ -47,8 +47,10 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IAgentHandler                               agentHandler_;
   private readonly CancellationTokenSource                     cancellationTokenSource_;
   private readonly DataPrefetcher                              dataPrefetcher_;
+  private readonly TimeSpan                                    delayBeforeAcquisition_;
   private readonly ILogger                                     logger_;
   private readonly IQueueMessageHandler                        messageHandler_;
+  private readonly Action                                      onDispose_;
   private readonly string                                      ownerPodId_;
   private readonly string                                      ownerPodName_;
   private readonly CancellationTokenRegistration               reg1_;
@@ -62,6 +64,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private          IAgent?                                     agent_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
+  private          ProcessReply?                               reply_;
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
 
@@ -79,6 +82,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      IAgentHandler              agentHandler,
                      ILogger                    logger,
                      Injection.Options.Pollster pollsterOptions,
+                     Action                     onDispose,
                      CancellationTokenSource    cancellationTokenSource)
   {
     sessionTable_          = sessionTable;
@@ -92,12 +96,14 @@ public sealed class TaskHandler : IAsyncDisposable
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
+    onDispose_             = onDispose;
     ownerPodId_            = ownerPodId;
     ownerPodName_          = ownerPodName;
     taskData_              = null;
     sessionData_           = null;
     token_ = Guid.NewGuid()
                  .ToString();
+    delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
     workerConnectionCts_     = new CancellationTokenSource();
     cancellationTokenSource_ = new CancellationTokenSource();
@@ -119,8 +125,10 @@ public sealed class TaskHandler : IAsyncDisposable
   {
     using var _ = logger_.BeginNamedScope("DisposeAsync",
                                           ("taskId", messageHandler_.TaskId),
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
 
+    onDispose_.Invoke();
     logger_.LogDebug("MessageHandler status is {status}",
                      messageHandler_.Status);
     await messageHandler_.DisposeAsync()
@@ -165,6 +173,7 @@ public sealed class TaskHandler : IAsyncDisposable
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
     using var _ = logger_.BeginNamedScope("Acquiring task",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId));
 
     try
@@ -295,13 +304,6 @@ public sealed class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      if (cancellationTokenSource_.IsCancellationRequested)
-      {
-        messageHandler_.Status = QueueMessageStatus.Postponed;
-        logger_.LogDebug("Dependencies resolved but execution cancellation requested");
-        return false;
-      }
-
       taskData_ = taskData_ with
                   {
                     OwnerPodId = ownerPodId_,
@@ -352,6 +354,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                       .ConfigureAwait(false);
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                  taskData_.Status);
+
+          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate < DateTime.UtcNow + delayBeforeAcquisition_)
+
+          {
+            messageHandler_.Status = QueueMessageStatus.Postponed;
+            logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
+            return false;
+          }
+
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
             logger_.LogDebug("Resubmitting task {task} on another pod",
@@ -368,6 +379,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                CancellationToken.None)
                             .ConfigureAwait(false);
           }
+
 
           if (taskData_.Status is TaskStatus.Cancelling)
           {
@@ -391,6 +403,13 @@ public sealed class TaskHandler : IAsyncDisposable
 
         // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
         // and do not acquire the task
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        return false;
+      }
+
+      if (taskData_.OwnerPodId == ownerPodId_ && taskData_.Status != TaskStatus.Dispatched)
+      {
+        logger_.LogInformation("Task is already managed by this agent; message likely to be duplicated");
         messageHandler_.Status = QueueMessageStatus.Processed;
         return false;
       }
@@ -444,6 +463,7 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     using var _ = logger_.BeginNamedScope("PreProcessing",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
     logger_.LogDebug("Start prefetch data");
@@ -479,6 +499,7 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     using var _ = logger_.BeginNamedScope("TaskExecution",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
 
@@ -506,6 +527,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
       workerStreamHandler_.StartTaskProcessing(taskData_,
                                                workerConnectionCts_.Token);
+
       if (workerStreamHandler_.Pipe is null)
       {
         throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
@@ -524,11 +546,37 @@ public sealed class TaskHandler : IAsyncDisposable
       await workerStreamHandler_.Pipe.CompleteAsync()
                                 .ConfigureAwait(false);
     }
+    catch (TaskAlreadyInFinalStateException e)
+    {
+      messageHandler_.Status = QueueMessageStatus.Processed;
+      logger_.LogWarning(e,
+                         "Task already in a final state, removing it from the queue");
+      throw;
+    }
     catch (Exception e)
     {
       await HandleErrorRequeueAsync(e,
                                     taskData_,
                                     cancellationTokenSource_.Token)
+        .ConfigureAwait(false);
+    }
+
+    try
+    {
+      // at this point worker requests should have ended
+      logger_.LogDebug("Wait for task output");
+      reply_ = await workerStreamHandler_.Pipe!.ReadAsync(workerConnectionCts_.Token)
+                                         .ConfigureAwait(false);
+
+      logger_.LogDebug("Stop agent server");
+      await agentHandler_.Stop(workerConnectionCts_.Token)
+                         .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      await HandleErrorResubmitAsync(e,
+                                     taskData_,
+                                     cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -557,25 +605,22 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(agent_) + " is null.");
     }
 
+    if (reply_ is null)
+    {
+      throw new NullReferenceException(nameof(reply_) + " is null.");
+    }
+
     using var _ = logger_.BeginNamedScope("PostProcessing",
+                                          ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
 
     try
     {
-      // at this point worker requests should have ended
-      logger_.LogDebug("Wait for task output");
-      var reply = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_.Token)
-                                            .ConfigureAwait(false);
-
-      logger_.LogDebug("Stop agent server");
-      await agentHandler_.Stop(workerConnectionCts_.Token)
-                         .ConfigureAwait(false);
-
       logger_.LogInformation("Process task output of type {type}",
-                             reply.Output.TypeCase);
+                             reply_.Output.TypeCase);
 
-      if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
+      if (reply_.Output.TypeCase is Output.TypeOneofCase.Ok)
       {
         logger_.LogDebug("Complete processing of the request");
         await agent_.FinalizeTaskCreation(CancellationToken.None)
@@ -584,7 +629,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          false,
-                                         reply.Output,
+                                         reply_.Output,
                                          CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
