@@ -17,6 +17,7 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -27,6 +28,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -41,6 +43,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {
+  private readonly HttpClient                httpClient_;
   private readonly ILogger<GrpcTasksService> logger_;
   private readonly IPushQueueStorage         pushQueueStorage_;
   private readonly IResultTable              resultTable_;
@@ -51,13 +54,15 @@ public class GrpcTasksService : Task.TasksBase
                           ISessionTable             sessionTable,
                           IResultTable              resultTable,
                           IPushQueueStorage         pushQueueStorage,
-                          ILogger<GrpcTasksService> logger)
+                          ILogger<GrpcTasksService> logger,
+                          HttpClient                httpClient)
   {
     logger_           = logger;
     taskTable_        = taskTable;
     sessionTable_     = sessionTable;
     resultTable_      = resultTable;
     pushQueueStorage_ = pushQueueStorage;
+    httpClient_       = httpClient;
   }
 
   [RequiresPermission(typeof(GrpcTasksService),
@@ -223,7 +228,14 @@ public class GrpcTasksService : Task.TasksBase
       await taskTable_.CancelTaskAsync(request.TaskIds,
                                        context.CancellationToken)
                       .ConfigureAwait(false);
-
+      var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                        data => data.OwnerPodId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
+                                        async ownerPodId => await httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
+                                                                             .ConfigureAwait(false))
+                       .ConfigureAwait(false);
       return new CancelTasksResponse
              {
                Tasks =

@@ -82,6 +82,7 @@ public static class Program
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
+             .AddHttpClient()
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
              .AddQueue(builder.Configuration,
