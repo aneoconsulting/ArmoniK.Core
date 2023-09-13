@@ -96,6 +96,10 @@ public static class Program
              .AddLocalStorage(builder.Configuration,
                               logger.GetLogger())
              .AddHostedService<Worker>()
+             .AddHostedService<RunningTaskProcessor>()
+             .AddHostedService<PostProcessor>()
+             .AddSingleton<RunningTaskQueue>()
+             .AddSingleton<PostProcessingTaskQueue>()
              .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
@@ -182,20 +186,13 @@ public static class Program
                                                    });
 
                          endpoints.MapGet("/taskprocessing",
-                                          () => Task.FromResult(app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                                   .TaskProcessing));
+                                          () => Task.FromResult(string.Join(",",
+                                                                            app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                                                               .TaskProcessing)));
 
                          endpoints.MapGet("/stopcancelledtask",
-                                          async () =>
-                                          {
-                                            var stopCancelledTask = app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                                       .StopCancelledTask;
-                                            if (stopCancelledTask != null)
-                                            {
-                                              await stopCancelledTask.Invoke()
-                                                                     .ConfigureAwait(false);
-                                            }
-                                          });
+                                          () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                                   .StopCancelledTask());
                        });
 
       var pushQueueStorage = app.Services.GetRequiredService<IPushQueueStorage>();

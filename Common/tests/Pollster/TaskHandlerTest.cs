@@ -1116,12 +1116,10 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask()
-                             .ConfigureAwait(false);
-
     cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(1500));
 
-    Assert.ThrowsAsync<TEx>(() => testServiceProvider.TaskHandler.PostProcessing());
+    Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
+                                                                 .ConfigureAwait(false));
 
     return ((await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                {
@@ -1230,11 +1228,15 @@ public class TaskHandlerTest
       await testServiceProvider.TaskHandler.PreProcessing()
                                .ConfigureAwait(false);
 
-      await testServiceProvider.TaskHandler.ExecuteTask()
-                               .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<TestRpcException>(async () => await testServiceProvider.TaskHandler.PostProcessing()
-                                                                                .ConfigureAwait(false));
+      Assert.ThrowsAsync<TestRpcException>(async () =>
+                                           {
+                                             await testServiceProvider.TaskHandler.ExecuteTask()
+                                                                      .ConfigureAwait(false);
+
+                                             await testServiceProvider.TaskHandler.PostProcessing()
+                                                                      .ConfigureAwait(false);
+                                           });
 
 
       taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
@@ -1376,10 +1378,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask()
-                             .ConfigureAwait(false);
-
-    Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.PostProcessing()
+    Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
                                                                  .ConfigureAwait(false));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
@@ -1501,8 +1500,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask()
-                             .ConfigureAwait(false);
+    var exec = testServiceProvider.TaskHandler.ExecuteTask();
 
     // Cancel task for test
 
@@ -1529,8 +1527,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.StopCancelledTask()
                              .ConfigureAwait(false);
 
-    Assert.That(testServiceProvider.TaskHandler.PostProcessing,
-                Throws.InstanceOf<OperationCanceledException>());
+    Assert.ThrowsAsync<TaskCanceledException>(() => exec);
 
     Assert.AreEqual(TaskStatus.Cancelling,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
