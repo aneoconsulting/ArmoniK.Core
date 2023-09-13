@@ -232,12 +232,10 @@ public class GrpcTasksService : Task.TasksBase
                                                         data => data.OwnerPodId)
                                         .ToListAsync()
                                         .ConfigureAwait(false);
-      foreach (var ownerPodId in ownerPodIds)
-      {
-        await httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
-                         .ConfigureAwait(false);
-      }
-
+      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
+                                        async ownerPodId => await httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
+                                                                             .ConfigureAwait(false))
+                       .ConfigureAwait(false);
       return new CancelTasksResponse
              {
                Tasks =
