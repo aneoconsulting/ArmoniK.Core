@@ -28,6 +28,7 @@ namespace ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
 public class TaskProcessingCheckerClient : ITaskProcessingChecker
 {
+  private const    int                                  Retries = 5;
   private readonly IHttpClientFactory                   httpClientFactory_;
   private readonly ILogger<TaskProcessingCheckerClient> logger_;
 
@@ -45,7 +46,7 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
     logger_.LogTrace("Check if task is processing");
     var client = httpClientFactory_.CreateClient();
 
-    for (var i = 0; i < 5; i++)
+    for (var i = 0; i < Retries; i++)
     {
       try
       {
