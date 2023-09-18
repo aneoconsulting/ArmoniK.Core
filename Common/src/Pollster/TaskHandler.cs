@@ -575,7 +575,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                                 },
                                                                 PayloadId   = taskData_.PayloadId,
                                                                 SessionId   = taskData_.SessionId,
-                                                                TaskId      = taskData_.SessionId,
+                                                                TaskId      = taskData_.TaskId,
                                                                 TaskOptions = taskData_.Options.ToGrpcTaskOptions(),
                                                               },
                                                               taskData_.Options.MaxDuration,
