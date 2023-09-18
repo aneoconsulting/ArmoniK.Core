@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 using ArmoniK.Api.Common.Options;
@@ -112,6 +113,16 @@ public class TestTaskHandlerProvider : IDisposable
                                                   },
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.SharedCacheFolder)}",
+                                                    Path.Combine(Path.GetTempPath(),
+                                                                 "data")
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.InternalCacheFolder)}",
+                                                    Path.Combine(Path.GetTempPath(),
+                                                                 "internal")
                                                   },
                                                 };
 

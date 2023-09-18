@@ -16,21 +16,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-
-using Google.Protobuf;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -84,58 +79,49 @@ public class DataPrefetcher : IInitializable
   ///   Method used to prefetch data before executing a task
   /// </summary>
   /// <param name="taskData">Task metadata</param>
+  /// <param name="folder"></param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Queue containing the request containing the data for the task which can be sent to the worker
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   /// <exception cref="InvalidOperationException">invalid transition between states</exception>
-  public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
-                                                                                  CancellationToken cancellationToken)
+  public async Task PrefetchDataAsync(TaskData          taskData,
+                                      string            folder,
+                                      CancellationToken cancellationToken)
   {
     using var activity     = activitySource_?.StartActivity();
     using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData.SessionId));
 
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-    var payloadChunks = await objectStorage_.GetValuesAsync(taskData.PayloadId,
-                                                            cancellationToken)
-                                            .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                            .ToListAsync(cancellationToken)
-                                            .ConfigureAwait(false);
 
-    var computeRequests = new ComputeRequestQueue(logger_);
-    computeRequests.Init(PayloadConfiguration.MaxChunkSize,
-                         taskData.SessionId,
-                         taskData.TaskId,
-                         taskData.Options.ToGrpcTaskOptions(),
-                         payloadChunks.FirstOrDefault(),
-                         taskData.ExpectedOutputIds);
-
-    for (var i = 1; i < payloadChunks.Count; i++)
+    await using (var fs = new FileStream(Path.Combine(folder,
+                                                      taskData.PayloadId),
+                                         FileMode.OpenOrCreate))
     {
-      computeRequests.AddPayloadChunk(payloadChunks[i]);
+      await using var w = new BinaryWriter(fs);
+      await foreach (var chunk in objectStorage_.GetValuesAsync(taskData.PayloadId,
+                                                                cancellationToken)
+                                                .ConfigureAwait(false))
+      {
+        w.Write(chunk);
+      }
     }
 
-    computeRequests.CompletePayload();
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
-      var dependencyChunks = await objectStorage_.GetValuesAsync(dataDependency,
-                                                                 cancellationToken)
-                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                                 .ToListAsync(cancellationToken)
-                                                 .ConfigureAwait(false);
-
-      computeRequests.InitDataDependency(dataDependency);
-      foreach (var chunk in dependencyChunks)
+      await using var fs = new FileStream(Path.Combine(folder,
+                                                       dataDependency),
+                                          FileMode.OpenOrCreate);
+      await using var w = new BinaryWriter(fs);
+      await foreach (var chunk in objectStorage_.GetValuesAsync(dataDependency,
+                                                                cancellationToken)
+                                                .ConfigureAwait(false))
       {
-        computeRequests.AddDataDependencyChunk(chunk);
+        w.Write(chunk);
       }
-
-      computeRequests.CompleteDataDependency();
     }
-
-    return computeRequests.GetQueue();
   }
 }

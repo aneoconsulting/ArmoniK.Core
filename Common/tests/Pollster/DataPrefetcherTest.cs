@@ -18,12 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
@@ -35,8 +34,6 @@ using Moq;
 
 using NUnit.Framework;
 
-using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
@@ -83,407 +80,55 @@ public class DataPrefetcherTest
     const string podId        = "PodId";
     const string podName      = "PodName";
     const string payloadId    = "PayloadId";
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  taskId,
-                                                                  podId,
-                                                                  podName,
-                                                                  payloadId,
-                                                                  new[]
-                                                                  {
-                                                                    parentTaskId,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    dependency1,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    output1,
-                                                                  },
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Submitted,
-                                                                  new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(100),
-                                                                                  5,
-                                                                                  1,
-                                                                                  "part1",
-                                                                                  "applicationName",
-                                                                                  "applicationVersion",
-                                                                                  "applicationNamespace",
-                                                                                  "applicationService",
-                                                                                  "engineType"),
-                                                                  new Output(true,
-                                                                             "")),
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-    var computeRequests = res.ToArray();
-    foreach (var request in computeRequests)
-    {
-      Console.WriteLine(request);
-    }
+    var sharedFolder = Path.Combine(Path.GetTempPath(),
+                                    "data");
+    var internalFolder = Path.Combine(Path.GetTempPath(),
+                                      "internal");
+    Directory.Delete(sharedFolder,
+                     true);
+    Directory.CreateDirectory(sharedFolder);
 
-    Assert.AreEqual(computeRequests[0]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest);
-    Assert.AreEqual(computeRequests[0]
-                    .InitRequest.SessionId,
-                    sessionId);
-    Assert.AreEqual(computeRequests[0]
-                    .InitRequest.TaskId,
-                    taskId);
-    Assert.AreEqual(computeRequests[0]
-                    .InitRequest.ExpectedOutputKeys.First(),
-                    output1);
+    await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
+                                                        taskId,
+                                                        podId,
+                                                        podName,
+                                                        payloadId,
+                                                        new[]
+                                                        {
+                                                          parentTaskId,
+                                                        },
+                                                        new[]
+                                                        {
+                                                          dependency1,
+                                                        },
+                                                        new[]
+                                                        {
+                                                          output1,
+                                                        },
+                                                        Array.Empty<string>(),
+                                                        TaskStatus.Submitted,
+                                                        new TaskOptions(new Dictionary<string, string>(),
+                                                                        TimeSpan.FromSeconds(100),
+                                                                        5,
+                                                                        1,
+                                                                        "part1",
+                                                                        "applicationName",
+                                                                        "applicationVersion",
+                                                                        "applicationNamespace",
+                                                                        "applicationService",
+                                                                        "engineType"),
+                                                        new Output(true,
+                                                                   "")),
+                                           sharedFolder,
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
 
-    Assert.AreEqual(computeRequests[1]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[1]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[2]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[2]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[3]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[3]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[4]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
-    Assert.AreEqual(computeRequests[4]
-                    .Payload.TypeCase,
-                    DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[4]
-                  .Payload.DataComplete);
-
-    Assert.AreEqual(computeRequests[5]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.AreEqual(computeRequests[5]
-                    .InitData.Key,
-                    dependency1);
-
-    Assert.AreEqual(computeRequests[6]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[6]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[7]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[7]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[8]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[8]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[9]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[9]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.Data);
-
-    Assert.AreEqual(computeRequests[10]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[10]
-                    .Data.TypeCase,
-                    DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[10]
-                  .Data.DataComplete);
-
-    Assert.AreEqual(computeRequests[11]
-                      .TypeCase,
-                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.AreEqual(computeRequests[11]
-                    .InitData.TypeCase,
-                    ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData);
-    Assert.IsTrue(computeRequests[11]
-                  .InitData.LastData);
+    Assert.IsTrue(File.Exists(Path.Combine(sharedFolder,
+                                           payloadId)));
+    Assert.IsTrue(File.Exists(Path.Combine(sharedFolder,
+                                           dependency1)));
   }
 
-  [Test]
-  public async Task EmptyPayloadAndOneDependencyStateMachine()
-  {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  CancellationToken.None))
-                     .Returns((string            _,
-                               CancellationToken _) => new List<byte[]>
-                                                       {
-                                                         Convert.FromBase64String("1111"),
-                                                         Convert.FromBase64String("2222"),
-                                                         Convert.FromBase64String("3333"),
-                                                         Convert.FromBase64String("4444"),
-                                                       }.ToAsyncEnumerable());
-
-    var loggerFactory = new LoggerFactory();
-
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            activitySource_,
-                                            loggerFactory.CreateLogger<DataPrefetcher>());
-
-    const string sessionId    = "SessionId";
-    const string parentTaskId = "ParentTaskId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
-    const string podName      = "PodName";
-    const string podId        = "PodId";
-    const string payloadId    = "PayloadId";
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  taskId,
-                                                                  podId,
-                                                                  podName,
-                                                                  payloadId,
-                                                                  new[]
-                                                                  {
-                                                                    parentTaskId,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    dependency1,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    output1,
-                                                                  },
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Submitted,
-                                                                  new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(100),
-                                                                                  5,
-                                                                                  1,
-                                                                                  "part1",
-                                                                                  "",
-                                                                                  "",
-                                                                                  "",
-                                                                                  "",
-                                                                                  ""),
-                                                                  new Output(true,
-                                                                             "")),
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-    Assert.AreNotEqual(0,
-                       res.Count);
-  }
-
-  [Test]
-  public async Task EmptyPayloadAndOneDependencyWithDataStateMachine()
-  {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  CancellationToken.None))
-                     .Returns((string            _,
-                               CancellationToken _) => new List<byte[]>
-                                                       {
-                                                         Convert.FromBase64String("1111"),
-                                                         Convert.FromBase64String("2222"),
-                                                         Convert.FromBase64String("3333"),
-                                                         Convert.FromBase64String("4444"),
-                                                       }.ToAsyncEnumerable());
-
-    var loggerFactory = new LoggerFactory();
-
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            activitySource_,
-                                            loggerFactory.CreateLogger<DataPrefetcher>());
-
-    const string sessionId    = "SessionId";
-    const string parentTaskId = "ParentTaskId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
-    const string podId        = "PodId";
-    const string podName      = "PodName";
-    const string payloadId    = "PayloadId";
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  taskId,
-                                                                  podId,
-                                                                  podName,
-                                                                  payloadId,
-                                                                  new[]
-                                                                  {
-                                                                    parentTaskId,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    dependency1,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    output1,
-                                                                  },
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Submitted,
-                                                                  new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(100),
-                                                                                  5,
-                                                                                  1,
-                                                                                  "part1",
-                                                                                  "applicationName",
-                                                                                  "applicationVersion",
-                                                                                  "applicationNamespace",
-                                                                                  "applicationService",
-                                                                                  "engineType"),
-                                                                  new Output(true,
-                                                                             "")),
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-    Assert.AreNotEqual(0,
-                       res.Count);
-  }
-
-  [Test]
-  public async Task PayloadWithDataAndOneDependencyWithDataStateMachine()
-  {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  CancellationToken.None))
-                     .Returns((string            _,
-                               CancellationToken _) => new List<byte[]>
-                                                       {
-                                                         Convert.FromBase64String("1111"),
-                                                         Convert.FromBase64String("2222"),
-                                                         Convert.FromBase64String("3333"),
-                                                         Convert.FromBase64String("4444"),
-                                                       }.ToAsyncEnumerable());
-
-    var loggerFactory = new LoggerFactory();
-
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            activitySource_,
-                                            loggerFactory.CreateLogger<DataPrefetcher>());
-
-    const string sessionId    = "SessionId";
-    const string parentTaskId = "ParentTaskId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
-    const string podId        = "PodId";
-    const string podName      = "PodName";
-    const string payloadId    = "PayloadId";
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  taskId,
-                                                                  podId,
-                                                                  podName,
-                                                                  payloadId,
-                                                                  new[]
-                                                                  {
-                                                                    parentTaskId,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    dependency1,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    output1,
-                                                                  },
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Submitted,
-                                                                  new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(100),
-                                                                                  5,
-                                                                                  1,
-                                                                                  "part1",
-                                                                                  "applicationName",
-                                                                                  "applicationVersion",
-                                                                                  "applicationNamespace",
-                                                                                  "applicationService",
-                                                                                  "engineType"),
-                                                                  new Output(true,
-                                                                             "")),
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-    Assert.AreNotEqual(0,
-                       res.Count);
-  }
-
-  [Test]
-  public async Task EmptyPayloadAndTwoDependenciesStateMachine()
-  {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  CancellationToken.None))
-                     .Returns((string            _,
-                               CancellationToken _) => new List<byte[]>
-                                                       {
-                                                         Convert.FromBase64String("1111"),
-                                                         Convert.FromBase64String("2222"),
-                                                         Convert.FromBase64String("3333"),
-                                                         Convert.FromBase64String("4444"),
-                                                       }.ToAsyncEnumerable());
-
-    var loggerFactory = new LoggerFactory();
-
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            activitySource_,
-                                            loggerFactory.CreateLogger<DataPrefetcher>());
-
-    const string sessionId    = "SessionId";
-    const string parentTaskId = "ParentTaskId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
-    const string dependency2  = "Dependency2";
-    const string podId        = "PodId";
-    const string podName      = "PodName";
-    const string payloadId    = "PayloadId";
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  taskId,
-                                                                  podId,
-                                                                  podName,
-                                                                  payloadId,
-                                                                  new[]
-                                                                  {
-                                                                    parentTaskId,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    dependency1,
-                                                                    dependency2,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    output1,
-                                                                  },
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Submitted,
-                                                                  new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(100),
-                                                                                  5,
-                                                                                  1,
-                                                                                  "part1",
-                                                                                  "applicationName",
-                                                                                  "applicationVersion",
-                                                                                  "applicationNamespace",
-                                                                                  "applicationService",
-                                                                                  "engineType"),
-                                                                  new Output(true,
-                                                                             "")),
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-    Assert.AreNotEqual(0,
-                       res.Count);
-  }
 
   [Test]
   public async Task EmptyPayloadAndNoDependenciesStateMachine()
@@ -515,43 +160,52 @@ public class DataPrefetcherTest
     const string podId        = "PodId";
     const string podName      = "PodName";
     const string payloadId    = "PayloadId";
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  taskId,
-                                                                  podId,
-                                                                  podName,
-                                                                  payloadId,
-                                                                  new[]
-                                                                  {
-                                                                    parentTaskId,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    dependency1,
-                                                                    dependency2,
-                                                                  },
-                                                                  new[]
-                                                                  {
-                                                                    output1,
-                                                                  },
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Submitted,
-                                                                  new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(100),
-                                                                                  5,
-                                                                                  1,
-                                                                                  "part1",
-                                                                                  "applicationName",
-                                                                                  "applicationVersion",
-                                                                                  "applicationNamespace",
-                                                                                  "applicationService",
-                                                                                  "engineType"),
-                                                                  new Output(true,
-                                                                             "")),
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
+    var sharedFolder = Path.Combine(Path.GetTempPath(),
+                                    "data");
+    var internalFolder = Path.Combine(Path.GetTempPath(),
+                                      "internal");
+    Directory.Delete(sharedFolder,
+                     true);
+    Directory.CreateDirectory(sharedFolder);
 
-    Assert.AreNotEqual(0,
-                       res.Count);
+    await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
+                                                        taskId,
+                                                        podId,
+                                                        podName,
+                                                        payloadId,
+                                                        new[]
+                                                        {
+                                                          parentTaskId,
+                                                        },
+                                                        new[]
+                                                        {
+                                                          dependency1,
+                                                          dependency2,
+                                                        },
+                                                        new[]
+                                                        {
+                                                          output1,
+                                                        },
+                                                        Array.Empty<string>(),
+                                                        TaskStatus.Submitted,
+                                                        new TaskOptions(new Dictionary<string, string>(),
+                                                                        TimeSpan.FromSeconds(100),
+                                                                        5,
+                                                                        1,
+                                                                        "part1",
+                                                                        "applicationName",
+                                                                        "applicationVersion",
+                                                                        "applicationNamespace",
+                                                                        "applicationService",
+                                                                        "engineType"),
+                                                        new Output(true,
+                                                                   "")),
+                                           sharedFolder,
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+    Assert.IsTrue(File.Exists(Path.Combine(sharedFolder,
+                                           payloadId)));
   }
 
   [Test]

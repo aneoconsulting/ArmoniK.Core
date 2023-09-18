@@ -21,9 +21,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -47,9 +45,14 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
   {
   }
 
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
-
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken)
-    => Pipe = new ExceptionAsyncPipe<T>(delay_);
+  public async Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                      TimeSpan          duration,
+                                                      CancellationToken cancellationToken)
+  {
+    await Task.Delay(TimeSpan.FromMilliseconds(delay_),
+                     cancellationToken)
+              .ConfigureAwait(false);
+    cancellationToken.ThrowIfCancellationRequested();
+    throw new T();
+  }
 }

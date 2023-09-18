@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -32,15 +33,12 @@ using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
-using Google.Protobuf;
-
 using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
@@ -51,6 +49,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public sealed class Agent : IAgent
 {
   private readonly List<TaskCreationRequest> createdTasks_;
+  private readonly string                    folder_;
   private readonly ILogger                   logger_;
   private readonly IObjectStorage            objectStorage_;
   private readonly IPushQueueStorage         pushQueueStorage_;
@@ -72,6 +71,7 @@ public sealed class Agent : IAgent
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
+  /// <param name="folder"></param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter        submitter,
@@ -81,6 +81,7 @@ public sealed class Agent : IAgent
                ITaskTable        taskTable,
                SessionData       sessionData,
                TaskData          taskData,
+               string            folder,
                string            token,
                ILogger           logger)
   {
@@ -94,6 +95,7 @@ public sealed class Agent : IAgent
     sentResults_      = new List<string>();
     sessionData_      = sessionData;
     taskData_         = taskData;
+    folder_           = folder;
     token_            = token;
   }
 
@@ -300,285 +302,18 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task GetCommonData(DataRequest                    request,
-                                  IServerStreamWriter<DataReply> responseStream,
-                                  CancellationToken              cancellationToken)
-  {
-    using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
-                                          ("taskId", taskData_.TaskId),
-                                          ("sessionId", sessionData_.SessionId));
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Missing communication token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
-    if (request.CommunicationToken != token_)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Wrong communication token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
-    await responseStream.WriteAsync(new DataReply
-                                    {
-                                      Error = "Common data are not supported yet",
-                                    },
-                                    cancellationToken)
-                        .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task GetDirectData(DataRequest                    request,
-                                  IServerStreamWriter<DataReply> responseStream,
-                                  CancellationToken              cancellationToken)
-  {
-    using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
-                                          ("taskId", taskData_.TaskId),
-                                          ("sessionId", sessionData_.SessionId));
-
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Missing communication token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
-    if (request.CommunicationToken != token_)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Wrong communication token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
-    await responseStream.WriteAsync(new DataReply
-                                    {
-                                      Error = "Direct data are not supported yet",
-                                    },
-                                    cancellationToken)
-                        .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task GetResourceData(DataRequest                    request,
-                                    IServerStreamWriter<DataReply> responseStream,
-                                    CancellationToken              cancellationToken)
-  {
-    using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
-                                          ("taskId", taskData_.TaskId),
-                                          ("sessionId", sessionData_.SessionId));
-
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Missing communication token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
-    if (request.CommunicationToken != token_)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Wrong communication token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
-    try
-    {
-      await foreach (var data in objectStorage_.GetValuesAsync(request.Key,
-                                                               cancellationToken)
-                                               .ConfigureAwait(false))
-      {
-        await responseStream.WriteAsync(new DataReply
-                                        {
-                                          Data = new DataChunk
-                                                 {
-                                                   Data = UnsafeByteOperations.UnsafeWrap(data),
-                                                 },
-                                        },
-                                        cancellationToken)
-                            .ConfigureAwait(false);
-      }
-
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        Data = new DataChunk
-                                               {
-                                                 DataComplete = true,
-                                               },
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-    catch (ObjectDataNotFoundException)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        Init = new DataReply.Types.Init
-                                               {
-                                                 Key   = request.Key,
-                                                 Error = "Key not found",
-                                               },
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-  }
-
-  /// <inheritdoc />
-  [SuppressMessage("Usage",
-                   "CA2208:Instantiate argument exceptions correctly",
-                   Justification = "<Pending>")]
-  public async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
-                                            CancellationToken          cancellationToken)
-  {
-    using var _ = logger_.BeginNamedScope(nameof(SendResult),
-                                          ("taskId", taskData_.TaskId),
-                                          ("sessionId", sessionData_.SessionId));
-
-    var completionTask = Task.CompletedTask;
-    var fsmResult      = new ProcessReplyResultStateMachine(logger_);
-    var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
-                                                                      {
-                                                                        SingleWriter = true,
-                                                                        SingleReader = true,
-                                                                      });
-
-    await foreach (var request in requestStream.ReadAllAsync(cancellationToken)
-                                               .ConfigureAwait(false))
-    {
-      if (string.IsNullOrEmpty(request.CommunicationToken))
-      {
-        return new ResultReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Missing communication token",
-               };
-      }
-
-      if (request.CommunicationToken != token_)
-      {
-        return new ResultReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Wrong communication token",
-               };
-      }
-
-      switch (request.TypeCase)
-      {
-        case Result.TypeOneofCase.Init:
-          switch (request.Init.TypeCase)
-          {
-            case InitKeyedDataStream.TypeOneofCase.Key:
-              fsmResult.InitKey();
-              completionTask = Task.Run(async () => await objectStorage_.AddOrUpdateAsync(request.Init.Key,
-                                                                                          chunksChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                                          cancellationToken)
-                                                                        .ConfigureAwait(false),
-                                        cancellationToken);
-              sentResults_.Add(request.Init.Key);
-              break;
-            case InitKeyedDataStream.TypeOneofCase.LastResult:
-              fsmResult.CompleteRequest();
-
-              try
-              {
-                await completionTask.WaitAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-                return new ResultReply
-                       {
-                         Ok = new Empty(),
-                       };
-              }
-              catch (Exception e)
-              {
-                logger_.LogWarning(e,
-                                   "Error while receiving results");
-                return new ResultReply
-                       {
-                         Error = "Error while receiving results",
-                       };
-              }
-
-            case InitKeyedDataStream.TypeOneofCase.None:
-            default:
-              throw new ArgumentOutOfRangeException(nameof(request.Init.TypeCase));
-          }
-
-          break;
-        case Result.TypeOneofCase.Data:
-          switch (request.Data.TypeCase)
-          {
-            case DataChunk.TypeOneofCase.Data:
-              fsmResult.AddDataChunk();
-              await chunksChannel.Writer.WriteAsync(request.Data.Data.Memory,
-                                                    cancellationToken)
-                                 .ConfigureAwait(false);
-              break;
-            case DataChunk.TypeOneofCase.DataComplete:
-              fsmResult.CompleteData();
-              chunksChannel.Writer.Complete();
-              break;
-
-            case DataChunk.TypeOneofCase.None:
-            default:
-              throw new ArgumentOutOfRangeException(nameof(request.Data.TypeCase));
-          }
-
-          break;
-        case Result.TypeOneofCase.None:
-        default:
-          throw new ArgumentOutOfRangeException(nameof(request.TypeCase));
-      }
-    }
-
-    return new ResultReply();
-  }
-
-  /// <inheritdoc />
   public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                          CancellationToken            cancellationToken)
   {
-    var results = request.Results.Select(rc => new Storage.Result(request.SessionId,
-                                                                  Guid.NewGuid()
-                                                                      .ToString(),
-                                                                  rc.Name,
-                                                                  "",
-                                                                  ResultStatus.Created,
-                                                                  new List<string>(),
-                                                                  DateTime.UtcNow,
-                                                                  Array.Empty<byte>()))
+    var results = request.Results.Select(rc => new Result(request.SessionId,
+                                                          Guid.NewGuid()
+                                                              .ToString(),
+                                                          rc.Name,
+                                                          "",
+                                                          ResultStatus.Created,
+                                                          new List<string>(),
+                                                          DateTime.UtcNow,
+                                                          Array.Empty<byte>()))
                          .ToList();
 
     await resultTable_.Create(results,
@@ -655,59 +390,20 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
-                                                               CancellationToken                           cancellationToken)
-  {
-    if (!await requestStream.MoveNext(cancellationToken)
-                            .ConfigureAwait(false))
-    {
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Missing result metadata"),
-                             "Missing result metadata");
-    }
-
-    var current = requestStream.Current;
-
-    if (current.TypeCase != UploadResultDataRequest.TypeOneofCase.Id)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Message should be an Id"),
-                             "Message should be an Id");
-    }
-
-    var id = current.Id;
-
-
-    await objectStorage_.AddOrUpdateAsync(id.ResultId,
-                                          requestStream.ReadAllAsync(cancellationToken)
-                                                       .Select(r => r.DataChunk.Memory),
-                                          cancellationToken)
-                        .ConfigureAwait(false);
-
-    sentResults_.Add(id.ResultId);
-
-    return new UploadResultDataResponse
-           {
-             ResultId           = id.ResultId,
-             CommunicationToken = token_,
-           };
-  }
-
-  /// <inheritdoc />
   public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                          CancellationToken    cancellationToken)
   {
     var results = await request.Results.Select(async rc =>
                                                {
-                                                 var result = new Storage.Result(request.SessionId,
-                                                                                 Guid.NewGuid()
-                                                                                     .ToString(),
-                                                                                 rc.Name,
-                                                                                 "",
-                                                                                 ResultStatus.Created,
-                                                                                 new List<string>(),
-                                                                                 DateTime.UtcNow,
-                                                                                 Array.Empty<byte>());
+                                                 var result = new Result(request.SessionId,
+                                                                         Guid.NewGuid()
+                                                                             .ToString(),
+                                                                         rc.Name,
+                                                                         "",
+                                                                         ResultStatus.Created,
+                                                                         new List<string>(),
+                                                                         DateTime.UtcNow,
+                                                                         Array.Empty<byte>());
 
                                                  await objectStorage_.AddOrUpdateAsync(result.ResultId,
                                                                                        new List<ReadOnlyMemory<byte>>
@@ -745,8 +441,166 @@ public sealed class Agent : IAgent
            };
   }
 
+  public async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
+                                                               CancellationToken       cancellationToken)
+  {
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
+    foreach (var result in request.Ids)
+    {
+      await using var fs = new FileStream(Path.Combine(folder_,
+                                                       result.ResultId),
+                                          FileMode.OpenOrCreate);
+      using var r       = new BinaryReader(fs);
+      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
+
+      var add = objectStorage_.AddOrUpdateAsync(result.ResultId,
+                                                channel.Reader.ReadAllAsync(cancellationToken),
+                                                cancellationToken);
+
+      int read;
+      do
+      {
+        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
+        read = r.Read(buffer,
+                      0,
+                      PayloadConfiguration.MaxChunkSize);
+        await channel.Writer.WriteAsync(buffer.AsMemory(0,
+                                                        read),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+      } while (read != 0);
+
+      channel.Writer.Complete();
+
+      await add.ConfigureAwait(false);
+      sentResults_.Add(result.ResultId);
+    }
+
+    return new NotifyResultDataResponse
+           {
+             ResultIds =
+             {
+               request.Ids.Select(identifier => identifier.ResultId),
+             },
+           };
+  }
+
   /// <inheritdoc />
   public void Dispose()
   {
+  }
+
+  /// <inheritdoc />
+  public async Task<DataResponse> GetResourceData(DataRequest       request,
+                                                  CancellationToken cancellationToken)
+  {
+    using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
+
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
+    try
+    {
+      await using (var fs = new FileStream(Path.Combine(folder_,
+                                                        request.ResultId),
+                                           FileMode.OpenOrCreate))
+      {
+        await using var w = new BinaryWriter(fs);
+        await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+                                                                  cancellationToken)
+                                                  .ConfigureAwait(false))
+        {
+          w.Write(chunk);
+        }
+      }
+
+
+      return new DataResponse
+             {
+               ResultId = request.ResultId,
+             };
+    }
+    catch (ObjectDataNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Data not found"),
+                             "Data not found");
+    }
+  }
+
+  /// <inheritdoc />
+  public Task<DataResponse> GetCommonData(DataRequest       request,
+                                          CancellationToken cancellationToken)
+  {
+    using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
+
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
+    throw new NotImplementedException("Common data are not implemented yet");
+  }
+
+  /// <inheritdoc />
+  public Task<DataResponse> GetDirectData(DataRequest       request,
+                                          CancellationToken cancellationToken)
+  {
+    using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
+                                          ("taskId", taskData_.TaskId),
+                                          ("sessionId", sessionData_.SessionId));
+
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
+    throw new NotImplementedException("Direct data are not implemented yet");
   }
 }

@@ -17,11 +17,10 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
@@ -30,8 +29,7 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 [PublicAPI]
 public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
-
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken);
+  public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                TimeSpan          duration,
+                                                CancellationToken cancellationToken);
 }

@@ -133,6 +133,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
                                   ILogger           logger,
                                   SessionData       sessionData,
                                   TaskData          taskData,
+                                  string            folder,
                                   CancellationToken cancellationToken)
   {
     try
@@ -144,6 +145,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
                             taskTable_,
                             sessionData,
                             taskData,
+                            folder,
                             token,
                             logger);
 
