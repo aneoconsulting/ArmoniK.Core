@@ -99,7 +99,8 @@ class LogSender:
                 except JSONDecodeError as e:
                     logger.warning(f"Failed to parse JSON: {e}")
         if self.batch != b"":
-            requests.post(self.url, data=self.batch)
+            self.send_log(self.batch)
+            logger.info(self.batch)
         logger.info(f"sent: {self.ctr}")
 
 
