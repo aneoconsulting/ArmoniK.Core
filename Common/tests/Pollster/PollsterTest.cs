@@ -41,6 +41,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -425,9 +426,13 @@ public class PollsterTest
     {
       Task.Delay(TimeSpan.FromMilliseconds(delay_),
                  cancellationToken);
-      return Task.FromResult(new ProcessReply{
-         Output = new Api.gRPC.V1.Output { Ok = new Empty()},
-      });
+      return Task.FromResult(new ProcessReply
+                             {
+                               Output = new Output
+                                        {
+                                          Ok = new Empty(),
+                                        },
+                             });
     }
   }
 

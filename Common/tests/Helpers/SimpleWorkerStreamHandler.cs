@@ -47,6 +47,6 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
                          Output = new Output
                                   {
                                     Ok = new Empty(),
-                         },
+                                  },
                        });
 }

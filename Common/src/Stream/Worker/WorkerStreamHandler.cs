@@ -140,7 +140,8 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
     return await workerClient_.ProcessAsync(request,
                                             deadline: DateTime.UtcNow + duration,
-                                            cancellationToken: cancellationToken).ConfigureAwait(false);
+                                            cancellationToken: cancellationToken)
+                              .ConfigureAwait(false);
   }
 
   private Task<bool> CheckWorker(CancellationToken cancellationToken)
