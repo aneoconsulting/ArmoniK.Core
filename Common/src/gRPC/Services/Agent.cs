@@ -71,7 +71,7 @@ public sealed class Agent : IAgent
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="sessionData">Data of the session</param>
   /// <param name="taskData">Data of the task</param>
-  /// <param name="folder"></param>
+  /// <param name="folder">Shared folder between Agent and Worker</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter        submitter,

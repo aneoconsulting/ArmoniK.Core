@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -79,13 +78,12 @@ public class DataPrefetcher : IInitializable
   ///   Method used to prefetch data before executing a task
   /// </summary>
   /// <param name="taskData">Task metadata</param>
-  /// <param name="folder"></param>
+  /// <param name="folder">Path in which pre-fetched data are stored</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Queue containing the request containing the data for the task which can be sent to the worker
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
-  /// <exception cref="InvalidOperationException">invalid transition between states</exception>
   public async Task PrefetchDataAsync(TaskData          taskData,
                                       string            folder,
                                       CancellationToken cancellationToken)
