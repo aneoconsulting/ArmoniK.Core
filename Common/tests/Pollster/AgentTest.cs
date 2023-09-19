@@ -376,7 +376,7 @@ public class AgentTest
   }
 
   [Test]
-  public async Task MissingResourceData()
+  public void MissingResourceData()
   {
     using var holder = new AgentHolder();
 
