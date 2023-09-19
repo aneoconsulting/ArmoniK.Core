@@ -1,14 +1,11 @@
 import requests
-import zipfile
 import json
-import io
 import argparse
 import boto3
 import os
 import gzip
 import logging
 from pathlib import Path
-from typing import IO
 from json.decoder import JSONDecodeError
 
 
@@ -33,25 +30,6 @@ logger = logging.getLogger(Path(__file__).name)
 logging.basicConfig(
     level=logging.INFO
 )
-
-parser = argparse.ArgumentParser(description="Download ArmoniK logs in JSON CLEF format from S3 bucket then send them to Seq.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("bucket_name", help="S3 bucket", type=str)
-parser.add_argument("folder_name_core", help="Folder where core logs are located", type=str)
-parser.add_argument("run_number", help="GitHub workflow run_number", type=str)
-parser.add_argument("run_attempt", help="GitHub workflow run_attempt", type=str)
-parser.add_argument("file_name", help="file to download from the bucket", type=str)
-parser.add_argument("--url", dest="url", help="Seq url", type=str, default="http://localhost:9341/api/events/raw?clef")
-args = parser.parse_args()
-
-dir_name = args.folder_name_core + "/" + args.run_number + "/" + args.run_attempt + "/"
-tmp_dir = "./tmp/"
-obj_name = dir_name + args.file_name
-file_name = tmp_dir + obj_name
-
-os.makedirs(tmp_dir + dir_name, exist_ok=True)
-
-s3 = boto3.client('s3')
-s3.download_file(args.bucket_name, obj_name, file_name)
 
 
 class LogSender:
@@ -92,7 +70,6 @@ def process_json_log(url: str, file_name: str):
                 log_sender.sendlog(line)
     
 
-
 def process_jsongz_log(url: str, file_name: str):
     with gzip.open(file_name, "r") as file:
         with LogSender(url) as log_sender:
@@ -101,9 +78,32 @@ def process_jsongz_log(url: str, file_name: str):
 
 
 
-if file_name.endswith(".json.tar.gz"):
-    process_jsongz_log(args.url, file_name)
-elif file_name.endswith(".json"):
-    process_json_log(args.url, file_name)
 
+def main():
+    parser = argparse.ArgumentParser(description="Download ArmoniK logs in JSON CLEF format from S3 bucket then send them to Seq.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("bucket_name", help="S3 bucket", type=str)
+    parser.add_argument("folder_name_core", help="Folder where core logs are located", type=str)
+    parser.add_argument("run_number", help="GitHub workflow run_number", type=str)
+    parser.add_argument("run_attempt", help="GitHub workflow run_attempt", type=str)
+    parser.add_argument("file_name", help="file to download from the bucket", type=str)
+    parser.add_argument("--url", dest="url", help="Seq url", type=str, default="http://localhost:9341/api/events/raw?clef")
+    args = parser.parse_args()
 
+    tmp_dir = "./tmp/"
+    dir_name = os.path.join(
+        args.folder_name_core, args.run_number, args.run_attempt)
+    obj_name = os.path.join(dir_name, args.file_name)
+    file_name = os.path.join(tmp_dir, obj_name)
+
+    os.makedirs(os.path.join(tmp_dir, dir_name), exist_ok=True)
+
+    s3 = boto3.client('s3')
+    s3.download_file(args.bucket_name, obj_name, file_name)
+
+    if file_name.endswith(".json.tar.gz"):
+        process_jsongz_log(args.url, file_name)
+    elif file_name.endswith(".json"):
+        process_json_log(args.url, file_name)
+
+if __name__ == "__main__":
+    main()
