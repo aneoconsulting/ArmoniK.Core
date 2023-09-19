@@ -53,6 +53,11 @@ public class BenchOptions
   public int ResultSize { get; set; } = 1;
 
   /// <summary>
+  ///   Size of the payload from which streams are used to send payloads in kilobytes
+  /// </summary>
+  public int SwitchToStreamSize { get; set; } = 10;
+
+  /// <summary>
   ///   Number of tasks per batch
   /// </summary>
   public int BatchSize { get; set; } = 100;
