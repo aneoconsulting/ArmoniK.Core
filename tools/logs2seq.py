@@ -33,6 +33,23 @@ logging.basicConfig(
 
 
 class LogSender:
+    """
+    LogSender is a class for sending log messages to a Seq server
+
+    Args:
+        url (str): The URL of the Seq server where log messages should be sent
+
+    Attributes:
+        url (str): The URL of the Seq server
+        batch (bytes): A batch of log messages waiting to be sent
+        ctr (int): A counter for the number of log messages sent
+
+    Methods:
+        sendlog(self, line: str):
+            Send a log message to the Seq server. The message is expected to be in JSON format
+            Logs are sent to the server when the batch size exceeds 100,000 bytes
+            Logs left in the batch are sent at the exit
+    """
     def __init__(self, url: str):
         self.url = url
         self.batch = b""
@@ -42,6 +59,13 @@ class LogSender:
         return self
 
     def sendlog(self, line: str):
+        """
+        Send a log message to the Seq server
+
+        Args:
+            line (str): A log message in JSON format
+
+        """
         if line.startswith("{"):
             try:
                 parsed = json.loads(line)
@@ -64,6 +88,16 @@ class LogSender:
         
 
 def process_json_log(url: str, file_name: str):
+    """
+    Process a JSON log file and send its contents to a Seq server
+
+    Args:
+        url (str): The URL of the Seq server where log messages should be sent
+        file_name (str): The path to the JSON log file 
+
+    Returns:
+        None
+    """
     with open(file_name, "r") as file:
         with LogSender(url) as log_sender:
             for line in file.readlines():
@@ -71,6 +105,16 @@ def process_json_log(url: str, file_name: str):
     
 
 def process_jsongz_log(url: str, file_name: str):
+    """
+    Process a gzipped JSON log file and send its contents to a Seq server
+
+    Args:
+        url (str): The URL of the Seq server where log messages should be sent
+        file_name (str): The path to the gzipped JSON log file
+
+    Returns:
+        None
+    """
     with gzip.open(file_name, "r") as file:
         with LogSender(url) as log_sender:
             for line in file.read().decode("utf-8").split("\n"):
