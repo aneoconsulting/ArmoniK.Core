@@ -17,14 +17,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Client.Submitter;
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Tests.Client;
 
 using Google.Protobuf;
@@ -39,158 +39,112 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public sealed class SessionClient : ISessionClient
 {
-  private readonly ChannelBase               channel_;
-  private readonly ILogger<GridClient>       logger_;
-  private readonly Results.ResultsClient     resultsClient_;
-  private readonly string                    sessionId_;
-  private readonly Submitter.SubmitterClient submitterClient_;
+  private readonly ChannelBase             channel_;
+  private readonly ILogger<GridClient>     logger_;
+  private readonly Results.ResultsClient   resultsClient_;
+  private readonly string                  sessionId_;
+  private readonly Sessions.SessionsClient sessionsClient_;
+  private readonly Tasks.TasksClient       tasksClient_;
 
   public SessionClient(ChannelBase         channel,
                        string              sessionId,
                        ILogger<GridClient> logger)
   {
-    submitterClient_ = new Submitter.SubmitterClient(channel);
-    resultsClient_   = new Results.ResultsClient(channel);
-    channel_         = channel;
-    logger_          = logger;
-    sessionId_       = sessionId;
+    resultsClient_  = new Results.ResultsClient(channel);
+    sessionsClient_ = new Sessions.SessionsClient(channel);
+    tasksClient_    = new Tasks.TasksClient(channel);
+    channel_        = channel;
+    logger_         = logger;
+    sessionId_      = sessionId;
   }
 
 
   public void Dispose()
   {
-    submitterClient_.CancelSession(new Session
-                                   {
-                                     Id = sessionId_,
-                                   });
+    sessionsClient_.CancelSession(new CancelSessionRequest
+                                  {
+                                    SessionId = sessionId_,
+                                  });
     channel_.LogStatsFromSessionAsync(sessionId_,
                                       logger_)
             .Wait();
   }
 
-  [SuppressMessage("Style",
-                   "CA2208",
-                   Justification = "availabilityReply.TypeCase is not a real argument")]
   public byte[] GetResult(string id)
-  {
-    var resultRequest = new ResultRequest
-                        {
-                          ResultId = id,
-                          Session  = sessionId_,
-                        };
+    => resultsClient_.DownloadResultData(sessionId_,
+                                         id,
+                                         CancellationToken.None)
+                     .Result;
 
-#pragma warning disable CS0612 // Type or member is obsolete
-    var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
-#pragma warning restore CS0612 // Type or member is obsolete
+  public async Task WaitSubtasksCompletion(string id)
+    => await channel_.WaitForResultsAsync(sessionId_,
+                                          new[]
+                                          {
+                                            id,
+                                          },
+                                          CancellationToken.None)
+                     .ConfigureAwait(false);
 
-    switch (availabilityReply.TypeCase)
-    {
-      case AvailabilityReply.TypeOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case AvailabilityReply.TypeOneofCase.Ok:
-        break;
-      case AvailabilityReply.TypeOneofCase.Error:
-        throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
-      case AvailabilityReply.TypeOneofCase.NotCompletedTask:
-        throw new Exception($"Task not completed - {id}");
-      default:
-        throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
-    }
-
-    var response = submitterClient_.GetResultAsync(resultRequest);
-    return response.Result;
-  }
-
-  [SuppressMessage("Style",
-                   "CA2208",
-                   Justification = "availabilityReply.TypeCase is not a real argument")]
-  public Task WaitSubtasksCompletion(string id)
-  {
-    var resultRequest = new ResultRequest
-                        {
-                          ResultId = id,
-                          Session  = sessionId_,
-                        };
-
-#pragma warning disable CS0612 // Type or member is obsolete
-    var availabilityReply = submitterClient_.WaitForAvailability(resultRequest);
-#pragma warning restore CS0612 // Type or member is obsolete
-
-    switch (availabilityReply.TypeCase)
-    {
-      case AvailabilityReply.TypeOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case AvailabilityReply.TypeOneofCase.Ok:
-        break;
-      case AvailabilityReply.TypeOneofCase.Error:
-        throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
-      case AvailabilityReply.TypeOneofCase.NotCompletedTask:
-        throw new Exception($"Task not completed - {id}");
-      default:
-        throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
-    }
-
-    return Task.CompletedTask;
-  }
-
-  [SuppressMessage("Style",
-                   "CA2208",
-                   Justification = "createTaskReply.ResponseCase is not a real argument")]
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
-    var taskRequests = new List<TaskRequest>();
+    var tasks = new List<string>();
+    var i     = 0;
 
     foreach (var (payload, dependencies) in payloadsWithDependencies)
     {
-      var reply = resultsClient_.CreateResultsMetaData(new CreateResultsMetaDataRequest
-                                                       {
-                                                         SessionId = sessionId_,
-                                                         Results =
-                                                         {
-                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
-                                                           {
-                                                             Name = "root",
-                                                           },
-                                                         },
-                                                       });
+      var payloads = resultsClient_.CreateResults(new CreateResultsRequest
+                                                  {
+                                                    SessionId = sessionId_,
+                                                    Results =
+                                                    {
+                                                      new CreateResultsRequest.Types.ResultCreate
+                                                      {
+                                                        Data = UnsafeByteOperations.UnsafeWrap(payload),
+                                                        Name = $"payload {i}",
+                                                      },
+                                                    },
+                                                  });
 
-      var taskRequest = new TaskRequest
-                        {
-                          Payload = ByteString.CopyFrom(payload),
-                          DataDependencies =
-                          {
-                            dependencies,
-                          },
-                          ExpectedOutputKeys =
-                          {
-                            reply.Results.Single()
-                                 .ResultId,
-                          },
-                        };
-      ;
+      var results = resultsClient_.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                         {
+                                                           SessionId = sessionId_,
+                                                           Results =
+                                                           {
+                                                             new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                             {
+                                                               Name = $"root {i}",
+                                                             },
+                                                           },
+                                                         });
+
+      var tasksResponse = tasksClient_.SubmitTasks(new SubmitTasksRequest
+                                                   {
+                                                     SessionId = sessionId_,
+                                                     TaskCreations =
+                                                     {
+                                                       new SubmitTasksRequest.Types.TaskCreation
+                                                       {
+                                                         PayloadId = payloads.Results.Select(raw => raw.ResultId)
+                                                                             .Single(),
+                                                         DataDependencies =
+                                                         {
+                                                           dependencies,
+                                                         },
+                                                         ExpectedOutputKeys =
+                                                         {
+                                                           results.Results.Select(raw => raw.ResultId),
+                                                         },
+                                                       },
+                                                     },
+                                                   });
+
       logger_.LogDebug("Dependencies : {dep}",
                        string.Join(", ",
                                    dependencies.Select(item => item.ToString())));
-      taskRequests.Add(taskRequest);
+      i++;
+      tasks.AddRange(tasksResponse.TaskInfos.Select(info => info.TaskId));
     }
 
-    var createTaskReply = submitterClient_.CreateTasksAsync(sessionId_,
-                                                            null,
-                                                            taskRequests)
-                                          .Result;
-    switch (createTaskReply.ResponseCase)
-    {
-      case CreateTaskReply.ResponseOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.ResponseOneofCase.CreationStatusList:
-        logger_.LogInformation("task created {taskId}",
-                               createTaskReply.CreationStatusList.CreationStatuses.Select(status => status.TaskInfo.TaskId)
-                                              .Single());
-        return taskRequests.Select(request => request.ExpectedOutputKeys.Single());
-      case CreateTaskReply.ResponseOneofCase.Error:
-        throw new Exception("Error : " + createTaskReply.Error);
-      default:
-        throw new ArgumentOutOfRangeException(nameof(createTaskReply.ResponseCase));
-    }
+    return tasks;
   }
 }
