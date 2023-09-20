@@ -451,69 +451,17 @@ internal static class Program
 
     var taskCreated = Stopwatch.GetTimestamp();
 
+    await channelPool.WithInstanceAsync(channel => channel.WaitForResultsAsync(createSessionReply.SessionId,
+                                                                               results,
+                                                                               CancellationToken.None),
+                                        CancellationToken.None)
+                     .ConfigureAwait(false);
+
     await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
                                   async resultId =>
                                   {
                                     await using var channel = await channelPool.GetAsync(CancellationToken.None)
                                                                                .ConfigureAwait(false);
-
-                                    var eventsClient = new Events.EventsClient(channel);
-
-                                    using var streamingCall = eventsClient.GetEvents(new EventSubscriptionRequest
-                                                                                     {
-                                                                                       SessionId = createSessionReply.SessionId,
-                                                                                       ReturnedEvents =
-                                                                                       {
-                                                                                         EventsEnum.ResultStatusUpdate,
-                                                                                       },
-                                                                                       ResultsFilters = new Api.gRPC.V1.Results.Filters
-                                                                                                        {
-                                                                                                          Or =
-                                                                                                          {
-                                                                                                            new Api.gRPC.V1.Results.FiltersAnd
-                                                                                                            {
-                                                                                                              And =
-                                                                                                              {
-                                                                                                                new Api.gRPC.V1.Results.FilterField
-                                                                                                                {
-                                                                                                                  Field = new ResultField
-                                                                                                                          {
-                                                                                                                            ResultRawField = new ResultRawField
-                                                                                                                                             {
-                                                                                                                                               Field = ResultRawEnumField
-                                                                                                                                                 .ResultId,
-                                                                                                                                             },
-                                                                                                                          },
-                                                                                                                  FilterString = new FilterString
-                                                                                                                                 {
-                                                                                                                                   Operator = FilterStringOperator.Equal,
-                                                                                                                                   Value    = resultId,
-                                                                                                                                 },
-                                                                                                                },
-                                                                                                              },
-                                                                                                            },
-                                                                                                          },
-                                                                                                        },
-                                                                                     });
-
-
-                                    await foreach (var resp in streamingCall.ResponseStream.ReadAllAsync(CancellationToken.None)
-                                                                            .ConfigureAwait(false))
-                                    {
-                                      if (resp.UpdateCase                  == EventSubscriptionResponse.UpdateOneofCase.ResultStatusUpdate &&
-                                          resp.ResultStatusUpdate.ResultId == resultId)
-                                      {
-                                        if (resp.ResultStatusUpdate.Status == ResultStatus.Completed)
-                                        {
-                                          break;
-                                        }
-
-                                        if (resp.ResultStatusUpdate.Status == ResultStatus.Aborted)
-                                        {
-                                          throw new Exception($"Result {resultId} has been aborted");
-                                        }
-                                      }
-                                    }
                                   })
                  .ConfigureAwait(false);
 
