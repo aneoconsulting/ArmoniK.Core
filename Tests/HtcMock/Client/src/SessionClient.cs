@@ -87,8 +87,8 @@ public sealed class SessionClient : ISessionClient
 
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
-    var tasks = new List<string>();
-    var i     = 0;
+    var resultsCreated = new List<string>();
+    var i              = 0;
 
     foreach (var (payload, dependencies) in payloadsWithDependencies)
     {
@@ -105,46 +105,48 @@ public sealed class SessionClient : ISessionClient
                                                     },
                                                   });
 
-      var results = resultsClient_.CreateResultsMetaData(new CreateResultsMetaDataRequest
-                                                         {
-                                                           SessionId = sessionId_,
-                                                           Results =
-                                                           {
-                                                             new CreateResultsMetaDataRequest.Types.ResultCreate
-                                                             {
-                                                               Name = $"root {i}",
-                                                             },
-                                                           },
-                                                         });
+      var result = resultsClient_.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                        {
+                                                          SessionId = sessionId_,
+                                                          Results =
+                                                          {
+                                                            new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                            {
+                                                              Name = $"root {i}",
+                                                            },
+                                                          },
+                                                        })
+                                 .Results.Select(raw => raw.ResultId)
+                                 .Single();
 
-      var tasksResponse = tasksClient_.SubmitTasks(new SubmitTasksRequest
-                                                   {
-                                                     SessionId = sessionId_,
-                                                     TaskCreations =
-                                                     {
-                                                       new SubmitTasksRequest.Types.TaskCreation
-                                                       {
-                                                         PayloadId = payloads.Results.Select(raw => raw.ResultId)
-                                                                             .Single(),
-                                                         DataDependencies =
-                                                         {
-                                                           dependencies,
-                                                         },
-                                                         ExpectedOutputKeys =
-                                                         {
-                                                           results.Results.Select(raw => raw.ResultId),
-                                                         },
-                                                       },
-                                                     },
-                                                   });
+      tasksClient_.SubmitTasks(new SubmitTasksRequest
+                               {
+                                 SessionId = sessionId_,
+                                 TaskCreations =
+                                 {
+                                   new SubmitTasksRequest.Types.TaskCreation
+                                   {
+                                     PayloadId = payloads.Results.Select(raw => raw.ResultId)
+                                                         .Single(),
+                                     DataDependencies =
+                                     {
+                                       dependencies,
+                                     },
+                                     ExpectedOutputKeys =
+                                     {
+                                       result,
+                                     },
+                                   },
+                                 },
+                               });
 
       logger_.LogDebug("Dependencies : {dep}",
                        string.Join(", ",
                                    dependencies.Select(item => item.ToString())));
       i++;
-      tasks.AddRange(tasksResponse.TaskInfos.Select(info => info.TaskId));
+      resultsCreated.Add(result);
     }
 
-    return tasks;
+    return resultsCreated;
   }
 }
