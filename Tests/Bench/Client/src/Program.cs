@@ -457,14 +457,6 @@ internal static class Program
                                         CancellationToken.None)
                      .ConfigureAwait(false);
 
-    await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
-                                  async resultId =>
-                                  {
-                                    await using var channel = await channelPool.GetAsync(CancellationToken.None)
-                                                                               .ConfigureAwait(false);
-                                  })
-                 .ConfigureAwait(false);
-
     var resultsAvailable = Stopwatch.GetTimestamp();
 
     var countRes = 0;
