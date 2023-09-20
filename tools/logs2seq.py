@@ -33,38 +33,38 @@ logging.basicConfig(
 
 
 class LogSender:
-    """
-    LogSender is a class for sending log messages to a Seq server
-
-    Args:
-        url (str): The URL of the Seq server where log messages should be sent
-
-    Attributes:
-        url (str): The URL of the Seq server
-        batch (bytes): A batch of log messages waiting to be sent
-        ctr (int): A counter for the number of log messages sent
-
-    Methods:
-        sendlog(self, line: str):
-            Send a log message to the Seq server. The message is expected to be in JSON format
-            Logs are sent to the server when the batch size exceeds 100,000 bytes
-            Logs left in the batch are sent at the exit
-    """
     def __init__(self, url: str):
+        """
+        LogSender is a class for sending log messages to a Seq server
+
+        Args:
+            url (str): The URL of the Seq server where log messages should be sent
+
+        Attributes:
+            url (str): The URL of the Seq server
+            batch (bytes): A batch of log messages waiting to be sent
+            ctr (int): A counter for the number of log messages sent
+        """
         self.url = url
         self.batch = b""
         self.ctr = 0
 
     def __enter__(self):
+        """
+        Enter a context and return the LogSender instance
+
+        Returns:
+            LogSender: Instance that support the with statement
+        """
         return self
 
     def sendlog(self, line: str):
         """
-        Send a log message to the Seq server
+        Send a log message to the Seq server. The message is expected to be in JSON format
+        Logs are sent to the server when the batch size exceeds 100,000 bytes
 
         Args:
             line (str): A log message in JSON format
-
         """
         if line.startswith("{"):
             try:
@@ -82,6 +82,9 @@ class LogSender:
                 logger.warning(f"Failed to parse JSON: {e}")
 
     def __exit__(self, exception_type, exception_value, traceback):
+        """
+        Logs left in the batch are sent and exiting the context
+        """
         if self.batch != b"":
             requests.post(self.url, data=self.batch)
         logger.info(f"sent : {self.ctr}")
@@ -94,9 +97,6 @@ def process_json_log(url: str, file_name: str):
     Args:
         url (str): The URL of the Seq server where log messages should be sent
         file_name (str): The path to the JSON log file 
-
-    Returns:
-        None
     """
     with open(file_name, "r") as file:
         with LogSender(url) as log_sender:
@@ -111,9 +111,6 @@ def process_jsongz_log(url: str, file_name: str):
     Args:
         url (str): The URL of the Seq server where log messages should be sent
         file_name (str): The path to the gzipped JSON log file
-
-    Returns:
-        None
     """
     with gzip.open(file_name, "r") as file:
         with LogSender(url) as log_sender:
