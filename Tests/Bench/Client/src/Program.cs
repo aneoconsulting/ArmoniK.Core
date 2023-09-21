@@ -319,7 +319,7 @@ internal static class Program
                                                                           {
                                                                             req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
                                                                                             {
-                                                                                              Name = $"root {i}",
+                                                                                              Name = $"result {i}",
                                                                                             }),
                                                                             benchOptions.PayloadSize > benchOptions.SwitchToStreamSize
                                                                               ? req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
@@ -330,7 +330,7 @@ internal static class Program
                                                                           },
                                                                         };
                                                         var resultResp = await resultClient.CreateResultsMetaDataAsync(resultReq);
-                                                        var resultIds = resultResp.Results.Where(raw => raw.Name.StartsWith("root"))
+                                                        var resultIds = resultResp.Results.Where(raw => raw.Name.StartsWith("result"))
                                                                                   .Select(raw => raw.ResultId)
                                                                                   .AsICollection();
 
@@ -451,9 +451,10 @@ internal static class Program
 
     var taskCreated = Stopwatch.GetTimestamp();
 
-    await channelPool.WithInstanceAsync(channel => channel.WaitForResultsAsync(createSessionReply.SessionId,
-                                                                               results,
-                                                                               CancellationToken.None),
+    await channelPool.WithInstanceAsync(async channel => await channel.WaitForResultsAsync(createSessionReply.SessionId,
+                                                                                           results,
+                                                                                           CancellationToken.None)
+                                                                      .ConfigureAwait(false),
                                         CancellationToken.None)
                      .ConfigureAwait(false);
 
