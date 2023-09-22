@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -39,19 +38,6 @@ public interface IResultTable : IInitializable
   ///   Logger used to produce logs for this class
   /// </summary>
   public ILogger Logger { get; }
-
-  /// <summary>
-  ///   Check the status of the given results
-  /// </summary>
-  /// <param name="sessionId">Session id of the session using the results</param>
-  /// <param name="keys">Ids of the results that will be checked</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The number of results in each kind of status
-  /// </returns>
-  Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                IEnumerable<string> keys,
-                                                                CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Change ownership (in batch) of the results in the given request
@@ -95,19 +81,6 @@ public interface IResultTable : IInitializable
                          CancellationToken   cancellationToken = default);
 
   /// <summary>
-  ///   Get the list of task that depends on the result
-  /// </summary>
-  /// <param name="sessionId">Id of the session containing the result</param>
-  /// <param name="resultId">Id of the result</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Ids of the task dependent on this result
-  /// </returns>
-  Task<IEnumerable<string>> GetDependents(string            sessionId,
-                                          string            resultId,
-                                          CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Delete the results from the database
   /// </summary>
   /// <param name="session">id of the session containing the result</param>
@@ -132,28 +105,17 @@ public interface IResultTable : IInitializable
                      CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Get the results from a collection of ids
+  ///   Get the results from a filter and convert it in the given type
   /// </summary>
-  /// <param name="sessionId">id of the session containing the result</param>
-  /// <param name="keys">Collection of id of the result to be retrieved</param>
+  /// <param name="filter">Filter to select results</param>
+  /// <param name="convertor">Expression to convert result into another type</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Collection of results metadata from the database
   /// </returns>
-  IAsyncEnumerable<Result> GetResults(string              sessionId,
-                                      IEnumerable<string> keys,
-                                      CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   List results from a session
-  /// </summary>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The ids of the results in the session
-  /// </returns>
-  IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
-                                            CancellationToken cancellationToken = default);
+  IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
+                                    Expression<Func<Result, T>>    convertor,
+                                    CancellationToken              cancellationToken = default);
 
   /// <summary>
   ///   List all results matching the given request
@@ -221,19 +183,6 @@ public interface IResultTable : IInitializable
                               CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Get the status of the given results
-  /// </summary>
-  /// <param name="ids">ids of the results</param>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   A map between the ids of the results found and their status
-  /// </returns>
-  Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
-                                                                         string              sessionId,
-                                                                         CancellationToken   cancellationToken = default);
-
-  /// <summary>
   ///   Set Task that should produce the result
   /// </summary>
   /// <param name="sessionId"></param>
@@ -274,11 +223,8 @@ public interface IResultTable : IInitializable
   {
     try
     {
-      return await GetResults(sessionId,
-                              new[]
-                              {
-                                key,
-                              },
+      return await GetResults(result => result.ResultId == key,
+                              result => result,
                               cancellationToken)
                    .SingleAsync(cancellationToken)
                    .ConfigureAwait(false);

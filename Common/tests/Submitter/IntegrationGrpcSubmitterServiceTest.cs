@@ -896,9 +896,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                                    CancellationToken                   cancellationToken = default)
       => throw new T();
 
-    public Task<IEnumerable<TData>> FindTasksAsync<TData>(Expression<Func<TaskData, bool>>  filter,
-                                                          Expression<Func<TaskData, TData>> selector,
-                                                          CancellationToken                 cancellationToken = default)
+    public IAsyncEnumerable<TData> FindTasksAsync<TData>(Expression<Func<TaskData, bool>>  filter,
+                                                         Expression<Func<TaskData, TData>> selector,
+                                                         CancellationToken                 cancellationToken = default)
       => throw new T();
 
     public Task<TaskData> UpdateOneTask(string                                                                        taskId,
@@ -971,12 +971,12 @@ internal class IntegrationGrpcSubmitterServiceTest
     }
   }
 
-  private static IResultTable CreateResultTableMock(Action<ISetup<IResultTable, Task<IEnumerable<GetResultStatusReply.Types.IdStatus>>>> setupAction)
+  private static IResultTable CreateResultTableMock(Action<ISetup<IResultTable, IAsyncEnumerable<GetResultStatusReply.Types.IdStatus>>> setupAction)
   {
     var mock = new Mock<IResultTable>();
-    var setup = mock.Setup(table => table.GetResultStatus(It.IsAny<IEnumerable<string>>(),
-                                                          It.IsAny<string>(),
-                                                          It.IsAny<CancellationToken>()));
+    var setup = mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
+                                                     It.IsAny<Expression<Func<Result, GetResultStatusReply.Types.IdStatus>>>(),
+                                                     It.IsAny<CancellationToken>()));
     setupAction.Invoke(setup);
     return mock.Object;
   }
@@ -993,7 +993,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                               })
       {
         yield return new TestCaseData(CreateResultTableMock(setup => setup.Throws(exception))).Returns(statusCode);
-        yield return new TestCaseData(CreateResultTableMock(setup => setup.ThrowsAsync(exception))).Returns(statusCode);
         yield return new TestCaseData(CreateResultTableMock(setup => setup.Returns(() => throw exception))).Returns(statusCode);
       }
     }

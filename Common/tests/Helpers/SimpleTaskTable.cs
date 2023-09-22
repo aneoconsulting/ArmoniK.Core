@@ -163,29 +163,30 @@ public class SimpleTaskTable : ITaskTable
                                                                                            "")),
                                                                  }.Select(selector.Compile()), 1));
 
-  public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
-                                                Expression<Func<TaskData, T>>    selector,
-                                                CancellationToken                cancellationToken = default)
-    => Task.FromResult(new List<TaskData>
-                       {
-                         new(SessionId,
-                             TaskId,
-                             OwnerPodId,
-                             PodName,
-                             PayloadId,
-                             new List<string>(),
-                             new List<string>(),
-                             new List<string>
-                             {
-                               OutputId,
-                             },
-                             new List<string>(),
-                             TaskStatus.Completed,
-                             TaskOptions,
-                             new Output(true,
-                                        "")),
-                       }.Where(filter.Compile())
-                        .Select(selector.Compile()));
+  public IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                               Expression<Func<TaskData, T>>    selector,
+                                               CancellationToken                cancellationToken = default)
+    => new List<TaskData>
+       {
+         new(SessionId,
+             TaskId,
+             OwnerPodId,
+             PodName,
+             PayloadId,
+             new List<string>(),
+             new List<string>(),
+             new List<string>
+             {
+               OutputId,
+             },
+             new List<string>(),
+             TaskStatus.Completed,
+             TaskOptions,
+             new Output(true,
+                        "")),
+       }.Where(filter.Compile())
+        .Select(selector.Compile())
+        .ToAsyncEnumerable();
 
 
   public Task<TaskData> UpdateOneTask(string                                                                        taskId,

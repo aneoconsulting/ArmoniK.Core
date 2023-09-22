@@ -266,14 +266,14 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
-                                                Expression<Func<TaskData, T>>    selector,
-                                                CancellationToken                cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AsQueryable()
-                                       .Select(pair => pair.Value)
-                                       .Where(filter)
-                                       .Select(selector)
-                                       .AsEnumerable());
+  public IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                               Expression<Func<TaskData, T>>    selector,
+                                               CancellationToken                cancellationToken = default)
+    => taskId2TaskData_.AsQueryable()
+                       .Select(pair => pair.Value)
+                       .Where(filter)
+                       .Select(selector)
+                       .ToAsyncEnumerable();
 
   public Task<TaskData> UpdateOneTask(string                                                                        taskId,
                                       ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,

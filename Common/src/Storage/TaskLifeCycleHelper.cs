@@ -406,6 +406,7 @@ public static class TaskLifeCycleHelper
                                                            data.Options.Priority,
                                                          },
                                                  cancellationToken)
+                                 .ToListAsync(cancellationToken)
                                  .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
 
     foreach (var group in groups)

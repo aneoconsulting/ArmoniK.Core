@@ -1919,6 +1919,7 @@ public class TaskTableTestBase
       var cancelledTasks = await TaskTable!.FindTasksAsync(data => data.Status == status,
                                                            data => data.TaskId,
                                                            CancellationToken.None)
+                                           .ToListAsync()
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(expectedCount,

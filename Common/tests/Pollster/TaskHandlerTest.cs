@@ -655,9 +655,9 @@ public class TaskHandlerTest
                                                                            CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
-                                                  Expression<Func<TaskData, T>>    selector,
-                                                  CancellationToken                cancellationToken = default)
+    public IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                                 Expression<Func<TaskData, T>>    selector,
+                                                 CancellationToken                cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<TaskData> UpdateOneTask(string                                                                        taskId,
@@ -1261,6 +1261,7 @@ public class TaskHandlerTest
                                                                                  data.RetryOfIds,
                                                                                  data.TaskId,
                                                                                })
+                                             .ToListAsync()
                                              .ConfigureAwait(false);
 
       var lastRetry = retries.MaxBy(arg => arg.RetryOfIds.Count)!;

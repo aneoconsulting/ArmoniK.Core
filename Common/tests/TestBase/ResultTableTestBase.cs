@@ -173,58 +173,6 @@ public class ResultTableTestBase
     }
   }
 
-
-  [Test]
-  public async Task ResultsAreAvailableShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var checkTable = await ResultTable!.AreResultsAvailableAsync("SessionId",
-                                                                   new[]
-                                                                   {
-                                                                     "ResultIsAvailable",
-                                                                   },
-                                                                   CancellationToken.None)
-                                         .ConfigureAwait(false);
-      Assert.AreEqual(1,
-                      checkTable.Count(count => count.Status == ResultStatus.Completed));
-    }
-  }
-
-  [Test]
-  public async Task ResultsAreAvailableShouldReturnEmpty()
-  {
-    if (RunTests)
-    {
-      var checkTable = await ResultTable!.AreResultsAvailableAsync("SessionId",
-                                                                   new[]
-                                                                   {
-                                                                     "ResultDoesNotExist",
-                                                                   },
-                                                                   CancellationToken.None)
-                                         .ConfigureAwait(false);
-      Assert.AreEqual(0,
-                      checkTable.Count(count => count.Status == ResultStatus.Aborted));
-    }
-  }
-
-  [Test]
-  public async Task ResultsAreAvailableShouldReturnAborted()
-  {
-    if (RunTests)
-    {
-      var checkTable = await ResultTable!.AreResultsAvailableAsync("SessionId",
-                                                                   new[]
-                                                                   {
-                                                                     "ResultIsNotAvailable",
-                                                                   },
-                                                                   CancellationToken.None)
-                                         .ConfigureAwait(false);
-      Assert.AreEqual(1,
-                      checkTable.Count(count => count.Status == ResultStatus.Aborted));
-    }
-  }
-
   [Test]
   public async Task ChangeResultOwnershipShouldSucceed()
   {
@@ -319,14 +267,13 @@ public class ResultTableTestBase
                                        CancellationToken.None)
                         .ConfigureAwait(false);
 
-      var resList = ResultTable.ListResultsAsync("SessionId",
-                                                 CancellationToken.None);
+      var resList = await ResultTable.GetResults(result => result.SessionId == "SessionId",
+                                                 result => result.ResultId,
+                                                 CancellationToken.None)
+                                     .ToListAsync()
+                                     .ConfigureAwait(false);
 
-      // Query first element, function returns default if the list is empty
-      var firstElement = await resList.FirstOrDefaultAsync()
-                                      .ConfigureAwait(false);
-
-      Assert.IsTrue(firstElement == default);
+      Assert.IsEmpty(resList);
     }
   }
 
