@@ -363,7 +363,7 @@ internal static class Program
                                                             while (s < benchOptions.PayloadSize * 1024)
                                                             {
                                                               var chunkSize = Math.Min(conf.DataChunkMaxSize,
-                                                                                       benchOptions.PayloadSize - s);
+                                                                                       benchOptions.PayloadSize * 1024 - s);
 
                                                               var dataBytes = new byte [chunkSize];
                                                               rnd.NextBytes(dataBytes);
