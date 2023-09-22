@@ -262,7 +262,9 @@ public class GrpcTasksService : Task.TasksBase
                                                                               data.PodTtl,
                                                                               data.ProcessingToEndDuration,
                                                                               data.CreationToEndDuration,
-                                                                              data.Output))
+                                                                              data.Output),
+                                                  context.CancellationToken)
+                                  .ToListAsync(context.CancellationToken)
                                   .ConfigureAwait(false)).Select(data => data.ToTaskSummary()),
                },
              };

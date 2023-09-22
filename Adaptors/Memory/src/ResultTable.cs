@@ -25,7 +25,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -47,16 +46,6 @@ public class ResultTable : IResultTable
     results_ = results;
     Logger   = logger;
   }
-
-  /// <inheritdoc />
-  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                       IEnumerable<string> keys,
-                                                                       CancellationToken   cancellationToken = default)
-    => Task.FromResult(results_[sessionId]
-                       .Where(model => keys.Contains(model.Value.ResultId))
-                       .GroupBy(model => model.Value.Status)
-                       .Select(models => new ResultStatusCount(models.Key,
-                                                               models.Count())));
 
   /// <inheritdoc />
   public Task ChangeResultOwnership(string                                                 sessionId,
@@ -128,26 +117,6 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<IEnumerable<string>> GetDependents(string            sessionId,
-                                                 string            resultId,
-                                                 CancellationToken cancellationToken)
-  {
-    if (!results_.TryGetValue(sessionId,
-                              out var session))
-    {
-      throw new SessionNotFoundException($"Session '{session}' not found");
-    }
-
-    if (!session.TryGetValue(resultId,
-                             out var result))
-    {
-      throw new ResultNotFoundException($"Key '{resultId}' not found");
-    }
-
-    return Task.FromResult(result.DependentTasks.AsEnumerable());
-  }
-
-  /// <inheritdoc />
   public Task DeleteResult(string            session,
                            string            key,
                            CancellationToken cancellationToken = default)
@@ -182,18 +151,13 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
-  public IAsyncEnumerable<Result> GetResults(string              sessionId,
-                                             IEnumerable<string> keys,
-                                             CancellationToken   cancellationToken = default)
-    => results_[sessionId]
-       .Values.Where(r => keys.Contains(r.ResultId))
-       .ToAsyncEnumerable();
-
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
-                                                   CancellationToken cancellationToken = default)
-    => results_.Values.SelectMany(results => results.Keys)
-               .ToImmutableList()
+  public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
+                                           Expression<Func<Result, T>>    convertor,
+                                           CancellationToken              cancellationToken = default)
+    => results_.Values.SelectMany(results => results.Values)
+               .Where(filter.Compile())
+               .Select(convertor.Compile())
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
@@ -279,18 +243,6 @@ public class ResultTable : IResultTable
                                         e);
     }
   }
-
-  /// <inheritdoc />
-  public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
-                                                                                string              sessionId,
-                                                                                CancellationToken   cancellationToken = default)
-    => Task.FromResult(results_[sessionId]
-                       .Where(model => ids.Contains(model.Key))
-                       .Select(model => new GetResultStatusReply.Types.IdStatus
-                                        {
-                                          ResultId = model.Value.ResultId,
-                                          Status   = model.Value.Status,
-                                        }));
 
   public Task SetTaskOwnership(string                                        sessionId,
                                ICollection<(string resultId, string taskId)> requests,

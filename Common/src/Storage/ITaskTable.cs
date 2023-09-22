@@ -199,11 +199,11 @@ public interface ITaskTable : IInitializable
   /// <param name="selector">Expression to select part of the returned task data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Collection of task metadata matching the request and total number of results without paging
+  ///   Task metadata matching the request and total number of results without paging
   /// </returns>
-  Task<IEnumerable<T>> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
-                                         Expression<Func<TaskData, T>>    selector,
-                                         CancellationToken                cancellationToken = default);
+  IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                        Expression<Func<TaskData, T>>    selector,
+                                        CancellationToken                cancellationToken = default);
 
   // TODO Should be compatible with EFCORE : https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete#updating-multiple-properties
   /// <summary>
