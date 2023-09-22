@@ -166,7 +166,7 @@ public class WatchToGrpc
                                                                                 {
                                                                                   Status   = cur.Status,
                                                                                   OwnerId  = cur.OwnerTaskId,
-                                                                                  ResultId = cur.Name,
+                                                                                  ResultId = cur.ResultId,
                                                                                 },
                                                                     SessionId = cur.SessionId,
                                                                   },
