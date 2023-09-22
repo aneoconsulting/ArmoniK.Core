@@ -16,7 +16,7 @@ jobs:
       release: ${{ steps.release.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
@@ -70,7 +70,7 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.release }}
     steps:
     - name: Checkout
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -113,20 +113,20 @@ jobs:
            path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2
+      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
 
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@4c0219f9ac95b02789c1075625400b2acbff50b1 # v2
+      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
 
     - name: login
-      uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -135,7 +135,7 @@ jobs:
       run: echo ${{ steps.buildx.outputs.platforms }}
 
     - name: Build and push
-      uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825 # v4
+      uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5
       with:
         file: ${{ matrix.path }}
         context: .
@@ -156,7 +156,7 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.release }}
     steps:
     - name: Checkout
-      uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
 
@@ -177,7 +177,7 @@ jobs:
     needs:
       - versionning
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           fetch-depth: 0
 
