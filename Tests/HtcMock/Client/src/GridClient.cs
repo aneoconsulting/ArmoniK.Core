@@ -18,7 +18,7 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Sessions;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -50,40 +50,39 @@ public class GridClient : IGridClient
 
   public ISessionClient CreateSession()
   {
-    var createSessionRequest = new CreateSessionRequest
-                               {
-                                 DefaultTaskOption = new TaskOptions
-                                                     {
-                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                                                       MaxRetries  = 2,
-                                                       Priority    = 1,
-                                                       PartitionId = optionsHtcMock_.Partition,
-                                                       Options =
-                                                       {
-                                                         {
-                                                           "FastCompute", optionsHtcMock_.EnableFastCompute.ToString()
-                                                         },
-                                                         {
-                                                           "UseLowMem", optionsHtcMock_.EnableUseLowMem.ToString()
-                                                         },
-                                                         {
-                                                           "SmallOutput", optionsHtcMock_.EnableSmallOutput.ToString()
-                                                         },
-                                                         {
-                                                           "TaskError", optionsHtcMock_.TaskError
-                                                         },
-                                                         {
-                                                           "TaskRpcException", optionsHtcMock_.TaskRpcException
-                                                         },
-                                                       },
-                                                     },
-                                 PartitionIds =
-                                 {
-                                   optionsHtcMock_.Partition,
-                                 },
-                               };
-    var client             = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = client.CreateSession(createSessionRequest);
+    var client = new Sessions.SessionsClient(channel_);
+    var createSessionReply = client.CreateSession(new CreateSessionRequest
+                                                  {
+                                                    DefaultTaskOption = new TaskOptions
+                                                                        {
+                                                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                                                          MaxRetries  = 2,
+                                                                          Priority    = 1,
+                                                                          PartitionId = optionsHtcMock_.Partition,
+                                                                          Options =
+                                                                          {
+                                                                            {
+                                                                              "FastCompute", optionsHtcMock_.EnableFastCompute.ToString()
+                                                                            },
+                                                                            {
+                                                                              "UseLowMem", optionsHtcMock_.EnableUseLowMem.ToString()
+                                                                            },
+                                                                            {
+                                                                              "SmallOutput", optionsHtcMock_.EnableSmallOutput.ToString()
+                                                                            },
+                                                                            {
+                                                                              "TaskError", optionsHtcMock_.TaskError
+                                                                            },
+                                                                            {
+                                                                              "TaskRpcException", optionsHtcMock_.TaskRpcException
+                                                                            },
+                                                                          },
+                                                                        },
+                                                    PartitionIds =
+                                                    {
+                                                      optionsHtcMock_.Partition,
+                                                    },
+                                                  });
 
     logger_.LogInformation("Session {sessionId} created",
                            createSessionReply.SessionId);

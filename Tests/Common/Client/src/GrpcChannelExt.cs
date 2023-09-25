@@ -18,9 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -336,4 +338,94 @@ public static class GrpcChannelExt
                                      },
                                    },
                                  });
+
+  private static Api.gRPC.V1.Results.FiltersAnd ResultsFilter(string resultId)
+    => new()
+       {
+         And =
+         {
+           new Api.gRPC.V1.Results.FilterField
+           {
+             Field = new ResultField
+                     {
+                       ResultRawField = new ResultRawField
+                                        {
+                                          Field = ResultRawEnumField.ResultId,
+                                        },
+                     },
+             FilterString = new FilterString
+                            {
+                              Operator = FilterStringOperator.Equal,
+                              Value    = resultId,
+                            },
+           },
+         },
+       };
+
+  public static async Task WaitForResultsAsync(this ChannelBase    channel,
+                                               string              sessionId,
+                                               ICollection<string> resultIds,
+                                               CancellationToken   cancellationToken)
+  {
+    var eventsClient = new Events.EventsClient(channel);
+
+    var resultsNotFound = resultIds.ToDictionary(id => id,
+                                                 _ => true);
+
+    using var streamingCall = eventsClient.GetEvents(new EventSubscriptionRequest
+                                                     {
+                                                       SessionId = sessionId,
+                                                       ReturnedEvents =
+                                                       {
+                                                         EventsEnum.ResultStatusUpdate,
+                                                         EventsEnum.NewResult,
+                                                       },
+                                                       ResultsFilters = new Api.gRPC.V1.Results.Filters
+                                                                        {
+                                                                          Or =
+                                                                          {
+                                                                            resultIds.Select(ResultsFilter),
+                                                                          },
+                                                                        },
+                                                     });
+
+
+    await foreach (var resp in streamingCall.ResponseStream.ReadAllAsync(cancellationToken)
+                                            .ConfigureAwait(false))
+    {
+      if (resp.UpdateCase == EventSubscriptionResponse.UpdateOneofCase.ResultStatusUpdate && resultsNotFound.ContainsKey(resp.ResultStatusUpdate.ResultId))
+      {
+        if (resp.ResultStatusUpdate.Status == ResultStatus.Completed)
+        {
+          resultsNotFound.Remove(resp.ResultStatusUpdate.ResultId);
+          if (!resultsNotFound.Any())
+          {
+            break;
+          }
+        }
+
+        if (resp.ResultStatusUpdate.Status == ResultStatus.Aborted)
+        {
+          throw new Exception($"Result {resp.ResultStatusUpdate.ResultId} has been aborted");
+        }
+      }
+
+      if (resp.UpdateCase == EventSubscriptionResponse.UpdateOneofCase.NewResult && resultsNotFound.ContainsKey(resp.NewResult.ResultId))
+      {
+        if (resp.NewResult.Status == ResultStatus.Completed)
+        {
+          resultsNotFound.Remove(resp.NewResult.ResultId);
+          if (!resultsNotFound.Any())
+          {
+            break;
+          }
+        }
+
+        if (resp.NewResult.Status == ResultStatus.Aborted)
+        {
+          throw new Exception($"Result {resp.NewResult.ResultId} has been aborted");
+        }
+      }
+    }
+  }
 }

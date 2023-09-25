@@ -16,11 +16,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Client;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
@@ -30,7 +32,7 @@ using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
 using ArmoniK.Utils;
@@ -46,7 +48,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
 
-using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
+using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using FilterField = ArmoniK.Api.gRPC.V1.Partitions.FilterField;
 using Filters = ArmoniK.Api.gRPC.V1.Partitions.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Partitions.FiltersAnd;
@@ -289,12 +291,12 @@ internal static class Program
                               {
                                 args.Cancel = true;
                                 using var channel = channelPool.Get();
+                                var       client  = new Sessions.SessionsClient(channel);
+                                client.CancelSession(new CancelSessionRequest
+                                                     {
+                                                       SessionId = createSessionReply.SessionId,
+                                                     });
 
-                                var submitterClient = new Submitter.SubmitterClient(channel);
-                                submitterClient.CancelSession(new Session
-                                                              {
-                                                                Id = createSessionReply.SessionId,
-                                                              });
                                 Environment.Exit(0);
                               };
 
@@ -308,8 +310,7 @@ internal static class Program
                                                         await using var channel = await channelPool.GetAsync(CancellationToken.None)
                                                                                                    .ConfigureAwait(false);
 
-                                                        var resultClient    = new Results.ResultsClient(channel);
-                                                        var submitterClient = new Submitter.SubmitterClient(channel);
+                                                        var resultClient = new Results.ResultsClient(channel);
 
                                                         var resultReq = new CreateResultsMetaDataRequest
                                                                         {
@@ -318,39 +319,126 @@ internal static class Program
                                                                           {
                                                                             req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
                                                                                             {
-                                                                                              Name = $"root {i}",
+                                                                                              Name = $"result {i}",
                                                                                             }),
+                                                                            benchOptions.PayloadSize > benchOptions.SwitchToStreamSize
+                                                                              ? req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                                {
+                                                                                                  Name = $"payload {i}",
+                                                                                                })
+                                                                              : Array.Empty<CreateResultsMetaDataRequest.Types.ResultCreate>(),
                                                                           },
                                                                         };
                                                         var resultResp = await resultClient.CreateResultsMetaDataAsync(resultReq);
-                                                        var resultIds = resultResp.Results.Select(raw => raw.ResultId)
-                                                                                  .ToList();
+                                                        var resultIds = resultResp.Results.Where(raw => raw.Name.StartsWith("result"))
+                                                                                  .Select(raw => raw.ResultId)
+                                                                                  .AsICollection();
 
-                                                        var taskReq = resultIds.Select(resultId =>
-                                                                                       {
-                                                                                         var dataBytes = new byte[benchOptions.PayloadSize * 1024];
-                                                                                         rnd.NextBytes(dataBytes);
-                                                                                         return new TaskRequest
-                                                                                                {
-                                                                                                  ExpectedOutputKeys =
+                                                        ICollection<string> payloadIds;
+
+                                                        if (benchOptions.PayloadSize > benchOptions.SwitchToStreamSize)
+                                                        {
+                                                          var conf = await resultClient.GetServiceConfigurationAsync(new Empty());
+
+                                                          payloadIds = resultResp.Results.Where(raw => raw.Name.StartsWith("payload"))
+                                                                                 .Select(raw => raw.ResultId)
+                                                                                 .AsICollection();
+
+                                                          foreach (var id in payloadIds)
+                                                          {
+                                                            var stream = resultClient.UploadResultData();
+
+                                                            await stream.RequestStream.WriteAsync(new UploadResultDataRequest
                                                                                                   {
-                                                                                                    resultId,
+                                                                                                    Id = new UploadResultDataRequest.Types.ResultIdentifier
+                                                                                                         {
+                                                                                                           ResultId  = id,
+                                                                                                           SessionId = createSessionReply.SessionId,
+                                                                                                         },
                                                                                                   },
-                                                                                                  Payload = UnsafeByteOperations.UnsafeWrap(dataBytes),
-                                                                                                };
-                                                                                       });
-                                                        var taskResp = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
-                                                                                                              null,
-                                                                                                              taskReq,
-                                                                                                              CancellationToken.None)
-                                                                                            .ConfigureAwait(false);
+                                                                                                  CancellationToken.None)
+                                                                        .ConfigureAwait(false);
+
+                                                            var s = 0;
+                                                            while (s < benchOptions.PayloadSize * 1024)
+                                                            {
+                                                              var chunkSize = Math.Min(conf.DataChunkMaxSize,
+                                                                                       benchOptions.PayloadSize * 1024 - s);
+
+                                                              var dataBytes = new byte [chunkSize];
+                                                              rnd.NextBytes(dataBytes);
+
+                                                              await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                                                                    {
+                                                                                                      DataChunk = UnsafeByteOperations.UnsafeWrap(dataBytes),
+                                                                                                    },
+                                                                                                    CancellationToken.None)
+                                                                          .ConfigureAwait(false);
+
+                                                              s += chunkSize;
+                                                            }
+
+                                                            await stream.RequestStream.CompleteAsync()
+                                                                        .ConfigureAwait(false);
+
+                                                            await stream.ResponseAsync.ConfigureAwait(false);
+                                                          }
+                                                        }
+                                                        else
+                                                        {
+                                                          payloadIds = (await resultClient.CreateResultsAsync(new CreateResultsRequest
+                                                                                                              {
+                                                                                                                SessionId = createSessionReply.SessionId,
+                                                                                                                Results =
+                                                                                                                {
+                                                                                                                  resultIds.Select((_,
+                                                                                                                                    i) =>
+                                                                                                                                   {
+                                                                                                                                     var dataBytes =
+                                                                                                                                       new byte
+                                                                                                                                       [benchOptions.PayloadSize *
+                                                                                                                                        1024];
+                                                                                                                                     rnd.NextBytes(dataBytes);
+                                                                                                                                     return new CreateResultsRequest.
+                                                                                                                                            Types.ResultCreate
+                                                                                                                                            {
+                                                                                                                                              Data = UnsafeByteOperations
+                                                                                                                                                .UnsafeWrap(dataBytes),
+                                                                                                                                              Name = $"payload {i}",
+                                                                                                                                            };
+                                                                                                                                   }),
+                                                                                                                },
+                                                                                                              })).Results.Select(raw => raw.ResultId)
+                                                                                                                 .AsICollection();
+                                                        }
+
+                                                        var tasksClient = new Tasks.TasksClient(channel);
+                                                        var submitResponse = await tasksClient.SubmitTasksAsync(new SubmitTasksRequest
+                                                                                                                {
+                                                                                                                  SessionId = createSessionReply.SessionId,
+                                                                                                                  TaskCreations =
+                                                                                                                  {
+                                                                                                                    resultIds.Select((_,
+                                                                                                                                      i) => new SubmitTasksRequest.Types.
+                                                                                                                                            TaskCreation
+                                                                                                                                            {
+                                                                                                                                              PayloadId = payloadIds
+                                                                                                                                                .ElementAt(i),
+                                                                                                                                              ExpectedOutputKeys =
+                                                                                                                                              {
+                                                                                                                                                resultIds.ElementAt(i),
+                                                                                                                                              },
+                                                                                                                                            }),
+                                                                                                                  },
+                                                                                                                });
+
 
                                                         if (logger.IsEnabled(LogLevel.Debug))
                                                         {
-                                                          foreach (var status in taskResp.CreationStatusList.CreationStatuses)
+                                                          foreach (var info in submitResponse.TaskInfos)
                                                           {
                                                             logger.LogDebug("task created {taskId}",
-                                                                            status.TaskInfo.TaskId);
+                                                                            info.TaskId);
                                                           }
                                                         }
 
@@ -363,38 +451,12 @@ internal static class Program
 
     var taskCreated = Stopwatch.GetTimestamp();
 
-    await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
-                                  async resultId =>
-                                  {
-                                    await using var channel = await channelPool.GetAsync(CancellationToken.None)
-                                                                               .ConfigureAwait(false);
-
-                                    var submitterClient = new Submitter.SubmitterClient(channel);
-                                    var resultRequest = new ResultRequest
-                                                        {
-                                                          ResultId = resultId,
-                                                          Session  = createSessionReply.SessionId,
-                                                        };
-
-#pragma warning disable CS0612 // Type or member is obsolete
-                                    var availabilityReply = await submitterClient.WaitForAvailabilityAsync(resultRequest);
-#pragma warning restore CS0612 // Type or member is obsolete
-
-                                    switch (availabilityReply.TypeCase)
-                                    {
-                                      case AvailabilityReply.TypeOneofCase.None:
-                                        throw new Exception("Issue with Server !");
-                                      case AvailabilityReply.TypeOneofCase.Ok:
-                                        break;
-                                      case AvailabilityReply.TypeOneofCase.Error:
-                                        throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
-                                      case AvailabilityReply.TypeOneofCase.NotCompletedTask:
-                                        throw new Exception($"Task not completed - result id {resultId}");
-                                      default:
-                                        throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
-                                    }
-                                  })
-                 .ConfigureAwait(false);
+    await channelPool.WithInstanceAsync(async channel => await channel.WaitForResultsAsync(createSessionReply.SessionId,
+                                                                                           results,
+                                                                                           CancellationToken.None)
+                                                                      .ConfigureAwait(false),
+                                        CancellationToken.None)
+                     .ConfigureAwait(false);
 
     var resultsAvailable = Stopwatch.GetTimestamp();
 
@@ -409,16 +471,11 @@ internal static class Program
                                                                                  .ConfigureAwait(false);
                                       try
                                       {
-                                        var resultRequest = new ResultRequest
-                                                            {
-                                                              ResultId = resultId,
-                                                              Session  = createSessionReply.SessionId,
-                                                            };
+                                        var client = new Results.ResultsClient(channel);
 
-                                        var client = new Submitter.SubmitterClient(channel);
-
-                                        var result = await client.GetResultAsync(resultRequest,
-                                                                                 CancellationToken.None)
+                                        var result = await client.DownloadResultData(createSessionReply.SessionId,
+                                                                                     resultId,
+                                                                                     CancellationToken.None)
                                                                  .ConfigureAwait(false);
 
                                         // A good a way to process results would be to process them individually as soon as they are
@@ -463,24 +520,47 @@ internal static class Program
 
     var countAll = await channelPool.WithInstanceAsync(async channel =>
                                                        {
-                                                         var client = new Submitter.SubmitterClient(channel);
-                                                         var req = new TaskFilter
-                                                                   {
-                                                                     Session = new TaskFilter.Types.IdsRequest
-                                                                               {
-                                                                                 Ids =
-                                                                                 {
-                                                                                   createSessionReply.SessionId,
-                                                                                 },
-                                                                               },
-                                                                   };
-                                                         return await client.CountTasksAsync(req);
+                                                         var client = new Tasks.TasksClient(channel);
+
+                                                         return await client.CountTasksByStatusAsync(new CountTasksByStatusRequest
+                                                                                                     {
+                                                                                                       Filters = new Api.gRPC.V1.Tasks.Filters
+                                                                                                                 {
+                                                                                                                   Or =
+                                                                                                                   {
+                                                                                                                     new Api.gRPC.V1.Tasks.FiltersAnd
+                                                                                                                     {
+                                                                                                                       And =
+                                                                                                                       {
+                                                                                                                         new Api.gRPC.V1.Tasks.FilterField
+                                                                                                                         {
+                                                                                                                           FilterString = new FilterString
+                                                                                                                                          {
+                                                                                                                                            Operator =
+                                                                                                                                              FilterStringOperator.Equal,
+                                                                                                                                            Value = createSessionReply
+                                                                                                                                              .SessionId,
+                                                                                                                                          },
+                                                                                                                           Field = new TaskField
+                                                                                                                                   {
+                                                                                                                                     TaskSummaryField =
+                                                                                                                                       new TaskSummaryField
+                                                                                                                                       {
+                                                                                                                                         Field = TaskSummaryEnumField
+                                                                                                                                           .SessionId,
+                                                                                                                                       },
+                                                                                                                                   },
+                                                                                                                         },
+                                                                                                                       },
+                                                                                                                     },
+                                                                                                                   },
+                                                                                                                 },
+                                                                                                     });
                                                        },
                                                        CancellationToken.None)
                                     .ConfigureAwait(false);
 
     var countFinished = Stopwatch.GetTimestamp();
-
 
     var stats = new ExecutionStats
                 {
@@ -489,12 +569,12 @@ internal static class Program
                   ResultRetrievingTime = TimeSpan.FromTicks((resultsReceived  - resultsAvailable) / 100),
                   TasksExecutionTime   = TimeSpan.FromTicks((resultsAvailable - taskCreated)      / 100),
                   CountExecutionTime   = TimeSpan.FromTicks((countFinished    - resultsReceived)  / 100),
-                  TotalTasks           = countAll.Values.Sum(count => count.Count),
-                  CompletedTasks = countAll.Values.Where(count => count.Status == TaskStatus.Completed)
+                  TotalTasks           = countAll.Status.Sum(count => count.Count),
+                  CompletedTasks = countAll.Status.Where(count => count.Status == TaskStatus.Completed)
                                            .Sum(count => count.Count),
-                  ErrorTasks = countAll.Values.Where(count => count.Status == TaskStatus.Error)
+                  ErrorTasks = countAll.Status.Where(count => count.Status == TaskStatus.Error)
                                        .Sum(count => count.Count),
-                  CancelledTasks = countAll.Values.Where(count => count.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
+                  CancelledTasks = countAll.Status.Where(count => count.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
                                            .Sum(count => count.Count),
                 };
     logger.LogInformation("executions stats {@stats}",
