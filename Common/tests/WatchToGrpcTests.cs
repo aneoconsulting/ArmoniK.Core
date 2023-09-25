@@ -26,6 +26,8 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -41,7 +43,8 @@ public class WatchToGrpcTests
     var watchToGrpcInstance = new WatchToGrpc(new SimpleTaskTable(),
                                               new SimpleTaskWatcher(),
                                               new SimpleResultTable(),
-                                              new SimpleResultWatcher());
+                                              new SimpleResultWatcher(),
+                                              NullLogger.Instance);
 
 
     var list = new List<EventSubscriptionResponse>();
@@ -60,7 +63,7 @@ public class WatchToGrpcTests
                                                        list.Add(eventSubscriptionResponse);
                                                      }
                                                    });
-    Assert.AreEqual(9,
+    Assert.AreEqual(8,
                     list.Count);
   }
 
@@ -80,7 +83,8 @@ public class WatchToGrpcTests
                                            var watchToGrpcInstance = new WatchToGrpc(new SimpleTaskTable(),
                                                                                      new SimpleTaskWatcher(),
                                                                                      new SimpleResultTable(),
-                                                                                     new SimpleResultWatcher());
+                                                                                     new SimpleResultWatcher(),
+                                                                                     NullLogger.Instance);
 
                                            Assert.ThrowsAsync<OperationCanceledException>(async () =>
                                                                                           {
@@ -107,7 +111,7 @@ public class WatchToGrpcTests
     await taskList.WhenAll()
                   .ConfigureAwait(false);
 
-    Assert.AreEqual(9 * nTries,
+    Assert.AreEqual(8 * nTries,
                     list.Count);
   }
 }

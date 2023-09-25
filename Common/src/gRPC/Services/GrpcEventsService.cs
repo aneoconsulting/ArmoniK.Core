@@ -62,7 +62,8 @@ public class GrpcEventsService : Events.EventsBase
     var wtg = new WatchToGrpc(taskTable_,
                               taskWatcher_,
                               resultTable_,
-                              resultWatcher_);
+                              resultWatcher_,
+                              logger_);
 
     try
     {
