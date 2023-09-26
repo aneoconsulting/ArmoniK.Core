@@ -46,6 +46,7 @@ public interface IAgentHandler
   /// <param name="logger">Logger that may be injected into the handler that embed preconfigured scopes</param>
   /// <param name="sessionData">Session metadata</param>
   /// <param name="taskData">Task metadata</param>
+  /// <param name="folder">Shared folder between Agent and Worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
@@ -54,5 +55,6 @@ public interface IAgentHandler
                      ILogger           logger,
                      SessionData       sessionData,
                      TaskData          taskData,
+                     string            folder,
                      CancellationToken cancellationToken);
 }

@@ -25,8 +25,6 @@ using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -37,13 +35,12 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly GrpcChannelProvider                                     channelProvider_;
-  private readonly ILogger<WorkerStreamHandler>                            logger_;
-  private readonly InitWorker                                              optionsInitWorker_;
-  private          bool                                                    isInitialized_;
-  private          int                                                     retryCheck_;
-  private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
-  private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
+  private readonly GrpcChannelProvider                     channelProvider_;
+  private readonly ILogger<WorkerStreamHandler>            logger_;
+  private readonly InitWorker                              optionsInitWorker_;
+  private          bool                                    isInitialized_;
+  private          int                                     retryCheck_;
+  private          Api.gRPC.V1.Worker.Worker.WorkerClient? workerClient_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
@@ -53,28 +50,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     optionsInitWorker_ = optionsInitWorker;
     logger_            = logger;
   }
-
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken)
-  {
-    if (workerClient_ == null)
-    {
-      throw new ArmoniKException("Worker client should be initialized");
-    }
-
-    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                    cancellationToken: cancellationToken);
-
-    if (stream_ is null)
-    {
-      throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
-    }
-
-    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseAsync,
-                                                           stream_.RequestStream);
-  }
-
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
 
   public async Task Init(CancellationToken cancellationToken)
@@ -152,9 +127,21 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   }
 
   public void Dispose()
+    => GC.SuppressFinalize(this);
+
+  public async Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                      TimeSpan          duration,
+                                                      CancellationToken cancellationToken)
   {
-    stream_?.Dispose();
-    GC.SuppressFinalize(this);
+    if (workerClient_ == null)
+    {
+      throw new ArmoniKException("Worker client should be initialized");
+    }
+
+    return await workerClient_.ProcessAsync(request,
+                                            deadline: DateTime.UtcNow + duration,
+                                            cancellationToken: cancellationToken)
+                              .ConfigureAwait(false);
   }
 
   private Task<bool> CheckWorker(CancellationToken cancellationToken)

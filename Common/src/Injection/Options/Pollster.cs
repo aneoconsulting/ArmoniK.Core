@@ -50,4 +50,14 @@ public class Pollster
   ///   This happens in parallel of the execution of another task
   /// </summary>
   public TimeSpan TimeoutBeforeNextAcquisition { get; set; } = TimeSpan.FromSeconds(10);
+
+  /// <summary>
+  ///   Shared folder between Agent and Worker
+  /// </summary>
+  public string SharedCacheFolder { get; set; } = "/cache/shared";
+
+  /// <summary>
+  ///   Internal cache for data
+  /// </summary>
+  public string InternalCacheFolder { get; set; } = "/cache/internal";
 }

@@ -33,7 +33,6 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -46,7 +45,6 @@ using Moq;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using Result = ArmoniK.Core.Common.Storage.Result;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -1017,10 +1015,9 @@ public class TaskHandlerTest
     public void Dispose()
       => GC.SuppressFinalize(this);
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
+    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                  TimeSpan          duration,
+                                                  CancellationToken cancellationToken)
       => throw new T();
   }
 
@@ -1071,10 +1068,6 @@ public class TaskHandlerTest
                                                                                       .SetArgDisplayNames("ExceptionTaskCancellation");
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(3000)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                              .SetArgDisplayNames("RpcExceptionTaskCancellation");
-
-      // Worker unavailable during execution should put the task in error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                                     .SetArgDisplayNames("UnavailableBeforeCancellation");
 
       // If the worker becomes unavailable during the task execution after cancellation, the task should be resubmitted
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(3000)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
@@ -1281,9 +1274,9 @@ public class TaskHandlerTest
   {
     get
     {
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<Exception>()).Returns((TaskStatus.Error, QueueMessageStatus.Processed))
+      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<Exception>()).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
                                                                                        .SetArgDisplayNames("Exception"); // error with resubmit
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestRpcException>()).Returns((TaskStatus.Error, QueueMessageStatus.Processed))
+      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestRpcException>()).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
                                                                                               .SetArgDisplayNames("RpcException"); // error with resubmit
       // error meaning that the worker is unavailable, therefore a requeue is made
       yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestUnavailableRpcException>()).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
@@ -1336,22 +1329,11 @@ public class TaskHandlerTest
   }
 
 
-  public static IEnumerable TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow
-  {
-    get
-    {
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(100)).SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
-      yield return
-        new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(100))
-          .SetArgDisplayNames("RpcUnavailableExceptionResubmit"); // error with resubmit
-    }
-  }
-
   [Test]
-  [TestCaseSource(nameof(TestCaseOutputExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow))]
-  public async Task ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow<TEx>(ExceptionWorkerStreamHandler<TEx> sh)
-    where TEx : Exception, new()
+  public async Task ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow()
   {
+    var sh = new ExceptionWorkerStreamHandler<TestRpcException>(100);
+
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
@@ -1379,8 +1361,8 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
-                                                                 .ConfigureAwait(false));
+    Assert.ThrowsAsync<TestRpcException>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
+                                                                              .ConfigureAwait(false));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
                                                                      CancellationToken.None)
@@ -1445,15 +1427,6 @@ public class TaskHandlerTest
     }
 
     await agentHandler.Agent.CreateTask(taskStreamReader,
-                                        CancellationToken.None)
-                      .ConfigureAwait(false);
-
-
-    var resultStreamReader = new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
-                                                                                       {
-                                                                                         new Api.gRPC.V1.Agent.Result(),
-                                                                                       });
-    await agentHandler.Agent.SendResult(resultStreamReader,
                                         CancellationToken.None)
                       .ConfigureAwait(false);
 

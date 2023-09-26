@@ -22,13 +22,9 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-
-using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -43,16 +39,14 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
   public void Dispose()
     => GC.SuppressFinalize(this);
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken)
-    => Pipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply
-                                                                 {
-                                                                   CommunicationToken = "",
-                                                                   Output = new Output
-                                                                            {
-                                                                              Ok = new Empty(),
-                                                                            },
-                                                                 });
-
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+  public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                TimeSpan          duration,
+                                                CancellationToken cancellationToken)
+    => Task.FromResult(new ProcessReply
+                       {
+                         Output = new Output
+                                  {
+                                    Ok = new Empty(),
+                                  },
+                       });
 }

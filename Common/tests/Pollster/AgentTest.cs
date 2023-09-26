@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -35,6 +36,8 @@ using ArmoniK.Utils;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
+using Grpc.Core;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -42,7 +45,6 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 using Agent = ArmoniK.Core.Common.gRPC.Services.Agent;
-using Result = ArmoniK.Core.Common.Storage.Result;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -128,6 +130,7 @@ public class AgentTest
   private class AgentHolder : IDisposable
   {
     public readonly  Agent                Agent;
+    public readonly  string               Folder;
     public readonly  IObjectStorage       ObjectStorage;
     private readonly TestDatabaseProvider prov_;
     public readonly  MyPushQueueStorage   QueueStorage;
@@ -202,6 +205,10 @@ public class AgentTest
                          },
                          CancellationToken.None)
                  .Wait();
+
+      Folder = Path.Combine(Path.GetTempPath(),
+                            "data");
+      Directory.CreateDirectory(Folder);
 
       var createdTasks = submitter.CreateTasks(Session,
                                                Session,
@@ -291,6 +298,7 @@ public class AgentTest
                         TaskTable,
                         sessionData,
                         TaskData,
+                        Folder,
                         Token,
                         prov_.GetRequiredService<ILogger<Agent>>());
     }
@@ -322,121 +330,62 @@ public class AgentTest
     Assert.AreEqual(CreateTaskReply.ResponseOneofCase.Error,
                     createTaskReply.ResponseCase);
 
-    var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
-                                                                                                              {
-                                                                                                                new Api.gRPC.V1.Agent.Result
-                                                                                                                {
-                                                                                                                  CommunicationToken = token,
-                                                                                                                },
-                                                                                                              }),
-                                                    CancellationToken.None)
-                                  .ConfigureAwait(false);
 
-    Assert.AreEqual(ResultReply.TypeOneofCase.Error,
-                    resultReply.TypeCase);
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.NotifyResultData(new NotifyResultDataRequest
+                                                                         {
+                                                                           CommunicationToken = token,
+                                                                         },
+                                                                         CancellationToken.None));
 
-    var commonData = new TestHelperServerStreamWriter<DataReply>();
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(new DataRequest
+                                                                      {
+                                                                        CommunicationToken = token,
+                                                                      },
+                                                                      CancellationToken.None));
 
-    await holder.Agent.GetCommonData(new DataRequest
-                                     {
-                                       CommunicationToken = token,
-                                     },
-                                     commonData,
-                                     CancellationToken.None)
-                .ConfigureAwait(false);
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData(new DataRequest
+                                                                      {
+                                                                        CommunicationToken = token,
+                                                                      },
+                                                                      CancellationToken.None));
 
-    Assert.AreEqual(DataReply.TypeOneofCase.Error,
-                    commonData.Messages.Single()
-                              .TypeCase);
-
-    var directData = new TestHelperServerStreamWriter<DataReply>();
-
-    await holder.Agent.GetDirectData(new DataRequest
-                                     {
-                                       CommunicationToken = token,
-                                     },
-                                     directData,
-                                     CancellationToken.None)
-                .ConfigureAwait(false);
-
-    Assert.AreEqual(DataReply.TypeOneofCase.Error,
-                    directData.Messages.Single()
-                              .TypeCase);
-
-    var resourceData = new TestHelperServerStreamWriter<DataReply>();
-
-    await holder.Agent.GetResourceData(new DataRequest
-                                       {
-                                         CommunicationToken = token,
-                                       },
-                                       resourceData,
-                                       CancellationToken.None)
-                .ConfigureAwait(false);
-
-    Assert.AreEqual(DataReply.TypeOneofCase.Error,
-                    resourceData.Messages.Single()
-                                .TypeCase);
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(new DataRequest
+                                                                        {
+                                                                          CommunicationToken = token,
+                                                                        },
+                                                                        CancellationToken.None));
   }
 
 
   [Test]
-  public async Task UnImplementedData()
+  public void UnImplementedData()
   {
     using var holder = new AgentHolder();
 
-    var commonData = new TestHelperServerStreamWriter<DataReply>();
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData(new DataRequest
+                                                                                 {
+                                                                                   CommunicationToken = holder.Token,
+                                                                                 },
+                                                                                 CancellationToken.None));
 
-    await holder.Agent.GetCommonData(new DataRequest
-                                     {
-                                       CommunicationToken = holder.Token,
-                                     },
-                                     commonData,
-                                     CancellationToken.None)
-                .ConfigureAwait(false);
-
-    Assert.AreEqual(DataReply.TypeOneofCase.Error,
-                    commonData.Messages.Single()
-                              .TypeCase);
-
-    var directData = new TestHelperServerStreamWriter<DataReply>();
-
-    await holder.Agent.GetDirectData(new DataRequest
-                                     {
-                                       CommunicationToken = holder.Token,
-                                     },
-                                     directData,
-                                     CancellationToken.None)
-                .ConfigureAwait(false);
-
-    Assert.AreEqual(DataReply.TypeOneofCase.Error,
-                    directData.Messages.Single()
-                              .TypeCase);
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData(new DataRequest
+                                                                                 {
+                                                                                   CommunicationToken = holder.Token,
+                                                                                 },
+                                                                                 CancellationToken.None));
   }
 
   [Test]
-  public async Task MissingResourceData()
+  public void MissingResourceData()
   {
-    using var holder       = new AgentHolder();
-    var       resourceData = new TestHelperServerStreamWriter<DataReply>();
+    using var holder = new AgentHolder();
 
-    await holder.Agent.GetResourceData(new DataRequest
-                                       {
-                                         CommunicationToken = holder.Token,
-                                         Key                = "DataNotExisting",
-                                       },
-                                       resourceData,
-                                       CancellationToken.None)
-                .ConfigureAwait(false);
-
-    Assert.AreEqual(DataReply.TypeOneofCase.Init,
-                    resourceData.Messages.Single()
-                                .TypeCase);
-    Assert.AreEqual(DataReply.Types.Init.HasResultOneofCase.Error,
-                    resourceData.Messages.Single()
-                                .Init.HasResultCase);
-    Assert.AreEqual("Key not found",
-                    resourceData.Messages.Single()
-                                .Init.Error);
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(new DataRequest
+                                                                        {
+                                                                          CommunicationToken = holder.Token,
+                                                                          ResultId           = "DataNotExisting",
+                                                                        },
+                                                                        CancellationToken.None));
   }
 
   [Test]
@@ -448,57 +397,28 @@ public class AgentTest
                     holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
                           .Count());
 
-    var resultReply = await holder.Agent.SendResult(new TestHelperAsyncStreamReader<Api.gRPC.V1.Agent.Result>(new[]
-                                                                                                              {
-                                                                                                                new Api.gRPC.V1.Agent.Result
-                                                                                                                {
-                                                                                                                  CommunicationToken = holder.Token,
-                                                                                                                  Init = new InitKeyedDataStream
-                                                                                                                         {
-                                                                                                                           Key = ExpectedOutput1,
-                                                                                                                         },
-                                                                                                                },
-                                                                                                                new Api.gRPC.V1.Agent.Result
-                                                                                                                {
-                                                                                                                  CommunicationToken = holder.Token,
-                                                                                                                  Data = new DataChunk
-                                                                                                                         {
-                                                                                                                           Data = ByteString.CopyFromUtf8("Data1"),
-                                                                                                                         },
-                                                                                                                },
-                                                                                                                new Api.gRPC.V1.Agent.Result
-                                                                                                                {
-                                                                                                                  CommunicationToken = holder.Token,
-                                                                                                                  Data = new DataChunk
-                                                                                                                         {
-                                                                                                                           Data = ByteString.CopyFromUtf8("Data2"),
-                                                                                                                         },
-                                                                                                                },
-                                                                                                                new Api.gRPC.V1.Agent.Result
-                                                                                                                {
-                                                                                                                  CommunicationToken = holder.Token,
-                                                                                                                  Data = new DataChunk
-                                                                                                                         {
-                                                                                                                           DataComplete = true,
-                                                                                                                         },
-                                                                                                                },
-                                                                                                                new Api.gRPC.V1.Agent.Result
-                                                                                                                {
-                                                                                                                  CommunicationToken = holder.Token,
-                                                                                                                  Init = new InitKeyedDataStream
-                                                                                                                         {
-                                                                                                                           LastResult = true,
-                                                                                                                         },
-                                                                                                                },
-                                                                                                              }),
-                                                    CancellationToken.None)
-                                  .ConfigureAwait(false);
+    await File.WriteAllBytesAsync(Path.Combine(holder.Folder,
+                                               ExpectedOutput1),
+                                  Encoding.ASCII.GetBytes("Data1Data2"))
+              .ConfigureAwait(false);
+
+    await holder.Agent.NotifyResultData(new NotifyResultDataRequest
+                                        {
+                                          CommunicationToken = holder.Token,
+                                          Ids =
+                                          {
+                                            new NotifyResultDataRequest.Types.ResultIdentifier
+                                            {
+                                              ResultId  = ExpectedOutput1,
+                                              SessionId = holder.Session,
+                                            },
+                                          },
+                                        },
+                                        CancellationToken.None)
+                .ConfigureAwait(false);
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
-
-    Assert.AreEqual(ResultReply.TypeOneofCase.Ok,
-                    resultReply.TypeCase);
 
     var resultData = await holder.ResultTable.GetResult(holder.Session,
                                                         ExpectedOutput1,
@@ -782,8 +702,7 @@ public class AgentTest
   [Test]
   public async Task GetResourceDataShouldSucceed()
   {
-    using var holder       = new AgentHolder();
-    var       resourceData = new TestHelperServerStreamWriter<DataReply>();
+    using var holder = new AgentHolder();
 
     await holder.ObjectStorage.AddOrUpdateAsync("ResourceData",
                                                 new List<byte[]>
@@ -798,27 +717,16 @@ public class AgentTest
     await holder.Agent.GetResourceData(new DataRequest
                                        {
                                          CommunicationToken = holder.Token,
-                                         Key                = "ResourceData",
+                                         ResultId           = "ResourceData",
                                        },
-                                       resourceData,
                                        CancellationToken.None)
                 .ConfigureAwait(false);
 
-    foreach (var message in resourceData.Messages)
-    {
-      Console.WriteLine(message);
-    }
-
-    Assert.AreEqual(3,
-                    resourceData.Messages.Count);
-    Assert.AreEqual("Data1",
-                    resourceData.Messages[0]
-                                .Data.Data);
-    Assert.AreEqual("Data2",
-                    resourceData.Messages[1]
-                                .Data.Data);
-    Assert.IsTrue(resourceData.Messages[2]
-                              .Data.DataComplete);
+    var bytes = await File.ReadAllBytesAsync(Path.Combine(holder.Folder,
+                                                          "ResourceData"))
+                          .ConfigureAwait(false);
+    Assert.AreEqual(Encoding.ASCII.GetBytes("Data1Data2"),
+                    bytes);
   }
 
   [Test]
@@ -1049,29 +957,25 @@ public class AgentTest
                             .ConfigureAwait(false);
 
 
-    await holder.Agent.UploadResultData(new TestHelperAsyncStreamReader<UploadResultDataRequest>(new List<UploadResultDataRequest>
-                                                                                                 {
-                                                                                                   new()
-                                                                                                   {
-                                                                                                     CommunicationToken = holder.Token,
-                                                                                                     Id = new UploadResultDataRequest.Types.ResultIdentifier
-                                                                                                          {
-                                                                                                            ResultId = eok.Results.Last()
-                                                                                                                          .ResultId,
-                                                                                                            SessionId = holder.Session,
-                                                                                                          },
-                                                                                                   },
-                                                                                                   new()
-                                                                                                   {
-                                                                                                     CommunicationToken = holder.Token,
-                                                                                                     DataChunk          = ByteString.CopyFromUtf8("DataPart1"),
-                                                                                                   },
-                                                                                                   new()
-                                                                                                   {
-                                                                                                     CommunicationToken = holder.Token,
-                                                                                                     DataChunk          = ByteString.CopyFromUtf8("DataPart2"),
-                                                                                                   },
-                                                                                                 }),
+    await File.WriteAllBytesAsync(Path.Combine(holder.Folder,
+                                               eok.Results.Last()
+                                                  .ResultId),
+                                  Encoding.ASCII.GetBytes("Data1Data2"))
+              .ConfigureAwait(false);
+
+    await holder.Agent.NotifyResultData(new NotifyResultDataRequest
+                                        {
+                                          CommunicationToken = holder.Token,
+                                          Ids =
+                                          {
+                                            new NotifyResultDataRequest.Types.ResultIdentifier
+                                            {
+                                              ResultId = eok.Results.Last()
+                                                            .ResultId,
+                                              SessionId = holder.Session,
+                                            },
+                                          },
+                                        },
                                         CancellationToken.None)
                 .ConfigureAwait(false);
 

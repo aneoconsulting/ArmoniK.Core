@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,30 +43,30 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public sealed class TaskHandler : IAsyncDisposable
 {
-  private readonly ActivitySource                              activitySource_;
-  private readonly IAgentHandler                               agentHandler_;
-  private readonly CancellationTokenSource                     cancellationTokenSource_;
-  private readonly DataPrefetcher                              dataPrefetcher_;
-  private readonly TimeSpan                                    delayBeforeAcquisition_;
-  private readonly ILogger                                     logger_;
-  private readonly IQueueMessageHandler                        messageHandler_;
-  private readonly Action                                      onDispose_;
-  private readonly string                                      ownerPodId_;
-  private readonly string                                      ownerPodName_;
-  private readonly CancellationTokenRegistration               reg1_;
-  private readonly IResultTable                                resultTable_;
-  private readonly ISessionTable                               sessionTable_;
-  private readonly ISubmitter                                  submitter_;
-  private readonly ITaskProcessingChecker                      taskProcessingChecker_;
-  private readonly ITaskTable                                  taskTable_;
-  private readonly string                                      token_;
-  private readonly CancellationTokenSource                     workerConnectionCts_;
-  private readonly IWorkerStreamHandler                        workerStreamHandler_;
-  private          IAgent?                                     agent_;
-  private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
-  private          ProcessReply?                               reply_;
-  private          SessionData?                                sessionData_;
-  private          TaskData?                                   taskData_;
+  private readonly ActivitySource                activitySource_;
+  private readonly IAgentHandler                 agentHandler_;
+  private readonly CancellationTokenSource       cancellationTokenSource_;
+  private readonly DataPrefetcher                dataPrefetcher_;
+  private readonly TimeSpan                      delayBeforeAcquisition_;
+  private readonly string                        folder_;
+  private readonly ILogger                       logger_;
+  private readonly IQueueMessageHandler          messageHandler_;
+  private readonly Action                        onDispose_;
+  private readonly string                        ownerPodId_;
+  private readonly string                        ownerPodName_;
+  private readonly CancellationTokenRegistration reg1_;
+  private readonly IResultTable                  resultTable_;
+  private readonly ISessionTable                 sessionTable_;
+  private readonly ISubmitter                    submitter_;
+  private readonly ITaskProcessingChecker        taskProcessingChecker_;
+  private readonly ITaskTable                    taskTable_;
+  private readonly string                        token_;
+  private readonly CancellationTokenSource       workerConnectionCts_;
+  private readonly IWorkerStreamHandler          workerStreamHandler_;
+  private          IAgent?                       agent_;
+  private          ProcessReply?                 reply_;
+  private          SessionData?                  sessionData_;
+  private          TaskData?                     taskData_;
 
   public TaskHandler(ISessionTable              sessionTable,
                      ITaskTable                 taskTable,
@@ -103,6 +103,9 @@ public sealed class TaskHandler : IAsyncDisposable
     sessionData_           = null;
     token_ = Guid.NewGuid()
                  .ToString();
+    folder_ = Path.Combine(pollsterOptions.SharedCacheFolder,
+                           token_);
+    Directory.CreateDirectory(folder_);
     delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
     workerConnectionCts_     = new CancellationTokenSource();
@@ -139,6 +142,14 @@ public sealed class TaskHandler : IAsyncDisposable
     cancellationTokenSource_.Dispose();
     workerConnectionCts_.Dispose();
     agent_?.Dispose();
+    try
+    {
+      Directory.Delete(folder_,
+                       true);
+    }
+    catch (DirectoryNotFoundException)
+    {
+    }
   }
 
   /// <summary>
@@ -470,9 +481,10 @@ public sealed class TaskHandler : IAsyncDisposable
 
     try
     {
-      computeRequestStream_ = await dataPrefetcher_.PrefetchDataAsync(taskData_,
-                                                                      cancellationTokenSource_.Token)
-                                                   .ConfigureAwait(false);
+      await dataPrefetcher_.PrefetchDataAsync(taskData_,
+                                              folder_,
+                                              cancellationTokenSource_.Token)
+                           .ConfigureAwait(false);
     }
     catch (Exception e)
     {
@@ -493,7 +505,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
   public async Task ExecuteTask()
   {
-    if (computeRequestStream_ == null || taskData_ == null || sessionData_ == null)
+    if (taskData_ == null || sessionData_ == null)
     {
       throw new NullReferenceException();
     }
@@ -512,6 +524,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                          logger_,
                                          sessionData_,
                                          taskData_,
+                                         folder_,
                                          cancellationTokenSource_.Token)
                                   .ConfigureAwait(false);
 
@@ -524,27 +537,6 @@ public sealed class TaskHandler : IAsyncDisposable
       await taskTable_.StartTask(taskData_,
                                  cancellationTokenSource_.Token)
                       .ConfigureAwait(false);
-
-      workerStreamHandler_.StartTaskProcessing(taskData_,
-                                               workerConnectionCts_.Token);
-
-      if (workerStreamHandler_.Pipe is null)
-      {
-        throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
-      }
-
-      while (computeRequestStream_.TryDequeue(out var computeRequest))
-      {
-        await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                   {
-                                                     Compute            = computeRequest,
-                                                     CommunicationToken = token_,
-                                                   })
-                                  .ConfigureAwait(false);
-      }
-
-      await workerStreamHandler_.Pipe.CompleteAsync()
-                                .ConfigureAwait(false);
     }
     catch (TaskAlreadyInFinalStateException e)
     {
@@ -565,7 +557,29 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       // at this point worker requests should have ended
       logger_.LogDebug("Wait for task output");
-      reply_ = await workerStreamHandler_.Pipe!.ReadAsync(workerConnectionCts_.Token)
+      reply_ = await workerStreamHandler_.StartTaskProcessing(new ProcessRequest
+                                                              {
+                                                                CommunicationToken = token_,
+                                                                Configuration = new Configuration
+                                                                                {
+                                                                                  DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                                                                                },
+                                                                DataDependencies =
+                                                                {
+                                                                  taskData_.DataDependencies,
+                                                                },
+                                                                DataFolder = folder_,
+                                                                ExpectedOutputKeys =
+                                                                {
+                                                                  taskData_.ExpectedOutputIds,
+                                                                },
+                                                                PayloadId   = taskData_.PayloadId,
+                                                                SessionId   = taskData_.SessionId,
+                                                                TaskId      = taskData_.TaskId,
+                                                                TaskOptions = taskData_.Options.ToGrpcTaskOptions(),
+                                                              },
+                                                              taskData_.Options.MaxDuration,
+                                                              workerConnectionCts_.Token)
                                          .ConfigureAwait(false);
 
       logger_.LogDebug("Stop agent server");
@@ -574,9 +588,9 @@ public sealed class TaskHandler : IAsyncDisposable
     }
     catch (Exception e)
     {
-      await HandleErrorResubmitAsync(e,
-                                     taskData_,
-                                     cancellationTokenSource_.Token)
+      await HandleErrorTaskExecutionAsync(e,
+                                          taskData_,
+                                          cancellationTokenSource_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -590,11 +604,6 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing()
   {
-    if (workerStreamHandler_.Pipe is null)
-    {
-      throw new NullReferenceException(nameof(workerStreamHandler_.Pipe) + " is null.");
-    }
-
     if (taskData_ is null)
     {
       throw new NullReferenceException(nameof(taskData_) + " is null.");
@@ -651,6 +660,16 @@ public sealed class TaskHandler : IAsyncDisposable
     => await HandleErrorInternalAsync(e,
                                       taskData,
                                       false,
+                                      true,
+                                      cancellationToken)
+         .ConfigureAwait(false);
+
+  private async Task HandleErrorTaskExecutionAsync(Exception         e,
+                                                   TaskData          taskData,
+                                                   CancellationToken cancellationToken)
+    => await HandleErrorInternalAsync(e,
+                                      taskData,
+                                      true,
                                       true,
                                       cancellationToken)
          .ConfigureAwait(false);

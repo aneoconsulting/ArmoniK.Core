@@ -33,7 +33,6 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -214,10 +213,9 @@ public class PollsterTest
     {
     }
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
+    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                  TimeSpan          duration,
+                                                  CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 
@@ -229,6 +227,7 @@ public class PollsterTest
 
     public ReturnHealthCheckWorkerStreamHandler(HealthCheckResult healthCheckResult)
       => healthCheckResult_ = healthCheckResult;
+
 
     public Task Init(CancellationToken cancellationToken)
     {
@@ -245,10 +244,9 @@ public class PollsterTest
     {
     }
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
+    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                  TimeSpan          duration,
+                                                  CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 
@@ -422,44 +420,22 @@ public class PollsterTest
     public void Dispose()
       => GC.SuppressFinalize(this);
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
-      => Pipe = new WaitAsyncPipe(delay_);
-  }
-
-  public class WaitAsyncPipe : IAsyncPipe<ProcessReply, ProcessRequest>
-  {
-    private readonly double delay_;
-
-    public WaitAsyncPipe(double delay)
-      => delay_ = delay;
-
-    public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
+    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
+                                                  TimeSpan          duration,
+                                                  CancellationToken cancellationToken)
     {
-      await Task.Delay(TimeSpan.FromMilliseconds(delay_),
-                       CancellationToken.None)
-                .ConfigureAwait(false);
-      return new ProcessReply
-             {
-               CommunicationToken = "",
-               Output = new Output
-                        {
-                          Ok = new Empty(),
-                        },
-             };
+      Task.Delay(TimeSpan.FromMilliseconds(delay_),
+                 cancellationToken);
+      return Task.FromResult(new ProcessReply
+                             {
+                               Output = new Output
+                                        {
+                                          Ok = new Empty(),
+                                        },
+                             });
     }
-
-    public Task WriteAsync(ProcessRequest message)
-      => Task.CompletedTask;
-
-    public Task WriteAsync(IEnumerable<ProcessRequest> message)
-      => Task.CompletedTask;
-
-    public Task CompleteAsync()
-      => Task.CompletedTask;
   }
+
 
   [Test]
   [TestCase(100)]
@@ -499,9 +475,7 @@ public class PollsterTest
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(delay < 1000
-                      ? TaskStatus.Completed
-                      : TaskStatus.Processing,
+    Assert.AreEqual(TaskStatus.Completed,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
                                                                          taskSubmitted,
@@ -592,7 +566,8 @@ public class PollsterTest
       {
         // Failing WorkerStreamHandler
         var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
-        mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+        mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<ProcessRequest>(),
+                                                                                       It.IsAny<TimeSpan>(),
                                                                                        It.IsAny<CancellationToken>()))
                              .Throws(new ApplicationException("Failed WorkerStreamHandler"));
         yield return new TestCaseData(mockStreamHandlerFail,
@@ -619,6 +594,7 @@ public class PollsterTest
                                                         It.IsAny<ILogger>(),
                                                         It.IsAny<SessionData>(),
                                                         It.IsAny<TaskData>(),
+                                                        It.IsAny<string>(),
                                                         It.IsAny<CancellationToken>()))
                             .Throws(new ApplicationException("Failed agent"));
 
@@ -662,7 +638,8 @@ public class PollsterTest
     var simpleAgentHandler   = new SimpleAgentHandler();
 
     var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
-    mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+    mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<ProcessRequest>(),
+                                                                                   It.IsAny<TimeSpan>(),
                                                                                    It.IsAny<CancellationToken>()))
                          .Throws(new TestUnavailableRpcException("Unavailable worker"));
 
