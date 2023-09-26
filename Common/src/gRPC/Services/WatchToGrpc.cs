@@ -334,22 +334,28 @@ public class WatchToGrpc
       await Task.Factory.StartNew(async () =>
                                   {
                                     await foreach (var esr in resultTable_.GetResults(internalResultsFilter,
-                                                                                      cur => new EventSubscriptionResponse
+                                                                                      cur => new
                                                                                              {
-                                                                                               NewResult = new EventSubscriptionResponse.Types.NewResult
-                                                                                                           {
-                                                                                                             Status   = cur.Status.ToGrpcStatus(),
-                                                                                                             OwnerId  = cur.OwnerTaskId,
-                                                                                                             ResultId = cur.ResultId,
-                                                                                                           },
-                                                                                               SessionId = cur.SessionId,
+                                                                                               cur.Status,
+                                                                                               cur.OwnerTaskId,
+                                                                                               cur.ResultId,
+                                                                                               cur.SessionId,
                                                                                              },
                                                                                       cancellationToken)
                                                                           .ConfigureAwait(false))
                                     {
                                       logger_.LogDebug("New result from db {result}",
                                                        esr);
-                                      await channel.Writer.WriteAsync(esr,
+                                      await channel.Writer.WriteAsync(new EventSubscriptionResponse
+                                                                      {
+                                                                        NewResult = new EventSubscriptionResponse.Types.NewResult
+                                                                                    {
+                                                                                      OwnerId  = esr.OwnerTaskId,
+                                                                                      ResultId = esr.ResultId,
+                                                                                      Status   = esr.Status.ToGrpcStatus(),
+                                                                                    },
+                                                                        SessionId = esr.SessionId,
+                                                                      },
                                                                       CancellationToken.None)
                                                    .ConfigureAwait(false);
                                     }
