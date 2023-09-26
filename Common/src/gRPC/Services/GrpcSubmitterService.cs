@@ -598,10 +598,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
              {
                IdStatuses =
                {
-                 await resultTable_.GetResultStatus(request.ResultIds,
-                                                    request.SessionId,
-                                                    context.CancellationToken)
-                                   .ConfigureAwait(false),
+                 (await resultTable_.GetResultStatus(request.ResultIds,
+                                                     request.SessionId,
+                                                     context.CancellationToken)
+                                    .ConfigureAwait(false)).Select(status => new GetResultStatusReply.Types.IdStatus
+                                                                             {
+                                                                               ResultId = status.ResultId,
+                                                                               Status   = status.Status.ToGrpcStatus(),
+                                                                             }),
                },
              };
     }

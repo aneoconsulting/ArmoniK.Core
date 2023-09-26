@@ -22,8 +22,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -448,25 +446,16 @@ public class ResultTableTestBase
                                                        CancellationToken.None)
                                       .ConfigureAwait(false)).ToList();
 
-      Assert.Contains(new GetResultStatusReply.Types.IdStatus
-                      {
-                        Status   = ResultStatus.Completed,
-                        ResultId = "ResultIsAvailable",
-                      },
+      Assert.Contains(new ResultIdStatus("ResultIsAvailable",
+                                         ResultStatus.Completed),
                       result);
 
-      Assert.Contains(new GetResultStatusReply.Types.IdStatus
-                      {
-                        Status   = ResultStatus.Aborted,
-                        ResultId = "ResultIsNotAvailable",
-                      },
+      Assert.Contains(new ResultIdStatus("ResultIsNotAvailable",
+                                         ResultStatus.Aborted),
                       result);
 
-      Assert.Contains(new GetResultStatusReply.Types.IdStatus
-                      {
-                        Status   = ResultStatus.Created,
-                        ResultId = "ResultIsCreated",
-                      },
+      Assert.Contains(new ResultIdStatus("ResultIsCreated",
+                                         ResultStatus.Created),
                       result);
     }
   }

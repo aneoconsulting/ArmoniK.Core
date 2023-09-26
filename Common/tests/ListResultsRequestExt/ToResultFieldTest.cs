@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;

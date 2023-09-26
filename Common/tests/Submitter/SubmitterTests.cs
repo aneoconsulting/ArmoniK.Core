@@ -53,6 +53,7 @@ using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 

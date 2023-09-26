@@ -29,6 +29,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -39,6 +40,7 @@ using Microsoft.Extensions.Logging;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
@@ -329,7 +331,7 @@ public sealed class Agent : IAgent
                                           CreatedAt = FromDateTime(result.CreationDate),
                                           Name      = result.Name,
                                           SessionId = result.SessionId,
-                                          Status    = result.Status,
+                                          Status    = result.Status.ToGrpcStatus(),
                                           ResultId  = result.ResultId,
                                         }),
              },
@@ -431,7 +433,7 @@ public sealed class Agent : IAgent
              {
                results.Select(r => new ResultMetaData
                                    {
-                                     Status    = r.Status,
+                                     Status    = r.Status.ToGrpcStatus(),
                                      CreatedAt = FromDateTime(r.CreationDate),
                                      Name      = r.Name,
                                      ResultId  = r.ResultId,

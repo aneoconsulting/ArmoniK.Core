@@ -45,6 +45,7 @@ using Moq;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;

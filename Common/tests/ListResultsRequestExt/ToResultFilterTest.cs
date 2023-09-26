@@ -26,6 +26,8 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+
 namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 
 [TestFixture(TestOf = typeof(ToResultFilterTest))]
@@ -90,13 +92,13 @@ public class ToResultFilterTest
 
     yield return CaseTrue(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
                                                                           FilterStatusOperator.Equal,
-                                                                          ResultStatus.Created));
+                                                                          Api.gRPC.V1.ResultStatus.Created));
     yield return CaseFalse(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
                                                                            FilterStatusOperator.Equal,
-                                                                           ResultStatus.Aborted));
+                                                                           Api.gRPC.V1.ResultStatus.Aborted));
     yield return CaseTrue(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
                                                                           FilterStatusOperator.NotEqual,
-                                                                          ResultStatus.Aborted));
+                                                                          Api.gRPC.V1.ResultStatus.Aborted));
 
     yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.SessionId,
                                                                           FilterStringOperator.Equal,

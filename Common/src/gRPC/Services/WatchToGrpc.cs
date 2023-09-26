@@ -187,7 +187,7 @@ public class WatchToGrpc
                                                                                                                   NewResult =
                                                                                                                     new EventSubscriptionResponse.Types.NewResult
                                                                                                                     {
-                                                                                                                      Status   = cur.Status,
+                                                                                                                      Status   = cur.Status.ToGrpcStatus(),
                                                                                                                       OwnerId  = cur.OwnerId,
                                                                                                                       ResultId = cur.ResultId,
                                                                                                                     },
@@ -221,7 +221,7 @@ public class WatchToGrpc
                                                                                                                     ResultStatusUpdate
                                                                                                                     {
                                                                                                                       ResultId = cur.ResultId,
-                                                                                                                      Status   = cur.Status,
+                                                                                                                      Status   = cur.Status.ToGrpcStatus(),
                                                                                                                     },
                                                                                                                   SessionId = cur.SessionId,
                                                                                                                 });
@@ -338,7 +338,7 @@ public class WatchToGrpc
                                                                                              {
                                                                                                NewResult = new EventSubscriptionResponse.Types.NewResult
                                                                                                            {
-                                                                                                             Status   = cur.Status,
+                                                                                                             Status   = cur.Status.ToGrpcStatus(),
                                                                                                              OwnerId  = cur.OwnerTaskId,
                                                                                                              ResultId = cur.ResultId,
                                                                                                            },
