@@ -29,7 +29,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
 

@@ -34,7 +34,7 @@ using Moq;
 
 using NUnit.Framework;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 

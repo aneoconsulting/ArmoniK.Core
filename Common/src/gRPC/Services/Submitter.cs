@@ -28,6 +28,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -41,7 +42,7 @@ using Microsoft.Extensions.Logging;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -183,7 +184,7 @@ public class Submitter : ISubmitter
                                                         new Error
                                                         {
                                                           Detail     = taskData.Output.Error,
-                                                          TaskStatus = taskData.Status,
+                                                          TaskStatus = taskData.Status.ToGrpcStatus(),
                                                         },
                                                       },
                                                     },
@@ -314,7 +315,7 @@ public class Submitter : ISubmitter
         output.Values.AddRange(counts.Select(tuple => new StatusCount
                                                       {
                                                         Count  = tuple.Count,
-                                                        Status = tuple.Status,
+                                                        Status = tuple.Status.ToGrpcStatus(),
                                                       }));
         logger_.LogDebug("All sub tasks have completed. Returning count={count}",
                          output);
@@ -467,7 +468,7 @@ public class Submitter : ISubmitter
                                new Error
                                {
                                  Detail     = taskData.Output.Error,
-                                 TaskStatus = taskData.Status,
+                                 TaskStatus = taskData.Status.ToGrpcStatus(),
                                },
                              },
                            },

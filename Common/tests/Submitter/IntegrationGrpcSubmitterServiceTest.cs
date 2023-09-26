@@ -50,7 +50,7 @@ using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Submitter;
 
@@ -936,8 +936,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                       CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                                              CancellationToken   cancellationToken = default)
+    public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                         CancellationToken   cancellationToken = default)
       => throw new T();
 
     public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,

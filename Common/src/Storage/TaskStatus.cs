@@ -15,30 +15,46 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.gRPC.Convertors;
-
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-///   Relation between a task status and the number of tasks with this status
+///   Task status.
 /// </summary>
-/// <param name="Status">Status of the task</param>
-/// <param name="Count">Number of tasks with the associated status</param>
-public record TaskStatusCount(TaskStatus Status,
-                              int        Count)
+public enum TaskStatus
 {
-  /// <summary>
-  ///   Conversion operator from <see cref="TaskStatusCount" /> to <see cref="StatusCount" />
-  /// </summary>
-  /// <param name="taskStatusCount">The input status count</param>
-  /// <returns>
-  ///   The converted status count
-  /// </returns>
-  public static implicit operator StatusCount(TaskStatusCount taskStatusCount)
-    => new()
-       {
-         Count  = taskStatusCount.Count,
-         Status = taskStatusCount.Status.ToGrpcStatus(),
-       };
+  /// <summary>Task is in an unknown state.</summary>
+  Unspecified,
+
+  /// <summary>Task is being created in database.</summary>
+  Creating,
+
+  /// <summary>Task is submitted to the queue.</summary>
+  Submitted,
+
+  /// <summary>Task is dispatched to a worker.</summary>
+  Dispatched,
+
+  /// <summary>Task is completed.</summary>
+  Completed,
+
+  /// <summary>Task is an error state.</summary>
+  Error,
+
+  /// <summary>Task is in timeout state.</summary>
+  Timeout,
+
+  /// <summary>Task is being cancelled.</summary>
+  Cancelling,
+
+  /// <summary>Task is cancelled.</summary>
+  Cancelled,
+
+  /// <summary>Task is being processed.</summary>
+  Processing,
+
+  /// <summary>Task is processed.</summary>
+  Processed,
+
+  /// <summary>Task is retried.</summary>
+  Retried,
 }

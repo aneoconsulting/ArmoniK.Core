@@ -28,13 +28,14 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
@@ -169,41 +170,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<int> CountAllTasksAsync(TaskStatus        status,
-                                            CancellationToken cancellationToken = default)
-  {
-    var count = 0;
-
-    foreach (var session in session2TaskIds_.Keys)
-    {
-      var statusFilter = new TaskFilter
-                         {
-                           Included = new TaskFilter.Types.StatusesRequest
-                                      {
-                                        Statuses =
-                                        {
-                                          status,
-                                        },
-                                      },
-                           Session = new TaskFilter.Types.IdsRequest
-                                     {
-                                       Ids =
-                                       {
-                                         session,
-                                       },
-                                     },
-                         };
-
-      count += await ListTasksAsync(statusFilter,
-                                    cancellationToken)
-                     .CountAsync(cancellationToken)
-                     .ConfigureAwait(false);
-    }
-
-    return count;
-  }
-
-  /// <inheritdoc />
   public Task DeleteTaskAsync(string            id,
                               CancellationToken cancellationToken = default)
   {
@@ -235,9 +201,9 @@ public class TaskTable : ITaskTable
                                    {
                                      TaskFilter.StatusesOneofCase.None => true,
                                      TaskFilter.StatusesOneofCase.Included => filter.Included.Statuses.Contains(taskId2TaskData_[taskId]
-                                                                                                                  .Status),
+                                                                                                                .Status.ToGrpcStatus()),
                                      TaskFilter.StatusesOneofCase.Excluded => !filter.Excluded.Statuses.Contains(taskId2TaskData_[taskId]
-                                                                                                                   .Status),
+                                                                                                                 .Status.ToGrpcStatus()),
                                      _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                                    })
                   .ToAsyncEnumerable();
@@ -416,16 +382,6 @@ public class TaskTable : ITaskTable
                                                              };
                                                     }));
 
-  /// <inheritdoc />
-  public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                                            CancellationToken   cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.Where(tdm => taskIds.Contains(tdm.Key))
-                                       .Select(model => new GetTaskStatusReply.Types.IdStatus
-                                                        {
-                                                          Status = model.Value.Status,
-                                                          TaskId = model.Value.TaskId,
-                                                        }));
-
   public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
                                                                                                               CancellationToken   cancellationToken = default)
     => taskId2TaskData_.Where(pair => taskIds.Contains(pair.Key))
@@ -508,4 +464,46 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
+
+  /// <inheritdoc />
+  public async Task<int> CountAllTasksAsync(TaskStatus        status,
+                                            CancellationToken cancellationToken = default)
+  {
+    var count = 0;
+
+    foreach (var session in session2TaskIds_.Keys)
+    {
+      var statusFilter = new TaskFilter
+                         {
+                           Included = new TaskFilter.Types.StatusesRequest
+                                      {
+                                        Statuses =
+                                        {
+                                          status.ToGrpcStatus(),
+                                        },
+                                      },
+                           Session = new TaskFilter.Types.IdsRequest
+                                     {
+                                       Ids =
+                                       {
+                                         session,
+                                       },
+                                     },
+                         };
+
+      count += await ListTasksAsync(statusFilter,
+                                    cancellationToken)
+                     .CountAsync(cancellationToken)
+                     .ConfigureAwait(false);
+    }
+
+    return count;
+  }
+
+  /// <inheritdoc />
+  public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                       CancellationToken   cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.Where(tdm => taskIds.Contains(tdm.Key))
+                                       .Select(model => new TaskIdStatus(model.Value.TaskId,
+                                                                         model.Value.Status)));
 }

@@ -27,6 +27,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -302,7 +303,7 @@ public class GrpcTasksService : Task.TasksBase
                                                    context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => new StatusCount
                                                                           {
-                                                                            Status = count.Status,
+                                                                            Status = count.Status.ToGrpcStatus(),
                                                                             Count  = count.Count,
                                                                           }),
                },

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -122,7 +123,7 @@ public class WatchToGrpc
                                                                                                                           {
                                                                                                                             cur.RetryOfIds,
                                                                                                                           },
-                                                                                                                          Status = cur.Status,
+                                                                                                                          Status = cur.Status.ToGrpcStatus(),
                                                                                                                           TaskId = cur.TaskId,
                                                                                                                         },
                                                                                                               SessionId = cur.SessionId,
@@ -155,7 +156,7 @@ public class WatchToGrpc
                                                                                                               TaskStatusUpdate =
                                                                                                                 new EventSubscriptionResponse.Types.TaskStatusUpdate
                                                                                                                 {
-                                                                                                                  Status = cur.Status,
+                                                                                                                  Status = cur.Status.ToGrpcStatus(),
                                                                                                                   TaskId = cur.TaskId,
                                                                                                                 },
                                                                                                               SessionId = cur.SessionId,
@@ -298,7 +299,7 @@ public class WatchToGrpc
                                                                                                              {
                                                                                                                cur.RetryOfIds,
                                                                                                              },
-                                                                                                             Status = cur.Status,
+                                                                                                             Status = cur.Status.ToGrpcStatus(),
                                                                                                              TaskId = cur.TaskId,
                                                                                                            },
                                                                                                  SessionId = cur.SessionId,

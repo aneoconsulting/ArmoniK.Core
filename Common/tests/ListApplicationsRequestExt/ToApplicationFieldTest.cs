@@ -19,16 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
-
-using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListApplicationsRequestExt;
 

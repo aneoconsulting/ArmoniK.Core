@@ -15,14 +15,35 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Storage.Events;
+using System;
 
-/// <summary>
-///   Represents an status update for a task
-/// </summary>
-/// <param name="SessionId">The id of the session</param>
-/// <param name="TaskId">The id of the task</param>
-/// <param name="Status">The new status of the task</param>
-public record TaskStatusUpdate(string     SessionId,
-                               string     TaskId,
-                               TaskStatus Status);
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.gRPC.Convertors;
+
+using NUnit.Framework;
+
+namespace ArmoniK.Core.Common.Tests.Grpc;
+
+[TestFixture(TestOf = typeof(TaskStatusExt))]
+public class TaskStatusConversionTests
+{
+  [Test]
+  public void GrpcToInternal()
+  {
+    foreach (var status in Enum.GetValues<TaskStatus>())
+    {
+      Assert.Contains(status.ToInternalStatus(),
+                      Enum.GetValues<Storage.TaskStatus>());
+    }
+  }
+
+  [Test]
+  public void InternalToGrpc()
+  {
+    foreach (var status in Enum.GetValues<Storage.TaskStatus>())
+    {
+      Assert.Contains(status.ToGrpcStatus(),
+                      Enum.GetValues<TaskStatus>());
+    }
+  }
+}

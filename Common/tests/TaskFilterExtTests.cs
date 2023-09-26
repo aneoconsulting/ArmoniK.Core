@@ -18,15 +18,12 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
-
-using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -135,7 +132,7 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Completed,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -184,7 +181,7 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Completed,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -232,8 +229,8 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
-                                TaskStatus.Cancelled,
+                                Api.gRPC.V1.TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Cancelled,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -281,8 +278,8 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
-                                TaskStatus.Cancelled,
+                                Api.gRPC.V1.TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Cancelled,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -330,7 +327,7 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Completed,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -378,7 +375,7 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Completed,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -426,8 +423,8 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
-                                TaskStatus.Cancelling,
+                                Api.gRPC.V1.TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Cancelling,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest
@@ -475,8 +472,8 @@ internal class TaskFilterExtTests
                             {
                               Statuses =
                               {
-                                TaskStatus.Completed,
-                                TaskStatus.Cancelling,
+                                Api.gRPC.V1.TaskStatus.Completed,
+                                Api.gRPC.V1.TaskStatus.Cancelling,
                               },
                             },
                  Session = new TaskFilter.Types.IdsRequest

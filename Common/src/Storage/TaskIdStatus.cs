@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Storage.Events;
+namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-///   Represents an status update for a task
+///   Holds task Id and status
 /// </summary>
-/// <param name="SessionId">The id of the session</param>
-/// <param name="TaskId">The id of the task</param>
-/// <param name="Status">The new status of the task</param>
-public record TaskStatusUpdate(string     SessionId,
-                               string     TaskId,
-                               TaskStatus Status);
+/// <param name="TaskId">Task Id</param>
+/// <param name="Status">Task status</param>
+public record TaskIdStatus(string     TaskId,
+                           TaskStatus Status)
+{
+}

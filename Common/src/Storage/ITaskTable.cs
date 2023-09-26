@@ -28,8 +28,6 @@ using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
@@ -324,8 +322,8 @@ public interface ITaskTable : IInitializable
   /// <returns>
   ///   Reply status metadata
   /// </returns>
-  Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                                     CancellationToken   cancellationToken = default);
+  Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Get expected output keys of tasks given their ids

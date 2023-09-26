@@ -25,6 +25,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -552,9 +553,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
              {
                IdStatuses =
                {
-                 await taskTable_.GetTaskStatus(request.TaskIds,
-                                                context.CancellationToken)
-                                 .ConfigureAwait(false),
+                 (await taskTable_.GetTaskStatus(request.TaskIds,
+                                                 context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(status => new GetTaskStatusReply.Types.IdStatus
+                                                                           {
+                                                                             Status = status.Status.ToGrpcStatus(),
+                                                                             TaskId = status.TaskId,
+                                                                           }),
                },
              };
     }

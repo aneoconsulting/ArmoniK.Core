@@ -1524,11 +1524,8 @@ public class GrpcSubmitterServiceTests
                                                     CancellationToken.None))
         .Returns(() => Task.FromResult(new[]
                                        {
-                                         new GetTaskStatusReply.Types.IdStatus
-                                         {
-                                           Status = TaskStatus.Completed,
-                                           TaskId = "TaskId",
-                                         },
+                                         new TaskIdStatus("TaskId",
+                                                          Storage.TaskStatus.Completed),
                                        }.AsEnumerable()));
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,

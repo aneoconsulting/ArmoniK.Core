@@ -29,7 +29,7 @@ using ArmoniK.Core.Common.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -276,13 +276,6 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                                            CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<GetTaskStatusReply.Types.IdStatus>>(new List<GetTaskStatusReply.Types.IdStatus>
-                                                                       {
-                                                                         new(),
-                                                                       });
-
   public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
                                                                                                               CancellationToken   cancellationToken = default)
     => new List<(string taskId, IEnumerable<string> expectedOutputKeys)>
@@ -300,4 +293,12 @@ public class SimpleTaskTable : ITaskTable
   public Task<string> RetryTask(TaskData          taskData,
                                 CancellationToken cancellationToken = default)
     => Task.FromResult(TaskId);
+
+  public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                       CancellationToken   cancellationToken = default)
+    => Task.FromResult<IEnumerable<TaskIdStatus>>(new List<TaskIdStatus>
+                                                  {
+                                                    new("",
+                                                        TaskStatus.Unspecified),
+                                                  });
 }

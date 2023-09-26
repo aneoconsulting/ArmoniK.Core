@@ -25,8 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
-
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using ArmoniK.Core.Common.gRPC.Convertors;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -208,8 +207,10 @@ public static class TaskTableExtensions
                                                           TaskStatus        status,
                                                           CancellationToken cancellationToken = default)
   {
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Cancelled) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Error)     || filter.Included.Statuses.Contains(TaskStatus.Retried)))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed.ToGrpcStatus()) ||
+                                    filter.Included.Statuses.Contains(TaskStatus.Cancelled.ToGrpcStatus()) ||
+                                    filter.Included.Statuses.Contains(TaskStatus.Error.ToGrpcStatus())     ||
+                                    filter.Included.Statuses.Contains(TaskStatus.Retried.ToGrpcStatus())))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }

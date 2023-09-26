@@ -28,6 +28,7 @@ using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
@@ -197,10 +198,10 @@ public class ToTaskDataFilterTest
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                       FilterStatusOperator.Equal,
-                                                                      TaskStatus.Completed));
+                                                                      Api.gRPC.V1.TaskStatus.Completed));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                        FilterStatusOperator.Equal,
-                                                                       TaskStatus.Cancelling));
+                                                                       Api.gRPC.V1.TaskStatus.Cancelling));
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
                                                                       FilterNumberOperator.LessThanOrEqual,

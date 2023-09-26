@@ -19,8 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Api.gRPC.V1;
-
 namespace ArmoniK.Core.Common.Storage.Events;
 
 /// <summary>

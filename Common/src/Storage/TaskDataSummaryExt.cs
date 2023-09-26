@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Common.gRPC.Convertors;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -37,7 +37,7 @@ public static class TaskDataSummaryExt
     => new()
        {
          SessionId  = taskDataSummary.SessionId,
-         Status     = taskDataSummary.Status,
+         Status     = taskDataSummary.Status.ToGrpcStatus(),
          OwnerPodId = taskDataSummary.OwnerPodId,
          Options    = taskDataSummary.Options.ToGrpcTaskOptions(),
          CreatedAt  = FromDateTime(taskDataSummary.CreationDate),

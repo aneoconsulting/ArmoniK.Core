@@ -21,16 +21,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.gRPC.Convertors;
 
 using FluentValidation.Internal;
 
 using Google.Protobuf.WellKnownTypes;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
-
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -203,7 +202,7 @@ public record TaskData(string        SessionId,
     => new()
        {
          SessionId  = taskData.SessionId,
-         Status     = taskData.Status,
+         Status     = taskData.Status.ToGrpcStatus(),
          Output     = taskData.Output,
          OwnerPodId = taskData.OwnerPodId,
          Options    = taskData.Options.ToGrpcTaskOptions(),

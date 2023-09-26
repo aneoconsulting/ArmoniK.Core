@@ -17,8 +17,6 @@
 
 using System;
 
-using ArmoniK.Api.gRPC.V1;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public record StatusTime(TaskStatus Status,
