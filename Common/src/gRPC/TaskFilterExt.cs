@@ -16,12 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.gRPC;
 
@@ -79,7 +81,8 @@ public static class TaskFilterExt
         {
           output = Expression.And(output,
                                   ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
-                                                                                                filter.Included.Statuses,
+                                                                                                filter.Included.Statuses.Select(status => status.ToInternalStatus())
+                                                                                                      .AsIList(),
                                                                                                 true,
                                                                                                 x));
         }
@@ -92,7 +95,8 @@ public static class TaskFilterExt
         {
           output = Expression.And(output,
                                   ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
-                                                                                                filter.Excluded.Statuses,
+                                                                                                filter.Excluded.Statuses.Select(status => status.ToInternalStatus())
+                                                                                                      .AsIList(),
                                                                                                 false,
                                                                                                 x));
         }

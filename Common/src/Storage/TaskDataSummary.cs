@@ -17,9 +17,7 @@
 
 using System;
 
-using ArmoniK.Api.gRPC.V1;
-
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
 

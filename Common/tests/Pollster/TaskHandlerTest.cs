@@ -47,7 +47,7 @@ using NUnit.Framework;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
@@ -801,10 +801,6 @@ public class TaskHandlerTest
                                       new Output(false,
                                                  "")));
 
-    public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskId,
-                                                                              CancellationToken   cancellationToken = default)
-      => throw new NotImplementedException();
-
     public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
                                                                                                                 CancellationToken   cancellationToken = default)
       => taskIds.Select(s => (s, new[]
@@ -821,6 +817,10 @@ public class TaskHandlerTest
                                   CancellationToken cancellationToken)
       => Task.FromResult(Guid.NewGuid()
                              .ToString());
+
+    public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskId,
+                                                         CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
   }
 
   public class WaitSessionTable : ISessionTable

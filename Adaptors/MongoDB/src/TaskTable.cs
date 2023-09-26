@@ -40,7 +40,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -175,27 +175,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                                  CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
-
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-
-    var res = await taskCollection.AsQueryable(sessionHandle)
-                                  .FilterQuery(filter)
-                                  .GroupBy(model => model.Status)
-                                  .Select(models => new TaskStatusCount(models.Key,
-                                                                        models.Count()))
-                                  .ToListAsync(cancellationToken)
-                                  .ConfigureAwait(false);
-
-    return res;
-  }
-
-  /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                                   CancellationToken                cancellationToken = default)
   {
@@ -240,21 +219,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<int> CountAllTasksAsync(TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CountAllTasksAsync)}");
-
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var res = taskCollection.AsQueryable(sessionHandle)
-                            .Count(model => model.Status == status);
-
-    return Task.FromResult(res);
-  }
-
-  /// <inheritdoc />
   public async Task DeleteTaskAsync(string            id,
                                     CancellationToken cancellationToken = default)
   {
@@ -275,24 +239,6 @@ public class TaskTable : ITaskTable
     if (result.DeletedCount > 1)
     {
       throw new ArmoniKException("Multiple tasks deleted");
-    }
-  }
-
-  /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListTasksAsync(TaskFilter                                 filter,
-                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
-                                               .FilterQuery(filter)
-                                               .Select(model => model.TaskId)
-                                               .ToAsyncEnumerable(cancellationToken)
-                                               .ConfigureAwait(false))
-    {
-      yield return taskId;
     }
   }
 
@@ -571,25 +517,6 @@ public class TaskTable : ITaskTable
              .ConfigureAwait(false);
   }
 
-  /// <inheritdoc />
-  public async Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                                                  CancellationToken   cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetTaskStatus)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => taskIds.Contains(tdm.TaskId))
-                               .Select(model => new GetTaskStatusReply.Types.IdStatus
-                                                {
-                                                  Status = model.Status,
-                                                  TaskId = model.TaskId,
-                                                })
-                               .ToListAsync(cancellationToken)
-                               .ConfigureAwait(false);
-  }
-
   public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
                                                                                                               CancellationToken   cancellationToken = default)
   {
@@ -718,6 +645,76 @@ public class TaskTable : ITaskTable
                                    .ConfigureAwait(false);
       taskCollectionProvider_.Get();
       isInitialized_ = true;
+    }
+  }
+
+  /// <inheritdoc />
+  public Task<int> CountAllTasksAsync(TaskStatus        status,
+                                      CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(CountAllTasksAsync)}");
+
+    var sessionHandle  = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get();
+
+    var res = taskCollection.AsQueryable(sessionHandle)
+                            .Count(model => model.Status == status);
+
+    return Task.FromResult(res);
+  }
+
+  /// <inheritdoc />
+  public async Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                             CancellationToken   cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(GetTaskStatus)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .Where(tdm => taskIds.Contains(tdm.TaskId))
+                               .Select(model => new TaskIdStatus(model.TaskId,
+                                                                 model.Status))
+                               .ToListAsync(cancellationToken)
+                               .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
+                                                                  CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
+
+    var sessionHandle  = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get();
+
+
+    var res = await taskCollection.AsQueryable(sessionHandle)
+                                  .FilterQuery(filter)
+                                  .GroupBy(model => model.Status)
+                                  .Select(models => new TaskStatusCount(models.Key,
+                                                                        models.Count()))
+                                  .ToListAsync(cancellationToken)
+                                  .ConfigureAwait(false);
+
+    return res;
+  }
+
+  /// <inheritdoc />
+  public async IAsyncEnumerable<string> ListTasksAsync(TaskFilter                                 filter,
+                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
+                                               .FilterQuery(filter)
+                                               .Select(model => model.TaskId)
+                                               .ToAsyncEnumerable(cancellationToken)
+                                               .ConfigureAwait(false))
+    {
+      yield return taskId;
     }
   }
 }

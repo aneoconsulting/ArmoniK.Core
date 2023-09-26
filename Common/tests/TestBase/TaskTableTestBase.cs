@@ -34,6 +34,7 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.ListTasksRequestExt;
@@ -49,7 +50,7 @@ using Filters = ArmoniK.Api.gRPC.V1.Applications.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Applications.FiltersAnd;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
 
@@ -387,8 +388,8 @@ public class TaskTableTestBase
                                     {
                                       Statuses =
                                       {
-                                        TaskStatus.Creating,
-                                        TaskStatus.Processing,
+                                        Api.gRPC.V1.TaskStatus.Creating,
+                                        Api.gRPC.V1.TaskStatus.Processing,
                                       },
                                     },
                          Session = new TaskFilter.Types.IdsRequest
@@ -530,7 +531,7 @@ public class TaskTableTestBase
                                     {
                                       Statuses =
                                       {
-                                        status, // Presence of this status should generate an exception
+                                        status.ToGrpcStatus(), // Presence of this status should generate an exception
                                       },
                                     },
                          Session = new TaskFilter.Types.IdsRequest
@@ -637,8 +638,8 @@ public class TaskTableTestBase
                                     {
                                       Statuses =
                                       {
-                                        TaskStatus.Completed,
-                                        TaskStatus.Creating,
+                                        Api.gRPC.V1.TaskStatus.Completed,
+                                        Api.gRPC.V1.TaskStatus.Creating,
                                       },
                                     },
                          Session = new TaskFilter.Types.IdsRequest
@@ -1252,7 +1253,7 @@ public class TaskTableTestBase
                                                                   {
                                                                     Statuses =
                                                                     {
-                                                                      TaskStatus.Completed,
+                                                                      Api.gRPC.V1.TaskStatus.Completed,
                                                                     },
                                                                   },
                                                        Session = new TaskFilter.Types.IdsRequest
@@ -1821,13 +1822,13 @@ public class TaskTableTestBase
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                       FilterStatusOperator.Equal,
-                                                                      TaskStatus.Completed));
+                                                                      Api.gRPC.V1.TaskStatus.Completed));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                       FilterStatusOperator.NotEqual,
-                                                                      TaskStatus.Cancelling));
+                                                                      Api.gRPC.V1.TaskStatus.Cancelling));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                        FilterStatusOperator.Equal,
-                                                                       TaskStatus.Cancelling));
+                                                                       Api.gRPC.V1.TaskStatus.Cancelling));
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
                                                                       FilterNumberOperator.LessThanOrEqual,
