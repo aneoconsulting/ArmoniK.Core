@@ -21,7 +21,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -87,16 +86,13 @@ public static class ResultTableExtensions
   /// <returns>
   ///   A map between the ids of the results found and their status
   /// </returns>
-  public static async Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(this IResultTable   resultTable,
-                                                                                             IEnumerable<string> ids,
-                                                                                             string              sessionId,
-                                                                                             CancellationToken   cancellationToken = default)
+  public static async Task<IEnumerable<ResultIdStatus>> GetResultStatus(this IResultTable   resultTable,
+                                                                        IEnumerable<string> ids,
+                                                                        string              sessionId,
+                                                                        CancellationToken   cancellationToken = default)
     => await resultTable.GetResults(result => ids.Contains(result.ResultId),
-                                    result => new GetResultStatusReply.Types.IdStatus
-                                              {
-                                                ResultId = result.ResultId,
-                                                Status   = result.Status,
-                                              },
+                                    result => new ResultIdStatus(result.ResultId,
+                                                                 result.Status),
                                     cancellationToken)
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);

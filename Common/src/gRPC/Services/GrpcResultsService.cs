@@ -38,6 +38,8 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]

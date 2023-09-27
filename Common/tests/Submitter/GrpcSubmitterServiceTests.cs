@@ -44,6 +44,7 @@ using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -1811,7 +1812,7 @@ public class GrpcSubmitterServiceTests
   {
     var mock = new Mock<IResultTable>();
     mock.Setup(resultTable => resultTable.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                                     It.IsAny<Expression<Func<Result, GetResultStatusReply.Types.IdStatus>>>(),
+                                                     It.IsAny<Expression<Func<Result, ResultIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new TaskNotFoundException());
 
@@ -1849,15 +1850,12 @@ public class GrpcSubmitterServiceTests
   {
     var mock = new Mock<IResultTable>();
     mock.Setup(resultTable => resultTable.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                                     It.IsAny<Expression<Func<Result, GetResultStatusReply.Types.IdStatus>>>(),
+                                                     It.IsAny<Expression<Func<Result, ResultIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => new[]
                        {
-                         new GetResultStatusReply.Types.IdStatus
-                         {
-                           Status   = ResultStatus.Completed,
-                           ResultId = "ResultId",
-                         },
+                         new ResultIdStatus("ResultId",
+                                            ResultStatus.Completed),
                        }.ToAsyncEnumerable());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -1876,7 +1874,7 @@ public class GrpcSubmitterServiceTests
                                                  TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(ResultStatus.Completed,
+    Assert.AreEqual(Api.gRPC.V1.ResultStatus.Completed,
                     response.IdStatuses.Single()
                             .Status);
   }

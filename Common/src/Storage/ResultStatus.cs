@@ -15,14 +15,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Storage.Events;
+namespace ArmoniK.Core.Common.Storage;
 
-/// <summary>
-///   Represents an status update for a result
-/// </summary>
-/// <param name="SessionId">The id of the session</param>
-/// <param name="ResultId">The id of the result</param>
-/// <param name="Status">The new status of the result</param>
-public record ResultStatusUpdate(string       SessionId,
-                                 string       ResultId,
-                                 ResultStatus Status);
+public enum ResultStatus
+{
+  /// <summary>Result is in an unspecified state.</summary>
+  Unspecified,
+
+  /// <summary>Result is created and task is created, submitted or dispatched.</summary>
+  Created,
+
+  /// <summary>Result is completed with a completed task.</summary>
+  Completed,
+
+  /// <summary>Result is aborted.</summary>
+  Aborted,
+}

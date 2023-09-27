@@ -41,6 +41,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
@@ -474,7 +475,6 @@ public class Submitter : ISubmitter
                            },
                  };
         case ResultStatus.Unspecified:
-        case ResultStatus.Notfound: // TODO: define a specific error type ?
         default:
           throw new ArgumentOutOfRangeException(nameof(result.Status));
       }

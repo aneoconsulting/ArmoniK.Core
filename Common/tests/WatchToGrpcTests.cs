@@ -122,7 +122,7 @@ public class WatchToGrpcTests
 
 
   [Test]
-  public async Task UseMongoShouldSucceed()
+  public async Task UseMongoForTasksShouldSucceed()
   {
     using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>());
 
@@ -174,6 +174,111 @@ public class WatchToGrpcTests
                     list.Count);
   }
 
+  [Test]
+  public async Task UseMongoForResultsShouldSucceed()
+  {
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>());
+
+    var resultTable = helper.GetRequiredService<IResultTable>();
+
+    await resultTable.Create(new[]
+                             {
+                               new Result("SessionId",
+                                          "ResultIsAvailable",
+                                          "",
+                                          "OwnerId",
+                                          ResultStatus.Completed,
+                                          new List<string>(),
+                                          DateTime.Today,
+                                          new[]
+                                          {
+                                            (byte)1,
+                                          }),
+                               new Result("SessionId",
+                                          "ResultIsNotAvailable",
+                                          "",
+                                          "OwnerId",
+                                          ResultStatus.Aborted,
+                                          new List<string>(),
+                                          DateTime.Today,
+                                          new[]
+                                          {
+                                            (byte)1,
+                                          }),
+                               new Result("SessionId",
+                                          "ResultIsCreated",
+                                          "",
+                                          "OwnerId",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.Today,
+                                          new[]
+                                          {
+                                            (byte)1,
+                                          }),
+                               new Result("SessionId",
+                                          "ResultIsCreated2",
+                                          "",
+                                          "OwnerId",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.Today,
+                                          new[]
+                                          {
+                                            (byte)1,
+                                          }),
+                               new Result("SessionId",
+                                          "ResultIsCompletedWithDependents",
+                                          "",
+                                          "OwnerId",
+                                          ResultStatus.Completed,
+                                          new List<string>
+                                          {
+                                            "Dependent1",
+                                            "Dependent2",
+                                          },
+                                          DateTime.Today,
+                                          new[]
+                                          {
+                                            (byte)1,
+                                          }),
+                             })
+                     .ConfigureAwait(false);
+
+    var wtg = helper.GetRequiredService<WatchToGrpc>();
+
+    var cts  = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+    var list = new List<EventSubscriptionResponse>();
+
+    Assert.That(async () =>
+                {
+                  try
+                  {
+                    // Simple* that are used to create this instance return static events
+                    await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                  new List<EventsEnum>
+                                                                                  {
+                                                                                    EventsEnum.NewResult,
+                                                                                  },
+                                                                                  null,
+                                                                                  null,
+                                                                                  cts.Token)
+                                                                       .ConfigureAwait(false))
+                    {
+                      Console.WriteLine(eventSubscriptionResponse);
+                      list.Add(eventSubscriptionResponse);
+                    }
+                  }
+                  catch (OperationCanceledException)
+                  {
+                    throw new TaskCanceledException();
+                  }
+                },
+                Throws.Exception.TypeOf<TaskCanceledException>());
+
+    Assert.AreEqual(5,
+                    list.Count);
+  }
 
   private static readonly TaskOptions Options = new(new Dictionary<string, string>
                                                     {

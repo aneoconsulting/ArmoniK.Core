@@ -18,8 +18,8 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Core.Common.gRPC.Convertors;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
@@ -55,7 +55,7 @@ public record Result(string       SessionId,
     => new()
        {
          SessionId   = result.SessionId,
-         Status      = result.Status,
+         Status      = result.Status.ToGrpcStatus(),
          CreatedAt   = FromDateTime(result.CreationDate),
          Name        = result.Name,
          OwnerTaskId = result.OwnerTaskId,
