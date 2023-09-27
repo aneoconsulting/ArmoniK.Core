@@ -22,13 +22,18 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
+
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -114,4 +119,220 @@ public class WatchToGrpcTests
     Assert.AreEqual(8 * nTries,
                     list.Count);
   }
+
+
+  [Test]
+  public async Task UseMongoShouldSucceed()
+  {
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>());
+
+    var taskTable = helper.GetRequiredService<ITaskTable>();
+
+    await taskTable.CreateTasks(new[]
+                                {
+                                  taskCompletedData_,
+                                  taskCreatingData_,
+                                  TaskProcessingData,
+                                  taskProcessingData2_,
+                                  TaskSubmittedData,
+                                  taskFailedData_,
+                                })
+                   .ConfigureAwait(false);
+
+    var wtg = helper.GetRequiredService<WatchToGrpc>();
+
+    var cts  = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+    var list = new List<EventSubscriptionResponse>();
+
+    Assert.That(async () =>
+                {
+                  try
+                  {
+                    // Simple* that are used to create this instance return static events
+                    await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                  new List<EventsEnum>
+                                                                                  {
+                                                                                    EventsEnum.NewTask,
+                                                                                  },
+                                                                                  null,
+                                                                                  null,
+                                                                                  cts.Token)
+                                                                       .ConfigureAwait(false))
+                    {
+                      Console.WriteLine(eventSubscriptionResponse);
+                      list.Add(eventSubscriptionResponse);
+                    }
+                  }
+                  catch (OperationCanceledException)
+                  {
+                    throw new TaskCanceledException();
+                  }
+                },
+                Throws.Exception.TypeOf<TaskCanceledException>());
+
+    Assert.AreEqual(6,
+                    list.Count);
+  }
+
+
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+                                                    {
+                                                      {
+                                                        "key1", "val1"
+                                                      },
+                                                      {
+                                                        "key2", "val2"
+                                                      },
+                                                    },
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion",
+                                                    "applicationNamespace",
+                                                    "applicationService",
+                                                    "engineType");
+
+  private static readonly TaskData TaskSubmittedData = new("SessionId",
+                                                           "TaskSubmittedId",
+                                                           "",
+                                                           "",
+                                                           "PayloadId",
+                                                           new[]
+                                                           {
+                                                             "parent1",
+                                                           },
+                                                           new[]
+                                                           {
+                                                             "dependency1",
+                                                           },
+                                                           new[]
+                                                           {
+                                                             "output1",
+                                                           },
+                                                           Array.Empty<string>(),
+                                                           TaskStatus.Submitted,
+                                                           Options with
+                                                           {
+                                                             PartitionId = "part2",
+                                                           },
+                                                           new Output(false,
+                                                                      ""));
+
+  private static readonly TaskData TaskProcessingData = new("SessionId",
+                                                            "TaskProcessingId",
+                                                            "OwnerPodId",
+                                                            "OwnerPodName",
+                                                            "PayloadId",
+                                                            new[]
+                                                            {
+                                                              "parent1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "dependency1",
+                                                            },
+                                                            new[]
+                                                            {
+                                                              "output1",
+                                                            },
+                                                            Array.Empty<string>(),
+                                                            TaskStatus.Processing,
+                                                            Options,
+                                                            new Output(false,
+                                                                       ""));
+
+  private readonly TaskData taskProcessingData2_ = new("SessionId",
+                                                       "TaskAnotherProcessingId",
+                                                       "OwnerPodId",
+                                                       "OwnerPodName",
+                                                       "PayloadId",
+                                                       new[]
+                                                       {
+                                                         "parent1",
+                                                       },
+                                                       new[]
+                                                       {
+                                                         "dependency1",
+                                                       },
+                                                       new[]
+                                                       {
+                                                         "output1",
+                                                       },
+                                                       Array.Empty<string>(),
+                                                       TaskStatus.Processing,
+                                                       Options,
+                                                       new Output(false,
+                                                                  ""));
+
+  private readonly TaskData taskFailedData_ = new("SessionId",
+                                                  "TaskFailedId",
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Error,
+                                                  Options,
+                                                  new Output(false,
+                                                             "sad task"));
+
+  private readonly TaskData taskCompletedData_ = new("SessionId",
+                                                     "TaskCompletedId",
+                                                     "OwnerPodId",
+                                                     "OwnerPodName",
+                                                     "PayloadId",
+                                                     new[]
+                                                     {
+                                                       "parent1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "dependency1",
+                                                     },
+                                                     new[]
+                                                     {
+                                                       "output1",
+                                                       "output2",
+                                                     },
+                                                     Array.Empty<string>(),
+                                                     TaskStatus.Completed,
+                                                     Options,
+                                                     new Output(true,
+                                                                ""));
+
+  private readonly TaskData taskCreatingData_ = new("SessionId",
+                                                    "TaskCreatingId",
+                                                    "OwnerPodId",
+                                                    "OwnerPodName",
+                                                    "PayloadId",
+                                                    new[]
+                                                    {
+                                                      "parent1",
+                                                    },
+                                                    new[]
+                                                    {
+                                                      "dependency1",
+                                                    },
+                                                    new[]
+                                                    {
+                                                      "output1",
+                                                    },
+                                                    Array.Empty<string>(),
+                                                    TaskStatus.Creating,
+                                                    Options,
+                                                    new Output(false,
+                                                               ""));
 }

@@ -277,39 +277,50 @@ public class WatchToGrpc
       await Task.Factory.StartNew(async () =>
                                   {
                                     await foreach (var esr in taskTable_.FindTasksAsync(internalTasksFilter,
-                                                                                        cur => new EventSubscriptionResponse
+                                                                                        cur => new
                                                                                                {
-                                                                                                 NewTask = new EventSubscriptionResponse.Types.NewTask
-                                                                                                           {
-                                                                                                             ParentTaskIds =
-                                                                                                             {
-                                                                                                               cur.ParentTaskIds,
-                                                                                                             },
-                                                                                                             DataDependencies =
-                                                                                                             {
-                                                                                                               cur.DataDependencies,
-                                                                                                             },
-                                                                                                             ExpectedOutputKeys =
-                                                                                                             {
-                                                                                                               cur.ExpectedOutputIds,
-                                                                                                             },
-                                                                                                             OriginTaskId = cur.InitialTaskId,
-                                                                                                             PayloadId    = cur.PayloadId,
-                                                                                                             RetryOfIds =
-                                                                                                             {
-                                                                                                               cur.RetryOfIds,
-                                                                                                             },
-                                                                                                             Status = cur.Status.ToGrpcStatus(),
-                                                                                                             TaskId = cur.TaskId,
-                                                                                                           },
-                                                                                                 SessionId = cur.SessionId,
+                                                                                                 cur.ParentTaskIds,
+                                                                                                 cur.DataDependencies,
+                                                                                                 cur.ExpectedOutputIds,
+                                                                                                 cur.InitialTaskId,
+                                                                                                 cur.PayloadId,
+                                                                                                 cur.RetryOfIds,
+                                                                                                 cur.Status,
+                                                                                                 cur.TaskId,
+                                                                                                 cur.SessionId,
                                                                                                },
                                                                                         cancellationToken)
                                                                         .ConfigureAwait(false))
                                     {
                                       logger_.LogDebug("New task from db {task}",
                                                        esr);
-                                      await channel.Writer.WriteAsync(esr,
+                                      await channel.Writer.WriteAsync(new EventSubscriptionResponse
+                                                                      {
+                                                                        NewTask = new EventSubscriptionResponse.Types.NewTask
+                                                                                  {
+                                                                                    PayloadId = esr.PayloadId,
+                                                                                    Status    = esr.Status.ToGrpcStatus(),
+                                                                                    DataDependencies =
+                                                                                    {
+                                                                                      esr.DataDependencies,
+                                                                                    },
+                                                                                    ExpectedOutputKeys =
+                                                                                    {
+                                                                                      esr.ExpectedOutputIds,
+                                                                                    },
+                                                                                    OriginTaskId = esr.InitialTaskId,
+                                                                                    ParentTaskIds =
+                                                                                    {
+                                                                                      esr.ParentTaskIds,
+                                                                                    },
+                                                                                    RetryOfIds =
+                                                                                    {
+                                                                                      esr.RetryOfIds,
+                                                                                    },
+                                                                                    TaskId = esr.TaskId,
+                                                                                  },
+                                                                        SessionId = esr.SessionId,
+                                                                      },
                                                                       CancellationToken.None)
                                                    .ConfigureAwait(false);
                                     }
