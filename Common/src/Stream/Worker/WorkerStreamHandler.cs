@@ -24,6 +24,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
@@ -165,7 +166,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
                                              },
                                              deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                              cancellationToken: cancellationToken)
-                               .ConfigureAwait(false)).Output;
+                               .ConfigureAwait(false)).Output.ToInternalOutput();
   }
 
   private Task<bool> CheckWorker(CancellationToken cancellationToken)

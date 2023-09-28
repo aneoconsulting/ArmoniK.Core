@@ -24,6 +24,7 @@ using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -61,9 +62,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       return new CancelSessionResponse
              {
-               Session = await sessionTable_.CancelSessionAsync(request.SessionId,
-                                                                context.CancellationToken)
-                                            .ConfigureAwait(false),
+               Session = (await sessionTable_.CancelSessionAsync(request.SessionId,
+                                                                 context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
@@ -98,9 +99,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       return new GetSessionResponse
              {
-               Session = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                             context.CancellationToken)
-                                            .ConfigureAwait(false),
+               Session = (await sessionTable_.GetSessionAsync(request.SessionId,
+                                                              context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
@@ -151,7 +152,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-                 sessions.Select(data => new SessionRaw(data)),
+                 sessions.Select(data => data.ToGrpcSessionRaw()),
                },
                Total = (int)totalCount,
              };

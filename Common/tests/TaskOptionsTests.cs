@@ -19,7 +19,7 @@ using System;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.gRPC.Convertors;
 
 using Google.Protobuf.Collections;
 

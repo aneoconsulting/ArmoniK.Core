@@ -75,9 +75,9 @@ public class GrpcTasksService : Task.TasksBase
     {
       return new GetTaskResponse
              {
-               Task = await taskTable_.ReadTaskAsync(request.TaskId,
-                                                     context.CancellationToken)
-                                      .ConfigureAwait(false),
+               Task = (await taskTable_.ReadTaskAsync(request.TaskId,
+                                                      context.CancellationToken)
+                                       .ConfigureAwait(false)).ToTaskDetailed(),
              };
     }
     catch (TaskNotFoundException e)
@@ -357,7 +357,7 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 tasks.Select(data => new TaskDetailed(data)),
+                 tasks.Select(data => data.ToTaskDetailed()),
                },
                Total = (int)totalCount,
              };

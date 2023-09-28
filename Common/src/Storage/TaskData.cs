@@ -21,15 +21,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.gRPC.Convertors;
 
 using FluentValidation.Internal;
-
-using Google.Protobuf.WellKnownTypes;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -189,70 +183,6 @@ public record TaskData(string        SessionId,
                              .Replace("$",
                                       "@dollar@")
                              .ToString();
-
-
-  /// <summary>
-  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskDetailed" />
-  /// </summary>
-  /// <param name="taskData">The input task data</param>
-  /// <returns>
-  ///   The converted task data
-  /// </returns>
-  public static implicit operator TaskDetailed(TaskData taskData)
-    => new()
-       {
-         SessionId  = taskData.SessionId,
-         Status     = taskData.Status.ToGrpcStatus(),
-         Output     = taskData.Output,
-         OwnerPodId = taskData.OwnerPodId,
-         Options    = taskData.Options.ToGrpcTaskOptions(),
-         DataDependencies =
-         {
-           taskData.DataDependencies,
-         },
-         CreatedAt = FromDateTime(taskData.CreationDate),
-         EndedAt = taskData.EndDate is not null
-                     ? FromDateTime(taskData.EndDate.Value)
-                     : null,
-         ExpectedOutputIds =
-         {
-           taskData.ExpectedOutputIds,
-         },
-         Id = taskData.TaskId,
-         RetryOfIds =
-         {
-           taskData.RetryOfIds,
-         },
-         ParentTaskIds =
-         {
-           taskData.ParentTaskIds,
-         },
-         PodTtl = taskData.PodTtl is not null
-                    ? FromDateTime(taskData.PodTtl.Value)
-                    : null,
-         StartedAt = taskData.StartDate is not null
-                       ? FromDateTime(taskData.StartDate.Value)
-                       : null,
-         StatusMessage = taskData.StatusMessage,
-         SubmittedAt = taskData.SubmittedDate is not null
-                         ? FromDateTime(taskData.SubmittedDate.Value)
-                         : null,
-         AcquiredAt = taskData.AcquisitionDate is not null
-                        ? FromDateTime(taskData.AcquisitionDate.Value)
-                        : null,
-         ReceivedAt = taskData.ReceptionDate is not null
-                        ? FromDateTime(taskData.ReceptionDate.Value)
-                        : null,
-         PodHostname = taskData.OwnerPodName,
-         CreationToEndDuration = taskData.CreationToEndDuration is not null
-                                   ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
-                                   : null,
-         ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
-                                     ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
-                                     : null,
-         InitialTaskId = taskData.InitialTaskId,
-       };
-
 
   /// <summary>
   ///   Conversion operator from <see cref="TaskData" /> to <see cref="Application" />
