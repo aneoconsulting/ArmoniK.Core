@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
@@ -29,11 +29,6 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 
 using NUnit.Framework;
-
-using Output = ArmoniK.Core.Common.Storage.Output;
-using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
-using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 

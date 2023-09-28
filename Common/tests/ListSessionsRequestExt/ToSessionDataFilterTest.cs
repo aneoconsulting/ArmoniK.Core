@@ -28,6 +28,7 @@ using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
@@ -171,9 +172,9 @@ public class ToSessionDataFilterTest
                        },
        };
 
-  public static FilterField CreateListSessionsFilterStatus(SessionRawEnumField  field,
-                                                           FilterStatusOperator op,
-                                                           SessionStatus        value)
+  public static FilterField CreateListSessionsFilterStatus(SessionRawEnumField       field,
+                                                           FilterStatusOperator      op,
+                                                           Api.gRPC.V1.SessionStatus value)
     => new()
        {
          Field = new SessionField
@@ -239,10 +240,10 @@ public class ToSessionDataFilterTest
 
     yield return CaseTrue(CreateListSessionsFilterStatus(SessionRawEnumField.Status,
                                                          FilterStatusOperator.Equal,
-                                                         SessionStatus.Running));
+                                                         Api.gRPC.V1.SessionStatus.Running));
     yield return CaseFalse(CreateListSessionsFilterStatus(SessionRawEnumField.Status,
                                                           FilterStatusOperator.Equal,
-                                                          SessionStatus.Cancelled));
+                                                          Api.gRPC.V1.SessionStatus.Cancelled));
 
     yield return CaseTrue(CreateListSessionsFilterString(SessionRawEnumField.SessionId,
                                                          FilterStringOperator.Equal,

@@ -18,12 +18,11 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.gRPC.Convertors;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
-
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -60,6 +59,6 @@ public record SessionData(string        SessionId,
            sessionData.PartitionIds,
          },
          SessionId = sessionData.SessionId,
-         Status    = sessionData.Status,
+         Status    = sessionData.Status.ToGrpcStatus(),
        };
 }

@@ -21,7 +21,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -33,8 +32,6 @@ using ArmoniK.Core.Common.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
-
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.TestBase;
 
@@ -312,7 +309,7 @@ public class SessionTableTestBase
                                                                    {
                                                                      Statuses =
                                                                      {
-                                                                       SessionStatus.Running,
+                                                                       Api.gRPC.V1.SessionStatus.Running,
                                                                      },
                                                                    },
                                                       },

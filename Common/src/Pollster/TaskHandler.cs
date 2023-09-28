@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -35,7 +34,6 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
