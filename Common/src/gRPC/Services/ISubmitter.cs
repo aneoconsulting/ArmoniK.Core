@@ -26,7 +26,7 @@ using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using Output = ArmoniK.Api.gRPC.V1.Output;
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;

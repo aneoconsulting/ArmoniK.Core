@@ -23,8 +23,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
@@ -41,10 +39,6 @@ using Moq;
 
 using NUnit.Framework;
 
-using Output = ArmoniK.Api.gRPC.V1.Output;
-using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
-using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
@@ -214,9 +208,10 @@ public class PollsterTest
     {
     }
 
-    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                  TimeSpan          duration,
-                                                  CancellationToken cancellationToken)
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 
@@ -245,9 +240,10 @@ public class PollsterTest
     {
     }
 
-    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                  TimeSpan          duration,
-                                                  CancellationToken cancellationToken)
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 
@@ -421,19 +417,15 @@ public class PollsterTest
     public void Dispose()
       => GC.SuppressFinalize(this);
 
-    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                  TimeSpan          duration,
-                                                  CancellationToken cancellationToken)
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
     {
       Task.Delay(TimeSpan.FromMilliseconds(delay_),
                  cancellationToken);
-      return Task.FromResult(new ProcessReply
-                             {
-                               Output = new Output
-                                        {
-                                          Ok = new Empty(),
-                                        },
-                             });
+      return Task.FromResult(new Output(true,
+                                        ""));
     }
   }
 
@@ -567,8 +559,9 @@ public class PollsterTest
       {
         // Failing WorkerStreamHandler
         var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
-        mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<ProcessRequest>(),
-                                                                                       It.IsAny<TimeSpan>(),
+        mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                                                       It.IsAny<string>(),
+                                                                                       It.IsAny<string>(),
                                                                                        It.IsAny<CancellationToken>()))
                              .Throws(new ApplicationException("Failed WorkerStreamHandler"));
         yield return new TestCaseData(mockStreamHandlerFail,
@@ -639,8 +632,9 @@ public class PollsterTest
     var simpleAgentHandler   = new SimpleAgentHandler();
 
     var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
-    mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<ProcessRequest>(),
-                                                                                   It.IsAny<TimeSpan>(),
+    mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                                                   It.IsAny<string>(),
+                                                                                   It.IsAny<string>(),
                                                                                    It.IsAny<CancellationToken>()))
                          .Throws(new TestUnavailableRpcException("Unavailable worker"));
 

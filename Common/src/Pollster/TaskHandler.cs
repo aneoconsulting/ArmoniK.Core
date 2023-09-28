@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -36,7 +35,7 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using Output = ArmoniK.Api.gRPC.V1.Output;
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -64,7 +63,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly CancellationTokenSource       workerConnectionCts_;
   private readonly IWorkerStreamHandler          workerStreamHandler_;
   private          IAgent?                       agent_;
-  private          ProcessReply?                 reply_;
+  private          Output?                       output_;
   private          SessionData?                  sessionData_;
   private          TaskData?                     taskData_;
 
@@ -380,13 +379,8 @@ public sealed class TaskHandler : IAsyncDisposable
                              taskData_.TaskId);
             await submitter_.CompleteTaskAsync(taskData_,
                                                true,
-                                               new Output
-                                               {
-                                                 Error = new Output.Types.Error
-                                                         {
-                                                           Details = "Other pod seems to have crashed, resubmitting task",
-                                                         },
-                                               },
+                                               new Output(false,
+                                                          "Other pod seems to have crashed, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
           }
@@ -557,30 +551,11 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       // at this point worker requests should have ended
       logger_.LogDebug("Wait for task output");
-      reply_ = await workerStreamHandler_.StartTaskProcessing(new ProcessRequest
-                                                              {
-                                                                CommunicationToken = token_,
-                                                                Configuration = new Configuration
-                                                                                {
-                                                                                  DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
-                                                                                },
-                                                                DataDependencies =
-                                                                {
-                                                                  taskData_.DataDependencies,
-                                                                },
-                                                                DataFolder = folder_,
-                                                                ExpectedOutputKeys =
-                                                                {
-                                                                  taskData_.ExpectedOutputIds,
-                                                                },
-                                                                PayloadId   = taskData_.PayloadId,
-                                                                SessionId   = taskData_.SessionId,
-                                                                TaskId      = taskData_.TaskId,
-                                                                TaskOptions = taskData_.Options.ToGrpcTaskOptions(),
-                                                              },
-                                                              taskData_.Options.MaxDuration,
-                                                              workerConnectionCts_.Token)
-                                         .ConfigureAwait(false);
+      output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
+                                                               token_,
+                                                               folder_,
+                                                               workerConnectionCts_.Token)
+                                          .ConfigureAwait(false);
 
       logger_.LogDebug("Stop agent server");
       await agentHandler_.Stop(workerConnectionCts_.Token)
@@ -614,9 +589,9 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(agent_) + " is null.");
     }
 
-    if (reply_ is null)
+    if (output_ is null)
     {
-      throw new NullReferenceException(nameof(reply_) + " is null.");
+      throw new NullReferenceException(nameof(output_) + " is null.");
     }
 
     using var _ = logger_.BeginNamedScope("PostProcessing",
@@ -626,10 +601,10 @@ public sealed class TaskHandler : IAsyncDisposable
 
     try
     {
-      logger_.LogInformation("Process task output of type {type}",
-                             reply_.Output.TypeCase);
+      logger_.LogInformation("Process task output is {type}",
+                             output_.Success);
 
-      if (reply_.Output.TypeCase is Output.TypeOneofCase.Ok)
+      if (output_.Success)
       {
         logger_.LogDebug("Complete processing of the request");
         await agent_.FinalizeTaskCreation(CancellationToken.None)
@@ -638,7 +613,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          false,
-                                         reply_.Output,
+                                         output_,
                                          CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
@@ -726,13 +701,8 @@ public sealed class TaskHandler : IAsyncDisposable
 
         await submitter_.CompleteTaskAsync(taskData,
                                            resubmit,
-                                           new Output
-                                           {
-                                             Error = new Output.Types.Error
-                                                     {
-                                                       Details = e.Message,
-                                                     },
-                                           },
+                                           new Output(false,
+                                                      e.Message),
                                            CancellationToken.None)
                         .ConfigureAwait(false);
 

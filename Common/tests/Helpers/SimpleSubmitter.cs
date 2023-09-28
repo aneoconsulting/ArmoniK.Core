@@ -28,7 +28,7 @@ using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using Output = ArmoniK.Api.gRPC.V1.Output;
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -113,12 +113,6 @@ public class SimpleSubmitter : ISubmitter
                                        CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
-  public Task CompleteTaskAsync(TaskData          taskData,
-                                bool              resubmit,
-                                Output            output,
-                                CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                           CancellationToken contextCancellationToken)
     => Task.FromResult(new AvailabilityReply
@@ -131,5 +125,11 @@ public class SimpleSubmitter : ISubmitter
                         string                                 key,
                         IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
                         CancellationToken                      cancellationToken)
+    => Task.CompletedTask;
+
+  public Task CompleteTaskAsync(TaskData          taskData,
+                                bool              resubmit,
+                                Output            output,
+                                CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 }

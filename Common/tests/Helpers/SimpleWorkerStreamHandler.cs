@@ -19,9 +19,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -39,14 +38,10 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
   public void Dispose()
     => GC.SuppressFinalize(this);
 
-  public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                TimeSpan          duration,
-                                                CancellationToken cancellationToken)
-    => Task.FromResult(new ProcessReply
-                       {
-                         Output = new Output
-                                  {
-                                    Ok = new Empty(),
-                                  },
-                       });
+  public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                          string            token,
+                                          string            dataFolder,
+                                          CancellationToken cancellationToken)
+    => Task.FromResult(new Output(true,
+                                  ""));
 }

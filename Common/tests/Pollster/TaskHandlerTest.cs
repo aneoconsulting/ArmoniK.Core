@@ -26,7 +26,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Pollster;
@@ -1016,9 +1015,10 @@ public class TaskHandlerTest
     public void Dispose()
       => GC.SuppressFinalize(this);
 
-    public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                  TimeSpan          duration,
-                                                  CancellationToken cancellationToken)
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
       => throw new T();
   }
 

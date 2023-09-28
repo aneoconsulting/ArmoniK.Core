@@ -19,8 +19,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
@@ -29,7 +29,8 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 [PublicAPI]
 public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
-  public Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                TimeSpan          duration,
-                                                CancellationToken cancellationToken);
+  public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                          string            token,
+                                          string            dataFolder,
+                                          CancellationToken cancellationToken);
 }
