@@ -23,17 +23,15 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-
-using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
@@ -163,9 +161,9 @@ public class SessionTable : ISessionTable
                                       {
                                         SessionFilter.StatusesOneofCase.None => true,
                                         SessionFilter.StatusesOneofCase.Included => sessionFilter.Included.Statuses.Contains(storage_[sessionId]
-                                                                                                                               .Status),
+                                                                                                                             .Status.ToGrpcStatus()),
                                         SessionFilter.StatusesOneofCase.Excluded => !sessionFilter.Excluded.Statuses.Contains(storage_[sessionId]
-                                                                                                                                .Status),
+                                                                                                                              .Status.ToGrpcStatus()),
                                         _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                                       });
   }
