@@ -40,7 +40,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-using Output = ArmoniK.Api.gRPC.V1.Output;
+using Output = ArmoniK.Core.Common.Storage.Output;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -337,93 +337,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task CompleteTaskAsync(TaskData          taskData,
-                                      bool              resubmit,
-                                      Output            output,
-                                      CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
-
-    Storage.Output cOutput = output;
-    var taskDataEnd = taskData with
-                      {
-                        EndDate = DateTime.UtcNow,
-                        CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
-                        ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
-                      };
-
-    if (cOutput.Success)
-    {
-      await taskTable_.SetTaskSuccessAsync(taskDataEnd,
-                                           cancellationToken)
-                      .ConfigureAwait(false);
-
-      logger_.LogInformation("Remove input payload of {task}",
-                             taskData.TaskId);
-
-      //Discard value is used to remove warnings CS4014 !!
-      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(taskData.TaskId,
-                                                                                CancellationToken.None)
-                                                                .ConfigureAwait(false),
-                                cancellationToken);
-    }
-    else
-    {
-      // TODO FIXME: nothing will resubmit the task if there is a crash there
-      if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
-      {
-        // not done means that another pod put this task in retry so we do not need to do it a second time
-        // so nothing to do
-        if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
-                                                cOutput.Error,
-                                                cancellationToken)
-                             .ConfigureAwait(false))
-        {
-          return;
-        }
-
-        logger_.LogWarning("Resubmit {task}",
-                           taskData.TaskId);
-
-        var newTaskId = await taskTable_.RetryTask(taskData,
-                                                   cancellationToken)
-                                        .ConfigureAwait(false);
-
-        await FinalizeTaskCreation(new List<TaskCreationRequest>
-                                   {
-                                     new(newTaskId,
-                                         taskData.PayloadId,
-                                         taskData.Options,
-                                         taskData.ExpectedOutputIds,
-                                         taskData.DataDependencies),
-                                   },
-                                   taskData.SessionId,
-                                   taskData.TaskId,
-                                   cancellationToken)
-          .ConfigureAwait(false);
-      }
-      else
-      {
-        // not done means that another pod put this task in error so we do not need to do it a second time
-        // so nothing to do
-        if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
-                                                cOutput.Error,
-                                                cancellationToken)
-                             .ConfigureAwait(false))
-        {
-          return;
-        }
-
-        await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                        resultTable_,
-                                                        taskData.TaskId,
-                                                        CancellationToken.None)
-                                   .ConfigureAwait(false);
-      }
-    }
-  }
-
-  /// <inheritdoc />
   [SuppressMessage("Usage",
                    "CA2208:Instantiate argument exceptions correctly",
                    Justification = $"{nameof(ArgumentOutOfRangeException)} is used in nested code")]
@@ -579,5 +492,91 @@ public class Submitter : ISubmitter
                              .ConfigureAwait(false);
 
     return requests;
+  }
+
+  /// <inheritdoc />
+  public async Task CompleteTaskAsync(TaskData          taskData,
+                                      bool              resubmit,
+                                      Output            output,
+                                      CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
+
+    var taskDataEnd = taskData with
+                      {
+                        EndDate = DateTime.UtcNow,
+                        CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
+                        ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
+                      };
+
+    if (output.Success)
+    {
+      await taskTable_.SetTaskSuccessAsync(taskDataEnd,
+                                           cancellationToken)
+                      .ConfigureAwait(false);
+
+      logger_.LogInformation("Remove input payload of {task}",
+                             taskData.TaskId);
+
+      //Discard value is used to remove warnings CS4014 !!
+      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(taskData.TaskId,
+                                                                                CancellationToken.None)
+                                                                .ConfigureAwait(false),
+                                cancellationToken);
+    }
+    else
+    {
+      // TODO FIXME: nothing will resubmit the task if there is a crash there
+      if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
+      {
+        // not done means that another pod put this task in retry so we do not need to do it a second time
+        // so nothing to do
+        if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
+                                                output.Error,
+                                                cancellationToken)
+                             .ConfigureAwait(false))
+        {
+          return;
+        }
+
+        logger_.LogWarning("Resubmit {task}",
+                           taskData.TaskId);
+
+        var newTaskId = await taskTable_.RetryTask(taskData,
+                                                   cancellationToken)
+                                        .ConfigureAwait(false);
+
+        await FinalizeTaskCreation(new List<TaskCreationRequest>
+                                   {
+                                     new(newTaskId,
+                                         taskData.PayloadId,
+                                         taskData.Options,
+                                         taskData.ExpectedOutputIds,
+                                         taskData.DataDependencies),
+                                   },
+                                   taskData.SessionId,
+                                   taskData.TaskId,
+                                   cancellationToken)
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        // not done means that another pod put this task in error so we do not need to do it a second time
+        // so nothing to do
+        if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
+                                                output.Error,
+                                                cancellationToken)
+                             .ConfigureAwait(false))
+        {
+          return;
+        }
+
+        await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
+                                                        resultTable_,
+                                                        taskData.TaskId,
+                                                        CancellationToken.None)
+                                   .ConfigureAwait(false);
+      }
+    }
   }
 }

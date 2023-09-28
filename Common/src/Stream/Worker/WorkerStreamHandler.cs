@@ -25,11 +25,14 @@ using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+
+using Output = ArmoniK.Core.Common.Storage.Output;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
@@ -129,19 +132,40 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   public void Dispose()
     => GC.SuppressFinalize(this);
 
-  public async Task<ProcessReply> StartTaskProcessing(ProcessRequest    request,
-                                                      TimeSpan          duration,
-                                                      CancellationToken cancellationToken)
+  public async Task<Output> StartTaskProcessing(TaskData          taskData,
+                                                string            token,
+                                                string            dataFolder,
+                                                CancellationToken cancellationToken)
   {
     if (workerClient_ == null)
     {
       throw new ArmoniKException("Worker client should be initialized");
     }
 
-    return await workerClient_.ProcessAsync(request,
-                                            deadline: DateTime.UtcNow + duration,
-                                            cancellationToken: cancellationToken)
-                              .ConfigureAwait(false);
+    return (await workerClient_.ProcessAsync(new ProcessRequest
+                                             {
+                                               CommunicationToken = token,
+                                               Configuration = new Configuration
+                                                               {
+                                                                 DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                                                               },
+                                               DataDependencies =
+                                               {
+                                                 taskData.DataDependencies,
+                                               },
+                                               DataFolder = dataFolder,
+                                               ExpectedOutputKeys =
+                                               {
+                                                 taskData.ExpectedOutputIds,
+                                               },
+                                               PayloadId   = taskData.PayloadId,
+                                               SessionId   = taskData.SessionId,
+                                               TaskId      = taskData.TaskId,
+                                               TaskOptions = taskData.Options.ToGrpcTaskOptions(),
+                                             },
+                                             deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+                                             cancellationToken: cancellationToken)
+                               .ConfigureAwait(false)).Output;
   }
 
   private Task<bool> CheckWorker(CancellationToken cancellationToken)

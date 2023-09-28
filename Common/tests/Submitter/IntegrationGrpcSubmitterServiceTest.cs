@@ -47,7 +47,7 @@ using Moq.Language.Flow;
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using Output = ArmoniK.Api.gRPC.V1.Output;
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -924,8 +924,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                      CancellationToken   cancellationToken = default)
       => throw new T();
 
-    public Task<Storage.Output> GetTaskOutput(string            taskId,
-                                              CancellationToken cancellationToken = default)
+    public Task<Output> GetTaskOutput(string            taskId,
+                                      CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task<TaskData> AcquireTask(TaskData          taskData,
