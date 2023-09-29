@@ -607,10 +607,6 @@ public class TaskHandlerTest
                           CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                              CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                               CancellationToken                cancellationToken = default)
       => throw new NotImplementedException();
@@ -624,10 +620,6 @@ public class TaskHandlerTest
 
     public Task DeleteTaskAsync(string            id,
                                 CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                                   CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
     public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,

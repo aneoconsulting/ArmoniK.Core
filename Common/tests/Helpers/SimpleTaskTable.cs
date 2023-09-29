@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
@@ -97,14 +96,6 @@ public class SimpleTaskTable : ITaskTable
                         CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                            CancellationToken cancellationToken = default)
-    => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
-                                                     {
-                                                       new(TaskStatus.Completed,
-                                                           42),
-                                                     });
-
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                             CancellationToken                cancellationToken = default)
     => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
@@ -128,13 +119,6 @@ public class SimpleTaskTable : ITaskTable
   public Task DeleteTaskAsync(string            id,
                               CancellationToken cancellationToken = default)
     => Task.CompletedTask;
-
-  public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                                 CancellationToken cancellationToken = default)
-    => new List<string>
-       {
-         TaskId,
-       }.ToAsyncEnumerable();
 
   public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                          Expression<Func<TaskData, object?>> orderField,

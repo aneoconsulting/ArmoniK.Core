@@ -22,11 +22,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.gRPC.Convertors;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public static class TaskTableExtensions
@@ -39,14 +34,6 @@ public static class TaskTableExtensions
     TaskStatus.Retried,
     TaskStatus.Timeout,
   };
-
-  public static async Task<int> CancelTasks(this ITaskTable   taskTable,
-                                            TaskFilter        filter,
-                                            CancellationToken cancellationToken = default)
-    => (int)await taskTable.UpdateAllTaskStatusAsync(filter,
-                                                     TaskStatus.Cancelling,
-                                                     cancellationToken)
-                           .ConfigureAwait(false);
 
   /// <summary>
   ///   Change the status of the task to canceled
@@ -190,38 +177,6 @@ public static class TaskTableExtensions
                               .ConfigureAwait(false);
 
     return task.Status != TaskStatus.Retried;
-  }
-
-  /// <summary>
-  ///   Update the statuses of all tasks matching a given filter
-  /// </summary>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="filter">Task Filter describing the tasks whose status should be updated</param>
-  /// <param name="status">The new task status</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The number of updated tasks
-  /// </returns>
-  public static async Task<long> UpdateAllTaskStatusAsync(this ITaskTable   taskTable,
-                                                          TaskFilter        filter,
-                                                          TaskStatus        status,
-                                                          CancellationToken cancellationToken = default)
-  {
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed.ToGrpcStatus()) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Cancelled.ToGrpcStatus()) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Error.ToGrpcStatus())     ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Retried.ToGrpcStatus())))
-    {
-      throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
-    }
-
-    return await taskTable.UpdateManyTasks(filter.ToFilterExpression(),
-                                           new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                           {
-                                             (tdm => tdm.Status, status),
-                                           },
-                                           cancellationToken)
-                          .ConfigureAwait(false);
   }
 
   /// <summary>

@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -105,16 +104,6 @@ public interface ITaskTable : IInitializable
   Task StartTask(TaskData          taskData,
                  CancellationToken cancellationToken = default);
 
-  /// <summary>
-  ///   Count tasks matching a given filter
-  /// </summary>
-  /// <param name="filter">Task Filter describing the tasks to be counted</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The number of tasks that matched the filter
-  /// </returns>
-  Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                     CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Count tasks matching a given filter
@@ -157,17 +146,6 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task DeleteTaskAsync(string            id,
                        CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   List all tasks matching a given filter
-  /// </summary>
-  /// <param name="filter">Task Filter describing the tasks to be counted</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   List of tasks that matched the filter
-  /// </returns>
-  IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                          CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   List all tasks matching the given filter and ordering
