@@ -19,7 +19,7 @@ using ArmoniK.Core.Base.DataStructures;
 
 using Google.Protobuf.WellKnownTypes;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Common.gRPC.Convertors;
 
 public static class TaskOptionsExt
 {

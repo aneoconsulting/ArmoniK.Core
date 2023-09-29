@@ -16,13 +16,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Core.Common.gRPC.Convertors;
+using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Common.gRPC.Convertors;
 
 public static class TaskDataSummaryExt
 {

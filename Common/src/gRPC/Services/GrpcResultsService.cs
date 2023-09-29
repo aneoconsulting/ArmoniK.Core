@@ -28,6 +28,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -112,7 +113,7 @@ public class GrpcResultsService : Results.ResultsBase
              Page     = request.Page,
              Results =
              {
-               results.results.Select(result => new ResultRaw(result)),
+               results.results.Select(result => result.ToGrpcResultRaw()),
              },
              Total = results.totalCount,
            };
@@ -142,7 +143,7 @@ public class GrpcResultsService : Results.ResultsBase
            {
              Results =
              {
-               results.Select(result => new ResultRaw(result)),
+               results.Select(result => result.ToGrpcResultRaw()),
              },
            };
   }
@@ -191,7 +192,7 @@ public class GrpcResultsService : Results.ResultsBase
            {
              Results =
              {
-               resultList.Select(r => new ResultRaw(r)),
+               resultList.Select(r => r.ToGrpcResultRaw()),
              },
            };
   }
@@ -316,7 +317,7 @@ public class GrpcResultsService : Results.ResultsBase
 
       return new UploadResultDataResponse
              {
-               Result = resultData,
+               Result = resultData.ToGrpcResultRaw(),
              };
     }
     catch (ResultNotFoundException e)
@@ -340,7 +341,7 @@ public class GrpcResultsService : Results.ResultsBase
 
     return new GetResultResponse
            {
-             Result = result,
+             Result = result.ToGrpcResultRaw(),
            };
   }
 }

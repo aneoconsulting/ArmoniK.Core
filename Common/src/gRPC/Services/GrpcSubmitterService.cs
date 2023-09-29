@@ -353,7 +353,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                {
                  (await taskTable_.CountTasksAsync(request,
                                                    context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => new StatusCount(count)),
+                                  .ConfigureAwait(false)).Select(count => count.ToGrpcStatusCount()),
                },
              };
     }
@@ -466,9 +466,9 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return await taskTable_.GetTaskOutput(request.TaskId,
-                                            context.CancellationToken)
-                             .ConfigureAwait(false);
+      return (await taskTable_.GetTaskOutput(request.TaskId,
+                                             context.CancellationToken)
+                              .ConfigureAwait(false)).ToGrpcOutput();
     }
     catch (TaskNotFoundException e)
     {

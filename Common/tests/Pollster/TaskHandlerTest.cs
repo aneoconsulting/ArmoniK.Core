@@ -284,13 +284,8 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskErrorData,
                                                           false,
-                                                          new Api.gRPC.V1.Output
-                                                          {
-                                                            Error = new Api.gRPC.V1.Output.Types.Error
-                                                                    {
-                                                                      Details = "Created for testing tasks in error",
-                                                                    },
-                                                          })
+                                                          new Output(false,
+                                                                     "Created for testing tasks in error"))
                              .ConfigureAwait(false);
 
     var taskRetriedData = await testServiceProvider.TaskTable.ReadTaskAsync(taskRetriedId,
@@ -299,13 +294,8 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskRetriedData,
                                                           true,
-                                                          new Api.gRPC.V1.Output
-                                                          {
-                                                            Error = new Api.gRPC.V1.Output.Types.Error
-                                                                    {
-                                                                      Details = "Created for testing tasks in error",
-                                                                    },
-                                                          })
+                                                          new Output(false,
+                                                                     "Created for testing tasks in error"))
                              .ConfigureAwait(false);
 
     return (taskId, taskUnresolvedDepId, taskErrorId, taskRetriedId, sessionId);

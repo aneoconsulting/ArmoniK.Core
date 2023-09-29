@@ -18,11 +18,6 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Core.Common.gRPC.Convertors;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
-
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
@@ -42,23 +37,4 @@ public record Result(string       SessionId,
                      ResultStatus Status,
                      List<string> DependentTasks,
                      DateTime     CreationDate,
-                     byte[]       Data)
-{
-  /// <summary>
-  ///   Conversion operator from <see cref="Result" /> to <see cref="ResultRaw" />
-  /// </summary>
-  /// <param name="result">The input result data</param>
-  /// <returns>
-  ///   The converted result data
-  /// </returns>
-  public static implicit operator ResultRaw(Result result)
-    => new()
-       {
-         SessionId   = result.SessionId,
-         Status      = result.Status.ToGrpcStatus(),
-         CreatedAt   = FromDateTime(result.CreationDate),
-         Name        = result.Name,
-         OwnerTaskId = result.OwnerTaskId,
-         ResultId    = result.ResultId,
-       };
-}
+                     byte[]       Data);

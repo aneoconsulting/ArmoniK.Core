@@ -15,30 +15,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Storage;
 
-using ArmoniK.Core.Base.DataStructures;
+namespace ArmoniK.Core.Common.gRPC.Convertors;
 
-namespace ArmoniK.Core.Common.Storage;
-
-public record SessionData(string        SessionId,
-                          SessionStatus Status,
-                          DateTime      CreationDate,
-                          DateTime?     CancellationDate,
-                          IList<string> PartitionIds,
-                          TaskOptions   Options)
+public static class TaskStatusCountExt
 {
-  public SessionData(string        sessionId,
-                     SessionStatus status,
-                     IList<string> partitionIds,
-                     TaskOptions   options)
-    : this(sessionId,
-           status,
-           DateTime.UtcNow,
-           null,
-           partitionIds,
-           options)
-  {
-  }
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskStatusCount" /> to <see cref="StatusCount" />
+  /// </summary>
+  /// <param name="taskStatusCount">The input status count</param>
+  /// <returns>
+  ///   The converted status count
+  /// </returns>
+  public static StatusCount ToGrpcStatusCount(this TaskStatusCount taskStatusCount)
+    => new()
+       {
+         Count  = taskStatusCount.Count,
+         Status = taskStatusCount.Status.ToGrpcStatus(),
+       };
 }

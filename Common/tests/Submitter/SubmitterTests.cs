@@ -30,6 +30,7 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
@@ -51,7 +52,6 @@ using MongoDB.Driver;
 
 using NUnit.Framework;
 
-using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
@@ -428,10 +428,8 @@ public class SubmitterTests
 
     await submitter.CompleteTaskAsync(taskData,
                                       true,
-                                      new Api.gRPC.V1.Output
-                                      {
-                                        Ok = new Empty(),
-                                      },
+                                      new Output(true,
+                                                 string.Empty),
                                       token)
                    .ConfigureAwait(false);
 
@@ -970,13 +968,8 @@ public class SubmitterTests
 
     await submitter_.CompleteTaskAsync(taskData,
                                        false,
-                                       new Api.gRPC.V1.Output
-                                       {
-                                         Error = new Api.gRPC.V1.Output.Types.Error
-                                                 {
-                                                   Details = "This error should be propagated to other tasks",
-                                                 },
-                                       })
+                                       new Output(false,
+                                                  "This error should be propagated to other tasks"))
                     .ConfigureAwait(false);
 
     taskData = await taskTable_.ReadTaskAsync(abortedTask,
