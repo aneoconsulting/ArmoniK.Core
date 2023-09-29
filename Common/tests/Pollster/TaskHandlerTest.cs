@@ -20,11 +20,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -834,22 +834,24 @@ public class TaskHandlerTest
       return Task.FromResult(sessionData_.SessionId);
     }
 
-    public async Task<SessionData> GetSessionAsync(string            sessionId,
-                                                   CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>>        filter,
+                                                          Expression<Func<SessionData, T>>           selector,
+                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       await Task.Delay(delay_,
                        cancellationToken)
                 .ConfigureAwait(false);
-      return sessionData_!;
+      var enumerable = new[]
+                       {
+                         sessionData_!,
+                       }.Select(selector.Compile())
+                        .ToAsyncEnumerable();
+
+      await foreach (var d in enumerable.ConfigureAwait(false))
+      {
+        yield return d;
+      }
     }
-
-    public Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                              CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                       CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
 
     public Task<SessionData> CancelSessionAsync(string            sessionId,
                                                 CancellationToken cancellationToken = default)
@@ -857,10 +859,6 @@ public class TaskHandlerTest
 
     public Task DeleteSessionAsync(string            sessionId,
                                    CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
-    public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     request,
-                                                      CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,

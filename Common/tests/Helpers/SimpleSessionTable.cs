@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
@@ -67,25 +66,23 @@ public class SimpleSessionTable : ISessionTable
                                           CancellationToken   cancellationToken = default)
     => Task.FromResult(SessionId);
 
-  public Task<SessionData> GetSessionAsync(string            sessionId,
-                                           CancellationToken cancellationToken = default)
-    => Task.FromResult(new SessionData(SessionId,
-                                       SessionStatus.Running,
-                                       DateTime.Today.ToUniversalTime(),
-                                       null,
-                                       new List<string>
-                                       {
-                                         PartitionId,
-                                       },
-                                       TaskOptions));
+  public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                                  Expression<Func<SessionData, T>>    selector,
+                                                  CancellationToken                   cancellationToken = default)
+    => new SessionData[]
+       {
+         new(SessionId,
+             SessionStatus.Running,
+             DateTime.Today.ToUniversalTime(),
+             null,
+             new List<string>
+             {
+               PartitionId,
+             },
+             TaskOptions),
+       }.Select(selector.Compile())
+        .ToAsyncEnumerable();
 
-  public Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                            CancellationToken cancellationToken = default)
-    => Task.FromResult(false);
-
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(TaskOptions);
 
   public Task<SessionData> CancelSessionAsync(string            sessionId,
                                               CancellationToken cancellationToken = default)
@@ -102,13 +99,6 @@ public class SimpleSessionTable : ISessionTable
   public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
     => Task.CompletedTask;
-
-  public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
-                                                    CancellationToken cancellationToken = default)
-    => new List<string>
-       {
-         SessionId,
-       }.ToAsyncEnumerable();
 
   public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
                                                                                       Expression<Func<SessionData, object?>> orderField,

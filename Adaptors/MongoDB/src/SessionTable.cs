@@ -18,16 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
@@ -88,67 +84,18 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task<SessionData> GetSessionAsync(string            sessionId,
-                                                 CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                                  Expression<Func<SessionData, T>>    selector,
+                                                  CancellationToken                   cancellationToken = default)
   {
-    using var _        = Logger.LogFunction(sessionId);
-    using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
-    activity?.SetTag($"{nameof(GetSessionAsync)}_sessionId",
-                     sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
+    using var activity          = activitySource_.StartActivity($"{nameof(FindSessionsAsync)}");
+    var       sessionHandle     = sessionProvider_.Get();
+    var       sessionCollection = sessionCollectionProvider_.Get();
 
-
-    try
-    {
-      return await sessionCollection.Find(session => session.SessionId == sessionId)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
-  }
-
-
-  /// <inheritdoc />
-  public async Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                                  CancellationToken cancellationToken = default)
-  {
-    using var _        = Logger.LogFunction(sessionId);
-    using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
-    activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
-                     sessionId);
-
-    return (await GetSessionAsync(sessionId,
-                                  cancellationToken)
-              .ConfigureAwait(false)).Status == SessionStatus.Cancelled;
-  }
-
-  /// <inheritdoc />
-  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                           CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
-    activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
-                     sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
-
-    try
-    {
-      return await sessionCollection.Find(sdm => sdm.SessionId == sessionId)
-                                    .Project(sdm => sdm.Options)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
+    return sessionCollection.Find(sessionHandle,
+                                  filter)
+                            .Project(selector)
+                            .ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -203,26 +150,6 @@ public class SessionTable : ISessionTable
     if (res.DeletedCount == 0)
     {
       throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-  }
-
-  /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListSessionsAsync(SessionFilter                              sessionFilter,
-                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    using var _                 = Logger.LogFunction();
-    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var       sessionHandle     = sessionProvider_.Get();
-    var       sessionCollection = sessionCollectionProvider_.Get();
-
-    await foreach (var sessionId in sessionCollection.AsQueryable(sessionHandle)
-                                                     .FilterQuery(sessionFilter)
-                                                     .Select(model => model.SessionId)
-                                                     .ToAsyncEnumerable()
-                                                     .WithCancellation(cancellationToken)
-                                                     .ConfigureAwait(false))
-    {
-      yield return sessionId;
     }
   }
 
