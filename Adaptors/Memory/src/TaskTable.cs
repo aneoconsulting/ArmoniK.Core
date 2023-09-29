@@ -18,17 +18,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
@@ -129,20 +126,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                                  CancellationToken cancellationToken = default)
-    => await ListTasksAsync(filter,
-                            cancellationToken)
-             .Select(taskId => taskId2TaskData_[taskId]
-                       .Status)
-             .GroupBy(status => status)
-             .SelectAwait(async grouping => new TaskStatusCount(grouping.Key,
-                                                                await grouping.CountAsync(cancellationToken)
-                                                                              .ConfigureAwait(false)))
-             .ToListAsync(cancellationToken)
-             .ConfigureAwait(false);
-
-  /// <inheritdoc />
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                             CancellationToken                cancellationToken = default)
     => Task.FromResult(taskId2TaskData_.AsQueryable()
@@ -180,33 +163,6 @@ public class TaskTable : ITaskTable
 
     return Task.FromResult(taskId2TaskData_.Remove(id,
                                                    out _));
-  }
-
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                                 CancellationToken cancellationToken = default)
-  {
-    IEnumerable<string> rawList = filter.IdsCase switch
-                                  {
-                                    TaskFilter.IdsOneofCase.None =>
-                                      throw new ArgumentException("Filter is not properly initialized. Either the session or the tasks are required",
-                                                                  nameof(filter)),
-                                    TaskFilter.IdsOneofCase.Session => filter.Session.Ids.SelectMany(s => session2TaskIds_[s])
-                                                                             .ToImmutableList(),
-                                    TaskFilter.IdsOneofCase.Task => filter.Task.Ids,
-                                    _                            => throw new ArgumentException("Filter is set to an unknown IdsCase."),
-                                  };
-
-    return rawList.Where(taskId => filter.StatusesCase switch
-                                   {
-                                     TaskFilter.StatusesOneofCase.None => true,
-                                     TaskFilter.StatusesOneofCase.Included => filter.Included.Statuses.Contains(taskId2TaskData_[taskId]
-                                                                                                                .Status.ToGrpcStatus()),
-                                     TaskFilter.StatusesOneofCase.Excluded => !filter.Excluded.Statuses.Contains(taskId2TaskData_[taskId]
-                                                                                                                 .Status.ToGrpcStatus()),
-                                     _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
-                                   })
-                  .ToAsyncEnumerable();
   }
 
   /// <inheritdoc />
@@ -466,39 +422,9 @@ public class TaskTable : ITaskTable
                          : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public async Task<int> CountAllTasksAsync(TaskStatus        status,
-                                            CancellationToken cancellationToken = default)
-  {
-    var count = 0;
-
-    foreach (var session in session2TaskIds_.Keys)
-    {
-      var statusFilter = new TaskFilter
-                         {
-                           Included = new TaskFilter.Types.StatusesRequest
-                                      {
-                                        Statuses =
-                                        {
-                                          status.ToGrpcStatus(),
-                                        },
-                                      },
-                           Session = new TaskFilter.Types.IdsRequest
-                                     {
-                                       Ids =
-                                       {
-                                         session,
-                                       },
-                                     },
-                         };
-
-      count += await ListTasksAsync(statusFilter,
-                                    cancellationToken)
-                     .CountAsync(cancellationToken)
-                     .ConfigureAwait(false);
-    }
-
-    return count;
-  }
+  public Task<int> CountAllTasksAsync(TaskStatus        status,
+                                      CancellationToken cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.Count(pair => pair.Value.Status == status));
 
   /// <inheritdoc />
   public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,

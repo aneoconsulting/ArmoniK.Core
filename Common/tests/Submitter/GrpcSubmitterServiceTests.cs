@@ -1659,8 +1659,9 @@ public class GrpcSubmitterServiceTests
   public async Task ListTasksShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.ListTasksAsync(It.IsAny<TaskFilter>(),
-                                                     CancellationToken.None))
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, string>>>(),
+                                                     It.IsAny<CancellationToken>()))
         .Returns(() => new List<string>
                        {
                          "TaskId",
@@ -1696,8 +1697,9 @@ public class GrpcSubmitterServiceTests
   public async Task ListTaskExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.ListTasksAsync(It.IsAny<TaskFilter>(),
-                                                     CancellationToken.None))
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, string>>>(),
+                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new Exception());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -1734,8 +1736,9 @@ public class GrpcSubmitterServiceTests
   public async Task ListTaskArmonikExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.ListTasksAsync(It.IsAny<TaskFilter>(),
-                                                     CancellationToken.None))
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, string>>>(),
+                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new ArmoniKException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -1764,44 +1767,6 @@ public class GrpcSubmitterServiceTests
     {
       Console.WriteLine(e);
       Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
-    }
-  }
-
-  [Test]
-  public async Task ListTaskTaskNotFoundExceptionShouldThrow()
-  {
-    var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.ListTasksAsync(It.IsAny<TaskFilter>(),
-                                                     CancellationToken.None))
-        .Returns(() => throw new TaskNotFoundException());
-
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
-                                           mock.Object,
-                                           mockSessionTable_.Object,
-                                           mockResultTable_.Object,
-                                           NullLogger<GrpcSubmitterService>.Instance);
-
-    try
-    {
-      await service.ListTasks(new TaskFilter
-                              {
-                                Task = new TaskFilter.Types.IdsRequest
-                                       {
-                                         Ids =
-                                         {
-                                           "TaskId",
-                                         },
-                                       },
-                              },
-                              TestServerCallContext.Create())
-                   .ConfigureAwait(false);
-      Assert.Fail();
-    }
-    catch (RpcException e)
-    {
-      Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
                       e.StatusCode);
     }
   }

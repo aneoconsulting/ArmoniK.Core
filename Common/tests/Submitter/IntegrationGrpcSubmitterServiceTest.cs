@@ -864,10 +864,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                           CancellationToken cancellationToken = default)
       => throw new T();
 
-    public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                              CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                               CancellationToken                cancellationToken = default)
       => throw new T();
@@ -881,10 +877,6 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     public Task DeleteTaskAsync(string            id,
                                 CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                                   CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task<(IEnumerable<TData> tasks, long totalCount)> ListTasksAsync<TData>(Expression<Func<TaskData, bool>>    filter,

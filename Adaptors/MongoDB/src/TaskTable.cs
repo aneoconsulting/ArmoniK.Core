@@ -20,14 +20,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
@@ -677,44 +674,5 @@ public class TaskTable : ITaskTable
                                                                  model.Status))
                                .ToListAsync(cancellationToken)
                                .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
-                                                                  CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
-
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-
-    var res = await taskCollection.AsQueryable(sessionHandle)
-                                  .FilterQuery(filter)
-                                  .GroupBy(model => model.Status)
-                                  .Select(models => new TaskStatusCount(models.Key,
-                                                                        models.Count()))
-                                  .ToListAsync(cancellationToken)
-                                  .ConfigureAwait(false);
-
-    return res;
-  }
-
-  /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListTasksAsync(TaskFilter                                 filter,
-                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
-                                               .FilterQuery(filter)
-                                               .Select(model => model.TaskId)
-                                               .ToAsyncEnumerable(cancellationToken)
-                                               .ConfigureAwait(false))
-    {
-      yield return taskId;
-    }
   }
 }
