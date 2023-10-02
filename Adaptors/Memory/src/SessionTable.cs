@@ -23,10 +23,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -78,36 +76,13 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<SessionData> GetSessionAsync(string            sessionId,
-                                           CancellationToken cancellationToken = default)
-  {
-    if (!storage_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    return Task.FromResult(storage_[sessionId]);
-  }
-
-  /// <inheritdoc />
-  public Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                            CancellationToken cancellationToken = default)
-    => Task.FromResult(GetSessionAsync(sessionId,
-                                       cancellationToken)
-                       .Result.Status == SessionStatus.Cancelled);
-
-  /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                     CancellationToken cancellationToken = default)
-  {
-    if (!storage_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    return Task.FromResult(storage_[sessionId]
-                             .Options);
-  }
+  public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                                  Expression<Func<SessionData, T>>    selector,
+                                                  CancellationToken                   cancellationToken = default)
+    => storage_.Select(pair => pair.Value)
+               .Where(filter.Compile())
+               .Select(selector.Compile())
+               .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task<SessionData> CancelSessionAsync(string            sessionId,
@@ -142,30 +117,6 @@ public class SessionTable : ISessionTable
     storage_.Remove(sessionId,
                     out _);
     return Task.CompletedTask;
-  }
-
-
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
-                                                    CancellationToken cancellationToken = default)
-  {
-    var rawList = storage_.Keys.ToAsyncEnumerable();
-
-    if (sessionFilter.Sessions.Any())
-    {
-      rawList = storage_.Keys.Intersect(sessionFilter.Sessions)
-                        .ToAsyncEnumerable();
-    }
-
-    return rawList.Where(sessionId => sessionFilter.StatusesCase switch
-                                      {
-                                        SessionFilter.StatusesOneofCase.None => true,
-                                        SessionFilter.StatusesOneofCase.Included => sessionFilter.Included.Statuses.Contains(storage_[sessionId]
-                                                                                                                             .Status.ToGrpcStatus()),
-                                        SessionFilter.StatusesOneofCase.Excluded => !sessionFilter.Excluded.Statuses.Contains(storage_[sessionId]
-                                                                                                                              .Status.ToGrpcStatus()),
-                                        _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
-                                      });
   }
 
   /// <inheritdoc />

@@ -25,14 +25,10 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
+namespace ArmoniK.Core.Common.gRPC;
 
 public static class SessionFilterExt
 {
-  public static IQueryable<SessionData> FilterQuery(this IQueryable<SessionData> sessionQueryable,
-                                                    SessionFilter                filter)
-    => sessionQueryable.Where(filter.ToFilterExpression());
-
   public static Expression<Func<SessionData, bool>> ToFilterExpression(this SessionFilter filter)
   {
     var x = Expression.Parameter(typeof(SessionData),
