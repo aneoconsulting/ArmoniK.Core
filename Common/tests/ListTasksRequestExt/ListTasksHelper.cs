@@ -161,22 +161,24 @@ public static class ListTasksHelper
                       },
        };
 
-  public static FilterField CreateListTasksFilterDuration(TaskSummaryEnumField field, FilterDurationOperator op, TimeSpan? value)
-  => new()
-  {
-    Field = new TaskField
-            {
-              TaskSummaryField = new TaskSummaryField
-                                 {
-                                   Field = field,
-                                 },
-            },
-    FilterDuration = new FilterDuration
+  public static FilterField CreateListTasksFilterDuration(TaskSummaryEnumField   field,
+                                                          FilterDurationOperator op,
+                                                          TimeSpan?              value)
+    => new()
+       {
+         Field = new TaskField
                  {
-                   Operator = op,
-                   Value = value is null
-                             ? null
-                             : FromTimeSpan(value.Value),
+                   TaskSummaryField = new TaskSummaryField
+                                      {
+                                        Field = field,
+                                      },
                  },
-  };
+         FilterDuration = new FilterDuration
+                          {
+                            Operator = op,
+                            Value = value is null
+                                      ? null
+                                      : FromTimeSpan(value.Value),
+                          },
+       };
 }

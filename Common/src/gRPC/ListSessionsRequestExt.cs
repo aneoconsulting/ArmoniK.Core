@@ -107,7 +107,7 @@ public static class ListSessionsRequestExt
             break;
           case FilterField.ValueConditionOneofCase.FilterDuration:
             exprAnd = exprAnd.ExpressionAnd(filterField.FilterDuration.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                      filterField.FilterDuration.Value?.ToTimeSpan()));
+                                                                                         filterField.FilterDuration.Value?.ToTimeSpan()));
             break;
           case FilterField.ValueConditionOneofCase.None:
           default:

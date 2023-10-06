@@ -220,15 +220,15 @@ public class ToSessionDataFilterTest
          Field = new SessionField
                  {
                    TaskOptionField = new TaskOptionField
-                   {
+                                     {
                                        Field = field,
                                      },
                  },
-         FilterDuration = new FilterDuration()
-                      {
-                        Operator = op,
-                        Value    = Duration.FromTimeSpan(value),
-                      },
+         FilterDuration = new FilterDuration
+                          {
+                            Operator = op,
+                            Value    = Duration.FromTimeSpan(value),
+                          },
        };
 
   [Test]
@@ -301,8 +301,8 @@ public class ToSessionDataFilterTest
                                                         FilterDateOperator.Before,
                                                         DateTime.UtcNow));
     yield return CaseTrue(CreateListSessionsFilterDuration(TaskOptionEnumField.MaxDuration,
-                                                       FilterDurationOperator.LessThanOrEqual,
-                                                       TimeSpan.FromMinutes(5)));
+                                                           FilterDurationOperator.LessThanOrEqual,
+                                                           TimeSpan.FromMinutes(5)));
     yield return CaseFalse(CreateListSessionsFilterDuration(TaskOptionEnumField.MaxDuration,
                                                             FilterDurationOperator.NotEqual,
                                                             TimeSpan.FromMinutes(5)));
