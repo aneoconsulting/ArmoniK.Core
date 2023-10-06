@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 
+using static Google.Protobuf.WellKnownTypes.Duration;
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
@@ -159,4 +160,23 @@ public static class ListTasksHelper
                                   : FromDateTime(value.Value),
                       },
        };
+
+  public static FilterField CreateListTasksFilterDuration(TaskSummaryEnumField field, FilterDurationOperator op, TimeSpan? value)
+  => new()
+  {
+    Field = new TaskField
+            {
+              TaskSummaryField = new TaskSummaryField
+                                 {
+                                   Field = field,
+                                 },
+            },
+    FilterDuration = new FilterDuration
+                 {
+                   Operator = op,
+                   Value = value is null
+                             ? null
+                             : FromTimeSpan(value.Value),
+                 },
+  };
 }

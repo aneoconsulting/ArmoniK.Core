@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.14.0-edge.3.9fd5060" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.14.0-dbadddurationfilter.11.f0f0f59" />
   </ItemGroup>
 
   <ItemGroup>
