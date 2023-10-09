@@ -225,16 +225,16 @@ public class ToTaskDataFilterTest
                                                                       FilterStringOperator.EndsWith,
                                                                       "val1"));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ProcessingToEndDuration,
-                                                                        FilterDurationOperator.LessThanOrEqual,
+                                                                        FilterDurationOperator.ShorterThanOrEqual,
                                                                         TimeSpanToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.CreationToEndDuration,
-                                                                         FilterDurationOperator.LessThanOrEqual,
+                                                                         FilterDurationOperator.ShorterThanOrEqual,
                                                                          TimeSpanToCompare));
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ProcessingToEndDuration,
-                                                                         FilterDurationOperator.GreaterThan,
+                                                                         FilterDurationOperator.LongerThan,
                                                                          TimeSpanToCompare));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.CreationToEndDuration,
-                                                                        FilterDurationOperator.GreaterThan,
+                                                                        FilterDurationOperator.LongerThan,
                                                                         TimeSpanToCompare));
   }
 }

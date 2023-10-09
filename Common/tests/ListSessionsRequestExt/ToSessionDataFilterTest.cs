@@ -301,7 +301,7 @@ public class ToSessionDataFilterTest
                                                         FilterDateOperator.Before,
                                                         DateTime.UtcNow));
     yield return CaseTrue(CreateListSessionsFilterDuration(TaskOptionEnumField.MaxDuration,
-                                                           FilterDurationOperator.LessThanOrEqual,
+                                                           FilterDurationOperator.ShorterThanOrEqual,
                                                            TimeSpan.FromMinutes(5)));
     yield return CaseFalse(CreateListSessionsFilterDuration(TaskOptionEnumField.MaxDuration,
                                                             FilterDurationOperator.NotEqual,
