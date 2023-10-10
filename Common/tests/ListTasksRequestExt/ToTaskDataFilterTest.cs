@@ -88,6 +88,8 @@ public class ToTaskDataFilterTest
                                                                 3,
                                                                 15).ToUniversalTime();
 
+  private static readonly TimeSpan TimeSpanToCompare = TimeSpan.FromDays(1.5);
+
   private static readonly ListTasksRequest.Types.Sort Sort = new()
                                                              {
                                                                Direction = SortDirection.Asc,
@@ -222,5 +224,17 @@ public class ToTaskDataFilterTest
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
                                                                       FilterStringOperator.EndsWith,
                                                                       "val1"));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ProcessingToEndDuration,
+                                                                        FilterDurationOperator.ShorterThanOrEqual,
+                                                                        TimeSpanToCompare));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.CreationToEndDuration,
+                                                                         FilterDurationOperator.ShorterThanOrEqual,
+                                                                         TimeSpanToCompare));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ProcessingToEndDuration,
+                                                                         FilterDurationOperator.LongerThan,
+                                                                         TimeSpanToCompare));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.CreationToEndDuration,
+                                                                        FilterDurationOperator.LongerThan,
+                                                                        TimeSpanToCompare));
   }
 }

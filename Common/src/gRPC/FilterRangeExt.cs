@@ -212,4 +212,40 @@ public static class FilterRangeExt
                                                                    ExpressionType.Equal),
          _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
        };
+
+  /// <summary>
+  ///   Generate a filter <see cref="Expression" /> for operations on durations
+  /// </summary>
+  /// <typeparam name="T">Type of the value and field on which the operation is applied</typeparam>
+  /// <param name="filterOperator">The gRPC enum that selects the operation</param>
+  /// <param name="field">The <see cref="Expression" /> to select the field on which to apply the operation</param>
+  /// <param name="value">Value for the operation</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the operation on the field with the given value
+  /// </returns>
+  public static Expression<Func<T, bool>> ToFilter<T>(this FilterDurationOperator  filterOperator,
+                                                      Expression<Func<T, object?>> field,
+                                                      TimeSpan?                    value)
+    => filterOperator switch
+       {
+         FilterDurationOperator.ShorterThan => ExpressionBuilders.MakeBinary(field,
+                                                                             value,
+                                                                             ExpressionType.LessThan),
+         FilterDurationOperator.ShorterThanOrEqual => ExpressionBuilders.MakeBinary(field,
+                                                                                    value,
+                                                                                    ExpressionType.LessThanOrEqual),
+         FilterDurationOperator.Equal => ExpressionBuilders.MakeBinary(field,
+                                                                       value,
+                                                                       ExpressionType.Equal),
+         FilterDurationOperator.NotEqual => ExpressionBuilders.MakeBinary(field,
+                                                                          value,
+                                                                          ExpressionType.NotEqual),
+         FilterDurationOperator.LongerThanOrEqual => ExpressionBuilders.MakeBinary(field,
+                                                                                   value,
+                                                                                   ExpressionType.GreaterThanOrEqual),
+         FilterDurationOperator.LongerThan => ExpressionBuilders.MakeBinary(field,
+                                                                            value,
+                                                                            ExpressionType.GreaterThan),
+         _ => throw new ArgumentOutOfRangeException(nameof(filterOperator)),
+       };
 }

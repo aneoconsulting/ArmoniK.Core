@@ -24,6 +24,8 @@ using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf.WellKnownTypes;
+
 using NUnit.Framework;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
@@ -37,7 +39,7 @@ namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 public class ToSessionDataFilterTest
 {
   private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
-                                                    TimeSpan.MaxValue,
+                                                    TimeSpan.FromMinutes(5),
                                                     5,
                                                     1,
                                                     "part1",
@@ -210,6 +212,25 @@ public class ToSessionDataFilterTest
                       },
        };
 
+  public static FilterField CreateListSessionsFilterDuration(TaskOptionEnumField    field,
+                                                             FilterDurationOperator op,
+                                                             TimeSpan               value)
+    => new()
+       {
+         Field = new SessionField
+                 {
+                   TaskOptionField = new TaskOptionField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterDuration = new FilterDuration
+                          {
+                            Operator = op,
+                            Value    = Duration.FromTimeSpan(value),
+                          },
+       };
+
   [Test]
   [TestCaseSource(nameof(TestCasesFilter))]
   public void Filter(IEnumerable<FilterField> filterFields,
@@ -279,5 +300,11 @@ public class ToSessionDataFilterTest
     yield return CaseFalse(CreateListSessionsFilterDate(SessionRawEnumField.CancelledAt,
                                                         FilterDateOperator.Before,
                                                         DateTime.UtcNow));
+    yield return CaseTrue(CreateListSessionsFilterDuration(TaskOptionEnumField.MaxDuration,
+                                                           FilterDurationOperator.ShorterThanOrEqual,
+                                                           TimeSpan.FromMinutes(5)));
+    yield return CaseFalse(CreateListSessionsFilterDuration(TaskOptionEnumField.MaxDuration,
+                                                            FilterDurationOperator.NotEqual,
+                                                            TimeSpan.FromMinutes(5)));
   }
 }
