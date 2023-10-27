@@ -234,8 +234,9 @@ public class GrpcTasksService : Task.TasksBase
                                         .ToListAsync()
                                         .ConfigureAwait(false);
       await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
-                                        async ownerPodId => await httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")
-                                                                             .ConfigureAwait(false))
+                                        async ownerPodId => await (string.IsNullOrEmpty(ownerPodId)
+                                                                     ? System.Threading.Tasks.Task.CompletedTask
+                                                                     : httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false))
                        .ConfigureAwait(false);
       return new CancelTasksResponse
              {
