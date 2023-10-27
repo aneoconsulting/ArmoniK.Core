@@ -24,6 +24,7 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 
 using EphemeralMongo;
@@ -54,7 +55,8 @@ public class TestDatabaseProvider : IDisposable
   public TestDatabaseProvider(Action<IServiceCollection>?    collectionConfigurator           = null,
                               Action<IApplicationBuilder>?   applicationBuilderConfigurator   = null,
                               Action<IEndpointRouteBuilder>? endpointRouteBuilderConfigurator = null,
-                              bool                           logMongoRequests                 = false)
+                              bool                           logMongoRequests                 = false,
+                              bool                           validateGrpcRequests             = false)
   {
     var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
@@ -140,6 +142,11 @@ public class TestDatabaseProvider : IDisposable
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);
+
+    if (validateGrpcRequests)
+    {
+      builder.Services.ValidateGrpcRequests();
+    }
 
     collectionConfigurator?.Invoke(builder.Services);
 

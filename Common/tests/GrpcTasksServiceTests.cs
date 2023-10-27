@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf.WellKnownTypes;
 
+using Grpc.Core;
 using Grpc.Net.Client;
 
 using Microsoft.AspNetCore.Builder;
@@ -196,5 +197,63 @@ public class GrpcTasksServiceTests
     Assert.That(response.Tasks.Single()
                         .Id,
                 Is.EqualTo(task_id));
+  }
+
+  [Test]
+  public async Task SubmitTaskWithoutCreationsShouldFailWithRpcException()
+  {
+    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                  .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                  .AddSingleton<Injection.Options.Submitter>()
+                                                                  .AddHttpClient()
+                                                                  .AddGrpc(),
+                                          builder => builder.UseRouting()
+                                                            .UseAuthorization(),
+                                          builder =>
+                                          {
+                                            builder.MapGrpcService<GrpcTasksService>();
+                                            builder.MapGrpcService<GrpcSessionsService>();
+                                          },
+                                          true,
+                                          true);
+
+    await helper.App.StartAsync()
+                .ConfigureAwait(false);
+
+    var server = helper.App.GetTestServer();
+
+    var channel = GrpcChannel.ForAddress("http://localhost:9999",
+                                         new GrpcChannelOptions
+                                         {
+                                           HttpHandler = server.CreateHandler(),
+                                         });
+
+    var session_id = new Sessions.SessionsClient(channel).CreateSession(new CreateSessionRequest
+                                                                        {
+                                                                          DefaultTaskOption = new TaskOptions
+                                                                                              {
+                                                                                                MaxRetries = 1,
+                                                                                                Priority   = 2,
+                                                                                                MaxDuration = new Duration
+                                                                                                              {
+                                                                                                                Seconds = 500,
+                                                                                                                Nanos   = 0,
+                                                                                                              },
+                                                                                              },
+                                                                        })
+                                                         .SessionId;
+
+    var client = new Tasks.TasksClient(channel);
+    Assert.That(delegate
+                {
+                  client.SubmitTasks(new SubmitTasksRequest
+                                     {
+                                       SessionId = session_id,
+                                     });
+                },
+                Throws.InstanceOf<RpcException>()
+                      .With.Property("StatusCode")
+                      .EqualTo(StatusCode.InvalidArgument));
   }
 }
