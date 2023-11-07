@@ -239,6 +239,31 @@ public class TaskHandler : IAsyncDisposable
                                      .ConfigureAwait(false);
           return false;
         case TaskStatus.Processing:
+
+          // If OwnerPodId is empty, it means that task was partially started or released
+          // so we put the task in error and retry it somewhere else
+          if (taskData_.OwnerPodId == "")
+          {
+            logger_.LogDebug("Resubmitting task {task} on another pod",
+                             taskData_.TaskId);
+            await submitter_.CompleteTaskAsync(taskData_,
+                                               true,
+                                               new Output
+                                               {
+                                                 Error = new Output.Types.Error
+                                                         {
+                                                           Details = $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task",
+                                                         },
+                                               },
+                                               CancellationToken.None)
+                            .ConfigureAwait(false);
+            return false;
+          }
+
+          // TODO : manage the case where OwnerPodId has a value with task processing de-duplication
+          // this Will not be managed in this version since as it involves a large refactor that will
+          // conflict with the later versions already on main
+
           logger_.LogInformation("Task is processing elsewhere ; taking over here");
           break;
         case TaskStatus.Unspecified:
