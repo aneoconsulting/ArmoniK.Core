@@ -468,8 +468,11 @@ public class TaskHandler : IAsyncDisposable
                                   .ConfigureAwait(false);
 
       logger_.LogInformation("Start processing task");
+
+      // Status update should not be cancelled
+      // Task will be marked as processing then start
       await taskTable_.StartTask(taskData_.TaskId,
-                                 cancellationTokenSource_.Token)
+                                 CancellationToken.None)
                       .ConfigureAwait(false);
 
       workerStreamHandler_.StartTaskProcessing(taskData_,
