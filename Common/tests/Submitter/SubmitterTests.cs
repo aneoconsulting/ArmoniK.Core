@@ -341,6 +341,13 @@ public class SubmitterTests
                                 new Output(false,
                                            ""));
 
+    await taskTable.AcquireTask(taskCompletedId,
+                                "OwnerPodId",
+                                "OwnerPodName",
+                                DateTime.UtcNow,
+                                token)
+                   .ConfigureAwait(false);
+
     await taskTable.StartTask(taskCompletedId,
                               token)
                    .ConfigureAwait(false);

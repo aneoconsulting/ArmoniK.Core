@@ -337,6 +337,13 @@ public class TaskWatcherTestBase
                                       CancellationToken.None)
                    .ConfigureAwait(false);
 
+    await taskTable.AcquireTask("TaskSubmittedId",
+                                "OwnerPodId",
+                                "OwnerPodName",
+                                DateTime.UtcNow,
+                                CancellationToken.None)
+                   .ConfigureAwait(false);
+
     await taskTable.StartTask("TaskSubmittedId",
                               CancellationToken.None)
                    .ConfigureAwait(false);
@@ -410,7 +417,7 @@ public class TaskWatcherTestBase
                                                        }
                                                      });
 
-      Assert.AreEqual(3,
+      Assert.AreEqual(4,
                       newResults.Count);
     }
   }

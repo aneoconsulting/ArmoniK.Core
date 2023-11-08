@@ -209,7 +209,7 @@ public class TaskTable : ITaskTable
     Logger.LogInformation("update task {taskId} to status {status}",
                           taskId,
                           TaskStatus.Processing);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Cancelled,
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status == TaskStatus.Dispatched,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
@@ -229,7 +229,7 @@ public class TaskTable : ITaskTable
           throw new TaskNotFoundException($"Task {taskId} not found");
         }
 
-        throw new ArmoniKException($"Task already in a terminal state - {taskStatus.Single()} to {TaskStatus.Processing}");
+        throw new ArmoniKException($"Fail to start task because task was not acquired - {taskStatus.Single()} to {TaskStatus.Processing}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }

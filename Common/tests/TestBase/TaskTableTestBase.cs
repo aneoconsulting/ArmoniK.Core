@@ -1082,9 +1082,16 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      await TaskTable!.StartTask("TaskSubmittedId",
-                                 CancellationToken.None)
+      await TaskTable!.AcquireTask("TaskSubmittedId",
+                                   "OwnerPodId",
+                                   "OwnerPodName",
+                                   DateTime.UtcNow,
+                                   CancellationToken.None)
                       .ConfigureAwait(false);
+
+      await TaskTable.StartTask("TaskSubmittedId",
+                                CancellationToken.None)
+                     .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
                                                    CancellationToken.None)
