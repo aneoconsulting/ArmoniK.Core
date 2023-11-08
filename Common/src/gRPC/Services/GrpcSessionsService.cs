@@ -19,11 +19,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -37,16 +38,19 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
+  private readonly IPartitionTable              partitionTable_;
   private readonly ISessionTable                sessionTable_;
-  private readonly ITaskTable                   taskTable_;
+  private readonly Injection.Options.Submitter  submitterOptions_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
-                             ITaskTable                   taskTable,
+                             IPartitionTable              partitionTable,
+                             Injection.Options.Submitter  submitterOptions,
                              ILogger<GrpcSessionsService> logger)
   {
-    logger_       = logger;
-    sessionTable_ = sessionTable;
-    taskTable_    = taskTable;
+    logger_           = logger;
+    sessionTable_     = sessionTable;
+    partitionTable_   = partitionTable;
+    submitterOptions_ = submitterOptions;
   }
 
   [RequiresPermission(typeof(GrpcSessionsService),
@@ -58,9 +62,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       return new CancelSessionResponse
              {
-               Session = await sessionTable_.CancelSessionAsync(request.SessionId,
-                                                                context.CancellationToken)
-                                            .ConfigureAwait(false),
+               Session = (await sessionTable_.CancelSessionAsync(request.SessionId,
+                                                                 context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
@@ -95,9 +99,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       return new GetSessionResponse
              {
-               Session = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                             context.CancellationToken)
-                                            .ConfigureAwait(false),
+               Session = (await sessionTable_.GetSessionAsync(request.SessionId,
+                                                              context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
@@ -130,13 +134,17 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var sessionData = await sessionTable_.ListSessionsAsync(request.Filter.ToSessionDataFilter(),
-                                                              request.Sort.ToSessionDataField(),
-                                                              request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc,
-                                                              request.Page,
-                                                              request.PageSize,
-                                                              context.CancellationToken)
-                                           .ConfigureAwait(false);
+      var (sessions, totalCount) = await sessionTable_.ListSessionsAsync(request.Filters is null
+                                                                           ? data => true
+                                                                           : request.Filters.ToSessionDataFilter(),
+                                                                         request.Sort is null
+                                                                           ? data => data.SessionId
+                                                                           : request.Sort.ToField(),
+                                                                         request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                         request.Page,
+                                                                         request.PageSize,
+                                                                         context.CancellationToken)
+                                                      .ConfigureAwait(false);
 
       return new ListSessionsResponse
              {
@@ -144,9 +152,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-                 sessionData.sessions.Select(data => new SessionSummary(data)),
+                 sessions.Select(data => data.ToGrpcSessionRaw()),
                },
-               Total = sessionData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)
@@ -166,39 +174,43 @@ public class GrpcSessionsService : Sessions.SessionsBase
   }
 
   [RequiresPermission(typeof(GrpcSessionsService),
-                      nameof(CountTasksByStatus))]
-  public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
-                                                                            ServerCallContext         context)
+                      nameof(CreateSession))]
+  public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
+                                                               ServerCallContext    context)
   {
     try
     {
-      return new CountTasksByStatusResponse
+      return new CreateSessionReply
              {
-               Status =
-               {
-                 (await taskTable_.CountTasksAsync(data => data.SessionId == request.SessionId,
-                                                   context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => new StatusCount
-                                                                          {
-                                                                            Status = count.Status,
-                                                                            Count  = count.Count,
-                                                                          }),
-               },
+               SessionId = await SessionLifeCycleHelper.CreateSession(sessionTable_,
+                                                                      partitionTable_,
+                                                                      request.PartitionIds,
+                                                                      request.DefaultTaskOption.ToTaskOptions(),
+                                                                      submitterOptions_.DefaultPartition,
+                                                                      context.CancellationToken)
+                                                       .ConfigureAwait(false),
              };
+    }
+    catch (PartitionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Partition not found while creating session");
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Partition not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while counting tasks in session");
+                         "Error while creating session");
       throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
+                                        "Internal ArmoniK Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while counting tasks in session");
+                         "Error while creating session");
       throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
+                                        "Unknown Exception, see Submitter logs"));
     }
   }
 }

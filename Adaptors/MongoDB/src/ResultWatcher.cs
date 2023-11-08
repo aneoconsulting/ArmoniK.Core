@@ -15,14 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -85,16 +87,14 @@ public class ResultWatcher : IResultWatcher
 
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
-                                                               CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
+                                                               CancellationToken              cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetNewResults)}");
-    activity?.SetTag($"{nameof(GetNewResults)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetNewResults)}");
+    var       sessionHandle = sessionProvider_.Get();
 
-    var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<Result>>().Match(input => input.OperationType          == ChangeStreamOperationType.Insert &&
-                                                                                              input.FullDocument.SessionId == sessionId);
+    var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<Result>>().Match(input => input.OperationType == ChangeStreamOperationType.Insert)
+                                                                              .Match(filter.ToChangeStreamDocumentExpression());
 
     var changeStreamCursor = await resultCollectionProvider_.Get()
                                                             .WatchAsync(sessionHandle,
@@ -108,23 +108,21 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<NewResult, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                         resultUpdate => new NewResult(resultUpdate.FullDocument.SessionId,
-                                                                                                      resultUpdate.FullDocument.Name,
+                                                                                                      resultUpdate.FullDocument.ResultId,
                                                                                                       resultUpdate.FullDocument.OwnerTaskId,
                                                                                                       resultUpdate.FullDocument.Status));
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
-                                                                               CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
+                                                                               CancellationToken              cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResultOwnerUpdates)}");
-    activity?.SetTag($"{nameof(GetResultOwnerUpdates)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetResultOwnerUpdates)}");
+    var       sessionHandle = sessionProvider_.Get();
 
     var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get(),
                                                                  sessionHandle,
-                                                                 document => document.FullDocument.SessionId == sessionId,
+                                                                 filter,
                                                                  new[]
                                                                  {
                                                                    nameof(Result.OwnerTaskId),
@@ -134,23 +132,21 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<ResultOwnerUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                 doc => new ResultOwnerUpdate(doc.FullDocument.SessionId,
-                                                                                                             doc.FullDocument.Name,
+                                                                                                             doc.FullDocument.ResultId,
                                                                                                              "",
                                                                                                              doc.FullDocument.OwnerTaskId));
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
-                                                                                 CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
+                                                                                 CancellationToken              cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusUpdates)}");
-    activity?.SetTag($"{nameof(GetResultStatusUpdates)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetResultStatusUpdates)}");
+    var       sessionHandle = sessionProvider_.Get();
 
     var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get(),
                                                                  sessionHandle,
-                                                                 document => document.FullDocument.SessionId == sessionId,
+                                                                 filter,
                                                                  new[]
                                                                  {
                                                                    nameof(Result.Status),
@@ -160,7 +156,7 @@ public class ResultWatcher : IResultWatcher
 
     return new WatchEnumerable<ResultStatusUpdate, ChangeStreamDocument<Result>>(changeStreamCursor,
                                                                                  doc => new ResultStatusUpdate(doc.FullDocument.SessionId,
-                                                                                                               doc.FullDocument.Name,
+                                                                                                               doc.FullDocument.ResultId,
                                                                                                                doc.FullDocument.Status));
   }
 }

@@ -44,18 +44,18 @@ public static class ChangeStreamUpdate
   /// <returns>
   ///   A <see cref="IChangeStreamCursor{ChangeStreamDocument}" /> containing the filtered modification events
   /// </returns>
-  public static async Task<IChangeStreamCursor<ChangeStreamDocument<T>>> GetUpdates<T>(IMongoCollection<T>                             collection,
-                                                                                       IClientSessionHandle                            sessionHandle,
-                                                                                       Expression<Func<ChangeStreamDocument<T>, bool>> filter,
-                                                                                       IEnumerable<string>                             fields,
-                                                                                       CancellationToken                               cancellationToken = default)
+  public static async Task<IChangeStreamCursor<ChangeStreamDocument<T>>> GetUpdates<T>(IMongoCollection<T>       collection,
+                                                                                       IClientSessionHandle      sessionHandle,
+                                                                                       Expression<Func<T, bool>> filter,
+                                                                                       IEnumerable<string>       fields,
+                                                                                       CancellationToken         cancellationToken = default)
   {
     var matchUpdatedFields =
       new FilterDefinitionBuilder<ChangeStreamDocument<T>>().Or(fields.Select(f => new FilterDefinitionBuilder<ChangeStreamDocument<T>>()
                                                                                 .Exists("updateDescription.updatedFields." + f)));
 
     var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<T>>().Match(document => document.OperationType == ChangeStreamOperationType.Update)
-                                                                         .Match(filter)
+                                                                         .Match(filter.ToChangeStreamDocumentExpression())
                                                                          .Match(matchUpdatedFields);
 
     return await collection.WatchAsync(sessionHandle,
@@ -66,5 +66,45 @@ public static class ChangeStreamUpdate
                                                   FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
                                                 })
                            .ConfigureAwait(false);
+  }
+
+  internal static Expression<Func<ChangeStreamDocument<T>, bool>> ToChangeStreamDocumentExpression<T>(this Expression<Func<T, bool>> expression)
+  {
+    var type = typeof(ChangeStreamDocument<T>);
+    var parameter = Expression.Parameter(type,
+                                         nameof(ChangeStreamDocument<T>));
+
+    var propertyInfo = type.GetProperties()
+                           .Single(info => info.Name == nameof(ChangeStreamDocument<T>.FullDocument));
+
+    var access = Expression.MakeMemberAccess(parameter,
+                                             propertyInfo);
+
+    var visitor = new ReplaceExpressionVisitor(expression.Parameters[0],
+                                               access);
+
+    var newExpression = visitor.Visit(expression.Body);
+
+    return Expression.Lambda<Func<ChangeStreamDocument<T>, bool>>(newExpression!,
+                                                                  parameter);
+  }
+
+
+  private class ReplaceExpressionVisitor : ExpressionVisitor
+  {
+    private readonly Expression newValue_;
+    private readonly Expression oldValue_;
+
+    public ReplaceExpressionVisitor(Expression oldValue,
+                                    Expression newValue)
+    {
+      oldValue_ = oldValue;
+      newValue_ = newValue;
+    }
+
+    public override Expression? Visit(Expression? node)
+      => node == oldValue_
+           ? newValue_
+           : base.Visit(node);
   }
 }

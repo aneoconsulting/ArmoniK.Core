@@ -18,6 +18,7 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.Applications;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
@@ -31,13 +32,19 @@ public class ListApplicationsRequestValidatorTest
   public void Setup()
     => validListApplicationsRequest_ = new ListApplicationsRequest
                                        {
-                                         Filter = new ListApplicationsRequest.Types.Filter(),
+                                         Filters = new Filters(),
                                          Sort = new ListApplicationsRequest.Types.Sort
                                                 {
-                                                  Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                                                  Direction = SortDirection.Asc,
                                                   Fields =
                                                   {
-                                                    ListApplicationsRequest.Types.OrderByField.Name,
+                                                    new ApplicationField
+                                                    {
+                                                      ApplicationField_ = new ApplicationRawField
+                                                                          {
+                                                                            Field = ApplicationRawEnumField.Name,
+                                                                          },
+                                                    },
                                                   },
                                                 },
                                          Page     = 0,
@@ -55,7 +62,7 @@ public class ListApplicationsRequestValidatorTest
   [Test]
   public void ListApplicationsRequestDefaultFilterShouldFail()
   {
-    validListApplicationsRequest_!.Filter = default;
+    validListApplicationsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
                              .IsValid);
   }
@@ -80,7 +87,7 @@ public class ListApplicationsRequestValidatorTest
   {
     validListApplicationsRequest_!.Sort = new ListApplicationsRequest.Types.Sort
                                           {
-                                            Direction = ListApplicationsRequest.Types.OrderDirection.Desc,
+                                            Direction = SortDirection.Desc,
                                           };
     foreach (var error in validator_.Validate(validListApplicationsRequest_)
                                     .Errors)
@@ -99,7 +106,13 @@ public class ListApplicationsRequestValidatorTest
                                           {
                                             Fields =
                                             {
-                                              ListApplicationsRequest.Types.OrderByField.Name,
+                                              new ApplicationField
+                                              {
+                                                ApplicationField_ = new ApplicationRawField
+                                                                    {
+                                                                      Field = ApplicationRawEnumField.Name,
+                                                                    },
+                                              },
                                             },
                                           };
     foreach (var error in validator_.Validate(validListApplicationsRequest_)

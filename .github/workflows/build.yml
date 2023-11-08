@@ -16,14 +16,14 @@ jobs:
       version: ${{ steps.genver.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
 
     - name: Generate Version
       id: genver
-      uses: codacy/git-version@2.7.1
+      uses: codacy/git-version@80c816f11db8dea5e3a81025f598193015b51832 # 2.8.0
       with:
         minor-identifier: "feat:"
         release-branch: release
@@ -46,15 +46,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
 
     - name: Setup just
       run: |
@@ -68,7 +63,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -96,15 +91,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
     
     - name: Setup just
       run: |
@@ -117,7 +107,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -139,20 +129,15 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
-
     - name: Run tests
       run: |
         cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx"
+        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -166,15 +151,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
-
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 6.x
 
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release
@@ -188,22 +168,59 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
 
     - name: Build the package
       run: |
-        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release
+        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Pack the package
       run: |
-        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
-  buildImages:
+  imagesCore:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: login
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+
+    - name: Build
+      run: |
+        just tag=$VERSION build-core
+
+    - name: push
+      run: |
+        while IFS= read -r IMG
+        do
+          docker push $IMG:${VERSION}
+        done <<-EOF
+        dockerhubaneo/armonik_control
+        dockerhubaneo/armonik_control_partition_metrics
+        dockerhubaneo/armonik_control_metrics
+        dockerhubaneo/armonik_pollingagent
+        EOF
+
+  imagesRe:
     runs-on: ubuntu-latest
     needs:
       - versionning
@@ -214,14 +231,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -236,7 +245,7 @@ jobs:
            path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -245,30 +254,70 @@ jobs:
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Build
-      run: docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
+      run: docker build --build-arg VERSION=$VERSION -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
 
     - name: push
       run: docker push ${{ matrix.img }}:$VERSION
 
-  buildImagesCross:
+  imagesCoreC:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
+
+    - name: login
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+      with:
+        username: ${{ secrets.DOCKER_HUB_LOGIN }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+    - name: Build
+      run: just tag=${VERSION}-arm builder=buildx build-core
+
+    - name: Rename
+      run: |
+        while IFS= read -r IMG
+        do
+          docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
+        done <<-EOF
+        dockerhubaneo/armonik_control
+        dockerhubaneo/armonik_control_partition_metrics
+        dockerhubaneo/armonik_control_metrics
+        dockerhubaneo/armonik_pollingagent
+        EOF
+
+  imagesReC:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
       fail-fast: false
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -283,20 +332,20 @@ jobs:
            path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
 
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
 
     - name: login
-      uses: docker/login-action@v2
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -305,11 +354,13 @@ jobs:
       run: echo ${{ steps.buildx.outputs.platforms }}
 
     - name: Build and push
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5
       with:
         file: ${{ matrix.path }}
         context: .
         platforms: linux/arm64
+        build-args: |
+          VERSION=${{ needs.versionning.outputs.version }}
         push: true
         tags: |
             ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm
@@ -320,7 +371,8 @@ jobs:
   testStreamDC:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -337,7 +389,7 @@ jobs:
           - Verbose
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -351,7 +403,7 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
 
       - name: Deploy Core
         run: |
@@ -359,12 +411,12 @@ jobs:
           sleep 10
 
       - name: Run Stream Test
-        timeout-minutes: 3
+        timeout-minutes: 4
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
           export Partition=TestPartition0
-          dotnet test --logger "trx;LogFileName=test-results.trx"
+          dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -381,7 +433,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
       - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@v2
+        uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
         with:
           dest: './container-logs'
@@ -391,11 +443,20 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-database.tar.gz
+
 
   testHtcMockDC:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -415,7 +476,7 @@ jobs:
     name: HtcMock ${{ matrix.queue }} ${{ matrix.object }} ${{ matrix.log-level }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -429,7 +490,7 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
 
       - name: Deploy Core
         run: |
@@ -538,7 +599,7 @@ jobs:
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.tar.gz
 
       - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@v2
+        uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
         with:
           dest: './container-logs'
@@ -548,17 +609,31 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-container-logs.tar.gz
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-database.tar.gz
 
-  runBench:
+
+  testConnectivity:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ca: [true, false]
+    name: "Test connectivity - Ca installed ${{ matrix.ca }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -572,7 +647,86 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
+
+      - name: Deploy Core
+        run: |
+          just tag=${VERSION} deploy
+          sleep 10
+
+      - name: Add CA to store
+        if: ${{ matrix.ca }}
+        run: |
+         sudo apt install ca-certificates
+         sudo mkdir -p /usr/local/share/ca-certificates/
+         sudo cp terraform/generated/ingress_tls/server/ca.crt /usr/local/share/ca-certificates/ca_tls.crt
+         sudo cp terraform/generated/ingress_mtls/server/ca.crt /usr/local/share/ca-certificates/ca_mtls.crt
+         sudo update-ca-certificates
+
+      - name: Run connection test
+        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test - Connectivity CA ${{ matrix.ca }}
+          path: ./Tests/Common/Client/src/TestResults/test-results.trx
+          reporter: dotnet-trx
+
+      - name: Show logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.tar.gz
+      - name: Collect docker container logs
+        uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
+        if: always()
+        with:
+          dest: './container-logs'
+      - name: Upload docker container logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-database.tar.gz
+
+
+
+  
+  runBench:
+    needs:
+      - versionning
+      - imagesCore
+      - imagesRe
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Install AWSCLI (the one in the Github runner does not work)
+        run: |
+          pip install awscli
+
+      - name: Setup just
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
 
       - name: Deploy Core
         run: |
@@ -580,12 +734,12 @@ jobs:
           sleep 10
           ls -la terraform/logs/*.json
 
-      - name: Run Bench test tasks - many tasks (200)
+      - name: Run Bench test tasks - many tasks (400)
         timeout-minutes: 3
         run: |
           docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=200 \
-            -e BenchOptions__TaskDurationMs=100 \
+            -e BenchOptions__NTasks=400 \
+            -e BenchOptions__TaskDurationMs=10 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Run Bench test tasks - many tasks (200) with events
@@ -632,7 +786,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
       - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@v2
+        uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
         with:
           dest: './container-logs'
@@ -642,17 +796,25 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-database.tar.gz
 
   defaultPartitionMock:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -666,7 +828,7 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
 
       - name: Deploy Core
         run: |
@@ -694,7 +856,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
       - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@v2
+        uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
         with:
           dest: './container-logs'
@@ -704,18 +866,25 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
-
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-database.tar.gz
 
   healthCheckTest:
     needs:
       - versionning
-      - buildImages
+      - imagesCore
+      - imagesRe
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -729,7 +898,7 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 # v2
 
       - name: Deploy Core
         run: |
@@ -823,7 +992,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
       - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@v2
+        uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
         with:
           dest: './container-logs'
@@ -833,6 +1002,13 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-database.tar.gz
 
   canMerge:
     needs:
@@ -842,9 +1018,11 @@ jobs:
       - testHtcMockDC
       - defaultPartitionMock
       - testStreamDC
-      - buildImages
+      - imagesCore
+      - imagesRe
       - runBench
       - healthCheckTest
+      - testConnectivity
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK

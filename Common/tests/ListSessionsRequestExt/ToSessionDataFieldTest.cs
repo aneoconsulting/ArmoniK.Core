@@ -18,14 +18,13 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
-
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 
@@ -43,82 +42,58 @@ public class ToSessionDataFieldTest
                                                     "applicationService",
                                                     "engineType");
 
-  private readonly SessionData sessionData_ = new("SessionId",
-                                                  SessionStatus.Running,
-                                                  DateTime.UtcNow,
-                                                  DateTime.UtcNow,
-                                                  new List<string>(),
-                                                  Options);
+  private static readonly SessionData SessionData = new("SessionId",
+                                                        SessionStatus.Running,
+                                                        DateTime.UtcNow,
+                                                        DateTime.UtcNow,
+                                                        new List<string>(),
+                                                        Options);
 
-  [Test]
-  public void InvokeShouldReturnCreationDate()
+  public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter(),
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
-                        },
-               }.Sort.ToSessionDataField()
-                .Compile();
-
-    Assert.AreEqual(sessionData_.CreationDate,
-                    func.Invoke(sessionData_));
+    // TODO add Duration
+    yield return Case(SessionRawEnumField.Status,
+                      SessionData.Status);
+    yield return Case(SessionRawEnumField.Options,
+                      SessionData.Options);
+    yield return Case(SessionRawEnumField.CancelledAt,
+                      SessionData.CancellationDate);
+    yield return Case(SessionRawEnumField.SessionId,
+                      SessionData.SessionId);
+    yield return Case(SessionRawEnumField.CreatedAt,
+                      SessionData.CreationDate);
+    yield return Case(SessionRawEnumField.PartitionIds,
+                      SessionData.PartitionIds);
   }
 
+  private static TestCaseData Case(SessionRawEnumField field,
+                                   object?             expected)
+    => new TestCaseData(new SessionRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
+
   [Test]
-  public void InvokeShouldReturnSessionId()
+  [TestCaseSource(nameof(TestCasesInvoke))]
+  public void InvokeShouldReturnExpectedValue(SessionRawField field,
+                                              object?         expected)
   {
     var func = new ListSessionsRequest
                {
-                 Filter = new ListSessionsRequest.Types.Filter(),
+                 Filters = new Filters(),
                  Sort = new ListSessionsRequest.Types.Sort
                         {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.SessionId,
+                          Direction = SortDirection.Asc,
+                          Field = new SessionField
+                                  {
+                                    SessionRawField = field,
+                                  },
                         },
-               }.Sort.ToSessionDataField()
+               }.Sort.ToField()
                 .Compile();
 
-    Assert.AreEqual(sessionData_.SessionId,
-                    func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnStatus()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter(),
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.Status,
-                        },
-               }.Sort.ToSessionDataField()
-                .Compile();
-
-    Assert.AreEqual(sessionData_.Status,
-                    func.Invoke(sessionData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnCancelledAt()
-  {
-    var func = new ListSessionsRequest
-               {
-                 Filter = new ListSessionsRequest.Types.Filter(),
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListSessionsRequest.Types.OrderByField.CancelledAt,
-                        },
-               }.Sort.ToSessionDataField()
-                .Compile();
-
-    Assert.AreEqual(sessionData_.CancellationDate,
-                    func.Invoke(sessionData_));
+    Assert.AreEqual(expected,
+                    func.Invoke(SessionData));
   }
 }

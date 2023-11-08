@@ -18,12 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base.DataStructures;
 
-using static Google.Protobuf.WellKnownTypes.Timestamp;
+using FluentValidation.Internal;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -55,6 +55,8 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="EndDate">Date when the task ends</param>
 /// <param name="ReceptionDate">Date when the task is received by the polling agent</param>
 /// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
+/// <param name="ProcessingToEndDuration">Duration between the start of processing and the end of the task</param>
+/// <param name="CreationToEndDuration">Duration between the creation and the end of the task</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
 public record TaskData(string        SessionId,
@@ -82,6 +84,8 @@ public record TaskData(string        SessionId,
                        DateTime?                 ReceptionDate,
                        DateTime?                 AcquisitionDate,
                        DateTime?                 PodTtl,
+                       TimeSpan?                 ProcessingToEndDuration,
+                       TimeSpan?                 CreationToEndDuration,
                        Output                    Output)
 {
   /// <summary>
@@ -139,8 +143,28 @@ public record TaskData(string        SessionId,
            null,
            null,
            null,
+           null,
+           null,
            output)
   {
+  }
+
+  /// <summary>
+  ///   Creates a copy of a <see cref="TaskData" /> and modify it according to given updates
+  /// </summary>
+  /// <param name="original">The object that will be copied</param>
+  /// <param name="updates">A collection of field selector and their new values</param>
+  public TaskData(TaskData                                                                      original,
+                  IEnumerable<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates)
+    : this(original)
+  {
+    foreach (var (selector, newValue) in updates)
+    {
+      GetType()
+        .GetProperty(selector.GetMember()
+                             .Name)!.SetValue(this,
+                                              newValue);
+    }
   }
 
   /// <summary>
@@ -159,89 +183,6 @@ public record TaskData(string        SessionId,
                              .Replace("$",
                                       "@dollar@")
                              .ToString();
-
-
-  /// <summary>
-  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskRaw" />
-  /// </summary>
-  /// <param name="taskData">The input task data</param>
-  /// <returns>
-  ///   The converted task data
-  /// </returns>
-  public static implicit operator TaskRaw(TaskData taskData)
-    => new()
-       {
-         SessionId  = taskData.SessionId,
-         Status     = taskData.Status,
-         Output     = taskData.Output,
-         OwnerPodId = taskData.OwnerPodId,
-         Options    = taskData.Options,
-         DataDependencies =
-         {
-           taskData.DataDependencies,
-         },
-         CreatedAt = FromDateTime(taskData.CreationDate),
-         EndedAt = taskData.EndDate is not null
-                     ? FromDateTime(taskData.EndDate.Value)
-                     : null,
-         ExpectedOutputIds =
-         {
-           taskData.ExpectedOutputIds,
-         },
-         Id = taskData.TaskId,
-         RetryOfIds =
-         {
-           taskData.RetryOfIds,
-         },
-         ParentTaskIds =
-         {
-           taskData.ParentTaskIds,
-         },
-         PodTtl = taskData.PodTtl is not null
-                    ? FromDateTime(taskData.PodTtl.Value)
-                    : null,
-         StartedAt = taskData.StartDate is not null
-                       ? FromDateTime(taskData.StartDate.Value)
-                       : null,
-         StatusMessage = taskData.StatusMessage,
-         SubmittedAt = taskData.SubmittedDate is not null
-                         ? FromDateTime(taskData.SubmittedDate.Value)
-                         : null,
-         AcquiredAt = taskData.AcquisitionDate is not null
-                        ? FromDateTime(taskData.AcquisitionDate.Value)
-                        : null,
-         ReceivedAt = taskData.ReceptionDate is not null
-                        ? FromDateTime(taskData.ReceptionDate.Value)
-                        : null,
-         PodHostname = taskData.OwnerPodName,
-       };
-
-  /// <summary>
-  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskSummary" />
-  /// </summary>
-  /// <param name="taskData">The input task data</param>
-  /// <returns>
-  ///   The converted task data
-  /// </returns>
-  public static implicit operator TaskSummary(TaskData taskData)
-    => new()
-       {
-         SessionId = taskData.SessionId,
-         Status    = taskData.Status,
-         Options   = taskData.Options,
-         CreatedAt = FromDateTime(taskData.CreationDate),
-         EndedAt = taskData.EndDate is not null
-                     ? FromDateTime(taskData.EndDate.Value)
-                     : null,
-         Id = taskData.TaskId,
-
-         StartedAt = taskData.StartDate is not null
-                       ? FromDateTime(taskData.StartDate.Value)
-                       : null,
-         Error = taskData.Status == TaskStatus.Error
-                   ? taskData.Output.Error
-                   : "",
-       };
 
   /// <summary>
   ///   Conversion operator from <see cref="TaskData" /> to <see cref="Application" />

@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,10 +24,10 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Object;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -93,9 +92,9 @@ public class ObjectStorage : IObjectStorage
                          : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                   key,
-                                     IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken        cancellationToken = default)
+  public async Task AddOrUpdateAsync(string                                 key,
+                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                     CancellationToken                      cancellationToken = default)
   {
     var       dbKey            = objectStorageName_ + key;
     using var _                = logger_.LogFunction(dbKey);
@@ -109,7 +108,7 @@ public class ObjectStorage : IObjectStorage
     {
       taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
                                                    {
-                                                     Chunk    = chunk,
+                                                     Chunk    = chunk.ToArray(),
                                                      ChunkIdx = idx,
                                                      Key      = dbKey,
                                                    },
@@ -134,14 +133,6 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public Task AddOrUpdateAsync(string                                 key,
-                               IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                               CancellationToken                      cancellationToken = default)
-    => AddOrUpdateAsync(key,
-                        valueChunks.Select(chunk => chunk.ToArray()),
-                        cancellationToken);
-
-  /// <inheritdoc />
   async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string                                     key,
                                                                [EnumeratorCancellation] CancellationToken cancellationToken)
   {
@@ -154,8 +145,7 @@ public class ObjectStorage : IObjectStorage
                                                 .Where(odm => odm.Key == objectStorageName_ + key)
                                                 .OrderBy(odm => odm.ChunkIdx)
                                                 .Select(odm => odm.Chunk)
-                                                .ToAsyncEnumerable()
-                                                .WithCancellation(cancellationToken)
+                                                .ToAsyncEnumerable(cancellationToken)
                                                 .ConfigureAwait(false))
     {
       throwException = false;
@@ -191,8 +181,7 @@ public class ObjectStorage : IObjectStorage
     await foreach (var key in objectCollection.AsQueryable(sessionHandle)
                                               .Where(odm => odm.ChunkIdx == 0)
                                               .Select(odm => odm.Key)
-                                              .ToAsyncEnumerable()
-                                              .WithCancellation(cancellationToken)
+                                              .ToAsyncEnumerable(cancellationToken)
                                               .ConfigureAwait(false))
     {
       yield return key;

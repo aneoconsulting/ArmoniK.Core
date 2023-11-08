@@ -23,6 +23,45 @@ public class S3
   public       string EndpointUrl        { get; set; } = "";
   public       string Login              { get; set; } = "";
   public       string Password           { get; set; } = "";
-  public       bool   MustForcePathStyle { get; set; } = false;
+  public       bool   MustForcePathStyle { get; set; }
   public       string BucketName         { get; set; } = "";
+
+  /// <summary>
+  ///   Number of tasks to be used in parallel execution
+  /// </summary>
+  public int DegreeOfParallelism { get; set; }
+
+  /// <summary>
+  ///   Size of one chunk when downloading an object by chunks
+  /// </summary>
+  public int ChunkDownloadSize { get; set; } = 65536;
+
+  /// <summary>
+  ///   Use Chunk Encoding during upload
+  ///   Should be disabled for GCS
+  /// </summary>
+  public bool UseChunkEncoding { get; set; } = true;
+
+  /// <summary>
+  ///   If true, checksum will be verified by the client during upload
+  /// </summary>
+  public bool UseChecksum { get; set; } = true;
+
+  /// <summary>
+  ///   Get a copy of the options with confidential fields removed
+  /// </summary>
+  /// <returns>Confidential copy</returns>
+  public S3 Confidential()
+    => new()
+       {
+         BucketName          = BucketName,
+         ChunkDownloadSize   = ChunkDownloadSize,
+         DegreeOfParallelism = DegreeOfParallelism,
+         EndpointUrl         = EndpointUrl,
+         Login               = Login,
+         MustForcePathStyle  = MustForcePathStyle,
+         Password            = "[CONFIDENTIAL]",
+         UseChecksum         = UseChecksum,
+         UseChunkEncoding    = UseChunkEncoding,
+       };
 }

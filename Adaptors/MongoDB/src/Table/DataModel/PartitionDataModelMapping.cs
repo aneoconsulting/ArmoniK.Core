@@ -78,17 +78,12 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
-                                           IMongoCollection<PartitionData> collection)
+                                           IMongoCollection<PartitionData> collection,
+                                           Options.MongoDB                 options)
   {
-    var partitionIndex = Builders<PartitionData>.IndexKeys.Hashed(model => model.PartitionId);
-
-    var indexModels = new CreateIndexModel<PartitionData>[]
+    var indexModels = new[]
                       {
-                        new(partitionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(partitionIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<PartitionData>(model => model.PartitionId),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

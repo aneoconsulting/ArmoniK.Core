@@ -43,14 +43,14 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                                                 cm.MapProperty(nameof(AuthData.UserId))
                                                   .SetIsRequired(true)
                                                   .SetSerializer(IdSerializer.Instance);
-                                                cm.MapProperty(nameof(AuthData.CN))
+                                                cm.MapProperty(nameof(AuthData.Cn))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.Fingerprint))
                                                   .SetDefaultValue(BsonNull.Value);
                                                 cm.SetIgnoreExtraElements(true);
                                                 cm.MapCreator(model => new AuthData(model.AuthId,
                                                                                     model.UserId,
-                                                                                    model.CN,
+                                                                                    model.Cn,
                                                                                     model.Fingerprint));
                                               });
     }
@@ -62,43 +62,15 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<AuthData> collection)
+                                           IMongoCollection<AuthData> collection,
+                                           Options.MongoDB            options)
   {
-    var fingerprintIndex       = Builders<AuthData>.IndexKeys.Descending(model => model.Fingerprint);
-    var fingerprintHashedIndex = Builders<AuthData>.IndexKeys.Hashed(model => model.Fingerprint);
-    var cnIndex                = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
-    var compoundIndex = Builders<AuthData>.IndexKeys.Combine(cnIndex,
-                                                             fingerprintIndex);
-    var userIndex = Builders<AuthData>.IndexKeys.Hashed(model => model.UserId);
-
-    var indexModels = new CreateIndexModel<AuthData>[]
+    var indexModels = new[]
                       {
-                        new(fingerprintIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(fingerprintIndex),
-                            }),
-                        new(fingerprintHashedIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(fingerprintHashedIndex),
-                            }),
-                        new(cnIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(cnIndex),
-                            }),
-                        new(compoundIndex,
-                            new CreateIndexOptions
-                            {
-                              Name   = nameof(compoundIndex),
-                              Unique = true,
-                            }),
-                        new(userIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(userIndex),
-                            }),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Descending, model => model.Fingerprint),
+                                                                (IndexType.Ascending, model => model.Cn)),
+                        IndexHelper.CreateHashedIndex<AuthData>(model => model.Fingerprint),
+                        IndexHelper.CreateHashedIndex<AuthData>(model => model.UserId),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

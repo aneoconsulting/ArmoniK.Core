@@ -25,12 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AMQPNetLite.Core" Version="2.4.5" />
+    <PackageReference Include="AMQPNetLite.Core" Version="2.4.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.4" />
   </ItemGroup>
 
   <ItemGroup>

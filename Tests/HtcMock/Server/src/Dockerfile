@@ -8,12 +8,14 @@ WORKDIR /src
 COPY ["Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj", "Tests/HtcMock/Server/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj"
-COPY . .
+COPY ["Tests/HtcMock/Server/src", "Tests/HtcMock/Server/src"]
+COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Server/src"
-RUN dotnet build "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/build
+RUN dotnet build "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 FROM build AS publish
-RUN dotnet publish "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/publish
+ARG VERSION=1.0.0.0
+RUN dotnet publish "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/publish -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 FROM base AS final
 WORKDIR /app

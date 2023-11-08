@@ -18,8 +18,8 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -30,101 +30,60 @@ namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 [TestFixture(TestOf = typeof(ToResultFieldTest))]
 public class ToResultFieldTest
 {
-  private readonly Result result_ = new("SessionId",
-                                        "Name",
-                                        "OwnerTaskId",
-                                        ResultStatus.Created,
-                                        new List<string>(),
-                                        DateTime.UtcNow,
-                                        Array.Empty<byte>());
+  private static readonly Result Result = new("SessionId",
+                                              "ResultId",
+                                              "Name",
+                                              "OwnerTaskId",
+                                              ResultStatus.Created,
+                                              new List<string>(),
+                                              DateTime.UtcNow,
+                                              Array.Empty<byte>());
 
-  [Test]
-  public void InvokeShouldReturnCreationDate()
+  public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter(),
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.ToResultField()
-                .Compile();
-
-    Assert.AreEqual(result_.CreationDate,
-                    func.Invoke(result_));
+    // TODO add completedDate
+    yield return Case(ResultRawEnumField.Status,
+                      Result.Status);
+    yield return Case(ResultRawEnumField.CreatedAt,
+                      Result.CreationDate);
+    yield return Case(ResultRawEnumField.Name,
+                      Result.Name);
+    yield return Case(ResultRawEnumField.OwnerTaskId,
+                      Result.OwnerTaskId);
+    yield return Case(ResultRawEnumField.ResultId,
+                      Result.ResultId);
+    yield return Case(ResultRawEnumField.SessionId,
+                      Result.SessionId);
   }
 
+  private static TestCaseData Case(ResultRawEnumField field,
+                                   object?            expected)
+    => new TestCaseData(new ResultRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
+
   [Test]
-  public void InvokeShouldReturnSessionId()
+  [TestCaseSource(nameof(TestCasesInvoke))]
+  public void InvokeShouldReturnExpectedValue(ResultRawField field,
+                                              object?        expected)
   {
     var func = new ListResultsRequest
                {
-                 Filter = new ListResultsRequest.Types.Filter(),
+                 Filters = new Filters(),
                  Sort = new ListResultsRequest.Types.Sort
                         {
-                          Field     = ListResultsRequest.Types.OrderByField.SessionId,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
+                          Field = new ResultField
+                                  {
+                                    ResultRawField = field,
+                                  },
+                          Direction = SortDirection.Asc,
                         },
-               }.Sort.ToResultField()
+               }.Sort.ToField()
                 .Compile();
 
-    Assert.AreEqual(result_.SessionId,
-                    func.Invoke(result_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnStatus()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter(),
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.Status,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.ToResultField()
-                .Compile();
-
-    Assert.AreEqual(result_.Status,
-                    func.Invoke(result_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnName()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter(),
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.Name,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.ToResultField()
-                .Compile();
-
-    Assert.AreEqual(result_.Name,
-                    func.Invoke(result_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnOwnerTaskId()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter(),
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.OwnerTaskId,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.ToResultField()
-                .Compile();
-
-    Assert.AreEqual(result_.OwnerTaskId,
-                    func.Invoke(result_));
+    Assert.AreEqual(expected,
+                    func.Invoke(Result));
   }
 }

@@ -22,28 +22,29 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Channel.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly GrpcChannelProvider                                     channelProvider_;
-  private readonly ILogger<WorkerStreamHandler>                            logger_;
-  private readonly InitWorker                                              optionsInitWorker_;
-  private          bool                                                    isInitialized_;
-  private          int                                                     retryCheck_;
-  private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
-  private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
+  private readonly GrpcChannelProvider                     channelProvider_;
+  private readonly ILogger<WorkerStreamHandler>            logger_;
+  private readonly InitWorker                              optionsInitWorker_;
+  private          bool                                    isInitialized_;
+  private          int                                     retryCheck_;
+  private          Api.gRPC.V1.Worker.Worker.WorkerClient? workerClient_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
@@ -53,28 +54,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     optionsInitWorker_ = optionsInitWorker;
     logger_            = logger;
   }
-
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken)
-  {
-    if (workerClient_ == null)
-    {
-      throw new ArmoniKException("Worker client should be initialized");
-    }
-
-    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                    cancellationToken: cancellationToken);
-
-    if (stream_ is null)
-    {
-      throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
-    }
-
-    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseAsync,
-                                                           stream_.RequestStream);
-  }
-
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
 
   public async Task Init(CancellationToken cancellationToken)
@@ -115,7 +94,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
     var e = new ArmoniKException("Could not get grpc channel");
     logger_.LogError(e,
-                     string.Empty);
+                     "Could not get grpc channel");
     throw e;
   }
 
@@ -152,9 +131,42 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   }
 
   public void Dispose()
+    => GC.SuppressFinalize(this);
+
+  public async Task<Output> StartTaskProcessing(TaskData          taskData,
+                                                string            token,
+                                                string            dataFolder,
+                                                CancellationToken cancellationToken)
   {
-    stream_?.Dispose();
-    GC.SuppressFinalize(this);
+    if (workerClient_ == null)
+    {
+      throw new ArmoniKException("Worker client should be initialized");
+    }
+
+    return (await workerClient_.ProcessAsync(new ProcessRequest
+                                             {
+                                               CommunicationToken = token,
+                                               Configuration = new Configuration
+                                                               {
+                                                                 DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                                                               },
+                                               DataDependencies =
+                                               {
+                                                 taskData.DataDependencies,
+                                               },
+                                               DataFolder = dataFolder,
+                                               ExpectedOutputKeys =
+                                               {
+                                                 taskData.ExpectedOutputIds,
+                                               },
+                                               PayloadId   = taskData.PayloadId,
+                                               SessionId   = taskData.SessionId,
+                                               TaskId      = taskData.TaskId,
+                                               TaskOptions = taskData.Options.ToGrpcTaskOptions(),
+                                             },
+                                             deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+                                             cancellationToken: cancellationToken)
+                               .ConfigureAwait(false)).Output.ToInternalOutput();
   }
 
   private Task<bool> CheckWorker(CancellationToken cancellationToken)

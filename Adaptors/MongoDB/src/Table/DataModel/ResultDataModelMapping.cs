@@ -34,7 +34,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
     {
       BsonClassMap.RegisterClassMap<Result>(cm =>
                                             {
-                                              cm.MapIdProperty(nameof(Result.Id));
+                                              cm.MapIdProperty(nameof(Result.ResultId));
                                               cm.MapProperty(nameof(Result.SessionId))
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Name))
@@ -52,6 +52,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetIsRequired(true);
                                               cm.SetIgnoreExtraElements(true);
                                               cm.MapCreator(model => new Result(model.SessionId,
+                                                                                model.ResultId,
                                                                                 model.Name,
                                                                                 model.OwnerTaskId,
                                                                                 model.Status,
@@ -69,29 +70,15 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle     sessionHandle,
-                                           IMongoCollection<Result> collection)
+                                           IMongoCollection<Result> collection,
+                                           Options.MongoDB          options)
   {
-    var sessionIndex   = Builders<Result>.IndexKeys.Hashed(model => model.SessionId);
-    var ownerTaskIndex = Builders<Result>.IndexKeys.Hashed(model => model.OwnerTaskId);
-    var creationIndex  = Builders<Result>.IndexKeys.Ascending(model => model.CreationDate);
-
-    var indexModels = new CreateIndexModel<Result>[]
+    var indexModels = new[]
                       {
-                        new(sessionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
-                        new(ownerTaskIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(ownerTaskIndex),
-                            }),
-                        new(creationIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(creationIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
+                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
+                                                                 expireAfter: options.DataRetention),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

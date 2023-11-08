@@ -24,12 +24,12 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Control.Metrics;
 

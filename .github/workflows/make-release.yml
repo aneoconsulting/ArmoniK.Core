@@ -16,7 +16,7 @@ jobs:
       release: ${{ steps.release.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
@@ -35,7 +35,7 @@ jobs:
 
     - name: Generate Snapshot Version
       id: snapshot
-      uses: codacy/git-version@2.7.1
+      uses: codacy/git-version@80c816f11db8dea5e3a81025f598193015b51832 # 2.8.0
       with:
         minor-identifier: "feat:"
         release-branch: ${{ github.ref_name }}-pre
@@ -43,7 +43,7 @@ jobs:
 
     - name: Generate Release Version
       id: release
-      uses: codacy/git-version@2.7.1
+      uses: codacy/git-version@80c816f11db8dea5e3a81025f598193015b51832 # 2.8.0
       with:
         minor-identifier: "feat:"
         release-branch: ${{ steps.rev.outputs.current-branch }}
@@ -62,6 +62,35 @@ jobs:
       run : git push origin -d ${{ github.ref_name }}
 
 
+  imagesCore:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+    env:
+      VERSION: ${{ needs.versionning.outputs.release }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Setup just
+      run: |
+          sudo snap install --edge --classic just
+
+    - name: login
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
+
+    - name: Create builder
+      run: |
+        docker buildx create --use
+
+    - name: Build
+      run: |
+        just tag=$VERSION builder=buildx platform="linux/arm64,linux/amd64" build-core
+
+
   buildImages:
     runs-on: ubuntu-latest
     needs:
@@ -70,14 +99,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        -  img : dockerhubaneo/armonik_pollingagent
-           path: ./Compute/PollingAgent/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_metrics
-           path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_partition_metrics
-           path: ./Control/PartitionMetrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control
-           path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
@@ -92,20 +113,20 @@ jobs:
            path: ./Tests/Bench/Client/src/Dockerfile
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
 
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
 
     - name: login
-      uses: docker/login-action@v2
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -114,17 +135,18 @@ jobs:
       run: echo ${{ steps.buildx.outputs.platforms }}
 
     - name: Build and push
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5
       with:
         file: ${{ matrix.path }}
         context: .
         platforms: |
           linux/arm64
           linux/amd64
+        build-args: |
+          VERSION=${{ needs.versionning.outputs.release }}
         push: true
         tags: |
             ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
-            ${{ matrix.img }}:latest
 
   publish-nuget:
     runs-on: ubuntu-latest
@@ -134,7 +156,7 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.release }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
       with:
         ref: ${{ github.ref }}
 
@@ -144,7 +166,7 @@ jobs:
 
     - name: Pack the package
       run: |
-        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION
+        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
@@ -155,15 +177,14 @@ jobs:
     needs:
       - versionning
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           fetch-depth: 0
 
-      - name: Set node
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4
         with:
           node-version: 18
 
-      - run: npx changelogithub
+      - run: npx @aneoconsultingfr/order-github-release-notes
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

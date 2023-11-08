@@ -20,13 +20,15 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.ListApplicationsRequestExt;
 
@@ -72,187 +74,134 @@ public class ToApplicationFilterTest
                                             new Output(true,
                                                        ""));
 
-  [Test]
-  public void FilterNameShouldSucceed()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Name = ApplicationName,
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
+  private static readonly ListApplicationsRequest.Types.Sort Sort = new()
+                                                                    {
+                                                                      Fields =
+                                                                      {
+                                                                        new ApplicationField
+                                                                        {
+                                                                          ApplicationField_ = new ApplicationRawField
+                                                                                              {
+                                                                                                Field = ApplicationRawEnumField.Name,
+                                                                                              },
+                                                                        },
+                                                                      },
+                                                                      Direction = SortDirection.Asc,
+                                                                    };
+
+  private static Func<TaskData, bool> RequestToFunc(ListApplicationsRequest.Types.Sort sort,
+                                                    IEnumerable<FilterField>           filterFields)
+    => CreateListApplicationsRequest(sort,
+                                     filterFields)
+       .Filters.ToApplicationFilter()
+       .Compile();
+
+
+  public static ListApplicationsRequest CreateListApplicationsRequest(ListApplicationsRequest.Types.Sort sort,
+                                                                      IEnumerable<FilterField>           filterFields)
+    => new()
+       {
+         Filters = new Filters
+                   {
+                     Or =
+                     {
+                       new FiltersAnd
+                       {
+                         And =
+                         {
+                           filterFields,
+                         },
+                       },
+                     },
+                   },
+         Sort = sort,
+       };
+
+  public static FilterField CreateListApplicationsFilterString(ApplicationRawEnumField field,
+                                                               FilterStringOperator    op,
+                                                               string                  value)
+    => new()
+       {
+         Field = new ApplicationField
+                 {
+                   ApplicationField_ = new ApplicationRawField
+                                       {
+                                         Field = field,
+                                       },
+                 },
+         FilterString = new FilterString
                         {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                          Operator = op,
+                          Value    = value,
                         },
-               }.Filter.ToApplicationFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void FilterNameShouldFail()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Name = ApplicationName + "bad",
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToApplicationFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void FilterNamespaceShouldSucceed()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Namespace = ApplicationNamespace,
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToApplicationFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_));
-  }
+       };
 
   [Test]
-  public void FilterNamespaceShouldFail()
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public void Filter2(IEnumerable<FilterField> filterFields,
+                      bool                     expected)
   {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Namespace = ApplicationNamespace + "bad",
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToApplicationFilter()
-                .Compile();
+    var func = RequestToFunc(Sort,
+                             filterFields);
 
-    Assert.IsFalse(func.Invoke(taskData_));
+    Assert.AreEqual(expected,
+                    func.Invoke(taskData_));
   }
 
-  [Test]
-  public void FilterVersionShouldSucceed()
+  public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Version = ApplicationVersion,
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToApplicationFilter()
-                .Compile();
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationName));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Name,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationName + "bad"));
 
-    Assert.IsTrue(func.Invoke(taskData_));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationNamespace));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Namespace,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationNamespace + "bad"));
+
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationVersion));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Version,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationVersion + "bad"));
+
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.Equal,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.StartsWith,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.EndsWith,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.Contains,
+                                                                        ApplicationService));
+    yield return FieldToTestCaseTrue(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                        FilterStringOperator.NotContains,
+                                                                        ApplicationService + "bad"));
+    yield return FieldToTestCaseFalse(CreateListApplicationsFilterString(ApplicationRawEnumField.Service,
+                                                                         FilterStringOperator.Equal,
+                                                                         ApplicationService + "bad"));
   }
 
-  [Test]
-  public void FilterVersionShouldFail()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Version = ApplicationVersion + "bad",
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
+  private static TestCaseData FieldToTestCaseFalse(FilterField filterField)
+    => new TestCaseData(new[]
                         {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                          filterField,
                         },
-               }.Filter.ToApplicationFilter()
-                .Compile();
+                        false).SetArgDisplayNames(filterField.ToString()!);
 
-    Assert.IsFalse(func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void FilterServiceShouldSucceed()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Service = ApplicationService,
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
+  private static TestCaseData FieldToTestCaseTrue(FilterField filterField)
+    => new TestCaseData(new[]
                         {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                          filterField,
                         },
-               }.Filter.ToApplicationFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void FilterServiceShouldFail()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter
-                          {
-                            Service = ApplicationService + "bad",
-                          },
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToApplicationFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(taskData_));
-  }
+                        true).SetArgDisplayNames(filterField.ToString()!);
 }

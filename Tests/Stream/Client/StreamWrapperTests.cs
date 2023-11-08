@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
@@ -64,23 +65,27 @@ internal class StreamWrapperTests
     partition_ = configuration.GetValue<string>("Partition");
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
-    channel_ = GrpcChannelFactory.CreateChannel(options);
-    client_  = new Submitter.SubmitterClient(channel_);
+    channel_      = GrpcChannelFactory.CreateChannel(options);
+    client_       = new Submitter.SubmitterClient(channel_);
+    resultClient_ = new Results.ResultsClient(channel_);
     Console.WriteLine("Client created");
   }
 
   [TearDown]
   public void TearDown()
   {
-    partition_ = null;
-    client_    = null;
+    partition_    = null;
+    client_       = null;
+    resultClient_ = null;
     channel_?.ShutdownAsync()
             .Wait();
+    channel_ = null;
   }
 
   private Submitter.SubmitterClient? client_;
   private string?                    partition_;
   private ChannelBase?               channel_;
+  private Results.ResultsClient?     resultClient_;
 
   [TestCase(2,
             ExpectedResult = 4)]
@@ -88,9 +93,23 @@ internal class StreamWrapperTests
             ExpectedResult = 16)]
   public async Task<int> Square(int input)
   {
-    var expectedOutput = Guid.NewGuid() + "exp";
-
     var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
+
+    var result = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                 {
+                                                                   SessionId = sessionId,
+                                                                   Results =
+                                                                   {
+                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                     {
+                                                                       Name = "exp",
+                                                                     },
+                                                                   },
+                                                                 })
+                                     .ConfigureAwait(false);
+
+    var expectedOutput = result.Results.Single()
+                               .ResultId;
 
     var payload = new TestPayload
                   {
@@ -124,7 +143,9 @@ internal class StreamWrapperTests
                           Session  = sessionId,
                         };
 
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     Assert.AreEqual(availabilityReply.TypeCase,
                     AvailabilityReply.TypeOneofCase.Ok);
@@ -150,9 +171,23 @@ internal class StreamWrapperTests
   [Repeat(2)]
   public async Task<Output.TypeOneofCase> TaskError()
   {
-    var expectedOutput = Guid.NewGuid() + "exp";
-
     var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
+
+    var result = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                 {
+                                                                   SessionId = sessionId,
+                                                                   Results =
+                                                                   {
+                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                     {
+                                                                       Name = "exp",
+                                                                     },
+                                                                   },
+                                                                 })
+                                     .ConfigureAwait(false);
+
+    var expectedOutput = result.Results.Single()
+                               .ResultId;
 
     var payload = new TestPayload
                   {
@@ -200,17 +235,32 @@ internal class StreamWrapperTests
                     Type = TestPayload.TaskType.ReturnFailed,
                   };
 
+    var results = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                  {
+                                                                    SessionId = sessionId,
+                                                                    Results =
+                                                                    {
+                                                                      Enumerable.Range(0,
+                                                                                       10)
+                                                                                .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                             {
+                                                                                               Name = $"myresult{i}",
+                                                                                             }),
+                                                                    },
+                                                                  })
+                                      .ConfigureAwait(false);
+
     var taskRequests = new List<TaskRequest>();
 
     for (var i = 0; i < 10; i++)
     {
-      var taskId = Guid.NewGuid() + "mytask";
       var req = new TaskRequest
                 {
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    taskId,
+                    results.Results[i]
+                           .ResultId,
                   },
                 };
       taskRequests.Add(req);
@@ -251,17 +301,31 @@ internal class StreamWrapperTests
   {
     var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
+    var results = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                  {
+                                                                    SessionId = sessionId,
+                                                                    Results =
+                                                                    {
+                                                                      Enumerable.Range(0,
+                                                                                       n)
+                                                                                .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                             {
+                                                                                               Name = $"{nameof(MultipleTasks)}myresult{i}",
+                                                                                             }),
+                                                                    },
+                                                                  })
+                                      .ConfigureAwait(false);
+
     var taskRequestList = new List<TaskRequest>();
 
     for (var i = 0; i < n; i++)
     {
-      var taskId = nameof(MultipleTasks) + "-" + i + "-" + Guid.NewGuid();
-
       var payload = new TestPayload
                     {
                       Type      = taskType,
                       DataBytes = BitConverter.GetBytes(i),
-                      ResultKey = taskId,
+                      ResultKey = results.Results[i]
+                                         .ResultId,
                     };
 
       var req = new TaskRequest
@@ -269,7 +333,8 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    taskId,
+                    results.Results[i]
+                           .ResultId,
                   },
                 };
       taskRequestList.Add(req);
@@ -289,7 +354,9 @@ internal class StreamWrapperTests
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
                                                                             Session  = sessionId,
                                                                           };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                       return availabilityReply.TypeCase;
                                                     });
 
@@ -326,17 +393,33 @@ internal class StreamWrapperTests
   {
     var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
+    var resultsMetaData = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                          {
+                                                                            SessionId = sessionId,
+                                                                            Results =
+                                                                            {
+                                                                              Enumerable.Range(0,
+                                                                                               2 * n)
+                                                                                        .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                                     {
+                                                                                                       Name = $"{nameof(MultipleDataDependencies)}myresult{i}",
+                                                                                                     }),
+                                                                            },
+                                                                          })
+                                              .ConfigureAwait(false);
+
     var taskRequestList = new List<TaskRequest>();
 
     for (var i = 0; i < n; i++)
     {
-      var taskId = "datadep-" + i + "-" + Guid.NewGuid();
-
       var payload = new TestPayload
                     {
                       Type      = TestPayload.TaskType.DatadepTransfer,
                       DataBytes = BitConverter.GetBytes(i + 5),
-                      ResultKey = taskId,
+                      ResultKey = resultsMetaData.Results[2 * i]
+                                                 .ResultId,
+                      ResultKey2 = resultsMetaData.Results[2 * i + 1]
+                                                  .ResultId,
                     };
 
       var req = new TaskRequest
@@ -344,8 +427,10 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    taskId + "-res1",
-                    taskId + "-res2",
+                    resultsMetaData.Results[2 * i]
+                                   .ResultId,
+                    resultsMetaData.Results[2 * i + 1]
+                                   .ResultId,
                   },
                 };
       taskRequestList.Add(req);
@@ -365,7 +450,9 @@ internal class StreamWrapperTests
                                                                              ResultId = request.ExpectedOutputKeys.First(),
                                                                              Session  = sessionId,
                                                                            };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                        var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                        return availabilityReply.TypeCase;
                                                      });
 
@@ -378,7 +465,9 @@ internal class StreamWrapperTests
                                                                              ResultId = request.ExpectedOutputKeys.Last(),
                                                                              Session  = sessionId,
                                                                            };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                        var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                        return availabilityReply.TypeCase;
                                                      });
 
@@ -434,15 +523,30 @@ internal class StreamWrapperTests
     Console.WriteLine("Payload Hash " + Convert.ToBase64String(SHA256.HashData(serializedPayload)));
     Console.WriteLine($"Payload size {serializedPayload.Length}");
 
+    var resultsMetaData = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                          {
+                                                                            SessionId = sessionId,
+                                                                            Results =
+                                                                            {
+                                                                              Enumerable.Range(0,
+                                                                                               n)
+                                                                                        .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                                     {
+                                                                                                       Name = $"{nameof(LargePayloads)}myresult{i}",
+                                                                                                     }),
+                                                                            },
+                                                                          })
+                                              .ConfigureAwait(false);
+
     for (var i = 0; i < n; i++)
     {
-      var taskId = nameof(LargePayloads) + "-" + i + "-" + Guid.NewGuid();
       var req = new TaskRequest
                 {
                   Payload = byteString,
                   ExpectedOutputKeys =
                   {
-                    taskId,
+                    resultsMetaData.Results[i]
+                                   .ResultId,
                   },
                 };
 
@@ -463,7 +567,9 @@ internal class StreamWrapperTests
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
                                                                             Session  = sessionId,
                                                                           };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                       return availabilityReply.TypeCase;
                                                     });
 
@@ -492,7 +598,21 @@ internal class StreamWrapperTests
   {
     var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
-    var outputId = nameof(LargePayloads) + "-" + Guid.NewGuid();
+    var result = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                 {
+                                                                   SessionId = sessionId,
+                                                                   Results =
+                                                                   {
+                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                     {
+                                                                       Name = nameof(EmptyPayload),
+                                                                     },
+                                                                   },
+                                                                 })
+                                     .ConfigureAwait(false);
+
+    var outputId = result.Results.Single()
+                         .ResultId;
 
     var taskIds = await client_!.CreateTasksAndCheckReplyAsync(sessionId,
                                                                null,
@@ -514,7 +634,9 @@ internal class StreamWrapperTests
                           ResultId = outputId,
                           Session  = sessionId,
                         };
+#pragma warning disable CS0612 // Type or member is obsolete
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
 
     Assert.AreEqual(AvailabilityReply.TypeOneofCase.Error,
                     availabilityReply.TypeCase);
@@ -565,15 +687,29 @@ internal class StreamWrapperTests
                       };
     var taskRequestList = new List<TaskRequest>();
 
+    var resultsMetaData = await resultClient_!.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                          {
+                                                                            SessionId = sessionId,
+                                                                            Results =
+                                                                            {
+                                                                              Enumerable.Range(0,
+                                                                                               n)
+                                                                                        .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                                     {
+                                                                                                       Name = $"{nameof(RunForPriority)}myresult{i}",
+                                                                                                     }),
+                                                                            },
+                                                                          })
+                                              .ConfigureAwait(false);
+
     for (var i = 0; i < n; i++)
     {
-      var taskId = nameof(LargePayloads) + "-" + i + "-" + Guid.NewGuid();
-
       var payload = new TestPayload
                     {
                       Type      = TestPayload.TaskType.Compute,
                       DataBytes = BitConverter.GetBytes(1),
-                      ResultKey = taskId,
+                      ResultKey = resultsMetaData.Results[i]
+                                                 .ResultId,
                     };
 
       var req = new TaskRequest
@@ -581,7 +717,8 @@ internal class StreamWrapperTests
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
-                    taskId,
+                    resultsMetaData.Results[i]
+                                   .ResultId,
                   },
                 };
 
@@ -600,7 +737,9 @@ internal class StreamWrapperTests
                                                                             ResultId = request.ExpectedOutputKeys.Single(),
                                                                             Session  = sessionId,
                                                                           };
+#pragma warning disable CS0612 // Type or member is obsolete
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
+#pragma warning restore CS0612 // Type or member is obsolete
                                                       return availabilityReply.TypeCase;
                                                     });
 

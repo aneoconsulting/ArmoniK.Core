@@ -15,10 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -41,264 +43,98 @@ public class ToPartitionDataFilterTest
                                                       2,
                                                       new PodConfiguration(new Dictionary<string, string>()));
 
-  [Test]
-  public void FilterIdShouldSucceed()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            Id = "PartitionId",
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
+  private static readonly ListPartitionsRequest.Types.Sort Sort = new()
+                                                                  {
+                                                                    Direction = SortDirection.Asc,
+                                                                    Field = new PartitionField
+                                                                            {
+                                                                              PartitionRawField = new PartitionRawField
+                                                                                                  {
+                                                                                                    Field = PartitionRawEnumField.Id,
+                                                                                                  },
+                                                                            },
+                                                                  };
 
-    Assert.IsTrue(func.Invoke(partitionData_));
+
+  private static Func<PartitionData, bool> RequestToFunc(ListPartitionsRequest.Types.Sort sort,
+                                                         IEnumerable<FilterField>         filterFields)
+    => ListPartitionsHelper.CreateListPartitionsRequest(sort,
+                                                        filterFields)
+                           .Filters.ToPartitionFilter()
+                           .Compile();
+
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public void Filter(IEnumerable<FilterField> filterFields,
+                     bool                     expected)
+  {
+    var func = RequestToFunc(Sort,
+                             filterFields);
+
+    Assert.AreEqual(expected,
+                    func.Invoke(partitionData_));
   }
 
-  [Test]
-  public void FilterWrongIdShouldFail()
+  public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
+    TestCaseData CaseTrue(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            Id = "PartitionId",
+                            filterField,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
+                          true).SetArgDisplayNames(filterField.ToString());
 
-    Assert.IsFalse(func.Invoke(partitionData_ with
-                               {
-                                 PartitionId = "test",
-                               }));
-  }
-
-  [Test]
-  public void FilterPodReservedShouldSucceed()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
+    TestCaseData CaseFalse(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            PodReserved = 1,
+                            filterField,
                           },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
+                          false).SetArgDisplayNames(filterField.ToString());
 
-    Assert.IsTrue(func.Invoke(partitionData_));
-  }
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
+                                                                                FilterStringOperator.Equal,
+                                                                                "PartitionId"));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
+                                                                                 FilterStringOperator.Equal,
+                                                                                 "PartitionId_false"));
 
-  [Test]
-  public void FilterWrongPodReservedShouldFail()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            PodReserved = 1,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodReserved,
+                                                                                FilterNumberOperator.Equal,
+                                                                                1));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodReserved,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
 
-    Assert.IsFalse(func.Invoke(partitionData_ with
-                               {
-                                 PodReserved = 2,
-                               }));
-  }
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodMax,
+                                                                                FilterNumberOperator.Equal,
+                                                                                10));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodMax,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
 
-  [Test]
-  public void FilterPodMaxShouldSucceed()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            PodMax = 10,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PreemptionPercentage,
+                                                                                FilterNumberOperator.Equal,
+                                                                                15));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PreemptionPercentage,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
 
-    Assert.IsTrue(func.Invoke(partitionData_));
-  }
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.Priority,
+                                                                                FilterNumberOperator.Equal,
+                                                                                2));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.Priority,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 1));
 
-  [Test]
-  public void FilterWrongPodMaxShouldFail()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            PodMax = 10,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(partitionData_ with
-                               {
-                                 PodMax = 20,
-                               }));
-  }
-
-  [Test]
-  public void FilterPreemptionPercentageShouldSucceed()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            PreemptionPercentage = 15,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(partitionData_));
-  }
-
-  [Test]
-  public void FilterWrongPreemptionPercentageShouldFail()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            PreemptionPercentage = 15,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(partitionData_ with
-                               {
-                                 PreemptionPercentage = 877,
-                               }));
-  }
-
-  [Test]
-  public void FilterPriorityShouldSucceed()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            Priority = 2,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(partitionData_));
-  }
-
-  [Test]
-  public void FilterWrongPriorityShouldFail()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            Priority = 2,
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(partitionData_ with
-                               {
-                                 Priority = 877,
-                               }));
-  }
-
-  [Test]
-  public void FilterParentPartitionIdShouldSucceed()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            ParentPartitionId = "ParentPartitionId1",
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(partitionData_));
-  }
-
-  [Test]
-  public void FilterWrongParentPartitionIdShouldFail()
-  {
-    var func = new ListPartitionsRequest
-               {
-                 Filter = new ListPartitionsRequest.Types.Filter
-                          {
-                            ParentPartitionId = "ParentPartitionId1",
-                          },
-                 Sort = new ListPartitionsRequest.Types.Sort
-                        {
-                          Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                          Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                        },
-               }.Filter.ToPartitionFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(partitionData_ with
-                               {
-                                 ParentPartitionIds = new List<string>
-                                                      {
-                                                        "AnotherPartitionId",
-                                                      },
-                               }));
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterArray(PartitionRawEnumField.ParentPartitionIds,
+                                                                               FilterArrayOperator.Contains,
+                                                                               "ParentPartitionId1"));
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterArray(PartitionRawEnumField.ParentPartitionIds,
+                                                                               FilterArrayOperator.NotContains,
+                                                                               "AnotherParentPartitionId1"));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterArray(PartitionRawEnumField.ParentPartitionIds,
+                                                                                FilterArrayOperator.Contains,
+                                                                                "AnotherParentPartitionId1"));
   }
 }

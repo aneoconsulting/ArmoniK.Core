@@ -26,34 +26,12 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 
 namespace ArmoniK.Core.Adapters.Amqp;
-
-/// <summary>
-///   Policy for creating a <see cref="Session" /> for the <see cref="ObjectPool{Session}" />
-/// </summary>
-internal sealed class SessionPooledObjectPolicy : IPooledObjectPolicy<Session>
-{
-  private readonly IConnectionAmqp connectionAmqp_;
-
-  /// <summary>
-  ///   Initializes a <see cref="SessionPooledObjectPolicy" />
-  /// </summary>
-  /// <param name="connectionAmqp">AMQP connection that will be used to create new sessions</param>
-  public SessionPooledObjectPolicy(IConnectionAmqp connectionAmqp)
-    => connectionAmqp_ = connectionAmqp;
-
-  /// <inheritdoc />
-  public Session Create()
-    => new(connectionAmqp_.Connection);
-
-  /// <inheritdoc />
-  public bool Return(Session obj)
-    => !obj.IsClosed;
-}
 
 public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
@@ -69,15 +47,30 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     : base(options,
            connectionAmqp)
   {
-    logger_      = logger;
-    sessionPool_ = new DefaultObjectPool<Session>(new SessionPooledObjectPolicy(ConnectionAmqp));
+    logger_ = logger;
+    sessionPool_ = new ObjectPool<Session>(200,
+                                           () => new Session(connectionAmqp.Connection),
+                                           session => !session.IsClosed);
   }
 
   /// <inheritdoc />
-  public async Task PushMessagesAsync(IEnumerable<string> messages,
-                                      string              partitionId,
-                                      int                 priority          = 1,
-                                      CancellationToken   cancellationToken = default)
+  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                      string                   partitionId,
+                                      CancellationToken        cancellationToken = default)
+  {
+    var priorityGroups = messages.GroupBy(msgData => msgData.Options.Priority);
+    await priorityGroups.ParallelForEach(new ParallelTaskOptions(cancellationToken),
+                                         group => PushMessagesAsync(group,
+                                                                    partitionId,
+                                                                    group.Key,
+                                                                    cancellationToken))
+                        .ConfigureAwait(false);
+  }
+
+  private async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                       string                   partitionId,
+                                       int                      priority          = 1,
+                                       CancellationToken        cancellationToken = default)
   {
     if (!IsInitialized)
     {
@@ -101,29 +94,25 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                      whichQueue,
                      internalPriority);
 
-    var session = sessionPool_.Get();
-    try
-    {
-      var sender = new SenderLink(session,
-                                  $"{partitionId}###SenderLink{whichQueue}",
-                                  $"{partitionId}###q{whichQueue}");
+    await using var session = await sessionPool_.GetAsync(cancellationToken)
+                                                .ConfigureAwait(false);
 
-      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
-                                                                {
-                                                                  Header = new Header
-                                                                           {
-                                                                             Priority = (byte)internalPriority,
-                                                                           },
-                                                                  Properties = new Properties(),
-                                                                })))
-                .ConfigureAwait(false);
+    var sender = new SenderLink(session,
+                                $"{partitionId}###SenderLink{whichQueue}",
+                                $"{partitionId}###q{whichQueue}");
 
-      await sender.CloseAsync()
+    await messages.ParallelForEach(new ParallelTaskOptions(cancellationToken),
+                                   msgData => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
+                                                               {
+                                                                 Header = new Header
+                                                                          {
+                                                                            Priority = (byte)internalPriority,
+                                                                          },
+                                                                 Properties = new Properties(),
+                                                               }))
                   .ConfigureAwait(false);
-    }
-    finally
-    {
-      sessionPool_.Return(session);
-    }
+
+    await sender.CloseAsync()
+                .ConfigureAwait(false);
   }
 }

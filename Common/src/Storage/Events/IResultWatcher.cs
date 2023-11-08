@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,33 +33,33 @@ public interface IResultWatcher : IInitializable
   /// <summary>
   ///   Receive a <see cref="NewResult" /> event when a new result is added in the given session
   /// </summary>
-  /// <param name="sessionId">The session id</param>
+  /// <param name="filter">Filter expression describing the results events to be returned</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   A <see cref="IAsyncEnumerable{NewResult}" /> that holds the updates when they are available
   /// </returns>
-  Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
-                                                  CancellationToken cancellationToken = default);
+  Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
+                                                  CancellationToken              cancellationToken = default);
 
   /// <summary>
   ///   Receive a <see cref="ResultOwnerUpdate" /> event when the OwnerId of a result changes in the given session
   /// </summary>
-  /// <param name="sessionId">The session id</param>
+  /// <param name="filter">Filter expression describing the results events to be returned</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   A <see cref="IAsyncEnumerable{ResultOwnerUpdate}" /> that holds the updates when they are available
   /// </returns>
-  Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
-                                                                  CancellationToken cancellationToken = default);
+  Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
+                                                                  CancellationToken              cancellationToken = default);
 
   /// <summary>
   ///   Receive a <see cref="ResultStatusUpdate" /> event when the Status of a result changes in the given session
   /// </summary>
-  /// <param name="sessionId">The session id</param>
+  /// <param name="filter">Filter expression describing the results events to be returned</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   A <see cref="IAsyncEnumerable{ResultStatusUpdate}" /> that holds the updates when they are available
   /// </returns>
-  Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
-                                                                    CancellationToken cancellationToken = default);
+  Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
+                                                                    CancellationToken              cancellationToken = default);
 }

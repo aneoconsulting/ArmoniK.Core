@@ -37,6 +37,7 @@ public class SimpleAgentHandler : IAgentHandler
                             ILogger           logger,
                             SessionData       sessionData,
                             TaskData          taskData,
+                            string            folder,
                             CancellationToken cancellationToken)
   {
     Agent = new SimpleAgent();

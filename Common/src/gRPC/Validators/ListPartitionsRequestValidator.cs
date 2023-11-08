@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using Armonik.Api.Grpc.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.Partitions;
 
 using FluentValidation;
 
@@ -39,10 +39,10 @@ public class ListPartitionsRequestValidator : AbstractValidator<ListPartitionsRe
       .NotNull()
       .GreaterThanOrEqualTo(1)
       .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.PageSize)}");
-    RuleFor(request => request.Filter)
+    RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
-      .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.Filter)}");
+      .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
       .NotEmpty()

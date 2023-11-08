@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +29,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -68,11 +70,19 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Common.gRPC.Services.Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
+             .AddHttpClient()
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
              .AddQueue(builder.Configuration,
@@ -93,7 +103,9 @@ public static class Program
       builder.Services.AddHealthChecks();
       builder.Services.AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>());
 
-      if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
+      var endpoint = builder.Configuration["OTLP:Uri"];
+      var token    = builder.Configuration["OTLP:AuthToken"];
+      if (!string.IsNullOrEmpty(endpoint))
       {
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
@@ -114,17 +126,26 @@ public static class Program
                .WithTracing(b =>
                             {
                               b.AddSource(ActivitySource.Name);
-                              b.AddAspNetCoreInstrumentation();
-                              b.AddZipkinExporter(options => options.Endpoint =
-                                                               new Uri(builder.Configuration["Zipkin:Uri"] ??
-                                                                       throw new InvalidOperationException("Zipkin uri should not be null")));
+                              b.AddOtlpExporter(options =>
+                                                {
+                                                  options.HttpClientFactory = () =>
+                                                                              {
+                                                                                var client = new HttpClient();
+                                                                                if (!string.IsNullOrEmpty(token))
+                                                                                {
+                                                                                  client.DefaultRequestHeaders.Add("Authorization",
+                                                                                                                   $"Bearer {token}");
+                                                                                }
+
+                                                                                return client;
+                                                                              };
+                                                  options.Endpoint = new Uri(endpoint);
+                                                });
                             });
       }
 
-      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
-                                                               logger.GetLogger());
+      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration);
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                      logger.GetLogger(),
                                                       out var authCache);
 
       builder.WebHost.UseKestrel(options =>
@@ -175,6 +196,8 @@ public static class Program
       app.MapGrpcService<GrpcEventsService>()
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcPartitionsService>()
+         .EnableGrpcWeb();
+      app.MapGrpcService<GrpcVersionsService>()
          .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",

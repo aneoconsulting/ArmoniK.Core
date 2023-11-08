@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -41,14 +42,14 @@ public class SimplePushQueueStorage : IPushQueueStorage
 
   public int MaxPriority { get; } = 10;
 
-  public Task PushMessagesAsync(IEnumerable<string> messages,
-                                string              partitionId,
-                                int                 priority          = 1,
-                                CancellationToken   cancellationToken = default)
+  /// <inheritdoc />
+  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                string                   partitionId,
+                                CancellationToken        cancellationToken = default)
   {
-    foreach (var message in messages)
+    foreach (var msgData in messages)
     {
-      Messages.Add(message);
+      Messages.Add(msgData.TaskId);
     }
 
     return Task.CompletedTask;

@@ -15,13 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -31,6 +33,7 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 internal class SimpleResultWatcher : IResultWatcher
 {
   public const string ResultId           = "MyResultId";
+  public const string SessionId          = "MySessionId";
   public const string OwnerPodId         = "MyOwnerPodId";
   public const string PreviousOwnerPodId = "MyPreviousOwnerPodId";
 
@@ -43,33 +46,33 @@ internal class SimpleResultWatcher : IResultWatcher
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public Task<IAsyncEnumerable<NewResult>> GetNewResults(string            sessionId,
-                                                         CancellationToken cancellationToken = default)
+  public Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
+                                                         CancellationToken              cancellationToken = default)
     => Task.FromResult(new[]
                        {
-                         new NewResult(sessionId,
+                         new NewResult(SessionId,
                                        ResultId,
                                        OwnerPodId,
                                        ResultStatus.Created),
                        }.ToAsyncEnumerable());
 
   /// <inheritdoc />
-  public Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(string            sessionId,
-                                                                         CancellationToken cancellationToken = default)
+  public Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
+                                                                         CancellationToken              cancellationToken = default)
     => Task.FromResult(new[]
                        {
-                         new ResultOwnerUpdate(sessionId,
+                         new ResultOwnerUpdate(SessionId,
                                                ResultId,
                                                PreviousOwnerPodId,
                                                OwnerPodId),
                        }.ToAsyncEnumerable());
 
   /// <inheritdoc />
-  public Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(string            sessionId,
-                                                                           CancellationToken cancellationToken = default)
+  public Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
+                                                                           CancellationToken              cancellationToken = default)
     => Task.FromResult(new[]
                        {
-                         new ResultStatusUpdate(sessionId,
+                         new ResultStatusUpdate(SessionId,
                                                 ResultId,
                                                 ResultStatus.Completed),
                        }.ToAsyncEnumerable());

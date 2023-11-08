@@ -22,7 +22,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -48,7 +48,7 @@ public class ObjectStorageTestBase
     await ObjectStorage!.Init(CancellationToken.None)
                         .ConfigureAwait(false);
 
-    var dataBytesList = new List<byte[]>
+    var dataBytesList = new List<ReadOnlyMemory<byte>>
                         {
                           Encoding.ASCII.GetBytes("AAAA"),
                           Encoding.ASCII.GetBytes("BBBB"),
@@ -59,7 +59,7 @@ public class ObjectStorageTestBase
                                           dataBytesList.ToAsyncEnumerable())
                         .ConfigureAwait(false);
 
-    dataBytesList = new List<byte[]>
+    dataBytesList = new List<ReadOnlyMemory<byte>>
                     {
                       Encoding.ASCII.GetBytes("AAAABBBB"),
                     };
@@ -67,7 +67,7 @@ public class ObjectStorageTestBase
                                          dataBytesList.ToAsyncEnumerable())
                        .ConfigureAwait(false);
 
-    dataBytesList = new List<byte[]>
+    dataBytesList = new List<ReadOnlyMemory<byte>>
                     {
                       Array.Empty<byte>(),
                     };
@@ -98,7 +98,7 @@ public class ObjectStorageTestBase
 
   /* Function be override so it returns the suitable instance
    * of TaskTable to the corresponding interface implementation */
-  public virtual void GetObjectStorageInstance()
+  protected virtual void GetObjectStorageInstance()
   {
   }
 
@@ -139,7 +139,7 @@ public class ObjectStorageTestBase
     if (RunTests)
     {
       await ObjectStorage!.AddOrUpdateAsync("dataKeyNoChunk",
-                                            AsyncEnumerable.Empty<byte[]>())
+                                            AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
                           .ConfigureAwait(false);
       var data = new List<byte>();
       await foreach (var chunk in ObjectStorage!.GetValuesAsync("dataKeyNoChunk")
@@ -169,10 +169,15 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage!.GetValuesAsync("dataKey2");
-      var data = await res.SingleAsync()
-                          .ConfigureAwait(false);
-      var str = Encoding.ASCII.GetString(data);
+      var res  = ObjectStorage!.GetValuesAsync("dataKey2");
+      var data = new List<byte>();
+      foreach (var item in await res.ToListAsync()
+                                    .ConfigureAwait(false))
+      {
+        data.AddRange(item);
+      }
+
+      var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
       Assert.IsTrue(str.SequenceEqual("AAAABBBB"));
     }
@@ -224,7 +229,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var listChunks = new List<byte[]>
+      var listChunks = new List<ReadOnlyMemory<byte>>
                        {
                          Encoding.ASCII.GetBytes("Armonik Payload chunk"),
                          Encoding.ASCII.GetBytes("Data 1"),
@@ -240,9 +245,8 @@ public class ObjectStorageTestBase
       var res = await ObjectStorage!.GetValuesAsync("dataKey")
                                     .ToListAsync()
                                     .ConfigureAwait(false);
-
       Assert.AreEqual(string.Join("",
-                                  listChunks.Select(chunk => Encoding.ASCII.GetString(chunk))),
+                                  listChunks.Select(chunk => Encoding.ASCII.GetString(chunk.ToArray()))),
                       string.Join("",
                                   res.Select(chunk => Encoding.ASCII.GetString(chunk))));
 

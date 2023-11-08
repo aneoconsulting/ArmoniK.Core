@@ -23,10 +23,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -73,50 +73,18 @@ public class ObjectStorage : IObjectStorage
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Redis not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
-
-  /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                   key,
-                                     IAsyncEnumerable<byte[]> valueChunks,
-                                     CancellationToken        cancellationToken = default)
-  {
-    var       storageNameKey = objectStorageName_ + key;
-    using var _              = logger_.LogFunction(storageNameKey);
-
-    var idx      = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
-      taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKeyWithIndex,
-                                                                      chunk)));
-      ++idx;
-    }
-
-    await PerformActionWithRetry(() => redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                                             idx))
-      .ConfigureAwait(false);
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
-  }
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("Redis not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && redis_.Multiplexer.IsConnected
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Redis not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,
@@ -132,13 +100,13 @@ public class ObjectStorage : IObjectStorage
                                            .ConfigureAwait(false))
     {
       var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
-      taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKeyWithIndex,
-                                                                      chunk)));
+      taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
+                                                               chunk)));
       ++idx;
     }
 
-    taskList.Add(PerformActionWithRetry(() => redis_.StringSetAsync(storageNameKey + "_count",
-                                                                    idx)));
+    taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
+                                                             idx)));
     await taskList.WhenAll()
                   .ConfigureAwait(false);
   }
@@ -236,5 +204,19 @@ public class ObjectStorage : IObjectStorage
 
     throw new RedisTimeoutException("A RedisTimeoutException occurred",
                                     CommandStatus.Unknown);
+  }
+
+  private Task<bool> SetObjectAsync(string     key,
+                                    RedisValue chunk)
+  {
+    if (redisOptions_.TtlTimeSpan <= TimeSpan.Zero || redisOptions_.TtlTimeSpan == TimeSpan.MaxValue)
+    {
+      return redis_.StringSetAsync(key,
+                                   chunk);
+    }
+
+    return redis_.StringSetAsync(key,
+                                 chunk,
+                                 redisOptions_.TtlTimeSpan);
   }
 }

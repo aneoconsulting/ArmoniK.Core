@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +27,7 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
@@ -66,6 +68,13 @@ public static class Program
 
     var logger = new LoggerInit(builder.Configuration);
 
+    logger.GetLogger()
+          .LogVersion(typeof(Program));
+    logger.GetLogger()
+          .LogVersion(typeof(Submitter));
+    logger.GetLogger()
+          .LogVersion(typeof(HealthCheck));
+
     try
     {
       var pollsterOptions = builder.Configuration.GetSection(Pollster.SettingSection)
@@ -87,6 +96,10 @@ public static class Program
              .AddLocalStorage(builder.Configuration,
                               logger.GetLogger())
              .AddHostedService<Worker>()
+             .AddHostedService<RunningTaskProcessor>()
+             .AddHostedService<PostProcessor>()
+             .AddSingleton<RunningTaskQueue>()
+             .AddSingleton<PostProcessingTaskQueue>()
              .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
@@ -98,7 +111,9 @@ public static class Program
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
 
-      if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
+      var endpoint = builder.Configuration["OTLP:Uri"];
+      var token    = builder.Configuration["OTLP:AuthToken"];
+      if (!string.IsNullOrEmpty(endpoint))
       {
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
@@ -119,11 +134,22 @@ public static class Program
                .WithTracing(b =>
                             {
                               b.AddSource(ActivitySource.Name);
-                              b.AddAspNetCoreInstrumentation();
                               b.AddMongoDBInstrumentation();
-                              b.AddZipkinExporter(options => options.Endpoint =
-                                                               new Uri(builder.Configuration["Zipkin:Uri"] ??
-                                                                       throw new InvalidOperationException("Zipkin uri should not be null")));
+                              b.AddOtlpExporter(options =>
+                                                {
+                                                  options.HttpClientFactory = () =>
+                                                                              {
+                                                                                var client = new HttpClient();
+                                                                                if (!string.IsNullOrEmpty(token))
+                                                                                {
+                                                                                  client.DefaultRequestHeaders.Add("Authorization",
+                                                                                                                   $"Bearer {token}");
+                                                                                }
+
+                                                                                return client;
+                                                                              };
+                                                  options.Endpoint = new Uri(endpoint);
+                                                });
                             });
       }
 
@@ -160,20 +186,13 @@ public static class Program
                                                    });
 
                          endpoints.MapGet("/taskprocessing",
-                                          () => Task.FromResult(app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                                   .TaskProcessing));
+                                          () => Task.FromResult(string.Join(",",
+                                                                            app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                                                               .TaskProcessing)));
 
                          endpoints.MapGet("/stopcancelledtask",
-                                          async () =>
-                                          {
-                                            var stopCancelledTask = app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                                       .StopCancelledTask;
-                                            if (stopCancelledTask != null)
-                                            {
-                                              await stopCancelledTask.Invoke()
-                                                                     .ConfigureAwait(false);
-                                            }
-                                          });
+                                          () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                                   .StopCancelledTask());
                        });
 
       var pushQueueStorage = app.Services.GetRequiredService<IPushQueueStorage>();

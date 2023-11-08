@@ -20,12 +20,13 @@ using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
-using static Google.Protobuf.WellKnownTypes.Timestamp;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 
 namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 
@@ -33,6 +34,7 @@ namespace ArmoniK.Core.Common.Tests.ListResultsRequestExt;
 public class ToResultFilterTest
 {
   private readonly Result result_ = new("SessionId",
+                                        "ResultId",
                                         "Name",
                                         "OwnerTaskId",
                                         ResultStatus.Created,
@@ -40,249 +42,90 @@ public class ToResultFilterTest
                                         DateTime.UtcNow,
                                         Array.Empty<byte>());
 
-  [Test]
-  public void FilterStatusShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            Status = ResultStatus.Created,
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
+  private static readonly ListResultsRequest.Types.Sort Sort = new()
+                                                               {
+                                                                 Field = new ResultField
+                                                                         {
+                                                                           ResultRawField = new ResultRawField
+                                                                                            {
+                                                                                              Field = ResultRawEnumField.CreatedAt,
+                                                                                            },
+                                                                         },
+                                                                 Direction = SortDirection.Asc,
+                                                               };
 
-    Assert.IsTrue(func.Invoke(result_));
+  private static Func<Result, bool> RequestToFunc(ListResultsRequest.Types.Sort sort,
+                                                  IEnumerable<FilterField>      filterFields)
+    => ListResultsHelper.CreateListResultsRequest(sort,
+                                                  filterFields)
+                        .Filters.ToResultFilter()
+                        .Compile();
+
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public void Filter(IEnumerable<FilterField> filterFields,
+                     bool                     expected)
+  {
+    var func = RequestToFunc(Sort,
+                             filterFields);
+
+    Assert.AreEqual(expected,
+                    func.Invoke(result_));
   }
 
-  [Test]
-  public void FilterStatusShouldFail()
+  public static IEnumerable<TestCaseData> TestCasesFilter()
   {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
+    TestCaseData CaseTrue(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            Status = ResultStatus.Aborted,
+                            filterField,
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
+                          true).SetArgDisplayNames(filterField.ToString());
 
-    Assert.IsFalse(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterSessionIdShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
+    TestCaseData CaseFalse(FilterField filterField)
+      => new TestCaseData(new[]
                           {
-                            SessionId = "SessionId",
+                            filterField,
                           },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
+                          false).SetArgDisplayNames(filterField.ToString());
 
-    Assert.IsTrue(func.Invoke(result_));
-  }
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                                          FilterStatusOperator.Equal,
+                                                                          Api.gRPC.V1.ResultStatus.Created));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                                           FilterStatusOperator.Equal,
+                                                                           Api.gRPC.V1.ResultStatus.Aborted));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterStatus(ResultRawEnumField.Status,
+                                                                          FilterStatusOperator.NotEqual,
+                                                                          Api.gRPC.V1.ResultStatus.Aborted));
 
-  [Test]
-  public void FilterSessionIdShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            SessionId = "BadSessionId",
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.SessionId,
+                                                                          FilterStringOperator.Equal,
+                                                                          "SessionId"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.SessionId,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadSessionId"));
 
-    Assert.IsFalse(func.Invoke(result_));
-  }
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.Name,
+                                                                          FilterStringOperator.Equal,
+                                                                          "Name"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.Name,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadName"));
 
-  [Test]
-  public void FilterNameShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            Name = "Name",
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
+                                                                          FilterStringOperator.Equal,
+                                                                          "OwnerTaskId"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadOwnerTaskId"));
 
-    Assert.IsTrue(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterNameShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            Name = "BadName",
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterOwnerTaskIdShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            OwnerTaskId = "OwnerTaskId",
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterOwnerTaskIdShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            OwnerTaskId = "BadOwnerTaskId",
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterCreatedBeforeShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(result_));
-  }
-
-  [Test]
-  public void FilterCreatedBeforeShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedBefore = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_ with
-                               {
-                                 CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                               }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldSucceed()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsTrue(func.Invoke(result_ with
-                              {
-                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-                              }));
-  }
-
-  [Test]
-  public void FilterCreatedAfterShouldFail()
-  {
-    var func = new ListResultsRequest
-               {
-                 Filter = new ListResultsRequest.Types.Filter
-                          {
-                            CreatedAfter = FromDateTime(DateTime.UtcNow),
-                          },
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field     = ListResultsRequest.Types.OrderByField.CreatedAt,
-                          Direction = ListResultsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Filter.ToResultFilter()
-                .Compile();
-
-    Assert.IsFalse(func.Invoke(result_));
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
+                                                                        FilterDateOperator.After,
+                                                                        DateTime.UtcNow));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
+                                                                         FilterDateOperator.Before,
+                                                                         DateTime.UtcNow));
   }
 }

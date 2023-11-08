@@ -17,6 +17,7 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Validators;
 
@@ -31,11 +32,17 @@ public class ListTasksRequestValidatorTest
   public void Setup()
     => validListTasksRequest_ = new ListTasksRequest
                                 {
-                                  Filter = new ListTasksRequest.Types.Filter(),
+                                  Filters = new Filters(),
                                   Sort = new ListTasksRequest.Types.Sort
                                          {
-                                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                           Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
+                                           Direction = SortDirection.Asc,
+                                           Field = new TaskField
+                                                   {
+                                                     TaskSummaryField = new TaskSummaryField
+                                                                        {
+                                                                          Field = TaskSummaryEnumField.CreatedAt,
+                                                                        },
+                                                   },
                                          },
                                   Page     = 0,
                                   PageSize = 1,
@@ -52,7 +59,7 @@ public class ListTasksRequestValidatorTest
   [Test]
   public void ListTasksRequestDefaultFilterShouldFail()
   {
-    validListTasksRequest_!.Filter = default;
+    validListTasksRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }
@@ -77,7 +84,7 @@ public class ListTasksRequestValidatorTest
   {
     validListTasksRequest_!.Sort = new ListTasksRequest.Types.Sort
                                    {
-                                     Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                                     Direction = SortDirection.Desc,
                                    };
     foreach (var error in validator_.Validate(validListTasksRequest_)
                                     .Errors)
@@ -94,7 +101,13 @@ public class ListTasksRequestValidatorTest
   {
     validListTasksRequest_!.Sort = new ListTasksRequest.Types.Sort
                                    {
-                                     Field = ListTasksRequest.Types.OrderByField.SessionId,
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
                                    };
     foreach (var error in validator_.Validate(validListTasksRequest_)
                                     .Errors)

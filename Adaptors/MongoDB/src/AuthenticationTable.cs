@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 
 using JetBrains.Annotations;
@@ -168,7 +168,7 @@ public class AuthenticationTable : IAuthenticationTable
     return (await GetIdentityFromPipelineAsync(sessionHandle,
                                                authCollection,
                                                GetAuthToIdentityPipeline(),
-                                               auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
+                                               auth => auth.Cn == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
                                                cancellationToken)
               .ConfigureAwait(false))?.ToUserAuthenticationResult();
   }

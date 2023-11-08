@@ -2,7 +2,15 @@
 
 # ArmoniK.Core
 
-## What is ArmoniK.Core?
+| Stable                                                                                                                                                                                                                                                       | Edge                                                                                                                                                                                                                                                       |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_pollingagent?color=fe5001&label=armonik_pollingagent&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_pollingagent)                                        | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_pollingagent?color=fe5001&label=armonik_pollingagent&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_pollingagent)                                        |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_metrics?color=fe5001&label=armonik_control_metrics&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control_metrics)                               | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_metrics?color=fe5001&label=armonik_control_metrics&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control_metrics)                               |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_partition_metrics?color=fe5001&label=armonik_control_partition_metrics&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control_partition_metrics) | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_partition_metrics?color=fe5001&label=armonik_control_partition_metrics&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control_partition_metrics) |
+| [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control?color=fe5001&label=armonik_control&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control)                                                       | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control?color=fe5001&label=armonik_control&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control)                                                       |
+
+
+ ## What is ArmoniK.Core?
 
 This project is part of the [ArmoniK](https://github.com/aneoconsulting/ArmoniK) project. ArmoniK.Core is responsible for the implementation of the services needed for ArmoniK which are defined in [ArmoniK.Api](https://github.com/aneoconsulting/ArmoniK.Api).
 
@@ -30,13 +38,13 @@ To deploy ArmoniK.Core locally, you need first to clone the repository [ArmoniK.
 just
 ```
 
-More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/content/1.concepts/1.local-deployment.md).
+More about local deployment, see [Local Deployment of ArmoniK.Core](./.docs/content/0.installation/1.local-deployment.md).
 
 ### Tests
 
 There are a number of tests that help to verify the successful installation of ArmoniK.Core. Some of them require a full deployment of ArmoniK.Core, for others a partial deployment is enough.
 
-More about tests, see [Tests of ArmoniK.Core](./.docs/content//1.concepts/2.tests.md).
+More about tests, see [Tests of ArmoniK.Core](./.docs/content/0.installation/2.tests.md).
 
 ## Contribution
 

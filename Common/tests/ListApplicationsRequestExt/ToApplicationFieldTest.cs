@@ -19,15 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
+using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
-
-using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListApplicationsRequestExt;
 
@@ -74,91 +72,50 @@ public class ToApplicationFieldTest
                                                        ""));
 
 
-  [Test]
-  public void InvokeShouldReturnName()
+  public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter(),
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Name,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.Fields.Single()
-                .ToApplicationField()
-                .Compile();
-
-    Assert.AreEqual(Options.ApplicationName,
-                    func.Invoke(taskData_));
+    yield return FieldToTestCase(ApplicationRawEnumField.Service,
+                                 Options.ApplicationService);
+    yield return FieldToTestCase(ApplicationRawEnumField.Name,
+                                 Options.ApplicationName);
+    yield return FieldToTestCase(ApplicationRawEnumField.Namespace,
+                                 Options.ApplicationNamespace);
+    yield return FieldToTestCase(ApplicationRawEnumField.Version,
+                                 Options.ApplicationVersion);
   }
 
+  private static TestCaseData FieldToTestCase(ApplicationRawEnumField field,
+                                              object?                 expected)
+    => new TestCaseData(new ApplicationRawField
+                        {
+                          Field = field,
+                        },
+                        expected).SetArgDisplayNames(field.ToString());
+
   [Test]
-  public void InvokeShouldReturnNamespace()
+  [TestCaseSource(nameof(TestCasesInvoke))]
+  public void InvokeShouldReturnExpectedValue(ApplicationRawField field,
+                                              object?             expected)
   {
     var func = new ListApplicationsRequest
                {
-                 Filter = new ListApplicationsRequest.Types.Filter(),
+                 Filters = new Filters(),
                  Sort = new ListApplicationsRequest.Types.Sort
                         {
                           Fields =
                           {
-                            ListApplicationsRequest.Types.OrderByField.Namespace,
+                            new ApplicationField
+                            {
+                              ApplicationField_ = field,
+                            },
                           },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                          Direction = SortDirection.Asc,
                         },
                }.Sort.Fields.Single()
-                .ToApplicationField()
+                .ToField()
                 .Compile();
 
-    Assert.AreEqual(Options.ApplicationNamespace,
-                    func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnVersion()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter(),
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Version,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.Fields.Single()
-                .ToApplicationField()
-                .Compile();
-
-    Assert.AreEqual(Options.ApplicationVersion,
-                    func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnService()
-  {
-    var func = new ListApplicationsRequest
-               {
-                 Filter = new ListApplicationsRequest.Types.Filter(),
-                 Sort = new ListApplicationsRequest.Types.Sort
-                        {
-                          Fields =
-                          {
-                            ListApplicationsRequest.Types.OrderByField.Service,
-                          },
-                          Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
-                        },
-               }.Sort.Fields.Single()
-                .ToApplicationField()
-                .Compile();
-
-    Assert.AreEqual(Options.ApplicationService,
+    Assert.AreEqual(expected,
                     func.Invoke(taskData_));
   }
 
@@ -167,15 +124,27 @@ public class ToApplicationFieldTest
   {
     var field = new ListApplicationsRequest
                 {
-                  Filter = new ListApplicationsRequest.Types.Filter(),
+                  Filters = new Filters(),
                   Sort = new ListApplicationsRequest.Types.Sort
                          {
                            Fields =
                            {
-                             ListApplicationsRequest.Types.OrderByField.Service,
-                             ListApplicationsRequest.Types.OrderByField.Name,
+                             new ApplicationField
+                             {
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Service,
+                                                   },
+                             },
+                             new ApplicationField
+                             {
+                               ApplicationField_ = new ApplicationRawField
+                                                   {
+                                                     Field = ApplicationRawEnumField.Name,
+                                                   },
+                             },
                            },
-                           Direction = ListApplicationsRequest.Types.OrderDirection.Asc,
+                           Direction = SortDirection.Asc,
                          },
                 }.Sort.Fields;
 
@@ -184,13 +153,13 @@ public class ToApplicationFieldTest
 
     Assert.AreEqual(Options.ApplicationService,
                     field[0]
-                      .ToApplicationField()
+                      .ToField()
                       .Compile()
                       .Invoke(taskData_));
 
     Assert.AreEqual(Options.ApplicationName,
                     field[1]
-                      .ToApplicationField()
+                      .ToField()
                       .Compile()
                       .Invoke(taskData_));
   }

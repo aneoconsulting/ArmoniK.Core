@@ -18,13 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -81,32 +80,18 @@ public class ObjectStorage : IObjectStorage
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Local storage not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && Directory.Exists(path_)
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("Local storage not initialized or folder has been deleted."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
-
-  /// <inheritdoc />
-  public Task AddOrUpdateAsync(string                   key,
-                               IAsyncEnumerable<byte[]> valueChunks,
-                               CancellationToken        cancellationToken = default)
-    => AddOrUpdateAsync(key,
-                        valueChunks.Select(chunk => (ReadOnlyMemory<byte>)chunk.AsMemory()),
-                        cancellationToken);
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("Local storage not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Directory.Exists(path_)
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Local storage not initialized or folder has been deleted.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string                                 key,

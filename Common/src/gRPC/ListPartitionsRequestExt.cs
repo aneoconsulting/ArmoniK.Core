@@ -16,81 +16,81 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Core.Common.Storage;
-
-using LinqKit;
 
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListPartitionsRequestExt
 {
-  public static Expression<Func<PartitionData, object?>> ToPartitionField(this ListPartitionsRequest.Types.Sort sort)
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="PartitionData" /> field
+  /// </summary>
+  /// <param name="sort">The gPRC message</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<PartitionData, object?>> ToField(this ListPartitionsRequest.Types.Sort sort)
+    => sort.Field.FieldCase switch
+       {
+         PartitionField.FieldOneofCase.PartitionRawField => sort.Field.PartitionRawField.Field.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
+
+  public static Expression<Func<PartitionData, object?>> ToField(this PartitionField taskField)
+    => taskField.FieldCase switch
+       {
+         PartitionField.FieldOneofCase.None              => throw new ArgumentOutOfRangeException(nameof(taskField)),
+         PartitionField.FieldOneofCase.PartitionRawField => taskField.PartitionRawField.Field.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(taskField)),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filters into an <see cref="Expression" /> that represents the filter conditions
+  /// </summary>
+  /// <param name="filters">The gPRC filters</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter conditions
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<PartitionData, bool>> ToPartitionFilter(this Filters filters)
   {
-    switch (sort.Field)
+    Expression<Func<PartitionData, bool>> expr = data => false;
+
+    if (filters.Or == null || !filters.Or.Any())
     {
-      case ListPartitionsRequest.Types.OrderByField.Id:
-        return partitionData => partitionData.PartitionId;
-
-      case ListPartitionsRequest.Types.OrderByField.ParentPartitionIds:
-        return partitionData => partitionData.ParentPartitionIds;
-
-      case ListPartitionsRequest.Types.OrderByField.PodReserved:
-        return partitionData => partitionData.PodReserved;
-
-      case ListPartitionsRequest.Types.OrderByField.PodMax:
-        return partitionData => partitionData.PodMax;
-
-      case ListPartitionsRequest.Types.OrderByField.PreemptionPercentage:
-        return partitionData => partitionData.PreemptionPercentage;
-
-      case ListPartitionsRequest.Types.OrderByField.Priority:
-        return partitionData => partitionData.Priority;
-
-      case ListPartitionsRequest.Types.OrderByField.Unspecified:
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-  }
-
-  public static Expression<Func<PartitionData, bool>> ToPartitionFilter(this ListPartitionsRequest.Types.Filter filter)
-  {
-    var predicate = PredicateBuilder.New<PartitionData>();
-    predicate = predicate.And(data => true);
-
-    if (!string.IsNullOrEmpty(filter.Id))
-    {
-      predicate = predicate.And(data => data.PartitionId == filter.Id);
+      return data => true;
     }
 
-    if (!string.IsNullOrEmpty(filter.ParentPartitionId))
+    foreach (var filtersAnd in filters.Or)
     {
-      predicate = predicate.And(data => data.ParentPartitionIds.Contains(filter.ParentPartitionId));
+      Expression<Func<PartitionData, bool>> exprAnd = data => true;
+      foreach (var filterField in filtersAnd.And)
+      {
+        exprAnd = filterField.ValueConditionCase switch
+                  {
+                    FilterField.ValueConditionOneofCase.FilterString => exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                         filterField.FilterString
+                                                                                                                                                    .Value)),
+                    FilterField.ValueConditionOneofCase.FilterNumber => exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                         filterField.FilterNumber
+                                                                                                                                                    .Value)),
+                    FilterField.ValueConditionOneofCase.FilterBoolean => exprAnd.ExpressionAnd(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                           filterField.FilterBoolean
+                                                                                                                                                      .Value)),
+                    FilterField.ValueConditionOneofCase.FilterArray => exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                                                                       filterField.FilterArray.Value)),
+                    _ => throw new ArgumentOutOfRangeException(nameof(filters)),
+                  };
+      }
+
+      expr = expr.ExpressionOr(exprAnd);
     }
 
-    if (filter.Priority > 0)
-    {
-      predicate = predicate.And(data => data.Priority == filter.Priority);
-    }
-
-    if (filter.PodMax > 0)
-    {
-      predicate = predicate.And(data => data.PodMax == filter.PodMax);
-    }
-
-    if (filter.PodReserved > 0)
-    {
-      predicate = predicate.And(data => data.PodReserved == filter.PodReserved);
-    }
-
-    if (filter.PreemptionPercentage > 0)
-    {
-      predicate = predicate.And(data => data.PreemptionPercentage == filter.PreemptionPercentage);
-    }
-
-    return predicate;
+    return expr;
   }
 }

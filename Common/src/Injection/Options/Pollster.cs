@@ -44,4 +44,20 @@ public class Pollster
   ///   Negative values disable the check
   /// </summary>
   public int MaxErrorAllowed { get; set; } = 5;
+
+  /// <summary>
+  ///   Timeout before releasing the current acquired task and acquiring a new one
+  ///   This happens in parallel of the execution of another task
+  /// </summary>
+  public TimeSpan TimeoutBeforeNextAcquisition { get; set; } = TimeSpan.FromSeconds(10);
+
+  /// <summary>
+  ///   Shared folder between Agent and Worker
+  /// </summary>
+  public string SharedCacheFolder { get; set; } = "/cache/shared";
+
+  /// <summary>
+  ///   Internal cache for data
+  /// </summary>
+  public string InternalCacheFolder { get; set; } = "/cache/internal";
 }

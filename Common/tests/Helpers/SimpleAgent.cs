@@ -35,26 +35,35 @@ public class SimpleAgent : IAgent
                                           CancellationToken                     cancellationToken)
     => Task.FromResult(new CreateTaskReply());
 
-  public Task GetCommonData(DataRequest                    request,
-                            IServerStreamWriter<DataReply> responseStream,
-                            CancellationToken              cancellationToken)
+  public Task<DataResponse> GetCommonData(DataRequest       request,
+                                          CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task GetDirectData(DataRequest                    request,
-                            IServerStreamWriter<DataReply> responseStream,
-                            CancellationToken              cancellationToken)
+  public Task<DataResponse> GetDirectData(DataRequest       request,
+                                          CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task GetResourceData(DataRequest                    request,
-                              IServerStreamWriter<DataReply> responseStream,
-                              CancellationToken              cancellationToken)
+  public Task<DataResponse> GetResourceData(DataRequest       request,
+                                            CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
-                                      CancellationToken          cancellationToken)
-    => Task.FromResult(new ResultReply());
+  public Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                   CancellationToken            cancellationToken)
+    => Task.FromResult(new CreateResultsMetaDataResponse());
+
+  public Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                               CancellationToken  cancellationToken)
+    => Task.FromResult(new SubmitTasksResponse());
+
+
+  public Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
+                                                   CancellationToken    cancellationToken)
+    => Task.FromResult(new CreateResultsResponse());
+
+  public Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
+                                                         CancellationToken       cancellationToken)
+    => Task.FromResult(new NotifyResultDataResponse());
 
   public void Dispose()
-  {
-  }
+    => GC.SuppressFinalize(this);
 }

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -26,7 +27,9 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
+using ArmoniK.Utils;
 
+using Grpc.Core;
 using Grpc.Net.Client;
 
 using Microsoft.AspNetCore.Authorization;
@@ -40,20 +43,21 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication      app_;
+  private readonly Mutex               channelMutex_ = new();
   private readonly ILoggerFactory      loggerFactory_;
-  private          GrpcChannel?        channel_;
+  private          ChannelBase?        channel_;
   private          HttpMessageHandler? handler_;
-  private          ILogger             logger_;
   private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
                                     List<MockIdentity>          authIdentities,
                                     AuthenticatorOptions        authOptions,
-                                    LogLevel                    loglevel,
-                                    Action<IServiceCollection>? serviceConfigurator = null)
+                                    LogLevel                    logLevel,
+                                    Action<IServiceCollection>? serviceConfigurator  = null,
+                                    bool                        validateGrpcRequests = true)
   {
     loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(logLevel));
 
     var builder = WebApplication.CreateBuilder();
 
@@ -66,23 +70,27 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddSingleton<IResultTable, SimpleResultTable>()
            .AddSingleton<ISessionTable, SimpleSessionTable>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
-           .AddLogging(build => build.SetMinimumLevel(loglevel)
+           .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
+           .AddHttpClient()
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                            _ =>
                                                            {
                                                            });
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
-           .AddAuthorization()
-           .ValidateGrpcRequests()
-           .AddGrpc();
+           .AddAuthorization();
+    if (validateGrpcRequests)
+    {
+      builder.Services.ValidateGrpcRequests();
+    }
+
+    builder.Services.AddGrpc();
 
     serviceConfigurator?.Invoke(builder.Services);
 
     builder.WebHost.UseTestServer(options => options.PreserveExecutionContext = true);
-    logger_ = loggerFactory_.CreateLogger("Testing apps");
-    app_    = builder.Build();
+    app_ = builder.Build();
     app_.UseRouting();
     app_.UseAuthentication();
     app_.UseAuthorization();
@@ -94,6 +102,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcAuthService>();
     app_.MapGrpcService<GrpcEventsService>();
     app_.MapGrpcService<GrpcPartitionsService>();
+    app_.MapGrpcService<GrpcVersionsService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
@@ -109,15 +118,16 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public void Dispose()
   {
     app_.DisposeAsync()
-        .GetAwaiter()
-        .GetResult();
+        .WaitSync();
     server_?.Dispose();
     server_ = null;
     handler_?.Dispose();
     handler_ = null;
-    channel_?.Dispose();
+    channel_?.ShutdownAsync()
+            .Wait();
     channel_ = null;
     loggerFactory_.Dispose();
+    channelMutex_?.Dispose();
     GC.SuppressFinalize(this);
   }
 
@@ -130,36 +140,29 @@ public class GrpcSubmitterServiceHelper : IDisposable
     handler_ ??= server_.CreateHandler();
   }
 
-  public async Task<GrpcChannel> CreateChannel()
+  public async Task<ChannelBase> CreateChannel()
   {
-    if (handler_ == null)
+    using (channelMutex_)
     {
-      await StartServer()
-        .ConfigureAwait(false);
+      if (handler_ == null)
+      {
+        await StartServer()
+          .ConfigureAwait(false);
+      }
     }
 
-    channel_ = GrpcChannel.ForAddress("http://localhost",
-                                      new GrpcChannelOptions
-                                      {
-                                        LoggerFactory = loggerFactory_,
-                                        HttpHandler   = handler_,
-                                      });
-
-    return channel_;
+    return GrpcChannel.ForAddress("http://localhost:9999",
+                                  new GrpcChannelOptions
+                                  {
+                                    LoggerFactory = loggerFactory_,
+                                    HttpHandler   = handler_,
+                                  });
+    ;
   }
 
-  public async Task DeleteChannel()
-  {
-    if (channel_ == null)
-    {
-      return;
-    }
-
-    await channel_.ShutdownAsync()
-                  .ConfigureAwait(false);
-    channel_.Dispose();
-    channel_ = null;
-  }
+  public static async Task DeleteChannel(ChannelBase channel)
+    => await channel.ShutdownAsync()
+                    .ConfigureAwait(false);
 
   public async Task StopServer()
   {

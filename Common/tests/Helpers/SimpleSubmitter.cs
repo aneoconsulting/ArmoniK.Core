@@ -28,9 +28,9 @@ using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskRequest = ArmoniK.Core.Common.Storage.TaskRequest;
+using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
@@ -64,24 +64,37 @@ public class SimpleSubmitter : ISubmitter
                        });
 
 
-  public async Task<(IEnumerable<TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                                      sessionId,
-                                                                                                       string                                      parentTaskId,
-                                                                                                       TaskOptions                                 options,
-                                                                                                       IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                                                       CancellationToken                           cancellationToken)
-    => (await taskRequests.Select(r => new TaskRequest(Guid.NewGuid()
-                                                           .ToString(),
-                                                       r.ExpectedOutputKeys,
-                                                       r.DataDependencies))
-                          .ToArrayAsync(cancellationToken)
-                          .ConfigureAwait(false), 1, "");
+  public async Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
+                                                                  string                        parentTaskId,
+                                                                  TaskOptions?                  options,
+                                                                  IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                  CancellationToken             cancellationToken)
+    => await taskRequests.Select(r =>
+                                 {
+                                   var id = Guid.NewGuid()
+                                                .ToString();
+                                   return new TaskCreationRequest(id,
+                                                                  id,
+                                                                  options ?? new TaskOptions(new Dictionary<string, string>(),
+                                                                                             TimeSpan.FromSeconds(1),
+                                                                                             5,
+                                                                                             1,
+                                                                                             "Partition",
+                                                                                             "Application",
+                                                                                             "Version",
+                                                                                             "Namespace",
+                                                                                             "Service",
+                                                                                             "Engine"),
+                                                                  r.ExpectedOutputKeys.ToList(),
+                                                                  r.DataDependencies.ToList());
+                                 })
+                         .ToArrayAsync(cancellationToken)
+                         .ConfigureAwait(false);
 
-  public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
-                                   int                      priority,
-                                   string                   partitionId,
-                                   string                   sessionId,
-                                   string                   parentTaskId,
-                                   CancellationToken        cancellationToken)
+  public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
+                                   string                           sessionId,
+                                   string                           parentTaskId,
+                                   CancellationToken                cancellationToken)
     => Task.CompletedTask;
 
   public Task<Configuration> GetServiceConfiguration(Empty             request,
@@ -100,12 +113,6 @@ public class SimpleSubmitter : ISubmitter
                                        CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
-  public Task CompleteTaskAsync(TaskData          taskData,
-                                bool              resubmit,
-                                Output            output,
-                                CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                           CancellationToken contextCancellationToken)
     => Task.FromResult(new AvailabilityReply
@@ -118,5 +125,11 @@ public class SimpleSubmitter : ISubmitter
                         string                                 key,
                         IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
                         CancellationToken                      cancellationToken)
+    => Task.CompletedTask;
+
+  public Task CompleteTaskAsync(TaskData          taskData,
+                                bool              resubmit,
+                                Output            output,
+                                CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 }

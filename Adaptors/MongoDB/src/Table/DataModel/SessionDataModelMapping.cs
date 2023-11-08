@@ -18,6 +18,7 @@
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
@@ -99,35 +100,16 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                           IMongoCollection<SessionData> collection)
+                                           IMongoCollection<SessionData> collection,
+                                           Options.MongoDB               options)
   {
-    var statusIndex       = Builders<SessionData>.IndexKeys.Hashed(model => model.Status);
-    var partitionIndex    = Builders<SessionData>.IndexKeys.Hashed(model => model.Options.PartitionId);
-    var creationIndex     = Builders<SessionData>.IndexKeys.Ascending(model => model.CreationDate);
-    var cancellationIndex = Builders<SessionData>.IndexKeys.Ascending(model => model.CancellationDate);
-
-    var indexModels = new CreateIndexModel<SessionData>[]
+    var indexModels = new[]
                       {
-                        new(statusIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(statusIndex),
-                            }),
-                        new(partitionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(partitionIndex),
-                            }),
-                        new(creationIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(creationIndex),
-                            }),
-                        new(cancellationIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(cancellationIndex),
-                            }),
+                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate,
+                                                                      expireAfter: options.DataRetention),
+                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.CancellationDate),
+                        IndexHelper.CreateHashedIndex<SessionData>(model => model.Status),
+                        IndexHelper.CreateHashedIndex<SessionData>(model => model.Options.PartitionId),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

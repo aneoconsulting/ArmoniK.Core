@@ -35,36 +35,39 @@ public static class ServicesPermissions
 
   public const string All = "*";
 
-  private static readonly ReadOnlyDictionary<Type, string> Type2NameMapping = new(new Dictionary<Type, string>
-                                                                                  {
-                                                                                    {
-                                                                                      typeof(GrpcSubmitterService), "Submitter"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcSessionsService), "Sessions"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcTasksService), "Tasks"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcResultsService), "Results"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcApplicationsService), "Applications"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcEventsService), "Events"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GeneralService), "General"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcAuthService), "Authentication"
-                                                                                    },
-                                                                                    {
-                                                                                      typeof(GrpcPartitionsService), "Partitions"
-                                                                                    },
-                                                                                  });
+  public static readonly ReadOnlyDictionary<Type, string> Type2NameMapping = new(new Dictionary<Type, string>
+                                                                                 {
+                                                                                   {
+                                                                                     typeof(GrpcSubmitterService), "Submitter"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcSessionsService), "Sessions"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcTasksService), "Tasks"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcResultsService), "Results"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcApplicationsService), "Applications"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcEventsService), "Events"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GeneralService), "General"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcAuthService), "Authentication"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcPartitionsService), "Partitions"
+                                                                                   },
+                                                                                   {
+                                                                                     typeof(GrpcVersionsService), "Versions"
+                                                                                   },
+                                                                                 });
 
   /// <summary>
   ///   Dictionary with the list of permissions for each service

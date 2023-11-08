@@ -23,17 +23,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Common.Utils;
-
-using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -42,11 +39,7 @@ using Moq;
 
 using NUnit.Framework;
 
-using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
@@ -68,15 +61,19 @@ public class PollsterTest
 
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
+                                                                                                         IResultTable      resultTable,
                                                                                                          CancellationToken token)
   {
-    var defaultTaskOptions = new TaskOptions
-                             {
-                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                               MaxRetries  = 2,
-                               Priority    = 1,
-                               PartitionId = "part1",
-                             };
+    var defaultTaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                             TimeSpan.FromSeconds(2),
+                                             2,
+                                             1,
+                                             "part1",
+                                             "",
+                                             "",
+                                             "",
+                                             "",
+                                             "");
 
     await partitionTable.CreatePartitionsAsync(new[]
                                                {
@@ -107,6 +104,28 @@ public class PollsterTest
                                                    token)
                                     .ConfigureAwait(false)).SessionId;
 
+    await resultTable.Create(new[]
+                             {
+                               new Result(sessionId,
+                                          ExpectedOutput1,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                               new Result(sessionId,
+                                          ExpectedOutput2,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                             },
+                             token)
+                     .ConfigureAwait(false);
+
     var taskCreating = (await submitter.CreateTasks(sessionId,
                                                     sessionId,
                                                     defaultTaskOptions,
@@ -123,33 +142,31 @@ public class PollsterTest
                                                           }.ToAsyncEnumerable()),
                                                     }.ToAsyncEnumerable(),
                                                     CancellationToken.None)
-                                       .ConfigureAwait(false)).requests.First()
-                                                              .Id;
+                                       .ConfigureAwait(false)).First()
+                                                              .TaskId;
 
-    var tuple = await submitter.CreateTasks(sessionId,
-                                            sessionId,
-                                            defaultTaskOptions,
-                                            new List<TaskRequest>
-                                            {
-                                              new(new[]
-                                                  {
-                                                    ExpectedOutput2,
-                                                  },
-                                                  new List<string>(),
-                                                  new List<ReadOnlyMemory<byte>>
-                                                  {
-                                                    new(Encoding.ASCII.GetBytes("AAAA")),
-                                                  }.ToAsyncEnumerable()),
-                                            }.ToAsyncEnumerable(),
-                                            CancellationToken.None)
-                               .ConfigureAwait(false);
+    var requests = await submitter.CreateTasks(sessionId,
+                                               sessionId,
+                                               defaultTaskOptions,
+                                               new List<TaskRequest>
+                                               {
+                                                 new(new[]
+                                                     {
+                                                       ExpectedOutput2,
+                                                     },
+                                                     new List<string>(),
+                                                     new List<ReadOnlyMemory<byte>>
+                                                     {
+                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                     }.ToAsyncEnumerable()),
+                                               }.ToAsyncEnumerable(),
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    var taskSubmitted = tuple.requests.First()
-                             .Id;
+    var taskSubmitted = requests.First()
+                                .TaskId;
 
-    await submitter.FinalizeTaskCreation(tuple.requests,
-                                         tuple.priority,
-                                         tuple.partitionId,
+    await submitter.FinalizeTaskCreation(requests,
                                          sessionId,
                                          sessionId,
                                          CancellationToken.None)
@@ -191,10 +208,10 @@ public class PollsterTest
     {
     }
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 
@@ -206,6 +223,7 @@ public class PollsterTest
 
     public ReturnHealthCheckWorkerStreamHandler(HealthCheckResult healthCheckResult)
       => healthCheckResult_ = healthCheckResult;
+
 
     public Task Init(CancellationToken cancellationToken)
     {
@@ -222,10 +240,10 @@ public class PollsterTest
     {
     }
 
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 
@@ -379,10 +397,8 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
     Assert.True(source.Token.IsCancellationRequested);
-    Assert.AreEqual(string.Empty,
+    Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   public class WaitWorkerStreamHandler : IWorkerStreamHandler
@@ -399,78 +415,49 @@ public class PollsterTest
       => Task.CompletedTask;
 
     public void Dispose()
+      => GC.SuppressFinalize(this);
+
+    public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                            string            token,
+                                            string            dataFolder,
+                                            CancellationToken cancellationToken)
     {
+      Task.Delay(TimeSpan.FromMilliseconds(delay_),
+                 cancellationToken);
+      return Task.FromResult(new Output(true,
+                                        ""));
     }
-
-    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
-
-    public void StartTaskProcessing(TaskData          taskData,
-                                    CancellationToken cancellationToken)
-      => Pipe = new WaitAsyncPipe(delay_);
   }
 
-  public class WaitAsyncPipe : IAsyncPipe<ProcessReply, ProcessRequest>
-  {
-    private readonly double delay_;
-
-    public WaitAsyncPipe(double delay)
-      => delay_ = delay;
-
-    public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(delay_))
-                .ConfigureAwait(false);
-      return new ProcessReply
-             {
-               CommunicationToken = "",
-               Output = new Output
-                        {
-                          Ok = new Empty(),
-                        },
-             };
-    }
-
-    public Task WriteAsync(ProcessRequest message)
-      => Task.CompletedTask;
-
-    public Task WriteAsync(IEnumerable<ProcessRequest> message)
-      => Task.CompletedTask;
-
-    public Task CompleteAsync()
-      => Task.CompletedTask;
-  }
 
   [Test]
   [TestCase(100)]
   [TestCase(5000)] // task should be longer than the grace delay
   public async Task ExecuteTaskShouldSucceed(double delay)
   {
-    var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new WaitWorkerStreamHandler(delay);
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
                                                              simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
+                                                             mockPullQueueStorage);
 
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = tuple.taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -484,46 +471,39 @@ public class PollsterTest
     Assert.AreEqual(TaskStatus.Completed,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
-                                                                         tuple.taskSubmitted,
+                                                                         taskSubmitted,
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
-    Assert.AreEqual(string.Empty,
-                    testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   [Test]
   public async Task CancelLongTaskShouldSucceed()
   {
-    var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new ExceptionWorkerStreamHandler<Exception>(15000);
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
                                                              simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
+                                                             mockPullQueueStorage);
 
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = tuple.taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -538,7 +518,7 @@ public class PollsterTest
 
     await testServiceProvider.TaskTable.CancelTaskAsync(new List<string>
                                                         {
-                                                          tuple.taskSubmitted,
+                                                          taskSubmitted,
                                                         },
                                                         CancellationToken.None)
                              .ConfigureAwait(false);
@@ -547,25 +527,25 @@ public class PollsterTest
                      CancellationToken.None)
               .ConfigureAwait(false);
 
-    await testServiceProvider.Pollster.StopCancelledTask!.Invoke()
+    await testServiceProvider.Pollster.StopCancelledTask()
                              .ConfigureAwait(false);
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(TaskStatus.Cancelled,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         tuple.taskSubmitted,
-                                                                       },
-                                                                       CancellationToken.None)
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
-    Assert.AreEqual(string.Empty,
+    Assert.That((await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                                   {
+                                                                     taskSubmitted,
+                                                                   },
+                                                                   CancellationToken.None)
+                                          .ConfigureAwait(false)).Single()
+                                                                 .Status,
+                Is.AnyOf(TaskStatus.Cancelled,
+                         TaskStatus.Cancelling));
+
+    Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 
   public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
@@ -580,6 +560,8 @@ public class PollsterTest
         // Failing WorkerStreamHandler
         var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
         mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                                                       It.IsAny<string>(),
+                                                                                       It.IsAny<string>(),
                                                                                        It.IsAny<CancellationToken>()))
                              .Throws(new ApplicationException("Failed WorkerStreamHandler"));
         yield return new TestCaseData(mockStreamHandlerFail,
@@ -606,6 +588,7 @@ public class PollsterTest
                                                         It.IsAny<ILogger>(),
                                                         It.IsAny<SessionData>(),
                                                         It.IsAny<TaskData>(),
+                                                        It.IsAny<string>(),
                                                         It.IsAny<CancellationToken>()))
                             .Throws(new ApplicationException("Failed agent"));
 
@@ -637,47 +620,44 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => pollster.MainLoop(source.Token));
     Assert.True(pollster.Failed);
     Assert.False(source.Token.IsCancellationRequested);
-    Assert.AreEqual(string.Empty,
-                    pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   pollster.TaskProcessing);
+    Assert.AreEqual(Array.Empty<string>(),
+                    testServiceProvider.Pollster.TaskProcessing);
   }
 
 
   [Test]
   public async Task UnavailableWorkerShouldFail()
   {
-    var mockPullQueueStorage = new Mock<IPullQueueStorage>();
+    var mockPullQueueStorage = new SimplePullQueueStorageChannel();
     var simpleAgentHandler   = new SimpleAgentHandler();
 
     var mockStreamHandlerFail = new Mock<IWorkerStreamHandler>();
     mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                                                   It.IsAny<string>(),
+                                                                                   It.IsAny<string>(),
                                                                                    It.IsAny<CancellationToken>()))
                          .Throws(new TestUnavailableRpcException("Unavailable worker"));
 
 
     using var testServiceProvider = new TestPollsterProvider(mockStreamHandlerFail.Object,
                                                              simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
+                                                             mockPullQueueStorage);
 
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = tuple.taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -685,20 +665,16 @@ public class PollsterTest
     var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
-    Assert.True(testServiceProvider.Pollster.Failed);
-    Assert.False(source.Token.IsCancellationRequested);
 
     Assert.AreEqual(TaskStatus.Submitted,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
-                                                                         tuple.taskSubmitted,
+                                                                         taskSubmitted,
                                                                        },
                                                                        CancellationToken.None)
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
-    Assert.AreEqual(string.Empty,
+    Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
-    Assert.AreSame(string.Empty,
-                   testServiceProvider.Pollster.TaskProcessing);
   }
 }

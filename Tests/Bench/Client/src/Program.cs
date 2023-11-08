@@ -16,22 +16,26 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Client;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
-
-using Armonik.Api.Grpc.V1.Partitions;
-
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Tests.Client;
 using ArmoniK.Samples.Bench.Client.Options;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -40,37 +44,17 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 
 using Serilog;
 using Serilog.Formatting.Compact;
 
+using Empty = ArmoniK.Api.gRPC.V1.Empty;
+using FilterField = ArmoniK.Api.gRPC.V1.Partitions.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Partitions.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Partitions.FiltersAnd;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Samples.Bench.Client;
-
-/// <summary>
-///   Policy for creating a <see cref="ChannelBase" /> for the <see cref="ObjectPool" />
-/// </summary>
-internal sealed class GrpcChannelObjectPolicy : IPooledObjectPolicy<ChannelBase>
-{
-  private readonly GrpcClient options_;
-
-  /// <summary>
-  ///   Initializes a Policy for <see cref="ChannelBase" />
-  /// </summary>
-  /// <param name="options">Options for creating a GrpcChannel</param>
-  public GrpcChannelObjectPolicy(GrpcClient options)
-    => options_ = options;
-
-  /// <inheritdoc />
-  public ChannelBase Create()
-    => GrpcChannelFactory.CreateChannel(options_);
-
-  /// <inheritdoc />
-  public bool Return(ChannelBase obj)
-    => true;
-}
 
 internal static class Program
 {
@@ -97,72 +81,182 @@ internal static class Program
                           benchOptions);
     using var _ = logger.BeginPropertyScope(("@benchOptions", benchOptions));
 
-    var channel          = GrpcChannelFactory.CreateChannel(options);
-    var partitionsClient = new Partitions.PartitionsClient(channel);
+    var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options!));
 
-    var channelPool = new DefaultObjectPool<ChannelBase>(new GrpcChannelObjectPolicy(options));
-
-    var partitions = await partitionsClient.ListPartitionsAsync(new ListPartitionsRequest
-                                                                {
-                                                                  Filter = new ListPartitionsRequest.Types.Filter
-                                                                           {
-                                                                             Id                   = "",
-                                                                             ParentPartitionId    = "",
-                                                                             PodMax               = 0,
-                                                                             PodReserved          = 0,
-                                                                             PreemptionPercentage = 0,
-                                                                             Priority             = 0,
-                                                                           },
-                                                                  Sort = new ListPartitionsRequest.Types.Sort
-                                                                         {
-                                                                           Direction = ListPartitionsRequest.Types.OrderDirection.Desc,
-                                                                           Field     = ListPartitionsRequest.Types.OrderByField.Id,
-                                                                         },
-                                                                  PageSize = 10,
-                                                                  Page     = 0,
-                                                                });
+    // Get List of partitions for logging purpose
+    var partitions = await channelPool.WithInstanceAsync(async channel =>
+                                                         {
+                                                           var client = new Partitions.PartitionsClient(channel);
+                                                           var req = new ListPartitionsRequest
+                                                                     {
+                                                                       Filters = new Filters
+                                                                                 {
+                                                                                   Or =
+                                                                                   {
+                                                                                     new FiltersAnd
+                                                                                     {
+                                                                                       And =
+                                                                                       {
+                                                                                         new FilterField
+                                                                                         {
+                                                                                           Field = new PartitionField
+                                                                                                   {
+                                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                                         {
+                                                                                                                           Field = PartitionRawEnumField.Id,
+                                                                                                                         },
+                                                                                                   },
+                                                                                           FilterString = new FilterString
+                                                                                                          {
+                                                                                                            Operator = FilterStringOperator.Equal,
+                                                                                                            Value    = "",
+                                                                                                          },
+                                                                                         },
+                                                                                         new FilterField
+                                                                                         {
+                                                                                           Field = new PartitionField
+                                                                                                   {
+                                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                                         {
+                                                                                                                           Field = PartitionRawEnumField
+                                                                                                                             .ParentPartitionIds,
+                                                                                                                         },
+                                                                                                   },
+                                                                                           FilterArray = new FilterArray
+                                                                                                         {
+                                                                                                           Operator = FilterArrayOperator.Contains,
+                                                                                                           Value    = "",
+                                                                                                         },
+                                                                                         },
+                                                                                         new FilterField
+                                                                                         {
+                                                                                           Field = new PartitionField
+                                                                                                   {
+                                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                                         {
+                                                                                                                           Field = PartitionRawEnumField.PodMax,
+                                                                                                                         },
+                                                                                                   },
+                                                                                           FilterNumber = new FilterNumber
+                                                                                                          {
+                                                                                                            Operator = FilterNumberOperator.Equal,
+                                                                                                            Value    = 0,
+                                                                                                          },
+                                                                                         },
+                                                                                         new FilterField
+                                                                                         {
+                                                                                           Field = new PartitionField
+                                                                                                   {
+                                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                                         {
+                                                                                                                           Field = PartitionRawEnumField.PodReserved,
+                                                                                                                         },
+                                                                                                   },
+                                                                                           FilterNumber = new FilterNumber
+                                                                                                          {
+                                                                                                            Operator = FilterNumberOperator.Equal,
+                                                                                                            Value    = 0,
+                                                                                                          },
+                                                                                         },
+                                                                                         new FilterField
+                                                                                         {
+                                                                                           Field = new PartitionField
+                                                                                                   {
+                                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                                         {
+                                                                                                                           Field = PartitionRawEnumField
+                                                                                                                             .PreemptionPercentage,
+                                                                                                                         },
+                                                                                                   },
+                                                                                           FilterNumber = new FilterNumber
+                                                                                                          {
+                                                                                                            Operator = FilterNumberOperator.Equal,
+                                                                                                            Value    = 0,
+                                                                                                          },
+                                                                                         },
+                                                                                         new FilterField
+                                                                                         {
+                                                                                           Field = new PartitionField
+                                                                                                   {
+                                                                                                     PartitionRawField = new PartitionRawField
+                                                                                                                         {
+                                                                                                                           Field = PartitionRawEnumField.Priority,
+                                                                                                                         },
+                                                                                                   },
+                                                                                           FilterNumber = new FilterNumber
+                                                                                                          {
+                                                                                                            Operator = FilterNumberOperator.Equal,
+                                                                                                            Value    = 0,
+                                                                                                          },
+                                                                                         },
+                                                                                       },
+                                                                                     },
+                                                                                   },
+                                                                                 },
+                                                                       Sort = new ListPartitionsRequest.Types.Sort
+                                                                              {
+                                                                                Direction = SortDirection.Desc,
+                                                                                Field = new PartitionField
+                                                                                        {
+                                                                                          PartitionRawField = new PartitionRawField
+                                                                                                              {
+                                                                                                                Field = PartitionRawEnumField.Id,
+                                                                                                              },
+                                                                                        },
+                                                                              },
+                                                                       PageSize = 10,
+                                                                       Page     = 0,
+                                                                     };
+                                                           return await client.ListPartitionsAsync(req);
+                                                         })
+                                      .ConfigureAwait(false);
 
     logger.LogInformation("{@partitions}",
                           partitions);
 
-    var submitterClient = new Submitter.SubmitterClient(channel);
 
-    var createSessionRequest = new CreateSessionRequest
-                               {
-                                 DefaultTaskOption = new TaskOptions
-                                                     {
-                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                                                       MaxRetries  = 2,
-                                                       Priority    = 1,
-                                                       PartitionId = benchOptions.Partition,
-                                                       Options =
-                                                       {
-                                                         {
-                                                           "TaskDurationMs", benchOptions.TaskDurationMs.ToString()
-                                                         },
-                                                         {
-                                                           "TaskError", benchOptions.TaskError
-                                                         },
-                                                         {
-                                                           "TaskRpcException", benchOptions.TaskRpcException
-                                                         },
-                                                         {
-                                                           "PayloadSize", benchOptions.PayloadSize.ToString()
-                                                         },
-                                                         {
-                                                           "ResultSize", benchOptions.ResultSize.ToString()
-                                                         },
-                                                       },
-                                                     },
-                                 PartitionIds =
-                                 {
-                                   benchOptions.Partition,
-                                 },
-                               };
+    // Create a new session
+    var start = Stopwatch.GetTimestamp();
+    var createSessionReply = await channelPool.WithInstanceAsync(async channel =>
+                                                                 {
+                                                                   var client = new Sessions.SessionsClient(channel);
 
-    var start              = Stopwatch.GetTimestamp();
-    var createSessionReply = submitterClient.CreateSession(createSessionRequest);
-    var sessionCreated     = Stopwatch.GetTimestamp();
+                                                                   var req = new CreateSessionRequest
+                                                                             {
+                                                                               DefaultTaskOption = new TaskOptions
+                                                                                                   {
+                                                                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                                                                                     MaxRetries  = 2,
+                                                                                                     Priority    = 1,
+                                                                                                     PartitionId = benchOptions.Partition,
+                                                                                                     Options =
+                                                                                                     {
+                                                                                                       {
+                                                                                                         "TaskDurationMs", benchOptions.TaskDurationMs.ToString()
+                                                                                                       },
+                                                                                                       {
+                                                                                                         "TaskError", benchOptions.TaskError
+                                                                                                       },
+                                                                                                       {
+                                                                                                         "TaskRpcException", benchOptions.TaskRpcException
+                                                                                                       },
+                                                                                                       {
+                                                                                                         "PayloadSize", benchOptions.PayloadSize.ToString()
+                                                                                                       },
+                                                                                                       {
+                                                                                                         "ResultSize", benchOptions.ResultSize.ToString()
+                                                                                                       },
+                                                                                                     },
+                                                                                                   },
+                                                                               PartitionIds =
+                                                                               {
+                                                                                 benchOptions.Partition,
+                                                                               },
+                                                                             };
+                                                                   return await client.CreateSessionAsync(req);
+                                                                 })
+                                              .ConfigureAwait(false);
+    var sessionCreated = Stopwatch.GetTimestamp();
     logger.LogInformation("Session Id : {sessionId}",
                           createSessionReply.SessionId);
 
@@ -172,6 +266,8 @@ internal static class Program
     {
       eventTask = Task.Factory.StartNew(async () =>
                                         {
+                                          await using var channel = await channelPool.GetAsync(cts.Token)
+                                                                                     .ConfigureAwait(false);
                                           var eventsClient = new Events.EventsClient(channel);
 
                                           using var eventsCall = eventsClient.GetEvents(new EventSubscriptionRequest
@@ -194,133 +290,224 @@ internal static class Program
                                args) =>
                               {
                                 args.Cancel = true;
-                                submitterClient.CancelSession(new Session
-                                                              {
-                                                                Id = createSessionReply.SessionId,
-                                                              });
+                                using var channel = channelPool.Get();
+                                var       client  = new Sessions.SessionsClient(channel);
+                                client.CancelSession(new CancelSessionRequest
+                                                     {
+                                                       SessionId = createSessionReply.SessionId,
+                                                     });
+
                                 Environment.Exit(0);
                               };
 
-    var results = Enumerable.Range(0,
-                                   benchOptions.NTasks)
-                            .Select(i => Guid.NewGuid() + "root" + i)
-                            .ToList();
-    var rnd = new Random();
+    var resultChunk = await Enumerable.Range(0,
+                                             benchOptions.NTasks)
+                                      .Chunk(benchOptions.BatchSize)
+                                      .ParallelSelect(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
+                                                      async req =>
+                                                      {
+                                                        var rnd = new Random();
+                                                        await using var channel = await channelPool.GetAsync(CancellationToken.None)
+                                                                                                   .ConfigureAwait(false);
 
-    foreach (var chunk in results.Chunk(benchOptions.BatchSize))
-    {
-      var createTaskReply = await submitterClient.CreateTasksAsync(createSessionReply.SessionId,
-                                                                   null,
-                                                                   chunk.Select(resultId =>
-                                                                                {
-                                                                                  var dataBytes = new byte[benchOptions.PayloadSize * 1024];
-                                                                                  rnd.NextBytes(dataBytes);
-                                                                                  return new TaskRequest
-                                                                                         {
-                                                                                           ExpectedOutputKeys =
-                                                                                           {
-                                                                                             resultId,
-                                                                                           },
-                                                                                           Payload = UnsafeByteOperations.UnsafeWrap(dataBytes),
-                                                                                         };
-                                                                                }))
-                                                 .ConfigureAwait(false);
+                                                        var resultClient = new Results.ResultsClient(channel);
 
-      if (logger.IsEnabled(LogLevel.Debug))
-      {
-        foreach (var status in createTaskReply.CreationStatusList.CreationStatuses)
-        {
-          logger.LogDebug("task created {taskId}",
-                          status.TaskInfo.TaskId);
-        }
-      }
-    }
+                                                        var resultReq = new CreateResultsMetaDataRequest
+                                                                        {
+                                                                          SessionId = createSessionReply.SessionId,
+                                                                          Results =
+                                                                          {
+                                                                            req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                            {
+                                                                                              Name = $"result {i}",
+                                                                                            }),
+                                                                            benchOptions.PayloadSize > benchOptions.SwitchToStreamSize
+                                                                              ? req.Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                                {
+                                                                                                  Name = $"payload {i}",
+                                                                                                })
+                                                                              : Array.Empty<CreateResultsMetaDataRequest.Types.ResultCreate>(),
+                                                                          },
+                                                                        };
+                                                        var resultResp = await resultClient.CreateResultsMetaDataAsync(resultReq);
+                                                        var resultIds = resultResp.Results.Where(raw => raw.Name.StartsWith("result"))
+                                                                                  .Select(raw => raw.ResultId)
+                                                                                  .AsICollection();
+
+                                                        ICollection<string> payloadIds;
+
+                                                        if (benchOptions.PayloadSize > benchOptions.SwitchToStreamSize)
+                                                        {
+                                                          var conf = await resultClient.GetServiceConfigurationAsync(new Empty());
+
+                                                          payloadIds = resultResp.Results.Where(raw => raw.Name.StartsWith("payload"))
+                                                                                 .Select(raw => raw.ResultId)
+                                                                                 .AsICollection();
+
+                                                          foreach (var id in payloadIds)
+                                                          {
+                                                            var stream = resultClient.UploadResultData();
+
+                                                            await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                                                                  {
+                                                                                                    Id = new UploadResultDataRequest.Types.ResultIdentifier
+                                                                                                         {
+                                                                                                           ResultId  = id,
+                                                                                                           SessionId = createSessionReply.SessionId,
+                                                                                                         },
+                                                                                                  },
+                                                                                                  CancellationToken.None)
+                                                                        .ConfigureAwait(false);
+
+                                                            var s = 0;
+                                                            while (s < benchOptions.PayloadSize * 1024)
+                                                            {
+                                                              var chunkSize = Math.Min(conf.DataChunkMaxSize,
+                                                                                       benchOptions.PayloadSize * 1024 - s);
+
+                                                              var dataBytes = new byte [chunkSize];
+                                                              rnd.NextBytes(dataBytes);
+
+                                                              await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                                                                    {
+                                                                                                      DataChunk = UnsafeByteOperations.UnsafeWrap(dataBytes),
+                                                                                                    },
+                                                                                                    CancellationToken.None)
+                                                                          .ConfigureAwait(false);
+
+                                                              s += chunkSize;
+                                                            }
+
+                                                            await stream.RequestStream.CompleteAsync()
+                                                                        .ConfigureAwait(false);
+
+                                                            await stream.ResponseAsync.ConfigureAwait(false);
+                                                          }
+                                                        }
+                                                        else
+                                                        {
+                                                          payloadIds = (await resultClient.CreateResultsAsync(new CreateResultsRequest
+                                                                                                              {
+                                                                                                                SessionId = createSessionReply.SessionId,
+                                                                                                                Results =
+                                                                                                                {
+                                                                                                                  resultIds.Select((_,
+                                                                                                                                    i) =>
+                                                                                                                                   {
+                                                                                                                                     var dataBytes =
+                                                                                                                                       new byte
+                                                                                                                                       [benchOptions.PayloadSize *
+                                                                                                                                        1024];
+                                                                                                                                     rnd.NextBytes(dataBytes);
+                                                                                                                                     return new CreateResultsRequest.
+                                                                                                                                            Types.ResultCreate
+                                                                                                                                            {
+                                                                                                                                              Data = UnsafeByteOperations
+                                                                                                                                                .UnsafeWrap(dataBytes),
+                                                                                                                                              Name = $"payload {i}",
+                                                                                                                                            };
+                                                                                                                                   }),
+                                                                                                                },
+                                                                                                              })).Results.Select(raw => raw.ResultId)
+                                                                                                                 .AsICollection();
+                                                        }
+
+                                                        var tasksClient = new Tasks.TasksClient(channel);
+                                                        var submitResponse = await tasksClient.SubmitTasksAsync(new SubmitTasksRequest
+                                                                                                                {
+                                                                                                                  SessionId = createSessionReply.SessionId,
+                                                                                                                  TaskCreations =
+                                                                                                                  {
+                                                                                                                    resultIds.Select((_,
+                                                                                                                                      i) => new SubmitTasksRequest.Types.
+                                                                                                                                            TaskCreation
+                                                                                                                                            {
+                                                                                                                                              PayloadId = payloadIds
+                                                                                                                                                .ElementAt(i),
+                                                                                                                                              ExpectedOutputKeys =
+                                                                                                                                              {
+                                                                                                                                                resultIds.ElementAt(i),
+                                                                                                                                              },
+                                                                                                                                            }),
+                                                                                                                  },
+                                                                                                                });
+
+
+                                                        if (logger.IsEnabled(LogLevel.Debug))
+                                                        {
+                                                          foreach (var info in submitResponse.TaskInfos)
+                                                          {
+                                                            logger.LogDebug("task created {taskId}",
+                                                                            info.TaskId);
+                                                          }
+                                                        }
+
+                                                        return resultIds;
+                                                      })
+                                      .ToListAsync(CancellationToken.None)
+                                      .ConfigureAwait(false);
+    var results = resultChunk.SelectMany(x => x)
+                             .ToList();
 
     var taskCreated = Stopwatch.GetTimestamp();
 
-    foreach (var resultId in results)
-    {
-      var resultRequest = new ResultRequest
-                          {
-                            ResultId = resultId,
-                            Session  = createSessionReply.SessionId,
-                          };
-
-      var availabilityReply = submitterClient.WaitForAvailability(resultRequest);
-
-      switch (availabilityReply.TypeCase)
-      {
-        case AvailabilityReply.TypeOneofCase.None:
-          throw new Exception("Issue with Server !");
-        case AvailabilityReply.TypeOneofCase.Ok:
-          break;
-        case AvailabilityReply.TypeOneofCase.Error:
-          throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
-        case AvailabilityReply.TypeOneofCase.NotCompletedTask:
-          throw new Exception($"Task not completed - result id {resultId}");
-        default:
-          throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
-      }
-    }
+    await channelPool.WithInstanceAsync(async channel => await channel.WaitForResultsAsync(createSessionReply.SessionId,
+                                                                                           results,
+                                                                                           CancellationToken.None)
+                                                                      .ConfigureAwait(false),
+                                        CancellationToken.None)
+                     .ConfigureAwait(false);
 
     var resultsAvailable = Stopwatch.GetTimestamp();
 
     var countRes = 0;
 
-    results.AsParallel()
-           .WithDegreeOfParallelism(benchOptions.DegreeOfParallelism)
-           .ForAll(resultId =>
-                   {
-                     for (var i = 0; i < benchOptions.MaxRetries; i++)
-                     {
-                       var localChannel = channelPool.Get();
-                       try
-                       {
-                         var resultRequest = new ResultRequest
-                                             {
-                                               ResultId = resultId,
-                                               Session  = createSessionReply.SessionId,
-                                             };
+    await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
+                                  async resultId =>
+                                  {
+                                    for (var i = 0; i < benchOptions.MaxRetries; i++)
+                                    {
+                                      await using var channel = await channelPool.GetAsync(CancellationToken.None)
+                                                                                 .ConfigureAwait(false);
+                                      try
+                                      {
+                                        var client = new Results.ResultsClient(channel);
 
-                         var client = new Submitter.SubmitterClient(localChannel);
+                                        var result = await client.DownloadResultData(createSessionReply.SessionId,
+                                                                                     resultId,
+                                                                                     CancellationToken.None)
+                                                                 .ConfigureAwait(false);
 
-                         var result = client.GetResultAsync(resultRequest,
-                                                            CancellationToken.None)
-                                            .Result;
+                                        // A good a way to process results would be to process them individually as soon as they are
+                                        // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
+                                        // be careful to not overload your memory. If you need to retrieve a lot of results to apply
+                                        // post-processing on, consider doing so with sub-tasking so that the client-side application
+                                        // has to do less work.
 
-                         // A good a way to process results would be to process them individually as soon as they are
-                         // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
-                         // be careful to not overload your memory. If you need to retrieve a lot of results to apply
-                         // post-processing on, consider doing so with sub-tasking so that the client-side application
-                         // has to do less work.
+                                        if (result.Length != benchOptions.ResultSize * 1024)
+                                        {
+                                          logger.LogInformation("Received length {received}, expected length {expected}",
+                                                                result.Length,
+                                                                benchOptions.ResultSize * 1024);
+                                          throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
+                                        }
 
-                         if (result.Length != benchOptions.ResultSize * 1024)
-                         {
-                           logger.LogInformation("Received length {received}, expected length {expected}",
-                                                 result.Length,
-                                                 benchOptions.ResultSize * 1024);
-                           throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
-                         }
+                                        Interlocked.Increment(ref countRes);
+                                        // If successful, return
+                                        return;
+                                      }
+                                      catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+                                      {
+                                        logger.LogWarning(e,
+                                                          "Error during result retrieving, retrying to get {resultId}",
+                                                          resultId);
+                                      }
+                                    }
 
-                         Interlocked.Increment(ref countRes);
-                         // If successful, return
-                         return;
-                       }
-                       catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
-                       {
-                         logger.LogWarning(e,
-                                           "Error during result retrieving, retrying to get {resultId}",
-                                           resultId);
-                       }
-                       finally
-                       {
-                         channelPool.Return(localChannel);
-                       }
-                     }
-
-                     // in this case, retries are all made so we need to tell that it did not work
-                     throw new InvalidOperationException("Too many retries");
-                   });
+                                    // in this case, retries are all made so we need to tell that it did not work
+                                    throw new InvalidOperationException("Too many retries");
+                                  })
+                 .ConfigureAwait(false);
 
     logger.LogInformation("Results retrieved {number}",
                           countRes);
@@ -331,19 +518,49 @@ internal static class Program
 
     var resultsReceived = Stopwatch.GetTimestamp();
 
-    var countAll = await submitterClient.CountTasksAsync(new TaskFilter
-                                                         {
-                                                           Session = new TaskFilter.Types.IdsRequest
-                                                                     {
-                                                                       Ids =
-                                                                       {
-                                                                         createSessionReply.SessionId,
-                                                                       },
-                                                                     },
-                                                         });
+    var countAll = await channelPool.WithInstanceAsync(async channel =>
+                                                       {
+                                                         var client = new Tasks.TasksClient(channel);
+
+                                                         return await client.CountTasksByStatusAsync(new CountTasksByStatusRequest
+                                                                                                     {
+                                                                                                       Filters = new Api.gRPC.V1.Tasks.Filters
+                                                                                                                 {
+                                                                                                                   Or =
+                                                                                                                   {
+                                                                                                                     new Api.gRPC.V1.Tasks.FiltersAnd
+                                                                                                                     {
+                                                                                                                       And =
+                                                                                                                       {
+                                                                                                                         new Api.gRPC.V1.Tasks.FilterField
+                                                                                                                         {
+                                                                                                                           FilterString = new FilterString
+                                                                                                                                          {
+                                                                                                                                            Operator =
+                                                                                                                                              FilterStringOperator.Equal,
+                                                                                                                                            Value = createSessionReply
+                                                                                                                                              .SessionId,
+                                                                                                                                          },
+                                                                                                                           Field = new TaskField
+                                                                                                                                   {
+                                                                                                                                     TaskSummaryField =
+                                                                                                                                       new TaskSummaryField
+                                                                                                                                       {
+                                                                                                                                         Field = TaskSummaryEnumField
+                                                                                                                                           .SessionId,
+                                                                                                                                       },
+                                                                                                                                   },
+                                                                                                                         },
+                                                                                                                       },
+                                                                                                                     },
+                                                                                                                   },
+                                                                                                                 },
+                                                                                                     });
+                                                       },
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false);
 
     var countFinished = Stopwatch.GetTimestamp();
-
 
     var stats = new ExecutionStats
                 {
@@ -352,20 +569,22 @@ internal static class Program
                   ResultRetrievingTime = TimeSpan.FromTicks((resultsReceived  - resultsAvailable) / 100),
                   TasksExecutionTime   = TimeSpan.FromTicks((resultsAvailable - taskCreated)      / 100),
                   CountExecutionTime   = TimeSpan.FromTicks((countFinished    - resultsReceived)  / 100),
-                  TotalTasks           = countAll.Values.Sum(count => count.Count),
-                  CompletedTasks = countAll.Values.Where(count => count.Status == TaskStatus.Completed)
+                  TotalTasks           = countAll.Status.Sum(count => count.Count),
+                  CompletedTasks = countAll.Status.Where(count => count.Status == TaskStatus.Completed)
                                            .Sum(count => count.Count),
-                  ErrorTasks = countAll.Values.Where(count => count.Status == TaskStatus.Error)
+                  ErrorTasks = countAll.Status.Where(count => count.Status == TaskStatus.Error)
                                        .Sum(count => count.Count),
-                  CancelledTasks = countAll.Values.Where(count => count.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
+                  CancelledTasks = countAll.Status.Where(count => count.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
                                            .Sum(count => count.Count),
                 };
     logger.LogInformation("executions stats {@stats}",
                           stats);
 
-    await channel.LogStatsFromSessionAsync(createSessionReply.SessionId,
-                                           logger)
-                 .ConfigureAwait(false);
+    await channelPool.WithInstanceAsync(async channel => await channel.LogStatsFromSessionAsync(createSessionReply.SessionId,
+                                                                                                logger)
+                                                                      .ConfigureAwait(false),
+                                        CancellationToken.None)
+                     .ConfigureAwait(false);
 
     if (benchOptions.ShowEvents)
     {
@@ -375,7 +594,7 @@ internal static class Program
         await eventTask.WaitAsync(CancellationToken.None)
                        .ConfigureAwait(false);
       }
-      catch (RpcException e) when (e.StatusCode == StatusCode.Cancelled)
+      catch (RpcException e) when (e.StatusCode is StatusCode.Cancelled or StatusCode.Aborted)
       {
         logger.LogWarning(e,
                           $"{nameof(Events.EventsClient.GetEvents)} interrupted.");

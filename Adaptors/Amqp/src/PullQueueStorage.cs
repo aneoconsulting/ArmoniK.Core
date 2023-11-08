@@ -26,7 +26,8 @@ using System.Threading.Tasks;
 using Amqp;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -78,10 +79,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                                    $"{Options.PartitionId}###q{i}");
 
                                                                          /* linkCredit_: the maximum number of messages the
-                                                                       * remote peer can send to the receiver.
-                                                                       * With the goal of minimizing/deactivating
-                                                                       * prefetching, a value of 1 gave us the desired
-                                                                       * behavior. We pick a default value of 2 to have "some cache". */
+                                                                          * remote peer can send to the receiver.
+                                                                          * With the goal of minimizing/deactivating
+                                                                          * prefetching, a value of 1 gave us the desired
+                                                                          * behavior. We pick a default value of 2 to have "some cache". */
                                                                          rl.SetCredit(Options.LinkCredit);
                                                                          return rl;
                                                                        }))
@@ -94,8 +95,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                         $"{Options.PartitionId}###q{i}")))
                            .ToArray();
 
-      var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
-      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
+      var senders = senders_.Select(lazy => lazy.Value)
+                            .WhenAll();
+      var receivers = receivers_.Select(lazy => lazy.Value)
+                                .WhenAll();
       await Task.WhenAll(senders,
                          receivers)
                 .ConfigureAwait(false);
@@ -138,7 +141,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                              sender,
                                              receiver,
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
-                                             logger_,
                                              cancellationToken);
 
         break;

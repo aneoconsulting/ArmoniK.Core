@@ -51,52 +51,79 @@ public interface IAgent : IDisposable
                                    CancellationToken                     cancellationToken);
 
   /// <summary>
-  ///   Get Common data from data storage
+  ///   Get Common data from data storage as file in shared folder
   /// </summary>
   /// <param name="request">Request specifying the data to retrieve</param>
-  /// <param name="responseStream">Response containing the data that will be sent to the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   Response to send to the worker
   /// </returns>
-  Task GetCommonData(DataRequest                    request,
-                     IServerStreamWriter<DataReply> responseStream,
-                     CancellationToken              cancellationToken);
+  Task<DataResponse> GetCommonData(DataRequest       request,
+                                   CancellationToken cancellationToken);
 
   /// <summary>
-  ///   Get Direct data from user
+  ///   Get Direct data from user as file in shared folder
   /// </summary>
   /// <param name="request">Request specifying the data to retrieve</param>
-  /// <param name="responseStream">Response containing the data that will be sent to the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   Response to send to the worker
   /// </returns>
-  Task GetDirectData(DataRequest                    request,
-                     IServerStreamWriter<DataReply> responseStream,
-                     CancellationToken              cancellationToken);
+  Task<DataResponse> GetDirectData(DataRequest       request,
+                                   CancellationToken cancellationToken);
 
   /// <summary>
-  ///   Get Resource data from data storage
+  ///   Get Resource data from data storage as file in shared folder
   /// </summary>
   /// <param name="request">Request specifying the data to retrieve</param>
-  /// <param name="responseStream">Response containing the data that will be sent to the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   Response to send to the worker
   /// </returns>
-  Task GetResourceData(DataRequest                    request,
-                       IServerStreamWriter<DataReply> responseStream,
-                       CancellationToken              cancellationToken);
+  Task<DataResponse> GetResourceData(DataRequest       request,
+                                     CancellationToken cancellationToken);
 
   /// <summary>
-  ///   Put the results created in the task into data storage and mark them as available in data table
+  ///   Create results metadata
   /// </summary>
-  /// <param name="requestStream">Requests containing the results</param>
+  /// <param name="request">Requests containing the results to create</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Reply sent to the worker with the created results
+  /// </returns>
+  Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                            CancellationToken            cancellationToken);
+
+  /// <summary>
+  ///   Submit tasks with payload already existing
+  /// </summary>
+  /// <param name="request">Requests containing the tasks to submit</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Reply sent to the worker with the submitted tasks
+  /// </returns>
+  Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                        CancellationToken  cancellationToken);
+
+  /// <summary>
+  ///   Create a result (with data and metadata)
+  /// </summary>
+  /// <param name="request">Requests containing the result to create and the data</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Reply sent to the worker with the id of the created result
+  /// </returns>
+  Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
+                                            CancellationToken    cancellationToken);
+
+  /// <summary>
+  ///   Put the results created as a file in the task into object storage
+  /// </summary>
+  /// <param name="request">Requests containing the results</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Reply sent to the worker describing the status of the execution of the received requests
   /// </returns>
-  Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
-                               CancellationToken          cancellationToken);
+  Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
+                                                  CancellationToken       cancellationToken);
 }

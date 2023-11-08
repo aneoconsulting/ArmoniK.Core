@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
 using EphemeralMongo;
@@ -44,8 +46,10 @@ internal class IndexTest
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -99,15 +103,10 @@ internal class IndexTest
   {
     var db         = provider_!.GetRequiredService<IMongoDatabase>();
     var collection = db.GetCollection<TaskData>("Test");
-    var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
 
-    var indexModels = new CreateIndexModel<TaskData>[]
+    var indexModels = new[]
                       {
-                        new(taskIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(taskIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
                       };
 
     collection.Indexes.CreateMany(indexModels);
@@ -128,21 +127,15 @@ internal class IndexTest
   {
     var db         = provider_!.GetRequiredService<IMongoDatabase>();
     var collection = db.GetCollection<TaskData>("Test");
-    var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
-    var ttlIndex   = Builders<TaskData>.IndexKeys.Text(model => model.PodTtl);
 
-    var indexModels = new CreateIndexModel<TaskData>[]
+    var indexModels = new[]
                       {
-                        new(taskIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(taskIndex),
-                            }),
-                        new(ttlIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(ttlIndex),
-                            }),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.PodTtl),
+                        IndexHelper.CreateDescendingIndex<TaskData>(model => model.Options.MaxDuration),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: TimeSpan.FromDays(1)),
+                        IndexHelper.CreateTextIndex<TaskData>(model => model.OwnerPodId),
                       };
 
     collection.Indexes.CreateMany(indexModels);
@@ -152,40 +145,22 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(3,
+    Assert.AreEqual(indexModels.Length + 1,
                     collection.Indexes.List()
                               .ToList()
                               .Count);
   }
 
   [Test]
-  [Ignore("Cannot create combined indexes this way")]
-  public void CombinedIndexCreationShouldSucceed()
+  public void IndexCreationWithMaxExpireShouldSucceed()
   {
-    var db           = provider_!.GetRequiredService<IMongoDatabase>();
-    var collection   = db.GetCollection<TaskData>("Test");
-    var taskIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
-    var sessionIndex = Builders<TaskData>.IndexKeys.Text(model => model.SessionId);
-    var combine = Builders<TaskData>.IndexKeys.Combine(taskIndex,
-                                                       sessionIndex);
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<TaskData>("Test");
 
-    var indexModels = new CreateIndexModel<TaskData>[]
+    var indexModels = new[]
                       {
-                        new(taskIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(taskIndex),
-                            }),
-                        new(sessionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
-                        new(combine,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(combine),
-                            }),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: TimeSpan.MaxValue),
                       };
 
     collection.Indexes.CreateMany(indexModels);
@@ -195,7 +170,89 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(4,
+    Assert.AreEqual(indexModels.Length + 1,
+                    collection.Indexes.List()
+                              .ToList()
+                              .Count);
+  }
+
+  [Test]
+  public void IndexCreationWithNullExpireShouldSucceed()
+  {
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<TaskData>("Test");
+
+    var indexModels = new[]
+                      {
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                                   expireAfter: null),
+                      };
+
+    collection.Indexes.CreateMany(indexModels);
+    foreach (var index in collection.Indexes.List()
+                                    .ToList())
+    {
+      Console.WriteLine(index);
+    }
+
+    Assert.AreEqual(indexModels.Length + 1,
+                    collection.Indexes.List()
+                              .ToList()
+                              .Count);
+  }
+
+  [Test]
+  public void CombinedIndexCreationShouldSucceed()
+  {
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<TaskData>("Test");
+
+    var indexModels = new[]
+                      {
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
+                        IndexHelper.CreateCombinedIndex<TaskData>(model => model.TaskId,
+                                                                  model => model.SessionId),
+                        IndexHelper.CreateCombinedIndex<TaskData>(model => model.TaskId,
+                                                                  model => model.Status),
+                      };
+
+    collection.Indexes.CreateMany(indexModels);
+    foreach (var index in collection.Indexes.List()
+                                    .ToList())
+    {
+      Console.WriteLine(index);
+    }
+
+    Assert.AreEqual(indexModels.Length + 1,
+                    collection.Indexes.List()
+                              .ToList()
+                              .Count);
+  }
+
+  [Test]
+  public void GenericIndexCreationShouldSucceed()
+  {
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
+    var collection = db.GetCollection<AuthData>("Test");
+
+    var indexModels = new[]
+                      {
+                        IndexHelper.CreateIndex<AuthData>(IndexType.Hashed,
+                                                          model => model.Fingerprint),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Ascending, model => model.Cn),
+                                                                (IndexType.Descending, model => model.Fingerprint)),
+                        IndexHelper.CreateIndex<AuthData>((IndexType.Hashed, model => model.UserId)),
+                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Text, model => model.Cn)),
+                      };
+
+    collection.Indexes.CreateMany(indexModels);
+    foreach (var index in collection.Indexes.List()
+                                    .ToList())
+    {
+      Console.WriteLine(index);
+    }
+
+    Assert.AreEqual(indexModels.Length + 1,
                     collection.Indexes.List()
                               .ToList()
                               .Count);

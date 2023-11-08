@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -26,12 +27,13 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -43,27 +45,29 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster : IInitializable
 {
-  private readonly ActivitySource             activitySource_;
-  private readonly IAgentHandler              agentHandler_;
-  private readonly DataPrefetcher             dataPrefetcher_;
-  private readonly IHostApplicationLifetime   lifeTime_;
-  private readonly ILogger<Pollster>          logger_;
-  private readonly int                        messageBatchSize_;
-  private readonly IObjectStorage             objectStorage_;
-  private readonly string                     ownerPodId_;
-  private readonly string                     ownerPodName_;
-  private readonly Injection.Options.Pollster pollsterOptions_;
-  private readonly IPullQueueStorage          pullQueueStorage_;
-  private readonly IResultTable               resultTable_;
-  private readonly ISessionTable              sessionTable_;
-  private readonly ISubmitter                 submitter_;
-  private readonly ITaskProcessingChecker     taskProcessingChecker_;
-  private readonly ITaskTable                 taskTable_;
-  private readonly IWorkerStreamHandler       workerStreamHandler_;
-  private          bool                       endLoopReached_;
-  private          HealthCheckResult?         healthCheckFailedResult_;
-  public           Func<Task>?                StopCancelledTask;
-  public           string                     TaskProcessing;
+  private readonly ActivitySource                            activitySource_;
+  private readonly IAgentHandler                             agentHandler_;
+  private readonly DataPrefetcher                            dataPrefetcher_;
+  private readonly IHostApplicationLifetime                  lifeTime_;
+  private readonly ILogger<Pollster>                         logger_;
+  private readonly ILoggerFactory                            loggerFactory_;
+  private readonly int                                       messageBatchSize_;
+  private readonly IObjectStorage                            objectStorage_;
+  private readonly string                                    ownerPodId_;
+  private readonly string                                    ownerPodName_;
+  private readonly Injection.Options.Pollster                pollsterOptions_;
+  private readonly IPullQueueStorage                         pullQueueStorage_;
+  private readonly IResultTable                              resultTable_;
+  private readonly RunningTaskQueue                          runningTaskQueue_;
+  private readonly ISessionTable                             sessionTable_;
+  private readonly ISubmitter                                submitter_;
+  private readonly ITaskProcessingChecker                    taskProcessingChecker_;
+  private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
+  private readonly ITaskTable                                taskTable_;
+  private readonly IWorkerStreamHandler                      workerStreamHandler_;
+  private          bool                                      endLoopReached_;
+  private          HealthCheckResult?                        healthCheckFailedResult_;
+
 
   public Pollster(IPullQueueStorage          pullQueueStorage,
                   DataPrefetcher             dataPrefetcher,
@@ -72,6 +76,7 @@ public class Pollster : IInitializable
                   IHostApplicationLifetime   lifeTime,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
+                  ILoggerFactory             loggerFactory,
                   IObjectStorage             objectStorage,
                   IResultTable               resultTable,
                   ISubmitter                 submitter,
@@ -79,7 +84,8 @@ public class Pollster : IInitializable
                   ITaskTable                 taskTable,
                   ITaskProcessingChecker     taskProcessingChecker,
                   IWorkerStreamHandler       workerStreamHandler,
-                  IAgentHandler              agentHandler)
+                  IAgentHandler              agentHandler,
+                  RunningTaskQueue           runningTaskQueue)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -88,6 +94,7 @@ public class Pollster : IInitializable
     }
 
     logger_                = logger;
+    loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
     pullQueueStorage_      = pullQueueStorage;
     lifeTime_              = lifeTime;
@@ -102,11 +109,14 @@ public class Pollster : IInitializable
     taskProcessingChecker_ = taskProcessingChecker;
     workerStreamHandler_   = workerStreamHandler;
     agentHandler_          = agentHandler;
-    TaskProcessing         = "";
-    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    runningTaskQueue_      = runningTaskQueue;
+    ownerPodId_            = LocalIpFinder.LocalIpv4Address();
     ownerPodName_          = Dns.GetHostName();
     Failed                 = false;
   }
+
+  public ICollection<string> TaskProcessing
+    => taskProcessingDict_.Keys;
 
   /// <summary>
   ///   Is true when the MainLoop exited with an error
@@ -193,6 +203,15 @@ public class Pollster : IInitializable
     return result;
   }
 
+  public async Task StopCancelledTask()
+  {
+    foreach (var taskHandler in taskProcessingDict_.Values)
+    {
+      await taskHandler.StopCancelledTask()
+                       .ConfigureAwait(false);
+    }
+  }
+
   public async Task MainLoop(CancellationToken cancellationToken)
   {
     await Init(cancellationToken)
@@ -201,7 +220,7 @@ public class Pollster : IInitializable
     var cts = new CancellationTokenSource();
     cancellationToken.Register(() =>
                                {
-                                 logger_.LogError("Global cancellation has been triggered.");
+                                 logger_.LogTrace("Global cancellation has been triggered.");
                                  cts.Cancel();
                                });
     var recordedErrors = new Queue<Exception>();
@@ -248,14 +267,14 @@ public class Pollster : IInitializable
           var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
                                                              cancellationToken);
 
-          await foreach (var message in messages.WithCancellation(cancellationToken)
-                                                .ConfigureAwait(false))
+          await foreach (var message in messages.ConfigureAwait(false))
           {
-            using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
-                                                             ("messageHandler", message.MessageId),
-                                                             ("taskId", message.TaskId),
-                                                             ("ownerPodId", ownerPodId_));
-            TaskProcessing = message.TaskId;
+            var taskHandlerLogger = loggerFactory_.CreateLogger<TaskHandler>();
+            using var _ = taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
+                                                            ("messageHandler", message.MessageId),
+                                                            ("taskId", message.TaskId),
+                                                            ("ownerPodId", ownerPodId_));
+
             // ReSharper disable once ExplicitCallerInfoArgument
             using var activity = activitySource_.StartActivity("ProcessQueueMessage");
             activity?.SetBaggage("TaskId",
@@ -263,47 +282,73 @@ public class Pollster : IInitializable
             activity?.SetBaggage("messageId",
                                  message.MessageId);
 
-            logger_.LogDebug("Start a new Task to process the messageHandler");
+            taskHandlerLogger.LogDebug("Start a new Task to process the messageHandler");
+
+            while (runningTaskQueue_.RemoveException(out var exception))
+            {
+              if (exception is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
+              {
+                // This exception should stop pollster
+                exception.RethrowWithStacktrace();
+              }
+
+              RecordError(exception);
+            }
+
+            var taskHandler = new TaskHandler(sessionTable_,
+                                              taskTable_,
+                                              resultTable_,
+                                              submitter_,
+                                              dataPrefetcher_,
+                                              workerStreamHandler_,
+                                              message,
+                                              taskProcessingChecker_,
+                                              ownerPodId_,
+                                              ownerPodName_,
+                                              activitySource_,
+                                              agentHandler_,
+                                              taskHandlerLogger,
+                                              pollsterOptions_,
+                                              () => taskProcessingDict_.TryRemove(message.TaskId,
+                                                                                  out var _),
+                                              cts);
+
+            if (!taskProcessingDict_.TryAdd(message.TaskId,
+                                            taskHandler))
+            {
+              message.Status = QueueMessageStatus.Processed;
+              await taskHandler.DisposeAsync()
+                               .ConfigureAwait(false);
+              continue;
+            }
+
 
             try
             {
-              await using var taskHandler = new TaskHandler(sessionTable_,
-                                                            taskTable_,
-                                                            resultTable_,
-                                                            submitter_,
-                                                            dataPrefetcher_,
-                                                            workerStreamHandler_,
-                                                            message,
-                                                            taskProcessingChecker_,
-                                                            ownerPodId_,
-                                                            ownerPodName_,
-                                                            activitySource_,
-                                                            agentHandler_,
-                                                            logger_,
-                                                            pollsterOptions_,
-                                                            cts);
-
-              StopCancelledTask = taskHandler.StopCancelledTask;
-
               var precondition = await taskHandler.AcquireTask()
                                                   .ConfigureAwait(false);
 
               if (precondition)
               {
-                await taskHandler.PreProcessing()
-                                 .ConfigureAwait(false);
+                try
+                {
+                  await taskHandler.PreProcessing()
+                                   .ConfigureAwait(false);
+                }
+                catch
+                {
+                  await taskHandler.DisposeAsync()
+                                   .ConfigureAwait(false);
+                  throw;
+                }
 
-                await taskHandler.ExecuteTask()
-                                 .ConfigureAwait(false);
+                await runningTaskQueue_.WriteAsync(taskHandler,
+                                                   cancellationToken)
+                                       .ConfigureAwait(false);
 
-                logger_.LogDebug("Complete task processing");
-
-                await taskHandler.PostProcessing()
-                                 .ConfigureAwait(false);
-
-                StopCancelledTask = null;
-
-                logger_.LogDebug("Task returned");
+                await runningTaskQueue_.WaitForNextWriteAsync(pollsterOptions_.TimeoutBeforeNextAcquisition,
+                                                              cancellationToken)
+                                       .ConfigureAwait(false);
 
                 // If the task was successful, we can remove a failure
                 if (recordedErrors.Count > 0)
@@ -311,8 +356,13 @@ public class Pollster : IInitializable
                   recordedErrors.Dequeue();
                 }
               }
+              else
+              {
+                await taskHandler.DisposeAsync()
+                                 .ConfigureAwait(false);
+              }
             }
-            catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+            catch (RpcException e) when (TaskHandler.IsStatusFatal(e.StatusCode))
             {
               // This exception should stop pollster
               throw;
@@ -320,11 +370,6 @@ public class Pollster : IInitializable
             catch (Exception e)
             {
               RecordError(e);
-            }
-            finally
-            {
-              StopCancelledTask = null;
-              TaskProcessing    = string.Empty;
             }
           }
         }

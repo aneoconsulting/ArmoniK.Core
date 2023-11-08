@@ -24,9 +24,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -49,16 +47,6 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                       IEnumerable<string> keys,
-                                                                       CancellationToken   cancellationToken = default)
-    => Task.FromResult(results_[sessionId]
-                       .Where(model => keys.Contains(model.Value.Name))
-                       .GroupBy(model => model.Value.Status)
-                       .Select(models => new ResultStatusCount(models.Key,
-                                                               models.Count())));
-
-  /// <inheritdoc />
   public Task ChangeResultOwnership(string                                                 sessionId,
                                     string                                                 oldTaskId,
                                     IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
@@ -71,7 +59,7 @@ public class ResultTable : IResultTable
                              .Where(result => result.OwnerTaskId == oldTaskId))
       {
         results_[result.SessionId]
-          .TryUpdate(result.Name,
+          .TryUpdate(result.ResultId,
                      result with
                      {
                        OwnerTaskId = request.NewTaskId,
@@ -91,10 +79,10 @@ public class ResultTable : IResultTable
     {
       var sessionResults = results_.GetOrAdd(result.SessionId,
                                              new ConcurrentDictionary<string, Result>());
-      if (!sessionResults.TryAdd(result.Name,
+      if (!sessionResults.TryAdd(result.ResultId,
                                  result))
       {
-        throw new ArmoniKException($"Key {result.Name} already exists");
+        throw new ArmoniKException($"Key {result.ResultId} already exists");
       }
     }
 
@@ -125,26 +113,6 @@ public class ResultTable : IResultTable
     }
 
     return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task<IEnumerable<string>> GetDependents(string            sessionId,
-                                                 string            resultId,
-                                                 CancellationToken cancellationToken)
-  {
-    if (!results_.TryGetValue(sessionId,
-                              out var session))
-    {
-      throw new SessionNotFoundException($"Session '{session}' not found");
-    }
-
-    if (!session.TryGetValue(resultId,
-                             out var result))
-    {
-      throw new ResultNotFoundException($"Key '{resultId}' not found");
-    }
-
-    return Task.FromResult(result.DependentTasks.AsEnumerable());
   }
 
   /// <inheritdoc />
@@ -182,18 +150,13 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
-  public IAsyncEnumerable<Result> GetResults(string              sessionId,
-                                             IEnumerable<string> keys,
-                                             CancellationToken   cancellationToken = default)
-    => results_[sessionId]
-       .Values.Where(r => keys.Contains(r.Name))
-       .ToAsyncEnumerable();
-
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
-                                                   CancellationToken cancellationToken = default)
-    => results_.Values.SelectMany(results => results.Keys)
-               .ToImmutableList()
+  public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
+                                           Expression<Func<Result, T>>    convertor,
+                                           CancellationToken              cancellationToken = default)
+    => results_.Values.SelectMany(results => results.Values)
+               .Where(filter.Compile())
+               .Select(convertor.Compile())
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
@@ -226,7 +189,7 @@ public class ResultTable : IResultTable
     var result = results_[sessionId][key];
 
     results_[result.SessionId]
-      .TryUpdate(result.Name,
+      .TryUpdate(result.ResultId,
                  result with
                  {
                    Data = smallPayload,
@@ -245,7 +208,7 @@ public class ResultTable : IResultTable
     var result = results_[sessionId][key];
 
     results_[result.SessionId]
-      .TryUpdate(result.Name,
+      .TryUpdate(result.ResultId,
                  result with
                  {
                    Status = ResultStatus.Completed,
@@ -254,17 +217,60 @@ public class ResultTable : IResultTable
     return Task.CompletedTask;
   }
 
-  /// <inheritdoc />
-  public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
-                                                                                string              sessionId,
-                                                                                CancellationToken   cancellationToken = default)
-    => Task.FromResult(results_[sessionId]
-                       .Where(model => ids.Contains(model.Key))
-                       .Select(model => new GetResultStatusReply.Types.IdStatus
-                                        {
-                                          ResultId = model.Value.Name,
-                                          Status   = model.Value.Status,
-                                        }));
+  public Task<Result> CompleteResult(string            sessionId,
+                                     string            resultId,
+                                     CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      var result = results_[sessionId][resultId];
+      var newResult = result with
+                      {
+                        Status = ResultStatus.Completed,
+                      };
+
+      results_[result.SessionId]
+        .TryUpdate(result.ResultId,
+                   newResult,
+                   result);
+
+      return Task.FromResult(newResult);
+    }
+    catch (KeyNotFoundException e)
+    {
+      throw new ResultNotFoundException($"Result {resultId} not found",
+                                        e);
+    }
+  }
+
+  public Task SetTaskOwnership(string                                        sessionId,
+                               ICollection<(string resultId, string taskId)> requests,
+                               CancellationToken                             cancellationToken = default)
+  {
+    if (!results_.TryGetValue(sessionId,
+                              out var session))
+    {
+      throw new SessionNotFoundException($"Session '{session}' not found");
+    }
+
+    foreach (var (resultId, taskId) in requests)
+    {
+      if (!session.TryGetValue(resultId,
+                               out var result))
+      {
+        throw new ResultNotFoundException($"Key '{resultId}' not found");
+      }
+
+      session.TryUpdate(resultId,
+                        result with
+                        {
+                          OwnerTaskId = taskId,
+                        },
+                        result);
+    }
+
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
   public Task AbortTaskResults(string            sessionId,
@@ -276,7 +282,7 @@ public class ResultTable : IResultTable
                            .Where(result => result.OwnerTaskId == ownerTaskId))
     {
       results_[result.SessionId]
-        .TryUpdate(result.Name,
+        .TryUpdate(result.ResultId,
                    result with
                    {
                      Status = ResultStatus.Aborted,

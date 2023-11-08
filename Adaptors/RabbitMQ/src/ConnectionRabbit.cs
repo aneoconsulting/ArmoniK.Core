@@ -22,8 +22,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.QueueCommon;
-using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -60,24 +60,18 @@ public class ConnectionRabbit : IConnectionRabbit
     => await connectionTask_;
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && Connection is not null && Connection.IsOpen && Channel is not null && Channel.IsOpen
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.IsOpen && Channel is not null && Channel.IsOpen
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   public void Dispose()
   {
@@ -134,16 +128,14 @@ public class ConnectionRabbit : IConnectionRabbit
       try
       {
         conn.Connection = factory.CreateConnection();
-        conn.Connection.ConnectionShutdown += (obj,
-                                               ea) => OnShutDown(obj,
-                                                                 ea,
+        conn.Connection.ConnectionShutdown += (_,
+                                               ea) => OnShutDown(ea,
                                                                  "Connection",
                                                                  logger_);
 
         Channel = conn.Connection.CreateModel();
-        Channel.ModelShutdown += (obj,
-                                  ea) => OnShutDown(obj,
-                                                    ea,
+        Channel.ModelShutdown += (_,
+                                  ea) => OnShutDown(ea,
                                                     "Channel",
                                                     logger_);
         break;
@@ -166,18 +158,19 @@ public class ConnectionRabbit : IConnectionRabbit
     conn.isInitialized_ = true;
   }
 
-  private static void OnShutDown(object?           obj,
-                                 ShutdownEventArgs ea,
+  private static void OnShutDown(ShutdownEventArgs ea,
                                  string            model,
                                  ILogger           logger)
   {
     if (ea.Cause is null)
     {
-      logger.LogInformation($"RabbitMQ {model} closed with no error");
+      logger.LogInformation("RabbitMQ {model} closed with no error",
+                            model);
     }
     else
     {
-      logger.LogWarning($"RabbitMQ {model} closed with error: {0}",
+      logger.LogWarning("RabbitMQ {model} closed with error: {error}",
+                        model,
                         ea.Cause);
     }
   }

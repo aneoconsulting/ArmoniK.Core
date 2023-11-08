@@ -18,16 +18,12 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Results;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
-
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
 /// </summary>
 /// <param name="SessionId">Id of the session that produces and consumes this data</param>
+/// <param name="ResultId">Unique Id of the result</param>
 /// <param name="Name">Name to reference and access this result</param>
 /// <param name="OwnerTaskId">Id of the task that is responsible of generating this result.</param>
 /// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
@@ -35,35 +31,10 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Data">Data for the current <paramref name="Name" /></param>
 public record Result(string       SessionId,
+                     string       ResultId,
                      string       Name,
                      string       OwnerTaskId,
                      ResultStatus Status,
                      List<string> DependentTasks,
                      DateTime     CreationDate,
-                     byte[]       Data)
-{
-  public string Id
-    => GenerateId(SessionId,
-                  Name);
-
-  /// <summary>
-  ///   Conversion operator from <see cref="Result" /> to <see cref="ResultRaw" />
-  /// </summary>
-  /// <param name="result">The input result data</param>
-  /// <returns>
-  ///   The converted result data
-  /// </returns>
-  public static implicit operator ResultRaw(Result result)
-    => new()
-       {
-         SessionId   = result.SessionId,
-         Status      = result.Status,
-         CreatedAt   = FromDateTime(result.CreationDate),
-         Name        = result.Name,
-         OwnerTaskId = result.OwnerTaskId,
-       };
-
-  public static string GenerateId(string sessionId,
-                                  string key)
-    => $"{sessionId}.{key}";
-}
+                     byte[]       Data);

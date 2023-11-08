@@ -52,7 +52,7 @@ public class MongoDB
 
   public string DatabaseName { get; set; } = "ArmoniK";
 
-  public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);
+  public TimeSpan DataRetention { get; set; } = TimeSpan.MaxValue;
 
   public TableStorage TableStorage { get; set; } = new();
 

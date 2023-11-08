@@ -21,8 +21,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using Microsoft.Extensions.Logging;
 
@@ -52,37 +52,17 @@ public interface ISessionTable : IInitializable
                                    CancellationToken   cancellationToken = default);
 
   /// <summary>
-  ///   Get SessionData from sessionId
+  ///   Find all sessions matching the given filter and ordering
   /// </summary>
-  /// <param name="sessionId">Id of the session to get</param>
+  /// <param name="filter">Filter to select sessions</param>
+  /// <param name="selector">Expression to select part of the returned session data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Data of the session
+  ///   Session metadata matching the request
   /// </returns>
-  Task<SessionData> GetSessionAsync(string            sessionId,
-                                    CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Query a session status to check if it is canceled
-  /// </summary>
-  /// <param name="sessionId">Id of the session to check</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Boolean representing the cancelation status of the session
-  /// </returns>
-  Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                     CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Get default task metadata for a session given its id
-  /// </summary>
-  /// <param name="sessionId">Id of the target session</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Default task metadata of this session
-  /// </returns>
-  Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                              CancellationToken cancellationToken = default);
+  IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                           Expression<Func<SessionData, T>>    selector,
+                                           CancellationToken                   cancellationToken = default);
 
   /// <summary>
   ///   Cancel a session
@@ -106,16 +86,6 @@ public interface ISessionTable : IInitializable
   Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
-  /// <summary>
-  ///   List all sessions matching a given filter
-  /// </summary>
-  /// <param name="sessionFilter">Session filter describing the sessions to be listed </param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Collection of sessions that matched the filter
-  /// </returns>
-  IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
-                                             CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   List all sessions matching the given request
@@ -129,10 +99,10 @@ public interface ISessionTable : IInitializable
   /// <returns>
   ///   Collection of sessions metadata that matched the filter and total number of results without paging
   /// </returns>
-  Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                              Expression<Func<SessionData, object?>> orderField,
-                                                                              bool                                   ascOrder,
-                                                                              int                                    page,
-                                                                              int                                    pageSize,
-                                                                              CancellationToken                      cancellationToken = default);
+  Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                               Expression<Func<SessionData, object?>> orderField,
+                                                                               bool                                   ascOrder,
+                                                                               int                                    page,
+                                                                               int                                    pageSize,
+                                                                               CancellationToken                      cancellationToken = default);
 }

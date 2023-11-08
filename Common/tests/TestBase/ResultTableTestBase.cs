@@ -22,12 +22,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -55,6 +53,7 @@ public class ResultTableTestBase
                               {
                                 new Result("SessionId",
                                            "ResultIsAvailable",
+                                           "",
                                            "OwnerId",
                                            ResultStatus.Completed,
                                            new List<string>(),
@@ -65,6 +64,7 @@ public class ResultTableTestBase
                                            }),
                                 new Result("SessionId",
                                            "ResultIsNotAvailable",
+                                           "",
                                            "OwnerId",
                                            ResultStatus.Aborted,
                                            new List<string>(),
@@ -75,6 +75,7 @@ public class ResultTableTestBase
                                            }),
                                 new Result("SessionId",
                                            "ResultIsCreated",
+                                           "",
                                            "OwnerId",
                                            ResultStatus.Created,
                                            new List<string>(),
@@ -85,6 +86,7 @@ public class ResultTableTestBase
                                            }),
                                 new Result("SessionId",
                                            "ResultIsCreated2",
+                                           "",
                                            "OwnerId",
                                            ResultStatus.Created,
                                            new List<string>(),
@@ -95,6 +97,7 @@ public class ResultTableTestBase
                                            }),
                                 new Result("SessionId",
                                            "ResultIsCompletedWithDependents",
+                                           "",
                                            "OwnerId",
                                            ResultStatus.Completed,
                                            new List<string>
@@ -168,58 +171,6 @@ public class ResultTableTestBase
     }
   }
 
-
-  [Test]
-  public async Task ResultsAreAvailableShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var checkTable = await ResultTable!.AreResultsAvailableAsync("SessionId",
-                                                                   new[]
-                                                                   {
-                                                                     "ResultIsAvailable",
-                                                                   },
-                                                                   CancellationToken.None)
-                                         .ConfigureAwait(false);
-      Assert.AreEqual(1,
-                      checkTable.Count(count => count.Status == ResultStatus.Completed));
-    }
-  }
-
-  [Test]
-  public async Task ResultsAreAvailableShouldReturnEmpty()
-  {
-    if (RunTests)
-    {
-      var checkTable = await ResultTable!.AreResultsAvailableAsync("SessionId",
-                                                                   new[]
-                                                                   {
-                                                                     "ResultDoesNotExist",
-                                                                   },
-                                                                   CancellationToken.None)
-                                         .ConfigureAwait(false);
-      Assert.AreEqual(0,
-                      checkTable.Count(count => count.Status == ResultStatus.Aborted));
-    }
-  }
-
-  [Test]
-  public async Task ResultsAreAvailableShouldReturnAborted()
-  {
-    if (RunTests)
-    {
-      var checkTable = await ResultTable!.AreResultsAvailableAsync("SessionId",
-                                                                   new[]
-                                                                   {
-                                                                     "ResultIsNotAvailable",
-                                                                   },
-                                                                   CancellationToken.None)
-                                         .ConfigureAwait(false);
-      Assert.AreEqual(1,
-                      checkTable.Count(count => count.Status == ResultStatus.Aborted));
-    }
-  }
-
   [Test]
   public async Task ChangeResultOwnershipShouldSucceed()
   {
@@ -257,6 +208,7 @@ public class ResultTableTestBase
                               {
                                 new Result("AnotherSessionId",
                                            "Key",
+                                           "",
                                            "OwnerId",
                                            ResultStatus.Completed,
                                            new List<string>(),
@@ -290,6 +242,7 @@ public class ResultTableTestBase
                                                                          new Result("SessionId",
                                                                                     "ResultIsAvailable",
                                                                                     "",
+                                                                                    "",
                                                                                     ResultStatus.Unspecified,
                                                                                     new List<string>(),
                                                                                     DateTime.Today,
@@ -312,14 +265,13 @@ public class ResultTableTestBase
                                        CancellationToken.None)
                         .ConfigureAwait(false);
 
-      var resList = ResultTable.ListResultsAsync("SessionId",
-                                                 CancellationToken.None);
+      var resList = await ResultTable.GetResults(result => result.SessionId == "SessionId",
+                                                 result => result.ResultId,
+                                                 CancellationToken.None)
+                                     .ToListAsync()
+                                     .ConfigureAwait(false);
 
-      // Query first element, function returns default if the list is empty
-      var firstElement = await resList.FirstOrDefaultAsync()
-                                      .ConfigureAwait(false);
-
-      Assert.IsTrue(firstElement == default);
+      Assert.IsEmpty(resList);
     }
   }
 
@@ -374,7 +326,7 @@ public class ResultTableTestBase
                                                CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.IsTrue(result.Name == "ResultIsNotAvailable");
+      Assert.IsTrue(result.ResultId == "ResultIsNotAvailable");
     }
   }
 
@@ -417,6 +369,7 @@ public class ResultTableTestBase
                           .ToArray();
       await ResultTable!.Create(ids.Select(id => new Result("SessionId",
                                                             id,
+                                                            "",
                                                             "OwnerId",
                                                             ResultStatus.Completed,
                                                             new List<string>(),
@@ -451,6 +404,7 @@ public class ResultTableTestBase
                           .ToArray();
       await ResultTable!.Create(ids.Select(id => new Result("SessionId",
                                                             id,
+                                                            "",
                                                             "OwnerId",
                                                             ResultStatus.Completed,
                                                             new List<string>(),
@@ -492,25 +446,16 @@ public class ResultTableTestBase
                                                        CancellationToken.None)
                                       .ConfigureAwait(false)).ToList();
 
-      Assert.Contains(new GetResultStatusReply.Types.IdStatus
-                      {
-                        Status   = ResultStatus.Completed,
-                        ResultId = "ResultIsAvailable",
-                      },
+      Assert.Contains(new ResultIdStatus("ResultIsAvailable",
+                                         ResultStatus.Completed),
                       result);
 
-      Assert.Contains(new GetResultStatusReply.Types.IdStatus
-                      {
-                        Status   = ResultStatus.Aborted,
-                        ResultId = "ResultIsNotAvailable",
-                      },
+      Assert.Contains(new ResultIdStatus("ResultIsNotAvailable",
+                                         ResultStatus.Aborted),
                       result);
 
-      Assert.Contains(new GetResultStatusReply.Types.IdStatus
-                      {
-                        Status   = ResultStatus.Created,
-                        ResultId = "ResultIsCreated",
-                      },
+      Assert.Contains(new ResultIdStatus("ResultIsCreated",
+                                         ResultStatus.Created),
                       result);
     }
   }
@@ -698,6 +643,7 @@ public class ResultTableTestBase
                                 {
                                   new Result(sessionId,
                                              resultId,
+                                             "",
                                              "OwnerTask",
                                              ResultStatus.Created,
                                              new List<string>(),
@@ -747,6 +693,109 @@ public class ResultTableTestBase
                                                                                                      "Task1",
                                                                                                      "Task2",
                                                                                                    })
+                                                                                .ConfigureAwait(false));
+    }
+  }
+
+  [Test]
+  public async Task SetTaskOwnershipShouldSucceed()
+  {
+    if (RunTests)
+    {
+      await ResultTable!.SetTaskOwnership("SessionId",
+                                          new[]
+                                          {
+                                            ("ResultIsCreated2", "NewTaskId"),
+                                          })
+                        .ConfigureAwait(false);
+
+      var res = await ResultTable.GetResult("SessionId",
+                                            "ResultIsCreated2")
+                                 .ConfigureAwait(false);
+
+      Assert.AreEqual("NewTaskId",
+                      res.OwnerTaskId);
+
+      // Overriding an existing result should succeed
+      await ResultTable!.SetTaskOwnership("SessionId",
+                                          new[]
+                                          {
+                                            ("ResultIsCreated2", "NewTaskId2"),
+                                          })
+                        .ConfigureAwait(false);
+
+      res = await ResultTable.GetResult("SessionId",
+                                        "ResultIsCreated2")
+                             .ConfigureAwait(false);
+
+      Assert.AreEqual("NewTaskId2",
+                      res.OwnerTaskId);
+    }
+  }
+
+  [Test]
+  public void SetTaskOwnershipShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.SetTaskOwnership("SessionId",
+                                                                                                  new[]
+                                                                                                  {
+                                                                                                    ("ResultDoesNotExist", "NewTaskId"),
+                                                                                                  })
+                                                                                .ConfigureAwait(false));
+    }
+  }
+
+  [Test]
+  public async Task CompleteResultShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var resultId = Guid.NewGuid()
+                         .ToString();
+      var sessionId = Guid.NewGuid()
+                          .ToString();
+      await ResultTable!.Create(new List<Result>
+                                {
+                                  new(sessionId,
+                                      resultId,
+                                      "Name",
+                                      "",
+                                      ResultStatus.Created,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      Array.Empty<byte>()),
+                                },
+                                CancellationToken.None)
+                        .ConfigureAwait(false);
+
+      var result = await ResultTable.CompleteResult(sessionId,
+                                                    resultId,
+                                                    CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(ResultStatus.Completed,
+                      result.Status);
+
+      result = await ResultTable.GetResult(sessionId,
+                                           resultId,
+                                           CancellationToken.None)
+                                .ConfigureAwait(false);
+
+      Assert.AreEqual(ResultStatus.Completed,
+                      result.Status);
+    }
+  }
+
+  [Test]
+  public void CompleteResultShouldThrow()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.CompleteResult("SessionId",
+                                                                                                "NotExistingResult111",
+                                                                                                CancellationToken.None)
                                                                                 .ConfigureAwait(false));
     }
   }

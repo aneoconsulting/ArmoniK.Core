@@ -22,9 +22,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -49,15 +47,6 @@ public class SimpleResultTable : IResultTable
 
   public ILogger Logger { get; } = new Logger<SimpleResultTable>(new LoggerFactory());
 
-  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                       IEnumerable<string> keys,
-                                                                       CancellationToken   cancellationToken = default)
-    => Task.FromResult(new List<ResultStatusCount>
-                       {
-                         new(ResultStatus.Completed,
-                             1),
-                       }.AsEnumerable());
-
   public Task ChangeResultOwnership(string                                                 sessionId,
                                     string                                                 oldTaskId,
                                     IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
@@ -74,11 +63,6 @@ public class SimpleResultTable : IResultTable
                                 CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<IEnumerable<string>> GetDependents(string            sessionId,
-                                                 string            resultId,
-                                                 CancellationToken cancellationToken = default)
-    => Task.FromResult(Enumerable.Empty<string>());
-
   public Task DeleteResult(string            session,
                            string            key,
                            CancellationToken cancellationToken = default)
@@ -88,13 +72,14 @@ public class SimpleResultTable : IResultTable
                             CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public IAsyncEnumerable<Result> GetResults(string              sessionId,
-                                             IEnumerable<string> keys,
-                                             CancellationToken   cancellationToken = default)
+  public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
+                                           Expression<Func<Result, T>>    convertor,
+                                           CancellationToken              cancellationToken = default)
     => new List<Result>
        {
          new(SessionId,
              OutputId,
+             "",
              TaskId,
              ResultStatus.Completed,
              new List<string>(),
@@ -103,14 +88,8 @@ public class SimpleResultTable : IResultTable
              {
                42,
              }),
-       }.ToAsyncEnumerable();
-
-  public IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
-                                                   CancellationToken cancellationToken = default)
-    => new List<string>
-       {
-         OutputId,
-       }.ToAsyncEnumerable();
+       }.Select(convertor.Compile())
+        .ToAsyncEnumerable();
 
   public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
                                                                               Expression<Func<Result, object?>> orderField,
@@ -122,6 +101,7 @@ public class SimpleResultTable : IResultTable
                         {
                           new(SessionId,
                               "ResultName",
+                              "",
                               TaskId,
                               ResultStatus.Completed,
                               new List<string>(),
@@ -145,17 +125,25 @@ public class SimpleResultTable : IResultTable
                         CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
-                                                                                string              sessionId,
-                                                                                CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<GetResultStatusReply.Types.IdStatus>>(new List<GetResultStatusReply.Types.IdStatus>
-                                                                         {
-                                                                           new()
-                                                                           {
-                                                                             ResultId = OutputId,
-                                                                             Status   = ResultStatus.Completed,
-                                                                           },
-                                                                         });
+  public Task<Result> CompleteResult(string            sessionId,
+                                     string            resultId,
+                                     CancellationToken cancellationToken = default)
+    => Task.FromResult(new Result(SessionId,
+                                  OutputId,
+                                  "",
+                                  TaskId,
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.Now.ToUniversalTime(),
+                                  new byte[]
+                                  {
+                                    42,
+                                  }));
+
+  public Task SetTaskOwnership(string                                        sessionId,
+                               ICollection<(string resultId, string taskId)> requests,
+                               CancellationToken                             cancellationToken = default)
+    => Task.CompletedTask;
 
   public Task AbortTaskResults(string            sessionId,
                                string            ownerTaskId,

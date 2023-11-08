@@ -15,14 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -84,16 +86,14 @@ public class TaskWatcher : ITaskWatcher
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(string            sessionId,
-                                                           CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(Expression<Func<TaskData, bool>> filter,
+                                                           CancellationToken                cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetNewTasks)}");
-    activity?.SetTag($"{nameof(GetNewTasks)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetNewTasks)}");
+    var       sessionHandle = sessionProvider_.Get();
 
-    var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<TaskData>>().Match(input => input.OperationType          == ChangeStreamOperationType.Insert &&
-                                                                                                input.FullDocument.SessionId == sessionId);
+    var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<TaskData>>().Match(input => input.OperationType == ChangeStreamOperationType.Insert)
+                                                                                .Match(filter.ToChangeStreamDocumentExpression());
 
     var changeStreamCursor = await taskCollectionProvider_.Get()
                                                           .WatchAsync(sessionHandle,
@@ -110,6 +110,7 @@ public class TaskWatcher : ITaskWatcher
                                                                                            doc.FullDocument.TaskId,
                                                                                            doc.FullDocument.InitialTaskId,
                                                                                            doc.FullDocument.PayloadId,
+                                                                                           doc.FullDocument.ParentTaskIds,
                                                                                            doc.FullDocument.ExpectedOutputIds,
                                                                                            doc.FullDocument.DataDependencies,
                                                                                            doc.FullDocument.RetryOfIds,
@@ -118,17 +119,15 @@ public class TaskWatcher : ITaskWatcher
 
 
   /// <inheritdoc />
-  public async Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(string            sessionId,
-                                                                             CancellationToken cancellationToken = default)
+  public async Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(Expression<Func<TaskData, bool>> filter,
+                                                                             CancellationToken                cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusUpdates)}");
-    activity?.SetTag($"{nameof(GetTaskStatusUpdates)}_sessionId",
-                     sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(GetTaskStatusUpdates)}");
+    var       sessionHandle = sessionProvider_.Get();
 
     var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(taskCollectionProvider_.Get(),
                                                                  sessionHandle,
-                                                                 document => document.FullDocument.SessionId == sessionId,
+                                                                 filter,
                                                                  new[]
                                                                  {
                                                                    nameof(TaskData.Status),

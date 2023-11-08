@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -18,21 +18,16 @@
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Core.Common.Auth.Authorization;
 
 using Grpc.Core;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[IgnoreAuthentication]
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
-  private readonly ILogger<GrpcAgentService> logger_;
-  private          IAgent?                   agent_;
-
-
-  public GrpcAgentService(ILogger<GrpcAgentService> logger)
-    => logger_ = logger;
+  private IAgent? agent_;
 
   public Task Start(IAgent agent)
   {
@@ -62,61 +57,108 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
            };
   }
 
-  public override async Task GetCommonData(DataRequest                    request,
-                                           IServerStreamWriter<DataReply> responseStream,
-                                           ServerCallContext              context)
+  public override async Task<DataResponse> GetCommonData(DataRequest       request,
+                                                         ServerCallContext context)
   {
     if (agent_ != null)
     {
-      await agent_.GetCommonData(request,
-                                 responseStream,
-                                 context.CancellationToken)
-                  .ConfigureAwait(false);
-    }
-    else
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        Error = "No task is accepting request",
-                                      })
-                          .ConfigureAwait(false);
-    }
-  }
-
-  public override async Task GetResourceData(DataRequest                    request,
-                                             IServerStreamWriter<DataReply> responseStream,
-                                             ServerCallContext              context)
-  {
-    if (agent_ != null)
-    {
-      await agent_.GetResourceData(request,
-                                   responseStream,
-                                   context.CancellationToken)
-                  .ConfigureAwait(false);
-    }
-    else
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        Error = "No task is accepting request",
-                                      })
-                          .ConfigureAwait(false);
-    }
-  }
-
-  public override async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
-                                                     ServerCallContext          context)
-  {
-    if (agent_ != null)
-    {
-      return await agent_.SendResult(requestStream,
-                                     context.CancellationToken)
+      return await agent_.GetCommonData(request,
+                                        context.CancellationToken)
                          .ConfigureAwait(false);
     }
 
-    return new ResultReply
-           {
-             Error = "No task is accepting request",
-           };
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<DataResponse> GetResourceData(DataRequest       request,
+                                                           ServerCallContext context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.GetResourceData(request,
+                                          context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<DataResponse> GetDirectData(DataRequest       request,
+                                                         ServerCallContext context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.GetDirectData(request,
+                                        context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
+                                                                        ServerCallContext       context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.NotifyResultData(request,
+                                           context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
+                                                                                  ServerCallContext            context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.CreateResultsMetaData(request,
+                                                context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                                              ServerCallContext  context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.SubmitTasks(request,
+                                      context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
+  }
+
+  public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
+                                                                  ServerCallContext    context)
+  {
+    if (agent_ != null)
+    {
+      return await agent_.CreateResults(request,
+                                        context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    throw new RpcException(new Status(StatusCode.Unavailable,
+                                      "No task is accepting request"),
+                           "No task is accepting request");
   }
 }

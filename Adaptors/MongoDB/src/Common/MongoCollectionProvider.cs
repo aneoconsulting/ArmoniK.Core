@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common;
 
 using JetBrains.Annotations;
@@ -35,9 +36,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
-  private bool                             isInitialized_;
-  private ILogger<IMongoCollection<TData>> logger_;
-  private IMongoCollection<TData>?         mongoCollection_;
+  private bool                     isInitialized_;
+  private IMongoCollection<TData>? mongoCollection_;
 
   public MongoCollectionProvider(Options.MongoDB                  options,
                                  SessionProvider                  sessionProvider,
@@ -51,8 +51,6 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                             $"{nameof(Options.MongoDB.DataRetention)} is not defined.");
     }
 
-    logger_ = logger;
-
     Initialization = InitializeAsync(options,
                                      sessionProvider,
                                      mongoDatabase,
@@ -65,24 +63,18 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    switch (tag)
-    {
-      case HealthCheckTag.Startup:
-      case HealthCheckTag.Readiness:
-        return Task.FromResult(isInitialized_
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet."));
-      case HealthCheckTag.Liveness:
-        return Task.FromResult(isInitialized_ && mongoCollection_ is null
-                                 ? HealthCheckResult.Healthy()
-                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet."));
-      default:
-        throw new ArgumentOutOfRangeException(nameof(tag),
-                                              tag,
-                                              null);
-    }
-  }
+    => tag switch
+       {
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                                 ? HealthCheckResult.Healthy()
+                                                                                 : HealthCheckResult.Unhealthy("MongoCollection not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && mongoCollection_ is null
+                                                      ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("MongoCollection not initialized yet.")),
+         _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+       };
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
@@ -148,7 +140,8 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       try
       {
         await model.InitializeIndexesAsync(session,
-                                           output)
+                                           output,
+                                           options)
                    .ConfigureAwait(false);
         break;
       }

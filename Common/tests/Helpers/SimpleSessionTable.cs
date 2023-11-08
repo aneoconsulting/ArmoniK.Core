@@ -22,17 +22,11 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
-
-using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -48,13 +42,16 @@ public class SimpleSessionTable : ISessionTable
   public static readonly TaskOptions TaskOptions;
 
   static SimpleSessionTable()
-    => TaskOptions = new Api.gRPC.V1.TaskOptions
-                     {
-                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                       MaxRetries  = 4,
-                       Priority    = 2,
-                       PartitionId = PartitionId,
-                     };
+    => TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                     TimeSpan.FromSeconds(1),
+                                     5,
+                                     1,
+                                     PartitionId,
+                                     "",
+                                     "",
+                                     "",
+                                     "",
+                                     "");
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
@@ -69,25 +66,23 @@ public class SimpleSessionTable : ISessionTable
                                           CancellationToken   cancellationToken = default)
     => Task.FromResult(SessionId);
 
-  public Task<SessionData> GetSessionAsync(string            sessionId,
-                                           CancellationToken cancellationToken = default)
-    => Task.FromResult(new SessionData(SessionId,
-                                       SessionStatus.Running,
-                                       DateTime.Today.ToUniversalTime(),
-                                       null,
-                                       new List<string>
-                                       {
-                                         PartitionId,
-                                       },
-                                       TaskOptions));
+  public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                                  Expression<Func<SessionData, T>>    selector,
+                                                  CancellationToken                   cancellationToken = default)
+    => new SessionData[]
+       {
+         new(SessionId,
+             SessionStatus.Running,
+             DateTime.Today.ToUniversalTime(),
+             null,
+             new List<string>
+             {
+               PartitionId,
+             },
+             TaskOptions),
+       }.Select(selector.Compile())
+        .ToAsyncEnumerable();
 
-  public Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                            CancellationToken cancellationToken = default)
-    => Task.FromResult(false);
-
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(TaskOptions);
 
   public Task<SessionData> CancelSessionAsync(string            sessionId,
                                               CancellationToken cancellationToken = default)
@@ -105,29 +100,22 @@ public class SimpleSessionTable : ISessionTable
                                  CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
-                                                    CancellationToken cancellationToken = default)
-    => new List<string>
-       {
-         SessionId,
-       }.ToAsyncEnumerable();
-
-  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                     Expression<Func<SessionData, object?>> orderField,
-                                                                                     bool                                   ascOrder,
-                                                                                     int                                    page,
-                                                                                     int                                    pageSize,
-                                                                                     CancellationToken                      cancellationToken = default)
-    => Task.FromResult((new List<SessionData>
-                        {
-                          new(SessionId,
-                              SessionStatus.Running,
-                              DateTime.Today.ToUniversalTime(),
-                              null,
-                              new List<string>
-                              {
-                                PartitionId,
-                              },
-                              TaskOptions),
-                        }.AsEnumerable(), 1));
+  public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                      Expression<Func<SessionData, object?>> orderField,
+                                                                                      bool                                   ascOrder,
+                                                                                      int                                    page,
+                                                                                      int                                    pageSize,
+                                                                                      CancellationToken                      cancellationToken = default)
+    => Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((new List<SessionData>
+                                                                              {
+                                                                                new(SessionId,
+                                                                                    SessionStatus.Running,
+                                                                                    DateTime.Today.ToUniversalTime(),
+                                                                                    null,
+                                                                                    new List<string>
+                                                                                    {
+                                                                                      PartitionId,
+                                                                                    },
+                                                                                    TaskOptions),
+                                                                              }.AsEnumerable(), 1));
 }

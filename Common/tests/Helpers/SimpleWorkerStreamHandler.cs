@@ -15,19 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Worker;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-
-using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -40,19 +36,12 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
     => Task.CompletedTask;
 
   public void Dispose()
-  {
-  }
+    => GC.SuppressFinalize(this);
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken)
-    => Pipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply
-                                                                 {
-                                                                   CommunicationToken = "",
-                                                                   Output = new Output
-                                                                            {
-                                                                              Ok = new Empty(),
-                                                                            },
-                                                                 });
-
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+  public Task<Output> StartTaskProcessing(TaskData          taskData,
+                                          string            token,
+                                          string            dataFolder,
+                                          CancellationToken cancellationToken)
+    => Task.FromResult(new Output(true,
+                                  ""));
 }

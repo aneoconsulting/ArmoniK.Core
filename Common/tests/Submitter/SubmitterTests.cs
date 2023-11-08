@@ -30,11 +30,13 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using EphemeralMongo;
 
@@ -50,11 +52,10 @@ using MongoDB.Driver;
 
 using NUnit.Framework;
 
-using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Submitter;
 
@@ -68,8 +69,10 @@ public class SubmitterTests
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -137,9 +140,9 @@ public class SubmitterTests
     await objectStorage.Init(CancellationToken.None)
                        .ConfigureAwait(false);
 
-    var resultTable = provider.GetRequiredService<IResultTable>();
-    await resultTable.Init(CancellationToken.None)
-                     .ConfigureAwait(false);
+    resultTable_ = provider.GetRequiredService<IResultTable>();
+    await resultTable_.Init(CancellationToken.None)
+                      .ConfigureAwait(false);
 
     sessionTable_ = provider.GetRequiredService<ISessionTable>();
     await sessionTable_.Init(CancellationToken.None)
@@ -183,11 +186,13 @@ public class SubmitterTests
   private static readonly string           ExpectedOutput3  = "ExpectedOutput3";
   private static readonly string           ExpectedOutput4  = "ExpectedOutput4";
   private static readonly string           ExpectedOutput5  = "ExpectedOutput5";
+  private static readonly string           ExpectedOutput6  = "ExpectedOutput6";
   private static readonly string           DefaultPartition = "DefaultPartition";
   private static readonly ActivitySource   ActivitySource   = new("ArmoniK.Core.Common.Tests.Submitter");
   private                 ISessionTable?   sessionTable_;
   private                 ITaskTable?      taskTable_;
   private                 IPartitionTable? partitionTable_;
+  private                 IResultTable?    resultTable_;
 
   public static readonly TaskOptions DefaultTaskOptionsPart1 = new()
                                                                {
@@ -199,6 +204,7 @@ public class SubmitterTests
 
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
+                                                                                                         IResultTable      resultTable,
                                                                                                          CancellationToken token)
   {
     await partitionTable.CreatePartitionsAsync(new[]
@@ -226,13 +232,43 @@ public class SubmitterTests
                                                      "part1",
                                                      "part2",
                                                    },
-                                                   DefaultTaskOptionsPart1,
+                                                   DefaultTaskOptionsPart1.ToTaskOptions(),
                                                    token)
                                     .ConfigureAwait(false)).SessionId;
 
+    await resultTable.Create(new[]
+                             {
+                               new Result(sessionId,
+                                          ExpectedOutput1,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                               new Result(sessionId,
+                                          ExpectedOutput2,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                               new Result(sessionId,
+                                          ExpectedOutput6,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                             },
+                             token)
+                     .ConfigureAwait(false);
+
     var taskCreating = (await submitter.CreateTasks(sessionId,
                                                     sessionId,
-                                                    DefaultTaskOptionsPart1,
+                                                    DefaultTaskOptionsPart1.ToTaskOptions(),
                                                     new List<TaskRequest>
                                                     {
                                                       new(new[]
@@ -246,33 +282,55 @@ public class SubmitterTests
                                                           }.ToAsyncEnumerable()),
                                                     }.ToAsyncEnumerable(),
                                                     CancellationToken.None)
-                                       .ConfigureAwait(false)).requests.First()
-                                                              .Id;
+                                       .ConfigureAwait(false)).First()
+                                                              .TaskId;
 
-    var tuple = await submitter.CreateTasks(sessionId,
-                                            sessionId,
-                                            DefaultTaskOptionsPart1,
-                                            new List<TaskRequest>
-                                            {
-                                              new(new[]
-                                                  {
-                                                    ExpectedOutput2,
-                                                  },
-                                                  new List<string>(),
-                                                  new List<ReadOnlyMemory<byte>>
-                                                  {
-                                                    new(Encoding.ASCII.GetBytes("AAAA")),
-                                                  }.ToAsyncEnumerable()),
-                                            }.ToAsyncEnumerable(),
-                                            CancellationToken.None)
-                               .ConfigureAwait(false);
+    var requests = await submitter.CreateTasks(sessionId,
+                                               sessionId,
+                                               DefaultTaskOptionsPart1.ToTaskOptions(),
+                                               new List<TaskRequest>
+                                               {
+                                                 new(new[]
+                                                     {
+                                                       ExpectedOutput2,
+                                                     },
+                                                     new List<string>(),
+                                                     new List<ReadOnlyMemory<byte>>
+                                                     {
+                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                     }.ToAsyncEnumerable()),
+                                               }.ToAsyncEnumerable(),
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-    var taskSubmitted = tuple.requests.First()
-                             .Id;
+    var taskSubmitted = requests.First()
+                                .TaskId;
 
-    await submitter.FinalizeTaskCreation(tuple.requests,
-                                         tuple.priority,
-                                         tuple.partitionId,
+    await submitter.FinalizeTaskCreation(requests,
+                                         sessionId,
+                                         sessionId,
+                                         CancellationToken.None)
+                   .ConfigureAwait(false);
+
+    var requests2 = await submitter.CreateTasks(sessionId,
+                                                sessionId,
+                                                null,
+                                                new List<TaskRequest>
+                                                {
+                                                  new(new List<string>
+                                                      {
+                                                        ExpectedOutput6,
+                                                      },
+                                                      new List<string>(),
+                                                      new List<ReadOnlyMemory<byte>>
+                                                      {
+                                                        new(Encoding.ASCII.GetBytes("AAAA")),
+                                                      }.ToAsyncEnumerable()),
+                                                }.ToAsyncEnumerable(),
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+    await submitter.FinalizeTaskCreation(requests2,
                                          sessionId,
                                          sessionId,
                                          CancellationToken.None)
@@ -283,6 +341,7 @@ public class SubmitterTests
 
   private static async Task<string> InitSubmitterCompleteTask(ISubmitter        submitter,
                                                               ITaskTable        taskTable,
+                                                              IResultTable      resultTable,
                                                               string            sessionId,
                                                               CancellationToken token)
   {
@@ -294,31 +353,42 @@ public class SubmitterTests
                                PartitionId = "part2",
                              };
 
+    await resultTable.Create(new[]
+                             {
+                               new Result(sessionId,
+                                          ExpectedOutput3,
+                                          "",
+                                          "",
+                                          ResultStatus.Created,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          Array.Empty<byte>()),
+                             },
+                             token)
+                     .ConfigureAwait(false);
 
-    var tuple = await submitter.CreateTasks(sessionId,
-                                            sessionId,
-                                            defaultTaskOptions,
-                                            new List<TaskRequest>
-                                            {
-                                              new(new[]
-                                                  {
-                                                    ExpectedOutput3,
-                                                  },
-                                                  new List<string>(),
-                                                  new List<ReadOnlyMemory<byte>>
-                                                  {
-                                                    new(Encoding.ASCII.GetBytes("AAAA")),
-                                                  }.ToAsyncEnumerable()),
-                                            }.ToAsyncEnumerable(),
-                                            token)
-                               .ConfigureAwait(false);
+    var requests = await submitter.CreateTasks(sessionId,
+                                               sessionId,
+                                               defaultTaskOptions.ToTaskOptions(),
+                                               new List<TaskRequest>
+                                               {
+                                                 new(new[]
+                                                     {
+                                                       ExpectedOutput3,
+                                                     },
+                                                     new List<string>(),
+                                                     new List<ReadOnlyMemory<byte>>
+                                                     {
+                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                     }.ToAsyncEnumerable()),
+                                               }.ToAsyncEnumerable(),
+                                               token)
+                                  .ConfigureAwait(false);
 
-    var taskCompletedId = tuple.requests.First()
-                               .Id;
+    var taskCompletedId = requests.First()
+                                  .TaskId;
 
-    await submitter.FinalizeTaskCreation(tuple.requests,
-                                         tuple.priority,
-                                         tuple.partitionId,
+    await submitter.FinalizeTaskCreation(requests,
                                          sessionId,
                                          sessionId,
                                          token)
@@ -337,18 +407,15 @@ public class SubmitterTests
                                 },
                                 new List<string>(),
                                 TaskStatus.Completed,
-                                defaultTaskOptions,
+                                defaultTaskOptions.ToTaskOptions(),
                                 new Output(false,
                                            ""));
 
-    await taskTable.AcquireTask(taskCompletedId,
-                                "OwnerPodId",
-                                "OwnerPodName",
-                                DateTime.UtcNow,
+    await taskTable.AcquireTask(taskData,
                                 token)
                    .ConfigureAwait(false);
 
-    await taskTable.StartTask(taskCompletedId,
+    await taskTable.StartTask(taskData,
                               token)
                    .ConfigureAwait(false);
 
@@ -365,10 +432,8 @@ public class SubmitterTests
 
     await submitter.CompleteTaskAsync(taskData,
                                       true,
-                                      new Api.gRPC.V1.Output
-                                      {
-                                        Ok = new Empty(),
-                                      },
+                                      new Output(true,
+                                                 string.Empty),
                                       token)
                    .ConfigureAwait(false);
 
@@ -381,6 +446,7 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
@@ -414,7 +480,7 @@ public class SubmitterTests
                                                                                                {
                                                                                                  "invalid",
                                                                                                },
-                                                                                               defaultTaskOptions,
+                                                                                               defaultTaskOptions.ToTaskOptions(),
                                                                                                CancellationToken.None)
                                                                                 .ConfigureAwait(false));
   }
@@ -434,7 +500,7 @@ public class SubmitterTests
                                                                                                {
                                                                                                  DefaultPartition,
                                                                                                },
-                                                                                               defaultTaskOptions,
+                                                                                               defaultTaskOptions.ToTaskOptions(),
                                                                                                CancellationToken.None)
                                                                                 .ConfigureAwait(false));
   }
@@ -454,7 +520,7 @@ public class SubmitterTests
                                                        {
                                                          DefaultPartition,
                                                        },
-                                                       defaultTaskOptions,
+                                                       defaultTaskOptions.ToTaskOptions(),
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
     Assert.NotNull(sessionReply.SessionId);
@@ -466,6 +532,7 @@ public class SubmitterTests
   {
     var (_, taskCreating, _) = await InitSubmitter(submitter_!,
                                                    partitionTable_!,
+                                                   resultTable_!,
                                                    CancellationToken.None)
                                  .ConfigureAwait(false);
 
@@ -492,6 +559,7 @@ public class SubmitterTests
   {
     var _ = await InitSubmitter(submitter_!,
                                 partitionTable_!,
+                                resultTable_!,
                                 CancellationToken.None)
               .ConfigureAwait(false);
 
@@ -507,30 +575,32 @@ public class SubmitterTests
                                       .IsValid);
 
     var sessionId = (await submitter_!.CreateSession(new List<string>(),
-                                                     taskOptions,
+                                                     taskOptions.ToTaskOptions(),
                                                      CancellationToken.None)
                                       .ConfigureAwait(false)).SessionId;
 
-    var tuple = await submitter_!.CreateTasks(sessionId,
-                                              sessionId,
-                                              taskOptions,
-                                              new List<TaskRequest>
-                                              {
-                                                new(new[]
-                                                    {
-                                                      ExpectedOutput2,
-                                                    },
-                                                    new List<string>(),
-                                                    new List<ReadOnlyMemory<byte>>
-                                                    {
-                                                      new(Encoding.ASCII.GetBytes("AAAA")),
-                                                    }.ToAsyncEnumerable()),
-                                              }.ToAsyncEnumerable(),
-                                              CancellationToken.None)
-                                 .ConfigureAwait(false);
+    var requests = await submitter_!.CreateTasks(sessionId,
+                                                 sessionId,
+                                                 taskOptions.ToTaskOptions(),
+                                                 new List<TaskRequest>
+                                                 {
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput2,
+                                                       },
+                                                       new List<string>(),
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                 }.ToAsyncEnumerable(),
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
 
     Assert.AreEqual(DefaultPartition,
-                    tuple.partitionId);
+                    requests.Select(request => request.Options.PartitionId)
+                            .Distinct()
+                            .Single());
 
     var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
@@ -538,8 +608,8 @@ public class SubmitterTests
                                                            {
                                                              Ids =
                                                              {
-                                                               tuple.requests.Single()
-                                                                    .Id,
+                                                               requests.Single()
+                                                                       .TaskId,
                                                              },
                                                            },
                                                   },
@@ -547,8 +617,8 @@ public class SubmitterTests
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(tuple.requests.Single()
-                         .Id,
+    Assert.AreEqual(requests.Single()
+                            .TaskId,
                     result.Single());
   }
 
@@ -557,6 +627,7 @@ public class SubmitterTests
   {
     var _ = await InitSubmitter(submitter_!,
                                 partitionTable_!,
+                                resultTable_!,
                                 CancellationToken.None)
               .ConfigureAwait(false);
 
@@ -583,30 +654,32 @@ public class SubmitterTests
                                                      {
                                                        "part1",
                                                      },
-                                                     sessionTaskOptions,
+                                                     sessionTaskOptions.ToTaskOptions(),
                                                      CancellationToken.None)
                                       .ConfigureAwait(false)).SessionId;
 
-    var tuple = await submitter_!.CreateTasks(sessionId,
-                                              sessionId,
-                                              taskOptions,
-                                              new List<TaskRequest>
-                                              {
-                                                new(new[]
-                                                    {
-                                                      ExpectedOutput2,
-                                                    },
-                                                    new List<string>(),
-                                                    new List<ReadOnlyMemory<byte>>
-                                                    {
-                                                      new(Encoding.ASCII.GetBytes("AAAA")),
-                                                    }.ToAsyncEnumerable()),
-                                              }.ToAsyncEnumerable(),
-                                              CancellationToken.None)
-                                 .ConfigureAwait(false);
+    var requests = await submitter_!.CreateTasks(sessionId,
+                                                 sessionId,
+                                                 taskOptions.ToTaskOptions(),
+                                                 new List<TaskRequest>
+                                                 {
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput2,
+                                                       },
+                                                       new List<string>(),
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                 }.ToAsyncEnumerable(),
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
 
     Assert.AreEqual("part1",
-                    tuple.partitionId);
+                    requests.Select(request => request.Options.PartitionId)
+                            .Distinct()
+                            .Single());
 
     var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
@@ -614,8 +687,8 @@ public class SubmitterTests
                                                            {
                                                              Ids =
                                                              {
-                                                               tuple.requests.Single()
-                                                                    .Id,
+                                                               requests.Single()
+                                                                       .TaskId,
                                                              },
                                                            },
                                                   },
@@ -623,8 +696,8 @@ public class SubmitterTests
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(tuple.requests.Single()
-                         .Id,
+    Assert.AreEqual(requests.Single()
+                            .TaskId,
                     result.Single());
   }
 
@@ -644,7 +717,7 @@ public class SubmitterTests
                                                                                      "part1",
                                                                                      "part2",
                                                                                    },
-                                                                                   defaultTaskOptions,
+                                                                                   defaultTaskOptions.ToTaskOptions(),
                                                                                    CancellationToken.None));
     return Task.CompletedTask;
   }
@@ -654,6 +727,7 @@ public class SubmitterTests
   {
     var (_, _, taskSubmitted) = await InitSubmitter(submitter_!,
                                                     partitionTable_!,
+                                                    resultTable_!,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -674,11 +748,13 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
     await InitSubmitterCompleteTask(submitter_!,
                                     taskTable_!,
+                                    resultTable_!,
                                     sessionId,
                                     CancellationToken.None)
       .ConfigureAwait(false);
@@ -718,6 +794,7 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
@@ -737,6 +814,7 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
@@ -763,6 +841,7 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
@@ -780,11 +859,13 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
     await InitSubmitterCompleteTask(submitter_!,
                                     taskTable_!,
+                                    resultTable_!,
                                     sessionId,
                                     CancellationToken.None)
       .ConfigureAwait(false);
@@ -792,7 +873,7 @@ public class SubmitterTests
     var result = (await taskTable_!.CountPartitionTasksAsync(CancellationToken.None)
                                    .ConfigureAwait(false)).OrderBy(r => r.Status)
                                                           .ThenBy(r => r.PartitionId)
-                                                          .ToIList();
+                                                          .AsIList();
 
     Assert.AreEqual(3,
                     result.Count);
@@ -802,7 +883,7 @@ public class SubmitterTests
                     result[0]);
     Assert.AreEqual(new PartitionTaskStatusCount("part1",
                                                  TaskStatus.Submitted,
-                                                 1),
+                                                 2),
                     result[1]);
     Assert.AreEqual(new PartitionTaskStatusCount("part2",
                                                  TaskStatus.Completed,
@@ -815,47 +896,68 @@ public class SubmitterTests
   {
     var (sessionId, _, _) = await InitSubmitter(submitter_!,
                                                 partitionTable_!,
+                                                resultTable_!,
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
-    var tuple = await submitter_!.CreateTasks(sessionId,
-                                              sessionId,
-                                              DefaultTaskOptionsPart1,
-                                              new List<TaskRequest>
-                                              {
-                                                new(new[]
-                                                    {
-                                                      ExpectedOutput4,
-                                                    },
-                                                    new List<string>(),
-                                                    new List<ReadOnlyMemory<byte>>
-                                                    {
-                                                      new(Encoding.ASCII.GetBytes("AAAA")),
-                                                    }.ToAsyncEnumerable()),
-                                                new(new[]
-                                                    {
-                                                      ExpectedOutput5,
-                                                    },
-                                                    new[]
-                                                    {
-                                                      ExpectedOutput4,
-                                                    },
-                                                    new List<ReadOnlyMemory<byte>>
-                                                    {
-                                                      new(Encoding.ASCII.GetBytes("AAAA")),
-                                                    }.ToAsyncEnumerable()),
-                                              }.ToAsyncEnumerable(),
-                                              CancellationToken.None)
-                                 .ConfigureAwait(false);
+    await resultTable_!.Create(new[]
+                               {
+                                 new Result(sessionId,
+                                            ExpectedOutput4,
+                                            "",
+                                            "",
+                                            ResultStatus.Created,
+                                            new List<string>(),
+                                            DateTime.UtcNow,
+                                            Array.Empty<byte>()),
+                                 new Result(sessionId,
+                                            ExpectedOutput5,
+                                            "",
+                                            "",
+                                            ResultStatus.Created,
+                                            new List<string>(),
+                                            DateTime.UtcNow,
+                                            Array.Empty<byte>()),
+                               },
+                               CancellationToken.None)
+                       .ConfigureAwait(false);
 
-    var abortedTask = tuple.requests.First()
-                           .Id;
-    var taskWithDependencies = tuple.requests.Last()
-                                    .Id;
+    var requests = await submitter_!.CreateTasks(sessionId,
+                                                 sessionId,
+                                                 DefaultTaskOptionsPart1.ToTaskOptions(),
+                                                 new List<TaskRequest>
+                                                 {
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput4,
+                                                       },
+                                                       new List<string>(),
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput5,
+                                                       },
+                                                       new[]
+                                                       {
+                                                         ExpectedOutput4,
+                                                       },
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                 }.ToAsyncEnumerable(),
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
 
-    await submitter_.FinalizeTaskCreation(tuple.requests,
-                                          DefaultTaskOptionsPart1.Priority,
-                                          DefaultTaskOptionsPart1.PartitionId,
+    var abortedTask = requests.First()
+                              .TaskId;
+    var taskWithDependencies = requests.Last()
+                                       .TaskId;
+
+    await submitter_.FinalizeTaskCreation(requests,
                                           sessionId,
                                           sessionId,
                                           CancellationToken.None)
@@ -870,13 +972,8 @@ public class SubmitterTests
 
     await submitter_.CompleteTaskAsync(taskData,
                                        false,
-                                       new Api.gRPC.V1.Output
-                                       {
-                                         Error = new Api.gRPC.V1.Output.Types.Error
-                                                 {
-                                                   Details = "This error should be propagated to other tasks",
-                                                 },
-                                       })
+                                       new Output(false,
+                                                  "This error should be propagated to other tasks"))
                     .ConfigureAwait(false);
 
     taskData = await taskTable_.ReadTaskAsync(abortedTask,

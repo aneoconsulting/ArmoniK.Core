@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
-
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
@@ -25,19 +23,4 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Status">Status of the task</param>
 /// <param name="Count">Number of tasks with the associated status</param>
 public record TaskStatusCount(TaskStatus Status,
-                              int        Count)
-{
-  /// <summary>
-  ///   Conversion operator from <see cref="TaskStatusCount" /> to <see cref="StatusCount" />
-  /// </summary>
-  /// <param name="taskStatusCount">The input status count</param>
-  /// <returns>
-  ///   The converted status count
-  /// </returns>
-  public static implicit operator StatusCount(TaskStatusCount taskStatusCount)
-    => new()
-       {
-         Count  = taskStatusCount.Count,
-         Status = taskStatusCount.Status,
-       };
-}
+                              int        Count);

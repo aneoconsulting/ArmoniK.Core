@@ -18,10 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
+using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -44,31 +41,4 @@ public record SessionData(string        SessionId,
            options)
   {
   }
-
-  public static implicit operator SessionRaw(SessionData sessionData)
-    => new()
-       {
-         CancelledAt = sessionData.CancellationDate is not null
-                         ? FromDateTime(sessionData.CancellationDate.Value)
-                         : null,
-         CreatedAt = FromDateTime(sessionData.CreationDate),
-         Options   = sessionData.Options,
-         PartitionIds =
-         {
-           sessionData.PartitionIds,
-         },
-         SessionId = sessionData.SessionId,
-         Status    = sessionData.Status,
-       };
-
-  public static implicit operator SessionSummary(SessionData sessionData)
-    => new()
-       {
-         CancelledAt = sessionData.CancellationDate is not null
-                         ? FromDateTime(sessionData.CancellationDate.Value)
-                         : null,
-         CreatedAt = FromDateTime(sessionData.CreationDate),
-         SessionId = sessionData.SessionId,
-         Status    = sessionData.Status,
-       };
 }

@@ -18,6 +18,7 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
@@ -31,11 +32,17 @@ public class ListSessionsRequestValidatorTest
   public void Setup()
     => validListSessionsRequest_ = new ListSessionsRequest
                                    {
-                                     Filter = new ListSessionsRequest.Types.Filter(),
+                                     Filters = new Filters(),
                                      Sort = new ListSessionsRequest.Types.Sort
                                             {
-                                              Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                              Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
+                                              Direction = SortDirection.Asc,
+                                              Field = new SessionField
+                                                      {
+                                                        SessionRawField = new SessionRawField
+                                                                          {
+                                                                            Field = SessionRawEnumField.CreatedAt,
+                                                                          },
+                                                      },
                                             },
                                      Page     = 0,
                                      PageSize = 1,
@@ -52,7 +59,7 @@ public class ListSessionsRequestValidatorTest
   [Test]
   public void ListSessionsRequestDefaultFilterShouldFail()
   {
-    validListSessionsRequest_!.Filter = default;
+    validListSessionsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }
@@ -77,7 +84,7 @@ public class ListSessionsRequestValidatorTest
   {
     validListSessionsRequest_!.Sort = new ListSessionsRequest.Types.Sort
                                       {
-                                        Direction = ListSessionsRequest.Types.OrderDirection.Desc,
+                                        Direction = SortDirection.Desc,
                                       };
     foreach (var error in validator_.Validate(validListSessionsRequest_)
                                     .Errors)
@@ -94,7 +101,13 @@ public class ListSessionsRequestValidatorTest
   {
     validListSessionsRequest_!.Sort = new ListSessionsRequest.Types.Sort
                                       {
-                                        Field = ListSessionsRequest.Types.OrderByField.SessionId,
+                                        Field = new SessionField
+                                                {
+                                                  SessionRawField = new SessionRawField
+                                                                    {
+                                                                      Field = SessionRawEnumField.SessionId,
+                                                                    },
+                                                },
                                       };
     foreach (var error in validator_.Validate(validListSessionsRequest_)
                                     .Errors)

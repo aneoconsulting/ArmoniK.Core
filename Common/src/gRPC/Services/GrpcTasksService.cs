@@ -17,14 +17,19 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -32,20 +37,33 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 using Task = ArmoniK.Api.gRPC.V1.Tasks.Tasks;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {
+  private readonly HttpClient                httpClient_;
   private readonly ILogger<GrpcTasksService> logger_;
+  private readonly IPushQueueStorage         pushQueueStorage_;
+  private readonly IResultTable              resultTable_;
+  private readonly ISessionTable             sessionTable_;
   private readonly ITaskTable                taskTable_;
 
   public GrpcTasksService(ITaskTable                taskTable,
-                          ILogger<GrpcTasksService> logger)
+                          ISessionTable             sessionTable,
+                          IResultTable              resultTable,
+                          IPushQueueStorage         pushQueueStorage,
+                          ILogger<GrpcTasksService> logger,
+                          HttpClient                httpClient)
   {
-    logger_    = logger;
-    taskTable_ = taskTable;
+    logger_           = logger;
+    taskTable_        = taskTable;
+    sessionTable_     = sessionTable;
+    resultTable_      = resultTable;
+    pushQueueStorage_ = pushQueueStorage;
+    httpClient_       = httpClient;
   }
 
   [RequiresPermission(typeof(GrpcTasksService),
@@ -57,9 +75,9 @@ public class GrpcTasksService : Task.TasksBase
     {
       return new GetTaskResponse
              {
-               Task = await taskTable_.ReadTaskAsync(request.TaskId,
-                                                     context.CancellationToken)
-                                      .ConfigureAwait(false),
+               Task = (await taskTable_.ReadTaskAsync(request.TaskId,
+                                                      context.CancellationToken)
+                                       .ConfigureAwait(false)).ToTaskDetailed(),
              };
     }
     catch (TaskNotFoundException e)
@@ -92,13 +110,45 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
-      var taskData = await taskTable_.ListTasksAsync(request.Filter.ToTaskDataFilter(),
-                                                     request.Sort.ToTaskDataField(),
-                                                     request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc,
-                                                     request.Page,
-                                                     request.PageSize,
-                                                     context.CancellationToken)
-                                     .ConfigureAwait(false);
+      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      {
+        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                           request.Sort.Field.TaskOptionGenericField.Field);
+      }
+
+      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
+                                                                  ? data => true
+                                                                  : request.Filters.ToTaskDataFilter(),
+                                                                request.Sort is null
+                                                                  ? data => data.TaskId
+                                                                  : request.Sort.ToField(),
+                                                                data => new TaskDataSummary(data.SessionId,
+                                                                                            data.TaskId,
+                                                                                            data.OwnerPodId,
+                                                                                            data.OwnerPodName,
+                                                                                            data.ParentTaskIds.Count,
+                                                                                            data.DataDependencies.Count,
+                                                                                            data.ExpectedOutputIds.Count,
+                                                                                            data.InitialTaskId,
+                                                                                            data.RetryOfIds.Count,
+                                                                                            data.Status,
+                                                                                            data.StatusMessage,
+                                                                                            data.Options,
+                                                                                            data.CreationDate,
+                                                                                            data.SubmittedDate,
+                                                                                            data.StartDate,
+                                                                                            data.EndDate,
+                                                                                            data.ReceptionDate,
+                                                                                            data.AcquisitionDate,
+                                                                                            data.PodTtl,
+                                                                                            data.ProcessingToEndDuration,
+                                                                                            data.CreationToEndDuration,
+                                                                                            data.Output),
+                                                                request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                request.Page,
+                                                                request.PageSize,
+                                                                context.CancellationToken)
+                                                .ConfigureAwait(false);
 
       return new ListTasksResponse
              {
@@ -106,9 +156,9 @@ public class GrpcTasksService : Task.TasksBase
                PageSize = request.PageSize,
                Tasks =
                {
-                 taskData.tasks.Select(data => new TaskSummary(data)),
+                 tasks.Select(data => data.ToTaskSummary()),
                },
-               Total = taskData.totalCount,
+               Total = (int)totalCount,
              };
     }
     catch (ArmoniKException e)
@@ -176,13 +226,48 @@ public class GrpcTasksService : Task.TasksBase
   {
     try
     {
+      await taskTable_.CancelTaskAsync(request.TaskIds,
+                                       context.CancellationToken)
+                      .ConfigureAwait(false);
+      var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                        data => data.OwnerPodId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
+                                        async ownerPodId => await (string.IsNullOrEmpty(ownerPodId)
+                                                                     ? System.Threading.Tasks.Task.CompletedTask
+                                                                     : httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false))
+                       .ConfigureAwait(false);
       return new CancelTasksResponse
              {
                Tasks =
                {
-                 (await taskTable_.CancelTaskAsync(request.TaskIds,
-                                                   context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(data => new TaskSummary(data)),
+                 (await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                  data => new TaskDataSummary(data.SessionId,
+                                                                              data.TaskId,
+                                                                              data.OwnerPodId,
+                                                                              data.OwnerPodName,
+                                                                              data.ParentTaskIds.Count,
+                                                                              data.DataDependencies.Count,
+                                                                              data.ExpectedOutputIds.Count,
+                                                                              data.InitialTaskId,
+                                                                              data.RetryOfIds.Count,
+                                                                              data.Status,
+                                                                              data.StatusMessage,
+                                                                              data.Options,
+                                                                              data.CreationDate,
+                                                                              data.SubmittedDate,
+                                                                              data.StartDate,
+                                                                              data.EndDate,
+                                                                              data.ReceptionDate,
+                                                                              data.AcquisitionDate,
+                                                                              data.PodTtl,
+                                                                              data.ProcessingToEndDuration,
+                                                                              data.CreationToEndDuration,
+                                                                              data.Output),
+                                                  context.CancellationToken)
+                                  .ToListAsync(context.CancellationToken)
+                                  .ConfigureAwait(false)).Select(data => data.ToTaskSummary()),
                },
              };
     }
@@ -213,11 +298,13 @@ public class GrpcTasksService : Task.TasksBase
              {
                Status =
                {
-                 (await taskTable_.CountTasksAsync(_ => true,
+                 (await taskTable_.CountTasksAsync(request.Filters is null
+                                                     ? data => true
+                                                     : request.Filters.ToTaskDataFilter(),
                                                    context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => new StatusCount
                                                                           {
-                                                                            Status = count.Status,
+                                                                            Status = count.Status.ToGrpcStatus(),
                                                                             Count  = count.Count,
                                                                           }),
                },
@@ -237,5 +324,124 @@ public class GrpcTasksService : Task.TasksBase
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
+  }
+
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(ListTasksDetailed))]
+  public override async Task<ListTasksDetailedResponse> ListTasksDetailed(ListTasksRequest  request,
+                                                                          ServerCallContext context)
+  {
+    try
+    {
+      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
+      {
+        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                           request.Sort.Field.TaskOptionGenericField.Field);
+      }
+
+      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
+                                                                  ? data => true
+                                                                  : request.Filters.ToTaskDataFilter(),
+                                                                request.Sort is null
+                                                                  ? data => data.TaskId
+                                                                  : request.Sort.ToField(),
+                                                                data => data,
+                                                                request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                request.Page,
+                                                                request.PageSize,
+                                                                context.CancellationToken)
+                                                .ConfigureAwait(false);
+
+      return new ListTasksDetailedResponse
+             {
+               Page     = request.Page,
+               PageSize = request.PageSize,
+               Tasks =
+               {
+                 tasks.Select(data => data.ToTaskDetailed()),
+               },
+               Total = (int)totalCount,
+             };
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing tasks");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing tasks");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcTasksService),
+                      nameof(SubmitTasks))]
+  public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
+                                                              ServerCallContext  context)
+  {
+    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                          context.CancellationToken)
+                                         .ConfigureAwait(false);
+
+
+    var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,
+                                                                request.TaskOptions.ToNullableTaskOptions(),
+                                                                request.SessionId,
+                                                                pushQueueStorage_.MaxPriority,
+                                                                logger_,
+                                                                context.CancellationToken);
+
+    var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
+                                                                                                .ToString(),
+                                                                                            creation.PayloadId,
+                                                                                            TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                              submissionOptions),
+                                                                                            creation.ExpectedOutputKeys,
+                                                                                            creation.DataDependencies))
+                                  .ToList();
+
+
+    await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                          resultTable_,
+                                          request.SessionId,
+                                          request.SessionId,
+                                          creationRequests,
+                                          logger_,
+                                          context.CancellationToken)
+                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                   resultTable_,
+                                                   pushQueueStorage_,
+                                                   creationRequests,
+                                                   request.SessionId,
+                                                   request.SessionId,
+                                                   logger_,
+                                                   context.CancellationToken)
+                             .ConfigureAwait(false);
+
+    return new SubmitTasksResponse
+           {
+             TaskInfos =
+             {
+               creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
+                                                          {
+                                                            DataDependencies =
+                                                            {
+                                                              creationRequest.DataDependencies,
+                                                            },
+                                                            ExpectedOutputIds =
+                                                            {
+                                                              creationRequest.ExpectedOutputKeys,
+                                                            },
+                                                            TaskId = creationRequest.TaskId,
+                                                          }),
+             },
+           };
   }
 }

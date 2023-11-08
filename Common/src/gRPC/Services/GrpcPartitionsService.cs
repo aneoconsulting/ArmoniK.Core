@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Storage;
@@ -80,9 +80,13 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   public override async Task<ListPartitionsResponse> ListPartitions(ListPartitionsRequest request,
                                                                     ServerCallContext     context)
   {
-    var partitions = await partitionTable_.ListPartitionsAsync(request.Filter.ToPartitionFilter(),
-                                                               request.Sort.ToPartitionField(),
-                                                               request.Sort.Direction == ListPartitionsRequest.Types.OrderDirection.Asc,
+    var partitions = await partitionTable_.ListPartitionsAsync(request.Filters is null
+                                                                 ? data => true
+                                                                 : request.Filters.ToPartitionFilter(),
+                                                               request.Sort is null
+                                                                 ? data => data.PartitionId
+                                                                 : request.Sort.ToField(),
+                                                               request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                                request.Page,
                                                                request.PageSize,
                                                                context.CancellationToken)

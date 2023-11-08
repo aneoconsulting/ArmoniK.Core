@@ -22,7 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 
@@ -194,7 +194,7 @@ public class AuthenticationTableTestBase
   protected bool RunTests;
 
   /* Function be override so it returns the suitable instance
- * of AuthenticationTable to the corresponding interface implementation */
+   * of AuthenticationTable to the corresponding interface implementation */
   public virtual void GetAuthSource()
   {
   }

@@ -19,9 +19,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Base;
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.ListPartitionsRequestExt;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -224,16 +228,16 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await PartitionTable!.ListPartitionsAsync(data => data.PartitionId == "NotExisting",
-                                                                data => data.ParentPartitionIds,
-                                                                false,
-                                                                0,
-                                                                20,
-                                                                CancellationToken.None)
-                                           .ConfigureAwait(false);
+      var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(data => data.PartitionId == "NotExisting",
+                                                                      data => data.ParentPartitionIds,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(0,
-                      listTasks.totalCount);
+                      totalCount);
     }
   }
 
@@ -242,16 +246,106 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await PartitionTable!.ListPartitionsAsync(data => data.ParentPartitionIds.Contains("ParentPartitionId"),
-                                                                data => data.PartitionId,
-                                                                false,
-                                                                0,
-                                                                20,
-                                                                CancellationToken.None)
-                                           .ConfigureAwait(false);
+      var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(data => data.ParentPartitionIds.Contains("ParentPartitionId"),
+                                                                      data => data.PartitionId,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreEqual(1,
-                      listTasks.totalCount);
+                      totalCount);
     }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesFilter))]
+  public async Task ListPartitionFilter(ListPartitionsRequest request,
+                                        int                   count)
+  {
+    if (RunTests)
+    {
+      var (_, totalCount) = await PartitionTable!.ListPartitionsAsync(request.Filters.ToPartitionFilter(),
+                                                                      data => data.PartitionId,
+                                                                      false,
+                                                                      0,
+                                                                      20,
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false);
+
+      Assert.AreEqual(count,
+                      totalCount);
+    }
+  }
+
+  public static IEnumerable<TestCaseData> TestCasesFilter()
+  {
+    TestCaseData CaseTrue(FilterField filterField)
+      => new TestCaseData(ListPartitionsHelper.CreateListPartitionsRequest(new ListPartitionsRequest.Types.Sort(),
+                                                                           new[]
+                                                                           {
+                                                                             filterField,
+                                                                             ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
+                                                                                                                                   FilterStringOperator.Equal,
+                                                                                                                                   "PartitionId2"),
+                                                                           }),
+                          1).SetArgDisplayNames(filterField + " true");
+
+    TestCaseData CaseFalse(FilterField filterField)
+      => new TestCaseData(ListPartitionsHelper.CreateListPartitionsRequest(new ListPartitionsRequest.Types.Sort(),
+                                                                           new[]
+                                                                           {
+                                                                             filterField,
+                                                                             ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
+                                                                                                                                   FilterStringOperator.Equal,
+                                                                                                                                   "PartitionId2"),
+                                                                           }),
+                          0).SetArgDisplayNames(filterField + " false");
+
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
+                                                                                FilterStringOperator.Equal,
+                                                                                "PartitionId2"));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterString(PartitionRawEnumField.Id,
+                                                                                 FilterStringOperator.Equal,
+                                                                                 "PartitionId_false"));
+
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodReserved,
+                                                                                FilterNumberOperator.Equal,
+                                                                                1));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodReserved,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
+
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodMax,
+                                                                                FilterNumberOperator.Equal,
+                                                                                13));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PodMax,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
+
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PreemptionPercentage,
+                                                                                FilterNumberOperator.Equal,
+                                                                                50));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.PreemptionPercentage,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
+
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.Priority,
+                                                                                FilterNumberOperator.Equal,
+                                                                                1));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterNumber(PartitionRawEnumField.Priority,
+                                                                                 FilterNumberOperator.Equal,
+                                                                                 2));
+
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterArray(PartitionRawEnumField.ParentPartitionIds,
+                                                                               FilterArrayOperator.Contains,
+                                                                               "ParentPartitionId"));
+    yield return CaseTrue(ListPartitionsHelper.CreateListPartitionsFilterArray(PartitionRawEnumField.ParentPartitionIds,
+                                                                               FilterArrayOperator.NotContains,
+                                                                               "AnotherParentPartitionId"));
+    yield return CaseFalse(ListPartitionsHelper.CreateListPartitionsFilterArray(PartitionRawEnumField.ParentPartitionIds,
+                                                                                FilterArrayOperator.Contains,
+                                                                                "AnotherParentPartitionId"));
   }
 }

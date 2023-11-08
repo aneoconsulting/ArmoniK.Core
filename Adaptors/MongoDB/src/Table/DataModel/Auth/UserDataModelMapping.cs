@@ -60,24 +60,14 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<UserData> collection)
+                                           IMongoCollection<UserData> collection,
+                                           Options.MongoDB            options)
   {
-    var usernameIndex       = Builders<UserData>.IndexKeys.Text(model => model.Username);
-    var usernameIndexHashed = Builders<UserData>.IndexKeys.Hashed(model => model.Username);
-
-    var indexModels = new CreateIndexModel<UserData>[]
+    var indexModels = new[]
                       {
-                        new(usernameIndex,
-                            new CreateIndexOptions
-                            {
-                              Name   = nameof(usernameIndex),
-                              Unique = true,
-                            }),
-                        new(usernameIndexHashed,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(usernameIndexHashed),
-                            }),
+                        IndexHelper.CreateTextIndex<UserData>(model => model.Username,
+                                                              true),
+                        IndexHelper.CreateHashedIndex<UserData>(model => model.Username),
                       };
     await collection.Indexes.CreateManyAsync(sessionHandle,
                                              indexModels)

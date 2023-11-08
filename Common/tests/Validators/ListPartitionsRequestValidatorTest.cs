@@ -17,8 +17,8 @@
 
 using System;
 
-using Armonik.Api.Grpc.V1.Partitions;
-
+using ArmoniK.Api.gRPC.V1.Partitions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using NUnit.Framework;
@@ -32,11 +32,17 @@ public class ListPartitionsRequestValidatorTest
   public void Setup()
     => validListPartitionsRequest_ = new ListPartitionsRequest
                                      {
-                                       Filter = new ListPartitionsRequest.Types.Filter(),
+                                       Filters = new Filters(),
                                        Sort = new ListPartitionsRequest.Types.Sort
                                               {
-                                                Direction = ListPartitionsRequest.Types.OrderDirection.Asc,
-                                                Field     = ListPartitionsRequest.Types.OrderByField.Id,
+                                                Direction = SortDirection.Asc,
+                                                Field = new PartitionField
+                                                        {
+                                                          PartitionRawField = new PartitionRawField
+                                                                              {
+                                                                                Field = PartitionRawEnumField.Id,
+                                                                              },
+                                                        },
                                               },
                                        Page     = 0,
                                        PageSize = 1,
@@ -53,7 +59,7 @@ public class ListPartitionsRequestValidatorTest
   [Test]
   public void ListPartitionsRequestDefaultFilterShouldFail()
   {
-    validListPartitionsRequest_!.Filter = default;
+    validListPartitionsRequest_!.Filters = default;
     Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
                              .IsValid);
   }
@@ -78,7 +84,7 @@ public class ListPartitionsRequestValidatorTest
   {
     validListPartitionsRequest_!.Sort = new ListPartitionsRequest.Types.Sort
                                         {
-                                          Direction = ListPartitionsRequest.Types.OrderDirection.Desc,
+                                          Direction = SortDirection.Desc,
                                         };
     foreach (var error in validator_.Validate(validListPartitionsRequest_)
                                     .Errors)
@@ -95,7 +101,13 @@ public class ListPartitionsRequestValidatorTest
   {
     validListPartitionsRequest_!.Sort = new ListPartitionsRequest.Types.Sort
                                         {
-                                          Field = ListPartitionsRequest.Types.OrderByField.Id,
+                                          Field = new PartitionField
+                                                  {
+                                                    PartitionRawField = new PartitionRawField
+                                                                        {
+                                                                          Field = PartitionRawEnumField.Id,
+                                                                        },
+                                                  },
                                         };
     foreach (var error in validator_.Validate(validListPartitionsRequest_)
                                     .Errors)

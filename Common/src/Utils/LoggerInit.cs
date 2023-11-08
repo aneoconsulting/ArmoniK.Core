@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2023. All rights reserved.
 // 
@@ -28,16 +28,21 @@ namespace ArmoniK.Core.Common.Utils;
 
 public class LoggerInit
 {
-  private readonly Logger   loggerConfiguration_;
-  private          ILogger? logger_;
+  private readonly ILogger logger_;
+  private readonly Logger  loggerConfiguration_;
 
   public LoggerInit(IConfiguration configuration)
   {
     loggerConfiguration_ = new LoggerConfiguration().ReadFrom.Configuration(configuration)
                                                     .WriteTo.Console(new CompactJsonFormatter())
                                                     .Enrich.FromLogContext()
+                                                    .Enrich.WithProperty("CoreVersion",
+                                                                         typeof(LoggerInit).Assembly.GetName()
+                                                                                           .Version?.ToString() ?? "Unknown")
                                                     .CreateLogger();
-    logger_ = null;
+
+    logger_ = LoggerFactory.Create(builder => builder.AddSerilog(loggerConfiguration_))
+                           .CreateLogger("root");
   }
 
   public void Configure(ILoggingBuilder loggingBuilder)
@@ -47,6 +52,5 @@ public class LoggerInit
     => loggerConfiguration_;
 
   public ILogger GetLogger()
-    => logger_ ??= LoggerFactory.Create(Configure)
-                                .CreateLogger("root");
+    => logger_;
 }

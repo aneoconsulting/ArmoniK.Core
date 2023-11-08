@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 using ArmoniK.Api.Common.Options;
@@ -73,8 +74,10 @@ public class TestTaskHandlerProvider : IDisposable
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -111,6 +114,16 @@ public class TestTaskHandlerProvider : IDisposable
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                   },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.SharedCacheFolder)}",
+                                                    Path.Combine(Path.GetTempPath(),
+                                                                 "data")
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.InternalCacheFolder)}",
+                                                    Path.Combine(Path.GetTempPath(),
+                                                                 "internal")
+                                                  },
                                                 };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -133,15 +146,27 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
-           .AddSingleton("ownerpodid")
-           .AddSingleton<TaskHandler>()
+           .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
+                                                     provider.GetRequiredService<ITaskTable>(),
+                                                     provider.GetRequiredService<IResultTable>(),
+                                                     provider.GetRequiredService<ISubmitter>(),
+                                                     provider.GetRequiredService<DataPrefetcher>(),
+                                                     workerStreamHandler,
+                                                     queueStorage,
+                                                     provider.GetRequiredService<ITaskProcessingChecker>(),
+                                                     "ownerpodid",
+                                                     "ownerpodname",
+                                                     provider.GetRequiredService<ActivitySource>(),
+                                                     agentHandler,
+                                                     provider.GetRequiredService<ILogger>(),
+                                                     provider.GetRequiredService<Injection.Options.Pollster>(),
+                                                     () =>
+                                                     {
+                                                     },
+                                                     cancellationTokenSource))
            .AddSingleton<DataPrefetcher>()
-           .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
-           .AddSingleton(workerStreamHandler)
-           .AddSingleton(agentHandler)
-           .AddSingleton(queueStorage);
+           .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>();
 
     if (inputTaskTable is not null)
     {

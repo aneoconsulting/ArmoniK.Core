@@ -23,17 +23,13 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
@@ -74,42 +70,19 @@ public class SessionTable : ISessionTable
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
                                     SessionStatus.Running,
-                                    partitionIds.ToIList(),
+                                    partitionIds.AsIList(),
                                     defaultOptions));
     return Task.FromResult(rootSessionId);
   }
 
   /// <inheritdoc />
-  public Task<SessionData> GetSessionAsync(string            sessionId,
-                                           CancellationToken cancellationToken = default)
-  {
-    if (!storage_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    return Task.FromResult(storage_[sessionId]);
-  }
-
-  /// <inheritdoc />
-  public Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                            CancellationToken cancellationToken = default)
-    => Task.FromResult(GetSessionAsync(sessionId,
-                                       cancellationToken)
-                       .Result.Status == SessionStatus.Cancelled);
-
-  /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                     CancellationToken cancellationToken = default)
-  {
-    if (!storage_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    return Task.FromResult(storage_[sessionId]
-                             .Options);
-  }
+  public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                                  Expression<Func<SessionData, T>>    selector,
+                                                  CancellationToken                   cancellationToken = default)
+    => storage_.Select(pair => pair.Value)
+               .Where(filter.Compile())
+               .Select(selector.Compile())
+               .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task<SessionData> CancelSessionAsync(string            sessionId,
@@ -146,37 +119,13 @@ public class SessionTable : ISessionTable
     return Task.CompletedTask;
   }
 
-
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
-                                                    CancellationToken cancellationToken = default)
-  {
-    var rawList = storage_.Keys.ToAsyncEnumerable();
-
-    if (sessionFilter.Sessions.Any())
-    {
-      rawList = storage_.Keys.Intersect(sessionFilter.Sessions)
-                        .ToAsyncEnumerable();
-    }
-
-    return rawList.Where(sessionId => sessionFilter.StatusesCase switch
-                                      {
-                                        SessionFilter.StatusesOneofCase.None => true,
-                                        SessionFilter.StatusesOneofCase.Included => sessionFilter.Included.Statuses.Contains(storage_[sessionId]
-                                                                                                                               .Status),
-                                        SessionFilter.StatusesOneofCase.Excluded => !sessionFilter.Excluded.Statuses.Contains(storage_[sessionId]
-                                                                                                                                .Status),
-                                        _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
-                                      });
-  }
-
-  /// <inheritdoc />
-  public Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                     Expression<Func<SessionData, object?>> orderField,
-                                                                                     bool                                   ascOrder,
-                                                                                     int                                    page,
-                                                                                     int                                    pageSize,
-                                                                                     CancellationToken                      cancellationToken = default)
+  public Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                      Expression<Func<SessionData, object?>> orderField,
+                                                                                      bool                                   ascOrder,
+                                                                                      int                                    page,
+                                                                                      int                                    pageSize,
+                                                                                      CancellationToken                      cancellationToken = default)
   {
     var queryable = storage_.AsQueryable()
                             .Select(pair => pair.Value)
@@ -186,8 +135,8 @@ public class SessionTable : ISessionTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    return Task.FromResult<(IEnumerable<SessionData> sessions, int totalCount)>((ordered.Skip(page * pageSize)
-                                                                                        .Take(pageSize), ordered.Count()));
+    return Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((ordered.Skip(page * pageSize)
+                                                                                         .Take(pageSize), ordered.Count()));
   }
 
   /// <inheritdoc />

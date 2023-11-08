@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
@@ -26,14 +27,23 @@ using ArmoniK.Core.Common.Storage;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
 [TestFixture(TestOf = typeof(ToTaskDataFieldTest))]
 public class ToTaskDataFieldTest
 {
-  private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>
+                                                    {
+                                                      {
+                                                        "key1", "value1"
+                                                      },
+                                                      {
+                                                        "key2", "value2"
+                                                      },
+                                                    },
                                                     TimeSpan.MaxValue,
                                                     5,
                                                     1,
@@ -44,152 +54,211 @@ public class ToTaskDataFieldTest
                                                     "applicationService",
                                                     "engineType");
 
-  private readonly TaskData taskData_ = new("SessionId",
-                                            "TaskCompletedId",
-                                            "OwnerPodId",
-                                            "OwnerPodName",
-                                            "PayloadId",
-                                            new[]
-                                            {
-                                              "parent1",
-                                            },
-                                            new[]
-                                            {
-                                              "dependency1",
-                                            },
-                                            new[]
-                                            {
-                                              "output1",
-                                            },
-                                            Array.Empty<string>(),
-                                            TaskStatus.Completed,
-                                            Options,
-                                            new Output(true,
-                                                       ""));
+  private static readonly TaskData TaskData = new("SessionId",
+                                                  "TaskCompletedId",
+                                                  "OwnerPodId",
+                                                  "OwnerPodName",
+                                                  "PayloadId",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Completed,
+                                                  Options,
+                                                  new Output(true,
+                                                             ""));
 
-  [Test]
-  public void InvokeShouldReturnCreationDate()
+  public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
+    TestCaseData CaseSummary(TaskSummaryEnumField field,
+                             object?              expected)
+      => new TestCaseData(new TaskField
                           {
-                            SessionId = "SessionId",
+                            TaskSummaryField = new TaskSummaryField
+                                               {
+                                                 Field = field,
+                                               },
                           },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
-                        },
-               }.Sort.ToTaskDataField()
-                .Compile();
+                          expected).SetArgDisplayNames(field.ToString());
 
-    Assert.AreEqual(taskData_.CreationDate,
-                    func.Invoke(taskData_));
+    yield return CaseSummary(TaskSummaryEnumField.TaskId,
+                             TaskData.TaskId);
+    yield return CaseSummary(TaskSummaryEnumField.SessionId,
+                             TaskData.SessionId);
+    yield return CaseSummary(TaskSummaryEnumField.Status,
+                             TaskData.Status);
+    yield return CaseSummary(TaskSummaryEnumField.CreatedAt,
+                             TaskData.CreationDate);
+    yield return CaseSummary(TaskSummaryEnumField.StartedAt,
+                             TaskData.StartDate);
+    yield return CaseSummary(TaskSummaryEnumField.EndedAt,
+                             TaskData.EndDate);
+    yield return CaseSummary(TaskSummaryEnumField.CreationToEndDuration,
+                             TaskData.CreationToEndDuration);
+    yield return CaseSummary(TaskSummaryEnumField.ProcessingToEndDuration,
+                             TaskData.ProcessingToEndDuration);
+    yield return CaseSummary(TaskSummaryEnumField.Error,
+                             TaskData.Output.Error);
+    yield return CaseSummary(TaskSummaryEnumField.OwnerPodId,
+                             TaskData.OwnerPodId);
+    yield return CaseSummary(TaskSummaryEnumField.InitialTaskId,
+                             TaskData.InitialTaskId);
+    yield return CaseSummary(TaskSummaryEnumField.SubmittedAt,
+                             TaskData.SubmittedDate);
+    yield return CaseSummary(TaskSummaryEnumField.PodTtl,
+                             TaskData.PodTtl);
+    yield return CaseSummary(TaskSummaryEnumField.PodHostname,
+                             TaskData.OwnerPodName);
+    yield return CaseSummary(TaskSummaryEnumField.ReceivedAt,
+                             TaskData.ReceptionDate);
+    yield return CaseSummary(TaskSummaryEnumField.AcquiredAt,
+                             TaskData.AcquisitionDate);
+
+    TestCaseData CaseOption(TaskOptionEnumField field,
+                            object?             expected)
+      => new TestCaseData(new TaskField
+                          {
+                            TaskOptionField = new TaskOptionField
+                                              {
+                                                Field = field,
+                                              },
+                          },
+                          expected).SetArgDisplayNames(field.ToString());
+
+    yield return CaseOption(TaskOptionEnumField.MaxDuration,
+                            TaskData.Options.MaxDuration);
+    yield return CaseOption(TaskOptionEnumField.MaxRetries,
+                            TaskData.Options.MaxRetries);
+    yield return CaseOption(TaskOptionEnumField.Priority,
+                            TaskData.Options.Priority);
+    yield return CaseOption(TaskOptionEnumField.PartitionId,
+                            TaskData.Options.PartitionId);
+    yield return CaseOption(TaskOptionEnumField.ApplicationName,
+                            TaskData.Options.ApplicationName);
+    yield return CaseOption(TaskOptionEnumField.ApplicationVersion,
+                            TaskData.Options.ApplicationVersion);
+    yield return CaseOption(TaskOptionEnumField.ApplicationNamespace,
+                            TaskData.Options.ApplicationNamespace);
+    yield return CaseOption(TaskOptionEnumField.ApplicationService,
+                            TaskData.Options.ApplicationService);
+    yield return CaseOption(TaskOptionEnumField.EngineType,
+                            TaskData.Options.EngineType);
+
+    TestCaseData CaseOptionGeneric(string key)
+      => new TestCaseData(new TaskField
+                          {
+                            TaskOptionGenericField = new TaskOptionGenericField
+                                                     {
+                                                       Field = key,
+                                                     },
+                          },
+                          TaskData.Options.Options[key]).SetArgDisplayNames(key);
+
+    yield return CaseOptionGeneric("key1");
+    yield return CaseOptionGeneric("key2");
   }
 
   [Test]
-  public void InvokeShouldReturnSessionId()
+  [TestCaseSource(nameof(TestCasesInvoke))]
+  public void InvokeShouldReturnExpectedValue(TaskField field,
+                                              object?   expected)
   {
     var func = new ListTasksRequest
                {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
+                                   },
+                                 },
+                               },
+                             },
+                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                          Direction = SortDirection.Asc,
+                          Field     = field,
                         },
-               }.Sort.ToTaskDataField()
+               }.Sort.ToField()
                 .Compile();
 
-    Assert.AreEqual(taskData_.SessionId,
-                    func.Invoke(taskData_));
+    Assert.AreEqual(expected,
+                    func.Invoke(TaskData));
   }
 
   [Test]
-  public void InvokeShouldReturnStatus()
+  public void KeyNotFoundShouldFail()
   {
     var func = new ListTasksRequest
                {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
+                                   },
+                                 },
+                               },
+                             },
+                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.Status,
+                          Direction = SortDirection.Asc,
+                          Field = new TaskField
+                                  {
+                                    TaskOptionGenericField = new TaskOptionGenericField
+                                                             {
+                                                               Field = "NotExistingKey",
+                                                             },
+                                  },
                         },
-               }.Sort.ToTaskDataField()
+               }.Sort.ToField()
                 .Compile();
 
-    Assert.AreEqual(taskData_.Status,
-                    func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnTaskId()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.TaskId,
-                        },
-               }.Sort.ToTaskDataField()
-                .Compile();
-
-    Assert.AreEqual(taskData_.TaskId,
-                    func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnEndedAt()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.EndedAt,
-                        },
-               }.Sort.ToTaskDataField()
-                .Compile();
-
-    Assert.AreEqual(taskData_.EndDate,
-                    func.Invoke(taskData_));
-  }
-
-  [Test]
-  public void InvokeShouldReturnStartedAt()
-  {
-    var func = new ListTasksRequest
-               {
-                 Filter = new ListTasksRequest.Types.Filter
-                          {
-                            SessionId = "SessionId",
-                          },
-                 Sort = new ListTasksRequest.Types.Sort
-                        {
-                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
-                        },
-               }.Sort.ToTaskDataField()
-                .Compile();
-
-    Assert.AreEqual(taskData_.StartDate,
-                    func.Invoke(taskData_));
+    Assert.Throws<KeyNotFoundException>(() => func.Invoke(TaskData));
   }
 }

@@ -26,7 +26,10 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class SimpleQueueMessageHandler : IQueueMessageHandler
 {
   public ValueTask DisposeAsync()
-    => ValueTask.CompletedTask;
+  {
+    GC.SuppressFinalize(this);
+    return ValueTask.CompletedTask;
+  }
 
   public CancellationToken  CancellationToken { get; set; }
   public string             MessageId         { get; init; } = "";

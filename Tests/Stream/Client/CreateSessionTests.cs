@@ -84,7 +84,6 @@ internal class CreateSessionTests
   [Test]
   public void SessionShouldBeCreated()
   {
-    var sessionId = Guid.NewGuid() + "mytestsession";
     Console.WriteLine("SessionShouldBeCreated");
 
     var createSessionReply = client_!.CreateSession(new CreateSessionRequest

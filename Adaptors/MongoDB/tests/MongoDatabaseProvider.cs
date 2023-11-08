@@ -43,7 +43,8 @@ internal class MongoDatabaseProvider : IDisposable
   private readonly        IMongoRunner?   runner_;
 
   public MongoDatabaseProvider(bool                        useSingleNodeReplicaSet = false,
-                               Action<IServiceCollection>? serviceConfigurator     = null)
+                               Action<IServiceCollection>? serviceConfigurator     = null,
+                               bool                        showMongoLogs           = false)
   {
     var loggerSerilog = new LoggerConfiguration().WriteTo.Console()
                                                  .Enrich.FromLogContext()
@@ -55,9 +56,15 @@ internal class MongoDatabaseProvider : IDisposable
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
-                    ReplicaSetSetupTimeout  = TimeSpan.FromSeconds(30),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = showMongoLogs
+                                            ? line => logger.LogInformation(line)
+                                            : null,
+                    StandardErrorLogger = showMongoLogs
+                                            ? line => logger.LogError(line)
+                                            : null,
+#pragma warning restore CA2254
+                    ReplicaSetSetupTimeout = TimeSpan.FromSeconds(30),
                   };
 
     runner_ = MongoRunner.Run(options);
@@ -101,8 +108,7 @@ internal class MongoDatabaseProvider : IDisposable
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddMongoStorages(configuration,
                                        logger);
-    serviceCollection.AddClientSubmitterAuthenticationStorage(configuration,
-                                                              logger);
+    serviceCollection.AddClientSubmitterAuthenticationStorage(configuration);
     serviceCollection.AddSingleton(ActivitySource);
     serviceCollection.AddTransient<IMongoClient>(_ => client);
 

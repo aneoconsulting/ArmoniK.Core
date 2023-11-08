@@ -15,15 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-
 using Microsoft.Extensions.Logging;
-
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -58,7 +55,12 @@ public static class ResultLifeCycleHelper
 
     if (taskData.Status is TaskStatus.Creating)
     {
-      await taskTable.SetTaskErrorAsync(taskId,
+      await taskTable.SetTaskErrorAsync(taskData with
+                                        {
+                                          EndDate = DateTime.UtcNow,
+                                          CreationToEndDuration = DateTime.UtcNow - taskData.EndDate,
+                                          ProcessingToEndDuration = DateTime.Now  - taskData.StartDate,
+                                        },
                                         "One of the input data is aborted.",
                                         cancellationToken)
                      .ConfigureAwait(false);
@@ -70,8 +72,8 @@ public static class ResultLifeCycleHelper
     var creatingResults = await resultTable.GetResults(taskData.SessionId,
                                                        taskData.ExpectedOutputIds,
                                                        cancellationToken)
-                                           .Where(result => result.Status == ResultStatus.Created && result.OwnerTaskId == taskId)
-                                           .Select(result => result.Name)
+                                           .Where(result => result.OwnerTaskId == taskId)
+                                           .Select(result => result.ResultId)
                                            .ToListAsync(cancellationToken)
                                            .ConfigureAwait(false);
 

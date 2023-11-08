@@ -29,14 +29,14 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 /// </summary>
 /// <param name="AuthId">Certificate ID</param>
 /// <param name="UserId">User ID</param>
-/// <param name="CN">Common Name</param>
+/// <param name="Cn">Common Name</param>
 /// <param name="Fingerprint">Certificate Fingerprint</param>
 /// <param name="UserData">List of users that have the id UserId</param>
 [BsonIgnoreExtraElements]
 public record AuthDataAfterLookup([property: BsonId]
                                   ObjectId AuthId,
                                   ObjectId   UserId,
-                                  string     CN,
+                                  string     Cn,
                                   string     Fingerprint,
                                   UserData[] UserData);
 

@@ -22,7 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using EphemeralMongo;
 
@@ -57,8 +57,10 @@ public class SessionProviderTests
     var options = new MongoRunnerOptions
                   {
                     UseSingleNodeReplicaSet = false,
-                    StandardOuputLogger     = line => logger.LogInformation(line),
-                    StandardErrorLogger     = line => logger.LogError(line),
+#pragma warning disable CA2254 // log inputs should be constant
+                    StandardOuputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger = line => logger.LogError(line),
+#pragma warning restore CA2254
                   };
 
     runner_ = MongoRunner.Run(options);

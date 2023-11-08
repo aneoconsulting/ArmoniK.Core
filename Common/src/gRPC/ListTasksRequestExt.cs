@@ -22,85 +22,99 @@ using System.Linq.Expressions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Storage;
 
-using LinqKit;
-
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ListTasksRequestExt
 {
-  public static Expression<Func<TaskData, object?>> ToTaskDataField(this ListTasksRequest.Types.Sort sort)
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="TaskData" /> field
+  /// </summary>
+  /// <param name="sort">The gPRC message</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<TaskData, object?>> ToField(this ListTasksRequest.Types.Sort sort)
+    => sort.Field.FieldCase switch
+       {
+         TaskField.FieldOneofCase.TaskSummaryField       => sort.Field.TaskSummaryField.Field.ToField(),
+         TaskField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
+         TaskField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
+       };
+
+  public static Expression<Func<TaskData, object?>> ToField(this TaskField taskField)
+    => taskField.FieldCase switch
+       {
+         TaskField.FieldOneofCase.None                   => throw new ArgumentOutOfRangeException(nameof(taskField)),
+         TaskField.FieldOneofCase.TaskSummaryField       => taskField.TaskSummaryField.Field.ToField(),
+         TaskField.FieldOneofCase.TaskOptionField        => taskField.TaskOptionField.Field.ToField(),
+         TaskField.FieldOneofCase.TaskOptionGenericField => taskField.TaskOptionGenericField.ToField(),
+         _                                               => throw new ArgumentOutOfRangeException(nameof(taskField)),
+       };
+
+  /// <summary>
+  ///   Converts gRPC message filters into an <see cref="Expression" /> that represents the filter conditions
+  /// </summary>
+  /// <param name="filters">The gPRC filters</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that represents the filter conditions
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  public static Expression<Func<TaskData, bool>> ToTaskDataFilter(this Filters filters)
   {
-    switch (sort.Field)
+    Expression<Func<TaskData, bool>> expr = data => false;
+
+    if (filters.Or == null || !filters.Or.Any())
     {
-      case ListTasksRequest.Types.OrderByField.TaskId:
-        return data => data.TaskId;
-
-      case ListTasksRequest.Types.OrderByField.SessionId:
-        return data => data.SessionId;
-
-      case ListTasksRequest.Types.OrderByField.Status:
-        return data => data.Status;
-
-      case ListTasksRequest.Types.OrderByField.CreatedAt:
-        return data => data.CreationDate;
-
-      case ListTasksRequest.Types.OrderByField.StartedAt:
-        return data => data.StartDate;
-
-      case ListTasksRequest.Types.OrderByField.EndedAt:
-        return data => data.EndDate;
-
-      case ListTasksRequest.Types.OrderByField.Unspecified:
-      default:
-        throw new InvalidOperationException();
-    }
-  }
-
-  public static Expression<Func<TaskData, bool>> ToTaskDataFilter(this ListTasksRequest.Types.Filter filter)
-  {
-    var predicate = PredicateBuilder.New<TaskData>();
-    predicate = predicate.And(data => true);
-
-    if (!string.IsNullOrEmpty(filter.SessionId))
-    {
-      predicate = predicate.And(data => data.SessionId == filter.SessionId);
+      return data => true;
     }
 
-    if (filter.CreatedAfter is not null)
+    foreach (var filtersAnd in filters.Or)
     {
-      predicate = predicate.And(data => data.CreationDate > filter.CreatedAfter.ToDateTime());
+      Expression<Func<TaskData, bool>> exprAnd = data => true;
+      foreach (var filterField in filtersAnd.And)
+      {
+        switch (filterField.ValueConditionCase)
+        {
+          case FilterField.ValueConditionOneofCase.FilterString:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterString.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterString.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterNumber:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterNumber.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterBoolean:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterBoolean.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                        filterField.FilterBoolean.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterStatus:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterStatus.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterStatus.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterDate:
+            var val = filterField.FilterDate.Value;
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterDate.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                     val?.ToDateTime()));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterArray:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                      filterField.FilterArray.Value));
+            break;
+          case FilterField.ValueConditionOneofCase.FilterDuration:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterDuration.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                         filterField.FilterDuration.Value?.ToTimeSpan()));
+            break;
+          case FilterField.ValueConditionOneofCase.None:
+          default:
+            throw new ArgumentOutOfRangeException(nameof(filters));
+        }
+      }
+
+      expr = expr.ExpressionOr(exprAnd);
     }
 
-    if (filter.CreatedBefore is not null)
-    {
-      predicate = predicate.And(data => data.CreationDate < filter.CreatedBefore.ToDateTime());
-    }
-
-    if (filter.EndedAfter is not null)
-    {
-      predicate = predicate.And(data => data.EndDate > filter.EndedAfter.ToDateTime());
-    }
-
-    if (filter.EndedBefore is not null)
-    {
-      predicate = predicate.And(data => data.EndDate < filter.EndedBefore.ToDateTime());
-    }
-
-    if (filter.StartedAfter is not null)
-    {
-      predicate = predicate.And(data => data.StartDate > filter.StartedAfter.ToDateTime());
-    }
-
-    if (filter.StartedBefore is not null)
-    {
-      predicate = predicate.And(data => data.StartDate < filter.StartedBefore.ToDateTime());
-    }
-
-    if (filter.Status.Any())
-    {
-      predicate = predicate.And(data => filter.Status.Contains(data.Status));
-    }
-
-    return predicate;
+    return expr;
   }
 }

@@ -18,22 +18,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
@@ -41,9 +36,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
-
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -82,7 +74,7 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
-                           partitionIds.ToIList(),
+                           partitionIds.AsIList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
@@ -92,69 +84,18 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task<SessionData> GetSessionAsync(string            sessionId,
-                                                 CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
+                                                  Expression<Func<SessionData, T>>    selector,
+                                                  CancellationToken                   cancellationToken = default)
   {
-    using var _        = Logger.LogFunction(sessionId);
-    using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
-    activity?.SetTag($"{nameof(GetSessionAsync)}_sessionId",
-                     sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
+    using var activity          = activitySource_.StartActivity($"{nameof(FindSessionsAsync)}");
+    var       sessionHandle     = sessionProvider_.Get();
+    var       sessionCollection = sessionCollectionProvider_.Get();
 
-
-    try
-    {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
-  }
-
-
-  /// <inheritdoc />
-  public async Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                                  CancellationToken cancellationToken = default)
-  {
-    using var _        = Logger.LogFunction(sessionId);
-    using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
-    activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
-                     sessionId);
-
-    return (await GetSessionAsync(sessionId,
-                                  cancellationToken)
-              .ConfigureAwait(false)).Status == SessionStatus.Cancelled;
-  }
-
-  /// <inheritdoc />
-  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                           CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
-    activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
-                     sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
-
-    try
-    {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Options)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
+    return sessionCollection.Find(sessionHandle,
+                                  filter)
+                            .Project(selector)
+                            .ToAsyncEnumerable(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -182,7 +123,9 @@ public class SessionTable : ISessionTable
                                                                    cancellationToken)
                                             .ConfigureAwait(false);
 
+#pragma warning disable IDE0270 // null check can be simplified with a less readable approach
     if (resSession is null)
+#pragma warning restore IDE0270
     {
       throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
     }
@@ -210,50 +153,32 @@ public class SessionTable : ISessionTable
     }
   }
 
-  /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListSessionsAsync(SessionFilter                              sessionFilter,
-                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
+                                                                                            Expression<Func<SessionData, object?>> orderField,
+                                                                                            bool                                   ascOrder,
+                                                                                            int                                    page,
+                                                                                            int                                    pageSize,
+                                                                                            CancellationToken                      cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
     using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
     var       sessionHandle     = sessionProvider_.Get();
     var       sessionCollection = sessionCollectionProvider_.Get();
 
-    await foreach (var sessionId in sessionCollection.AsQueryable(sessionHandle)
-                                                     .FilterQuery(sessionFilter)
-                                                     .Select(model => model.SessionId)
-                                                     .ToAsyncEnumerable()
-                                                     .WithCancellation(cancellationToken)
-                                                     .ConfigureAwait(false))
-    {
-      yield return sessionId;
-    }
-  }
-
-  public async Task<(IEnumerable<SessionData> sessions, int totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
-                                                                                           Expression<Func<SessionData, object?>> orderField,
-                                                                                           bool                                   ascOrder,
-                                                                                           int                                    page,
-                                                                                           int                                    pageSize,
-                                                                                           CancellationToken                      cancellationToken = default)
-  {
-    using var _                 = Logger.LogFunction();
-    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var       sessionHandle     = sessionProvider_.Get();
-    var       sessionCollection = sessionCollectionProvider_.Get();
-
-    var queryable = sessionCollection.AsQueryable(sessionHandle)
-                                     .Where(filter);
+    var findFluent = sessionCollection.Find(sessionHandle,
+                                            filter);
 
     var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+                    ? findFluent.SortBy(orderField)
+                    : findFluent.SortByDescending(orderField);
 
     return (await ordered.Skip(page * pageSize)
-                         .Take(pageSize)
+                         .Limit(pageSize)
                          .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                              .ConfigureAwait(false));
+                         .ConfigureAwait(false), await sessionCollection.Find(sessionHandle,
+                                                                              filter)
+                                                                        .CountDocumentsAsync(cancellationToken)
+                                                                        .ConfigureAwait(false));
   }
 
   /// <inheritdoc />

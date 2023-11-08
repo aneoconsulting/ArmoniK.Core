@@ -21,13 +21,13 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.Exceptions;
 
 using Grpc.Core;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
@@ -35,18 +35,16 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
-  private readonly ILogger<GrpcAuthService> logger_;
-  private readonly bool                     requireAuthentication_;
-  private readonly bool                     requireAuthorization_;
+  private readonly bool requireAuthentication_;
+  private readonly bool requireAuthorization_;
 
-  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions> options,
-                         ILogger<GrpcAuthService>              logger)
+  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions> options)
   {
-    logger_                = logger;
     requireAuthentication_ = options.CurrentValue.RequireAuthentication;
     requireAuthorization_  = requireAuthentication_ && options.CurrentValue.RequireAuthorization;
   }
 
+  [IgnoreAuthorization]
   public override Task<GetCurrentUserResponse> GetCurrentUser(GetCurrentUserRequest request,
                                                               ServerCallContext     context)
   {
