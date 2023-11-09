@@ -355,6 +355,15 @@ public class TaskWatcherTestBase
                                       CancellationToken.None)
                    .ConfigureAwait(false);
 
+    await taskTable.AcquireTask(TaskSubmittedData with
+                                {
+                                  AcquisitionDate = DateTime.UtcNow,
+                                  OwnerPodId = "OwnerPodId",
+                                  OwnerPodName = "OwnerPodName",
+                                },
+                                CancellationToken.None)
+                   .ConfigureAwait(false);
+
     await taskTable.StartTask(TaskSubmittedData,
                               CancellationToken.None)
                    .ConfigureAwait(false);
@@ -457,7 +466,7 @@ public class TaskWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(3,
+      Assert.AreEqual(4,
                       newResults.Count);
       Assert.AreEqual(new TaskStatusUpdate("SessionId",
                                            TaskProcessingData.TaskId,
@@ -465,12 +474,16 @@ public class TaskWatcherTestBase
                       newResults[0]);
       Assert.AreEqual(new TaskStatusUpdate("SessionId",
                                            TaskSubmittedData.TaskId,
-                                           TaskStatus.Processing),
+                                           TaskStatus.Dispatched),
                       newResults[1]);
       Assert.AreEqual(new TaskStatusUpdate("SessionId",
                                            TaskSubmittedData.TaskId,
-                                           TaskStatus.Cancelling),
+                                           TaskStatus.Processing),
                       newResults[2]);
+      Assert.AreEqual(new TaskStatusUpdate("SessionId",
+                                           TaskSubmittedData.TaskId,
+                                           TaskStatus.Cancelling),
+                      newResults[3]);
     }
   }
 

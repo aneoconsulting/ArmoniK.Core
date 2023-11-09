@@ -944,6 +944,8 @@ public class TaskTableTestBase
                      result.AcquisitionDate);
       Assert.Greater(result.AcquisitionDate,
                      result.ReceptionDate);
+      Assert.AreEqual(TaskStatus.Dispatched,
+                      result.Status);
     }
   }
 
@@ -1138,6 +1140,20 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
+      var data = await TaskTable!.AcquireTask(taskSubmittedData_ with
+                                              {
+                                                AcquisitionDate = DateTime.UtcNow,
+                                                OwnerPodId = "OwnerPodId",
+                                                OwnerPodName = "OwnerPodName",
+                                              },
+                                              CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+      Assert.AreEqual("OwnerPodId",
+                      data.OwnerPodId);
+      Assert.AreEqual(TaskStatus.Dispatched,
+                      data.Status);
+
       await TaskTable!.StartTask(taskSubmittedData_,
                                  CancellationToken.None)
                       .ConfigureAwait(false);
@@ -1198,15 +1214,15 @@ public class TaskTableTestBase
                                    })
                       .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<TaskAlreadyInFinalStateException>(async () =>
-                                                           {
-                                                             await TaskTable!.StartTask(taskSubmittedData_ with
-                                                                                        {
-                                                                                          TaskId = taskId,
-                                                                                        },
-                                                                                        CancellationToken.None)
-                                                                             .ConfigureAwait(false);
-                                                           });
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+                                           {
+                                             await TaskTable!.StartTask(taskSubmittedData_ with
+                                                                        {
+                                                                          TaskId = taskId,
+                                                                        },
+                                                                        CancellationToken.None)
+                                                             .ConfigureAwait(false);
+                                           });
     }
   }
 

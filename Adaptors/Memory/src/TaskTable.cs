@@ -110,9 +110,9 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Error or TaskStatus.Completed or TaskStatus.Retried or TaskStatus.Cancelled)
+                                   if (data.Status is not TaskStatus.Dispatched)
                                    {
-                                     throw new TaskAlreadyInFinalStateException($"{taskData.TaskId} is already in a final state : {data.Status}");
+                                     throw new ArmoniKException($"Fail to start task because task was not acquired - {data.Status} to {TaskStatus.Processing}");
                                    }
 
                                    return data with
@@ -312,6 +312,7 @@ public class TaskTable : ITaskTable
                                                                OwnerPodName = taskData.OwnerPodName,
                                                                ReceptionDate = taskData.ReceptionDate,
                                                                AcquisitionDate = DateTime.UtcNow,
+                                                               Status = TaskStatus.Dispatched,
                                                              };
                                                     }));
 

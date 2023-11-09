@@ -411,6 +411,10 @@ public class SubmitterTests
                                 new Output(false,
                                            ""));
 
+    await taskTable.AcquireTask(taskData,
+                                token)
+                   .ConfigureAwait(false);
+
     await taskTable.StartTask(taskData,
                               token)
                    .ConfigureAwait(false);
