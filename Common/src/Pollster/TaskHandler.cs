@@ -282,12 +282,54 @@ public sealed class TaskHandler : IAsyncDisposable
             return false;
           }
 
-          // TODO : manage the case where OwnerPodId has a value with task processing de-duplication
-          // this Will not be managed in this version since as it involves a large refactor that will
-          // conflict with the later versions already on main
+          // we check if the task was acquired by this pod
+          if (taskData_.OwnerPodId != ownerPodId_)
+          {
+            // if the task is acquired by another pod, we check if the task is running on the other pod
+            var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
+                                                                             taskData_.OwnerPodId,
+                                                                             CancellationToken.None)
+                                                                      .ConfigureAwait(false);
 
-          logger_.LogInformation("Task is processing elsewhere ; taking over here");
-          break;
+            logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}, treating it {processing}",
+                                   taskData_.TaskId,
+                                   taskData_.OwnerPodId,
+                                   taskProcessingElsewhere);
+
+            // if the task is not running on the other pod, we resubmit the task in the queue
+            if (!taskProcessingElsewhere)
+            {
+              taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
+                                                         CancellationToken.None)
+                                          .ConfigureAwait(false);
+              logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
+                                     taskData_.Status);
+
+              if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
+              {
+                logger_.LogDebug("Resubmitting task {task} on another pod",
+                                 taskData_.TaskId);
+                await submitter_.CompleteTaskAsync(taskData_,
+                                                   true,
+                                                   new Output(false,
+                                                              "Other pod seems to have crashed, resubmitting task"),
+                                                   CancellationToken.None)
+                                .ConfigureAwait(false);
+                messageHandler_.Status = QueueMessageStatus.Processed;
+                return false;
+              }
+            }
+            // task is processing elsewhere so message is duplicated
+            else
+            {
+              messageHandler_.Status = QueueMessageStatus.Processed;
+              return false;
+            }
+          }
+
+          logger_.LogWarning("Task already in processing on this pod. This scenario should be managed earlier. Message likely duplicated. Removing it from queue");
+          messageHandler_.Status = QueueMessageStatus.Processed;
+          return false;
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
           return false;
