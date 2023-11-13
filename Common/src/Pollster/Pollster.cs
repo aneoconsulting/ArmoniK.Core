@@ -264,11 +264,14 @@ public class Pollster : IInitializable
 
         try
         {
-          var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
-                                                             cancellationToken);
+          await using var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+                                                                         cancellationToken)
+                                                      .GetAsyncEnumerator(cancellationToken);
 
-          await foreach (var message in messages.ConfigureAwait(false))
+          while (await messages.MoveNextAsync()
+                               .ConfigureAwait(false))
           {
+            var message           = messages.Current;
             var taskHandlerLogger = loggerFactory_.CreateLogger<TaskHandler>();
             using var _ = taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
                                                             ("messageHandler", message.MessageId),
@@ -284,15 +287,36 @@ public class Pollster : IInitializable
 
             taskHandlerLogger.LogDebug("Start a new Task to process the messageHandler");
 
-            while (runningTaskQueue_.RemoveException(out var exception))
+            try
             {
-              if (exception is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
+              while (runningTaskQueue_.RemoveException(out var exception))
               {
-                // This exception should stop pollster
-                exception.RethrowWithStacktrace();
+                if (exception is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
+                {
+                  // This exception should stop pollster
+                  exception.RethrowWithStacktrace();
+                }
+
+                RecordError(exception);
+              }
+            }
+            catch
+            {
+              // This catch is used to properly dispose every message when the pollster should stop due to
+              // too many errors or fatal error (broken worker, for instance)
+              // Messages may not be all disposed in case the DisposeAsync method throws an exception
+              // whereas it should not (good practices encourage to avoid this behavior)
+              await message.DisposeAsync()
+                           .ConfigureAwait(false);
+
+              while (await messages.MoveNextAsync()
+                                   .ConfigureAwait(false))
+              {
+                await messages.Current.DisposeAsync()
+                              .ConfigureAwait(false);
               }
 
-              RecordError(exception);
+              throw;
             }
 
             var taskHandler = new TaskHandler(sessionTable_,
