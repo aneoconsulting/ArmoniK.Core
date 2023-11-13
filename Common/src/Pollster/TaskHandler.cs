@@ -503,14 +503,16 @@ public sealed class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
-  ///   Get the task id of the acquired task
+  ///   Get the meta data of the acquired task
   /// </summary>
   /// <returns>
-  ///   A string representing the acquired task id
+  ///   The metadata of the task
   /// </returns>
-  public string GetAcquiredTask()
+  public TaskInfo GetAcquiredTaskInfo()
     => taskData_ != null
-         ? taskData_.TaskId
+         ? new TaskInfo(taskData_.SessionId,
+                        taskData_.TaskId,
+                        messageHandler_.MessageId)
          : throw new ArmoniKException("TaskData should not be null after successful acquisition");
 
   /// <summary>
