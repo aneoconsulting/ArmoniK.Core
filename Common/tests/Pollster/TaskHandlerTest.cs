@@ -329,7 +329,8 @@ public class TaskHandlerTest
 
     Assert.IsTrue(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
   }
 
   [Test]
@@ -364,7 +365,8 @@ public class TaskHandlerTest
 
     Assert.IsFalse(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
   }
 
   [Test]
@@ -402,7 +404,8 @@ public class TaskHandlerTest
 
     Assert.IsFalse(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
   }
 
   [Test]
@@ -440,7 +443,8 @@ public class TaskHandlerTest
 
     Assert.IsFalse(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
   }
 
   [Test]
@@ -517,7 +521,8 @@ public class TaskHandlerTest
 
     Assert.IsFalse(acquired);
     Assert.AreEqual(taskData.TaskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
   }
 
   public class WaitTaskTable : ITaskTable
@@ -947,7 +952,8 @@ public class TaskHandlerTest
 
     Assert.IsFalse(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
   }
 
   [Test]

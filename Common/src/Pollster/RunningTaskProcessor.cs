@@ -20,6 +20,8 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
+
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -55,17 +57,26 @@ public class RunningTaskProcessor : BackgroundService
 
         var taskHandler = await runningTaskQueue_.ReadAsync(stoppingToken)
                                                  .ConfigureAwait(false);
+
+        var taskInfo = taskHandler.GetAcquiredTaskInfo();
+
+        using var _ = logger_.BeginPropertyScope(("messageHandler", taskInfo.MessageId),
+                                                 ("taskId", taskInfo.TaskId),
+                                                 ("sessionId", taskInfo.SessionId));
+        CurrentTask = taskInfo.TaskId;
         try
         {
-          CurrentTask = taskHandler.GetAcquiredTask();
           await taskHandler.ExecuteTask()
                            .ConfigureAwait(false);
           await postProcessingTaskQueue_.WriteAsync(taskHandler,
                                                     stoppingToken)
                                         .ConfigureAwait(false);
         }
-        catch (Exception)
+        catch (Exception e)
         {
+          logger_.LogError(e,
+                           "Error while executing task");
+
           await taskHandler.DisposeAsync()
                            .ConfigureAwait(false);
           throw;

@@ -20,17 +20,25 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
+
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
 public class PostProcessor : BackgroundService
 {
+  private readonly ILogger<PostProcessor>  logger_;
   private readonly PostProcessingTaskQueue postProcessingTaskQueue_;
   public           string                  CurrentTask = string.Empty;
 
-  public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue)
-    => postProcessingTaskQueue_ = postProcessingTaskQueue;
+  public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue,
+                       ILogger<PostProcessor>  logger)
+  {
+    postProcessingTaskQueue_ = postProcessingTaskQueue;
+    logger_                  = logger;
+  }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
@@ -38,14 +46,23 @@ public class PostProcessor : BackgroundService
     {
       var taskHandler = await postProcessingTaskQueue_.ReadAsync(stoppingToken)
                                                       .ConfigureAwait(false);
+
+      var taskInfo = taskHandler.GetAcquiredTaskInfo();
+
+      using var _ = logger_.BeginPropertyScope(("messageHandler", taskInfo.MessageId),
+                                               ("taskId", taskInfo.TaskId),
+                                               ("sessionId", taskInfo.SessionId));
+      CurrentTask = taskInfo.TaskId;
+
       try
       {
-        CurrentTask = taskHandler.GetAcquiredTask();
         await taskHandler.PostProcessing()
                          .ConfigureAwait(false);
       }
       catch (Exception e)
       {
+        logger_.LogError(e,
+                         "Error during task post processing");
         postProcessingTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
                                                                    .SourceException);
       }

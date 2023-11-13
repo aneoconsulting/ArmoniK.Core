@@ -389,7 +389,7 @@ public class Pollster : IInitializable
         catch (Exception e)
         {
           logger_.LogError(e,
-                           "Error while pulling the messages from the queue");
+                           "Error while processing the messages from the queue");
           RecordError(e);
         }
       }
