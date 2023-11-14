@@ -306,6 +306,8 @@ public class Pollster : IInitializable
               // too many errors or fatal error (broken worker, for instance)
               // Messages may not be all disposed in case the DisposeAsync method throws an exception
               // whereas it should not (good practices encourage to avoid this behavior)
+              logger_.LogDebug("Start of queue messages disposition");
+
               await message.DisposeAsync()
                            .ConfigureAwait(false);
 
@@ -315,6 +317,8 @@ public class Pollster : IInitializable
                 await messages.Current.DisposeAsync()
                               .ConfigureAwait(false);
               }
+
+              logger_.LogDebug("End of queue messages disposition");
 
               throw;
             }
