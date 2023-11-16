@@ -399,9 +399,10 @@ public class AgentTest
                     holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
                           .Count());
 
+    var data = "Data1Data2";
     await File.WriteAllBytesAsync(Path.Combine(holder.Folder,
                                                ExpectedOutput1),
-                                  Encoding.ASCII.GetBytes("Data1Data2"))
+                                  Encoding.ASCII.GetBytes(data))
               .ConfigureAwait(false);
 
     await holder.Agent.NotifyResultData(new NotifyResultDataRequest
@@ -418,6 +419,15 @@ public class AgentTest
                                         },
                                         CancellationToken.None)
                 .ConfigureAwait(false);
+
+    var datAsyncEnumerable = holder.ObjectStorage.GetValuesAsync(ExpectedOutput1,
+                                                                 CancellationToken.None);
+
+    var dataStored = await datAsyncEnumerable.SingleAsync(CancellationToken.None)
+                                             .ConfigureAwait(false);
+
+    Assert.AreEqual(data,
+                    dataStored);
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
