@@ -479,10 +479,13 @@ public sealed class Agent : IAgent
         read = r.Read(buffer,
                       0,
                       PayloadConfiguration.MaxChunkSize);
-        await channel.Writer.WriteAsync(buffer.AsMemory(0,
-                                                        read),
-                                        cancellationToken)
-                     .ConfigureAwait(false);
+        if (read > 0)
+        {
+          await channel.Writer.WriteAsync(buffer.AsMemory(0,
+                                                          read),
+                                          cancellationToken)
+                       .ConfigureAwait(false);
+        }
       } while (read != 0);
 
       channel.Writer.Complete();
