@@ -45,6 +45,7 @@ public static class ResultLifeCycleHelper
                                                CancellationToken cancellationToken)
   {
     var taskData = await taskTable.ReadTaskAsync(taskId,
+                                                 data => data,
                                                  cancellationToken)
                                   .ConfigureAwait(false);
 

@@ -334,6 +334,7 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable!.ReadTaskAsync("TaskCompletedId",
+                                                  data => data,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -348,6 +349,7 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable!.ReadTaskAsync("TaskCompletedId",
+                                                  data => data,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -372,6 +374,7 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<TaskNotFoundException>(async () => await TaskTable!.ReadTaskAsync("TaskDoNotExists",
+                                                                                           data => data,
                                                                                            CancellationToken.None)
                                                                             .ConfigureAwait(false));
     }
@@ -713,6 +716,7 @@ public class TaskTableTestBase
                                .Status);
 
       var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
+                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -1159,6 +1163,7 @@ public class TaskTableTestBase
                       .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                                   d => d,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -1252,6 +1257,7 @@ public class TaskTableTestBase
       Assert.ThrowsAsync<TaskNotFoundException>(async () =>
                                                 {
                                                   await TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                                                                data => data,
                                                                                 CancellationToken.None)
                                                                  .ConfigureAwait(false);
                                                 });
@@ -1295,6 +1301,7 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var taskToRetry = await TaskTable!.ReadTaskAsync("TaskFailedId",
+                                                       data => data,
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
 
@@ -1315,6 +1322,7 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var taskToRetry = await TaskTable!.ReadTaskAsync("TaskFailedId",
+                                                       data => data,
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
       for (var i = 0; i < 3; i++)
@@ -1324,6 +1332,7 @@ public class TaskTableTestBase
                                        .ConfigureAwait(false);
 
         var retriedTask = await TaskTable.ReadTaskAsync(newTaskId,
+                                                        data => data,
                                                         CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -1614,6 +1623,74 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task ListTaskWithMaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var mask = new TaskDataMask(Enum.GetValues<TaskDataFields>());
+
+      var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                                  data => data.SessionId,
+                                                                  mask.GetProjection(),
+                                                                  false,
+                                                                  0,
+                                                                  20,
+                                                                  CancellationToken.None)
+                                                  .ConfigureAwait(false);
+
+      foreach (var r in results)
+      {
+        Console.WriteLine(r);
+        Console.WriteLine(r.ToTaskDetailed());
+      }
+
+      Assert.AreEqual(6,
+                      totalCount);
+    }
+  }
+
+
+  [Test]
+  public async Task ListTaskWithIndividualMaskShouldSucceed([Values] TaskDataFields field)
+  {
+    if (RunTests)
+    {
+      var mask = new TaskDataMask(field);
+
+      var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.TaskId == "TaskSubmittedId",
+                                                                  data => data.SessionId,
+                                                                  mask.GetProjection(),
+                                                                  false,
+                                                                  0,
+                                                                  20,
+                                                                  CancellationToken.None)
+                                                  .ConfigureAwait(false);
+
+      var taskDataHolders = results.ToList();
+      foreach (var r in taskDataHolders)
+      {
+        Console.WriteLine(r);
+        Console.WriteLine(r.ToTaskDetailed());
+        Console.WriteLine(r.ToTaskSummary());
+      }
+
+      Assert.AreEqual(1,
+                      totalCount);
+
+      var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                                   data => data,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskDataMask.FieldsToTaskData(field)
+                                  .Compile()
+                                  .Invoke(taskData),
+                      TaskDataMask.FieldsToTaskDataHolder(field)
+                                  .Compile()
+                                  .Invoke(taskDataHolders.Single()));
+    }
+  }
 
   [Test]
   public async Task ListTaskWithRequestOrderByTaskOptionsOptionsShouldSucceed()
@@ -1902,7 +1979,8 @@ public class TaskTableTestBase
       Assert.AreEqual(0,
                       cancelledTasks);
 
-      var taskData = await TaskTable.ReadTaskAsync(taskId)
+      var taskData = await TaskTable.ReadTaskAsync(taskId,
+                                                   data => data)
                                     .ConfigureAwait(false);
       Assert.AreEqual(status,
                       taskData.Status);
@@ -2015,6 +2093,7 @@ public class TaskTableTestBase
                      .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync(taskId,
+                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -2068,6 +2147,7 @@ public class TaskTableTestBase
                      .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync(taskId,
+                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 

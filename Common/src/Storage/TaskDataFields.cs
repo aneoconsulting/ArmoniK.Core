@@ -18,11 +18,35 @@
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-///   Task information to identify it
+///   Fields available in <see cref="TaskDataHolder" />
 /// </summary>
-/// <param name="SessionId">Unique identifier of the session in which the task belongs</param>
-/// <param name="TaskId">Unique identifier of the task</param>
-/// <param name="MessageId">Unique identifier of the message associated to the current execution of the task</param>
-public record TaskInfo(string SessionId,
-                       string TaskId,
-                       string MessageId);
+public enum TaskDataFields
+{
+  SessionId,
+  TaskId,
+  PayloadId,
+  ParentTaskIds,
+  ParentTaskIdsCount,
+  ExpectedOutputIds,
+  ExpectedOutputIdsCount,
+  InitialTaskId,
+  RetryOfIds,
+  RetryOfIdsCount,
+  Status,
+  Options,
+  DataDependencies,
+  DataDependenciesCount,
+  OwnerPodId,
+  OwnerPodName,
+  StatusMessage,
+  CreationDate,
+  SubmittedDate,
+  StartDate,
+  EndDate,
+  ReceptionDate,
+  AcquisitionDate,
+  ProcessingToEndDuration,
+  CreationToEndDuration,
+  PodTtl,
+  Output,
+}

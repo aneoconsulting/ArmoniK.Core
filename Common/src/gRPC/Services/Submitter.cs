@@ -163,6 +163,7 @@ public class Submitter : ISubmitter
     if (result.Status != ResultStatus.Completed)
     {
       var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
+                                                    data => data,
                                                     cancellationToken)
                                      .ConfigureAwait(false);
 
@@ -369,6 +370,7 @@ public class Submitter : ISubmitter
           break;
         case ResultStatus.Aborted:
           var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
+                                                        data => data,
                                                         contextCancellationToken)
                                          .ConfigureAwait(false);
 

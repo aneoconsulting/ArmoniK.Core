@@ -852,8 +852,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                             CancellationToken     cancellationToken = default)
       => throw new T();
 
-    public Task<TaskData> ReadTaskAsync(string            taskId,
-                                        CancellationToken cancellationToken = default)
+    public Task<TConv> ReadTaskAsync<TConv>(string                            taskId,
+                                            Expression<Func<TaskData, TConv>> selector,
+                                            CancellationToken                 cancellationToken = default)
       => throw new T();
 
     public Task<bool> IsTaskCancelledAsync(string            taskId,

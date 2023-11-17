@@ -24,32 +24,36 @@ using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
-public static class TaskDataExt
+public static class TaskDataHolderExt
 {
   /// <summary>
-  ///   Conversion operator from <see cref="TaskData" /> to <see cref="TaskDetailed" />
+  ///   Conversion operator from <see cref="TaskDataHolder" /> to <see cref="TaskDetailed" />
   /// </summary>
   /// <param name="taskData">The input task data</param>
   /// <returns>
   ///   The converted task data
   /// </returns>
-  public static TaskDetailed ToTaskDetailed(this TaskData taskData)
+  public static TaskDetailed ToTaskDetailed(this TaskDataHolder taskData)
     => new()
        {
          SessionId = taskData.SessionId,
          Status    = taskData.Status.ToGrpcStatus(),
-         Output = new TaskDetailed.Types.Output
-                  {
-                    Error   = taskData.Output.Error,
-                    Success = taskData.Output.Success,
-                  },
+         Output = taskData.Output is not null
+                    ? new TaskDetailed.Types.Output
+                      {
+                        Error   = taskData.Output.Error,
+                        Success = taskData.Output.Success,
+                      }
+                    : null,
          OwnerPodId = taskData.OwnerPodId,
-         Options    = taskData.Options.ToGrpcTaskOptions(),
+         Options    = taskData.Options?.ToGrpcTaskOptions(),
          DataDependencies =
          {
            taskData.DataDependencies,
          },
-         CreatedAt = FromDateTime(taskData.CreationDate),
+         CreatedAt = taskData.CreationDate is not null
+                       ? FromDateTime(taskData.CreationDate.Value)
+                       : null,
          EndedAt = taskData.EndDate is not null
                      ? FromDateTime(taskData.EndDate.Value)
                      : null,
@@ -90,5 +94,60 @@ public static class TaskDataExt
                                      ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
                                      : null,
          InitialTaskId = taskData.InitialTaskId,
+       };
+
+
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskDataHolder" /> to gRPC <see cref="TaskSummary" />
+  /// </summary>
+  /// <param name="taskDataSummary">The input task data</param>
+  /// <returns>
+  ///   The converted task data
+  /// </returns>
+  public static TaskSummary ToTaskSummary(this TaskDataHolder taskDataSummary)
+    => new()
+       {
+         SessionId  = taskDataSummary.SessionId,
+         Status     = taskDataSummary.Status.ToGrpcStatus(),
+         OwnerPodId = taskDataSummary.OwnerPodId,
+         Options    = taskDataSummary.Options?.ToGrpcTaskOptions(),
+         CreatedAt = taskDataSummary.CreationDate is not null
+                       ? FromDateTime(taskDataSummary.CreationDate.Value)
+                       : null,
+         EndedAt = taskDataSummary.EndDate is not null
+                     ? FromDateTime(taskDataSummary.EndDate.Value)
+                     : null,
+         Id = taskDataSummary.TaskId,
+         PodTtl = taskDataSummary.PodTtl is not null
+                    ? FromDateTime(taskDataSummary.PodTtl.Value)
+                    : null,
+         StartedAt = taskDataSummary.StartDate is not null
+                       ? FromDateTime(taskDataSummary.StartDate.Value)
+                       : null,
+         Error = taskDataSummary.Status == TaskStatus.Error
+                   ? taskDataSummary.Output?.Error
+                   : "",
+         StatusMessage = taskDataSummary.StatusMessage,
+         SubmittedAt = taskDataSummary.SubmittedDate is not null
+                         ? FromDateTime(taskDataSummary.SubmittedDate.Value)
+                         : null,
+         AcquiredAt = taskDataSummary.AcquisitionDate is not null
+                        ? FromDateTime(taskDataSummary.AcquisitionDate.Value)
+                        : null,
+         ReceivedAt = taskDataSummary.ReceptionDate is not null
+                        ? FromDateTime(taskDataSummary.ReceptionDate.Value)
+                        : null,
+         PodHostname = taskDataSummary.OwnerPodName,
+         CreationToEndDuration = taskDataSummary.CreationToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskDataSummary.CreationToEndDuration.Value)
+                                   : null,
+         ProcessingToEndDuration = taskDataSummary.ProcessingToEndDuration is not null
+                                     ? Duration.FromTimeSpan(taskDataSummary.ProcessingToEndDuration.Value)
+                                     : null,
+         InitialTaskId          = taskDataSummary.InitialTaskId,
+         CountDataDependencies  = taskDataSummary.DataDependenciesCount,
+         CountExpectedOutputIds = taskDataSummary.ExpectedOutputIdsCount,
+         CountParentTaskIds     = taskDataSummary.ParentTaskIdsCount,
+         CountRetryOfIds        = taskDataSummary.RetryOfIdsCount,
        };
 }

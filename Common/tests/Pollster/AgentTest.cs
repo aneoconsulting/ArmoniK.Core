@@ -242,6 +242,7 @@ public class AgentTest
 
       TaskData = TaskTable.ReadTaskAsync(createdTasks.Single()
                                                      .TaskId,
+                                         data => data,
                                          CancellationToken.None)
                           .Result;
 
@@ -464,6 +465,7 @@ public class AgentTest
                           .Count);
 
     var taskData1 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies1,
+                                                         d => d,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
@@ -474,6 +476,7 @@ public class AgentTest
                     taskData1.Status);
 
     var taskData2 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies2,
+                                                         d => d,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
@@ -641,6 +644,7 @@ public class AgentTest
                                   .TaskInfo.TaskId;
 
     var taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
+                                                         data => data,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
@@ -656,6 +660,7 @@ public class AgentTest
                           .Count);
 
     taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
+                                                     data => data,
                                                      CancellationToken.None)
                             .ConfigureAwait(false);
 
@@ -903,6 +908,7 @@ public class AgentTest
 
     var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
                                                              .TaskId,
+                                                        data => data,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
 
@@ -1015,6 +1021,7 @@ public class AgentTest
 
     var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
                                                              .TaskId,
+                                                        data => data,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
 
@@ -1034,6 +1041,7 @@ public class AgentTest
 
     taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
                                                          .TaskId,
+                                                    data => data,
                                                     CancellationToken.None)
                            .ConfigureAwait(false);
 

@@ -33,6 +33,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="SessionId">Unique identifier of the session in which the task belongs</param>
 /// <param name="TaskId">Unique identifier of the task</param>
 /// <param name="OwnerPodId">Identifier of the polling agent running the task</param>
+/// <param name="OwnerPodName">Name of the polling agent running the task</param>
 /// <param name="PayloadId">Unique identifier of the payload in input of the task</param>
 /// <param name="ParentTaskIds">
 ///   Unique identifiers of the tasks that submitted the current task up to the session id which

@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ArmoniK.Core.Base.DataStructures;
 
@@ -44,6 +45,31 @@ public record TaskOptions(IDictionary<string, string> Options,
                           string                      ApplicationService,
                           string                      EngineType)
 {
+  /// <inheritdoc />
+  public virtual bool Equals(TaskOptions? other)
+    => !ReferenceEquals(null,
+                        other) && Options.SequenceEqual(other.Options) && MaxDuration.Equals(other.MaxDuration) && MaxRetries.Equals(other.MaxRetries) &&
+       Priority.Equals(other.Priority) && PartitionId.Equals(other.PartitionId) && ApplicationName.Equals(other.ApplicationName) &&
+       ApplicationVersion.Equals(other.ApplicationVersion) && ApplicationNamespace.Equals(other.ApplicationNamespace) &&
+       ApplicationService.Equals(other.ApplicationService) && EngineType.Equals(other.EngineType);
+
+  /// <inheritdoc />
+  public override int GetHashCode()
+  {
+    var hashCode = new HashCode();
+    hashCode.Add(Options);
+    hashCode.Add(MaxDuration);
+    hashCode.Add(MaxRetries);
+    hashCode.Add(Priority);
+    hashCode.Add(PartitionId);
+    hashCode.Add(ApplicationName);
+    hashCode.Add(ApplicationVersion);
+    hashCode.Add(ApplicationNamespace);
+    hashCode.Add(ApplicationService);
+    hashCode.Add(EngineType);
+    return hashCode.ToHashCode();
+  }
+
   /// <summary>
   ///   Creates new <see cref="TaskOptions" /> based on given task options with the given default values
   /// </summary>

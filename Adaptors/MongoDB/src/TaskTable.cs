@@ -81,8 +81,9 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<TaskData> ReadTaskAsync(string            taskId,
-                                            CancellationToken cancellationToken = default)
+  public async Task<T> ReadTaskAsync<T>(string                        taskId,
+                                        Expression<Func<TaskData, T>> selector,
+                                        CancellationToken             cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ReadTaskAsync)}");
     activity?.SetTag("ReadTaskId",
@@ -93,6 +94,7 @@ public class TaskTable : ITaskTable
     try
     {
       return await taskCollection.Find(tdm => tdm.TaskId == taskId)
+                                 .Project(selector)
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }
@@ -461,6 +463,7 @@ public class TaskTable : ITaskTable
                                   .ConfigureAwait(false);
 
     return res ?? await ReadTaskAsync(taskData.TaskId,
+                                      data => data,
                                       cancellationToken)
              .ConfigureAwait(false);
   }
@@ -504,11 +507,13 @@ public class TaskTable : ITaskTable
     {
       Logger.LogDebug("Released task (old) {taskData}",
                       await ReadTaskAsync(taskData.TaskId,
+                                          data => data,
                                           cancellationToken)
                         .ConfigureAwait(false));
     }
 
     return res ?? await ReadTaskAsync(taskData.TaskId,
+                                      data => data,
                                       cancellationToken)
              .ConfigureAwait(false);
   }

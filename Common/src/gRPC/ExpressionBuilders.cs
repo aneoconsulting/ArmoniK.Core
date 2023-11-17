@@ -28,7 +28,7 @@ namespace ArmoniK.Core.Common.gRPC;
 /// </summary>
 public class ExpressionBuilders
 {
-  private static Expression GetMemberExpression<TIn>(Expression<Func<TIn, object?>> selector)
+  public static Expression GetMemberExpression<TIn>(Expression<Func<TIn, object?>> selector)
   {
     switch (selector.Body.NodeType)
     {
