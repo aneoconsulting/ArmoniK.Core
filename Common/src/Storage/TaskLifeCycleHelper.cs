@@ -209,118 +209,119 @@ public static class TaskLifeCycleHelper
       return;
     }
 
-    var parentExpectedOutputKeys = new List<string>();
-
-    if (!parentTaskId.Equals(sessionId))
+    async Task TransferOwnership()
     {
-      parentExpectedOutputKeys.AddRange(await taskTable.GetTaskExpectedOutputKeys(parentTaskId,
+      if (!parentTaskId.Equals(sessionId))
+      {
+        var parentExpectedOutputKeys = (await taskTable.GetTaskExpectedOutputKeys(parentTaskId,
                                                                                   cancellationToken)
-                                                       .ConfigureAwait(false));
+                                                       .ConfigureAwait(false)).ToHashSet();
+        var taskDataModels =
+          taskRequests.Select(request => new IResultTable.ChangeResultOwnershipRequest(request.ExpectedOutputKeys.Where(id => parentExpectedOutputKeys.Contains(id)),
+                                                                                       request.TaskId));
+        await resultTable.ChangeResultOwnership(sessionId,
+                                                parentTaskId,
+                                                taskDataModels,
+                                                cancellationToken)
+                         .ConfigureAwait(false);
+      }
     }
 
-    var taskDataModels = taskRequests.Select(request => new IResultTable.ChangeResultOwnershipRequest(parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys),
-                                                                                                      request.TaskId));
-    await resultTable.ChangeResultOwnership(sessionId,
-                                            parentTaskId,
-                                            taskDataModels,
-                                            cancellationToken)
-                     .ConfigureAwait(false);
+    var transferOwnership = TransferOwnership();
 
-    var readyTasks = new Dictionary<string, List<MessageData>>();
 
+    var allDependencies = new HashSet<string>();
 
     foreach (var request in taskRequests)
     {
-      var dependencies = request.DataDependencies.ToList();
-      dependencies.Add(request.PayloadId);
+      allDependencies.UnionWith(request.DataDependencies);
+      allDependencies.Add(request.PayloadId);
+    }
 
-      logger.LogDebug("Process task request {request} with dependencies {dependencies}",
-                      request,
-                      dependencies);
+    // Get the dependencies that are already completed to avoid tracking already completed results
+    await foreach (var resultId in resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                          result => result.ResultId,
+                                                          cancellationToken)
+                                              .ConfigureAwait(false))
+    {
+      allDependencies.Remove(resultId);
+    }
 
-      if (dependencies.Any())
-      {
-        // If there is dependencies, we need to register the current task as a dependent of its dependencies.
-        // This should be done *before* verifying if the dependencies are satisfied in order to avoid missing
-        // any result completion.
-        // If a result is completed at the same time, either the submitter will see the result has been completed,
-        // Or the Agent will remove the result from the remaining dependencies of the task.
-        await resultTable.AddTaskDependency(sessionId,
-                                            dependencies,
-                                            new List<string>
-                                            {
-                                              request.TaskId,
-                                            },
-                                            cancellationToken)
-                         .ConfigureAwait(false);
+    var taskDependencies = taskRequests.ToDictionary(request => request.TaskId,
+                                                     request =>
+                                                     {
+                                                       var dependencies = request.DataDependencies.Where(resultId => allDependencies.Contains(resultId))
+                                                                                 .ToList();
+                                                       if (allDependencies.Contains(request.PayloadId))
+                                                       {
+                                                         dependencies.Add(request.PayloadId);
+                                                       }
 
-        // Get the dependencies that are already completed in order to remove them from the remaining dependencies.
-        var completedDependencies = await resultTable.GetResults(sessionId,
-                                                                 dependencies,
-                                                                 cancellationToken)
-                                                     .Where(result => result.Status == ResultStatus.Completed)
-                                                     .Select(result => result.ResultId)
-                                                     .ToListAsync(cancellationToken)
-                                                     .ConfigureAwait(false);
+                                                       return dependencies;
+                                                     });
 
-        // Remove all the dependencies that are already completed from the task.
-        // If an Agent has completed one of the dependencies between the GetResults and this remove,
-        // One will succeed removing the dependency, the other will silently fail.
-        // In either case, the task will be submitted without error by the Agent.
-        // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
-        // and both will queue the task.
-        // This is benign as it will be handled during dequeue with message deduplication.
-        await taskTable.RemoveRemainingDataDependenciesAsync(new[]
-                                                             {
-                                                               request.TaskId,
-                                                             },
-                                                             completedDependencies,
+    // Add dependency to all results
+    // FIXME: Batch this update
+    await taskDependencies.ParallelForEach(item => resultTable.AddTaskDependency(sessionId,
+                                                                                 item.Value,
+                                                                                 new List<string>
+                                                                                 {
+                                                                                   item.Key,
+                                                                                 },
+                                                                                 cancellationToken))
+                          .ConfigureAwait(false);
+
+    // Check all the remaining dependencies
+    var completedDependencies = await resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                             result => result.ResultId,
                                                              cancellationToken)
-                       .ConfigureAwait(false);
+                                                 .ToListAsync(cancellationToken)
+                                                 .ConfigureAwait(false);
+    allDependencies.ExceptWith(completedDependencies);
 
-        // If all dependencies were already completed, the task is ready to be started.
-        if (dependencies.Count == completedDependencies.Count)
-        {
-          if (readyTasks.TryGetValue(request.Options.PartitionId,
-                                     out var msgsData))
-          {
-            msgsData.Add(new MessageData(request.TaskId,
-                                         sessionId,
-                                         request.Options));
-          }
-          else
-          {
-            readyTasks.Add(request.Options.PartitionId,
-                           new List<MessageData>
-                           {
-                             new(request.TaskId,
-                                 sessionId,
-                                 request.Options),
-                           });
-          }
-        }
+    // Remove all the dependencies that are already completed from the task.
+    // If an Agent has completed one of the dependencies between the GetResults and this remove,
+    // One will succeed removing the dependency, the other will silently fail.
+    // In either case, the task will be submitted without error by the Agent.
+    // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
+    // and both will queue the task.
+    // This is benign as it will be handled during dequeue with message deduplication.
+    await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
+                                                         completedDependencies,
+                                                         cancellationToken)
+                   .ConfigureAwait(false);
+
+    var readyTasks = new Dictionary<string, List<MessageData>>();
+
+    foreach (var request in taskRequests)
+    {
+      var taskId = request.TaskId;
+      if (taskDependencies[taskId]
+          .Any(resultId => allDependencies.Contains(resultId)))
+      {
+        continue;
+      }
+
+      if (readyTasks.TryGetValue(request.Options.PartitionId,
+                                 out var msgsData))
+      {
+        msgsData.Add(new MessageData(request.TaskId,
+                                     sessionId,
+                                     request.Options));
       }
       else
       {
-        if (readyTasks.TryGetValue(request.Options.PartitionId,
-                                   out var msgsData))
-        {
-          msgsData.Add(new MessageData(request.TaskId,
-                                       sessionId,
-                                       request.Options));
-        }
-        else
-        {
-          readyTasks.Add(request.Options.PartitionId,
-                         new List<MessageData>
-                         {
-                           new(request.TaskId,
-                               sessionId,
-                               request.Options),
-                         });
-        }
+        readyTasks.Add(request.Options.PartitionId,
+                       new List<MessageData>
+                       {
+                         new(request.TaskId,
+                             sessionId,
+                             request.Options),
+                       });
       }
     }
+
+    await transferOwnership.ConfigureAwait(false);
 
     if (readyTasks.Any())
     {
