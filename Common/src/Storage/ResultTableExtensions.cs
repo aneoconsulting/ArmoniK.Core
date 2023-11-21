@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,6 +28,122 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class ResultTableExtensions
 {
+  /// <summary>
+  ///   Abort the results of the given task
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="ownerTaskId">id of the task from which abort the results</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static Task AbortTaskResults(this IResultTable resultTable,
+                                      string            sessionId,
+                                      string            ownerTaskId,
+                                      CancellationToken cancellationToken = default)
+    => resultTable.UpdateManyResults(result => result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+                                     new (Expression<Func<Result, object?>> selector, object? newValue)[]
+                                     {
+                                       (data => data.Status, ResultStatus.Aborted),
+                                     },
+                                     cancellationToken);
+
+  /// <summary>
+  ///   Complete result
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="resultId">Id of the result to complete</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The new version of the result metadata
+  /// </returns>
+  /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
+  public static async Task<Result> CompleteResult(this IResultTable resultTable,
+                                                  string            sessionId,
+                                                  string            resultId,
+                                                  CancellationToken cancellationToken = default)
+  {
+    var result = await resultTable.UpdateOneResult(sessionId,
+                                                   resultId,
+                                                   new (Expression<Func<Result, object?>> selector, object? newValue)[]
+                                                   {
+                                                     (data => data.Status, ResultStatus.Completed),
+                                                   },
+                                                   cancellationToken)
+                                  .ConfigureAwait(false);
+    return result with
+           {
+             Status = ResultStatus.Completed,
+           };
+  }
+
+  /// <summary>
+  ///   Update result with small payload
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="ownerTaskId">id of the task owning the result</param>
+  /// <param name="resultId">id of the result to be modified</param>
+  /// <param name="smallPayload">payload data</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task SetResult(this IResultTable resultTable,
+                                     string            sessionId,
+                                     string            ownerTaskId,
+                                     string            resultId,
+                                     byte[]            smallPayload,
+                                     CancellationToken cancellationToken = default)
+  {
+    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
+                                                    {
+                                                      (result => result.Status, ResultStatus.Completed),
+                                                      (result => result.Data, smallPayload),
+                                                    },
+                                                    cancellationToken)
+                                 .ConfigureAwait(false);
+
+    if (count == 0)
+    {
+      throw new ResultNotFoundException($"Result '{resultId}' was not found for '{ownerTaskId}'");
+    }
+  }
+
+  /// <summary>
+  ///   Update result
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="ownerTaskId">id of the task owning the result</param>
+  /// <param name="resultId">id of the result to be modified</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task SetResult(this IResultTable resultTable,
+                                     string            sessionId,
+                                     string            ownerTaskId,
+                                     string            resultId,
+                                     CancellationToken cancellationToken = default)
+  {
+    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
+                                                    {
+                                                      (result => result.Status, ResultStatus.Completed),
+                                                    },
+                                                    cancellationToken)
+                                 .ConfigureAwait(false);
+
+    if (count == 0)
+    {
+      throw new ResultNotFoundException($"Result '{resultId}' was not found for '{ownerTaskId}'");
+    }
+  }
+
   /// <summary>
   ///   Get the results from a collection of ids
   /// </summary>

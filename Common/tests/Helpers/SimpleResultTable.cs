@@ -112,22 +112,15 @@ public class SimpleResultTable : IResultTable
                               }),
                         }.AsEnumerable(), 1));
 
-  public Task SetResult(string            sessionId,
-                        string            ownerTaskId,
-                        string            key,
-                        byte[]            smallPayload,
-                        CancellationToken cancellationToken = default)
+  public Task SetTaskOwnership(string                                        sessionId,
+                               ICollection<(string resultId, string taskId)> requests,
+                               CancellationToken                             cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task SetResult(string            sessionId,
-                        string            ownerTaskId,
-                        string            key,
-                        CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<Result> CompleteResult(string            sessionId,
-                                     string            resultId,
-                                     CancellationToken cancellationToken = default)
+  public Task<Result> UpdateOneResult(string                                                                      sessionId,
+                                      string                                                                      resultId,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
     => Task.FromResult(new Result(SessionId,
                                   OutputId,
                                   "",
@@ -140,13 +133,8 @@ public class SimpleResultTable : IResultTable
                                     42,
                                   }));
 
-  public Task SetTaskOwnership(string                                        sessionId,
-                               ICollection<(string resultId, string taskId)> requests,
-                               CancellationToken                             cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task AbortTaskResults(string            sessionId,
-                               string            ownerTaskId,
-                               CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
+  public Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+    => Task.FromResult(0L);
 }

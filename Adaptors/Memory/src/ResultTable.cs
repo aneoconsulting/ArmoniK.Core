@@ -179,70 +179,6 @@ public class ResultTable : IResultTable
                                                                                   .Take(pageSize), ordered.Count()));
   }
 
-  /// <inheritdoc />
-  public Task SetResult(string            sessionId,
-                        string            ownerTaskId,
-                        string            key,
-                        byte[]            smallPayload,
-                        CancellationToken cancellationToken = default)
-  {
-    var result = results_[sessionId][key];
-
-    results_[result.SessionId]
-      .TryUpdate(result.ResultId,
-                 result with
-                 {
-                   Data = smallPayload,
-                   Status = ResultStatus.Completed,
-                 },
-                 result);
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task SetResult(string            sessionId,
-                        string            ownerTaskId,
-                        string            key,
-                        CancellationToken cancellationToken = default)
-  {
-    var result = results_[sessionId][key];
-
-    results_[result.SessionId]
-      .TryUpdate(result.ResultId,
-                 result with
-                 {
-                   Status = ResultStatus.Completed,
-                 },
-                 result);
-    return Task.CompletedTask;
-  }
-
-  public Task<Result> CompleteResult(string            sessionId,
-                                     string            resultId,
-                                     CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      var result = results_[sessionId][resultId];
-      var newResult = result with
-                      {
-                        Status = ResultStatus.Completed,
-                      };
-
-      results_[result.SessionId]
-        .TryUpdate(result.ResultId,
-                   newResult,
-                   result);
-
-      return Task.FromResult(newResult);
-    }
-    catch (KeyNotFoundException e)
-    {
-      throw new ResultNotFoundException($"Result {resultId} not found",
-                                        e);
-    }
-  }
-
   public Task SetTaskOwnership(string                                        sessionId,
                                ICollection<(string resultId, string taskId)> requests,
                                CancellationToken                             cancellationToken = default)
@@ -273,27 +209,6 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task AbortTaskResults(string            sessionId,
-                               string            ownerTaskId,
-                               CancellationToken cancellationToken = default)
-  {
-    foreach (var result in results_[sessionId]
-                           .Values.ToImmutableList()
-                           .Where(result => result.OwnerTaskId == ownerTaskId))
-    {
-      results_[result.SessionId]
-        .TryUpdate(result.ResultId,
-                   result with
-                   {
-                     Status = ResultStatus.Aborted,
-                   },
-                   result);
-    }
-
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
   {
     isInitialized_ = true;
@@ -308,4 +223,51 @@ public class ResultTable : IResultTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
+
+  /// <inheritdoc />
+  public Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+  {
+    long i = 0;
+    foreach (var session in results_.Values)
+    {
+      foreach (var id in session.Values.AsQueryable()
+                                .Where(filter)
+                                .Select(data => data.ResultId))
+      {
+        i++;
+        session.AddOrUpdate(id,
+                            _ => throw new ResultNotFoundException("Result not found"),
+                            (_,
+                             data) => new Result(data,
+                                                 updates));
+      }
+    }
+
+    return Task.FromResult(i);
+  }
+
+  /// <inheritdoc />
+  public Task<Result> UpdateOneResult(string                                                                      sessionId,
+                                      string                                                                      resultId,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+  {
+    if (!results_.TryGetValue(sessionId,
+                              out var session))
+    {
+      throw new SessionNotFoundException($"Session '{sessionId}' not found");
+    }
+
+    if (!session.TryGetValue(resultId,
+                             out var result))
+    {
+      throw new ResultNotFoundException($"Result '{resultId}' not found");
+    }
+
+    session[resultId] = new Result(result,
+                                   updates);
+    return Task.FromResult(result);
+  }
 }

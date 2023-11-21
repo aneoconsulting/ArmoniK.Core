@@ -200,11 +200,17 @@ public class TaskTable : ITaskTable
   public Task<TaskData> UpdateOneTask(string                                                                        taskId,
                                       ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
                                       CancellationToken                                                             cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
-                                                    _ => throw new TaskNotFoundException($"Key '{taskId}' not found"),
-                                                    (_,
-                                                     data) => new TaskData(data,
-                                                                           updates)));
+  {
+    if (!taskId2TaskData_.TryGetValue(taskId,
+                                      out var taskData))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_[taskId] = new TaskData(taskData,
+                                            updates);
+    return Task.FromResult(taskData);
+  }
 
   public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
                                     ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
@@ -278,19 +284,6 @@ public class TaskTable : ITaskTable
     }
 
     return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task<Output> GetTaskOutput(string            taskId,
-                                    CancellationToken cancellationToken = default)
-  {
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Output);
   }
 
   /// <inheritdoc />
@@ -433,4 +426,17 @@ public class TaskTable : ITaskTable
     => Task.FromResult(taskId2TaskData_.Where(tdm => taskIds.Contains(tdm.Key))
                                        .Select(model => new TaskIdStatus(model.Value.TaskId,
                                                                          model.Value.Status)));
+
+  /// <inheritdoc />
+  public Task<Output> GetTaskOutput(string            taskId,
+                                    CancellationToken cancellationToken = default)
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .Output);
+  }
 }

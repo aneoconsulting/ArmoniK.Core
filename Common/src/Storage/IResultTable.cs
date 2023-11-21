@@ -137,52 +137,6 @@ public interface IResultTable : IInitializable
                                                                        CancellationToken                 cancellationToken = default);
 
   /// <summary>
-  ///   Update result with small payload
-  /// </summary>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="ownerTaskId">id of the task owning the result</param>
-  /// <param name="key">id of the result to be modified</param>
-  /// <param name="smallPayload">payload data</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task SetResult(string            sessionId,
-                 string            ownerTaskId,
-                 string            key,
-                 byte[]            smallPayload,
-                 CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Update result
-  /// </summary>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="ownerTaskId">id of the task owning the result</param>
-  /// <param name="key">id of the result to be modified</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task SetResult(string            sessionId,
-                 string            ownerTaskId,
-                 string            key,
-                 CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Complete result
-  /// </summary>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="resultId">Id of the result to complete</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The new version of the result metadata
-  /// </returns>
-  /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
-  Task<Result> CompleteResult(string            sessionId,
-                              string            resultId,
-                              CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Set Task that should produce the result
   /// </summary>
   /// <param name="sessionId"></param>
@@ -194,19 +148,6 @@ public interface IResultTable : IInitializable
   Task SetTaskOwnership(string                                        sessionId,
                         ICollection<(string resultId, string taskId)> requests,
                         CancellationToken                             cancellationToken = default);
-
-  /// <summary>
-  ///   Abort the results of the given task
-  /// </summary>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="ownerTaskId">id of the task from which abort the results</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task AbortTaskResults(string            sessionId,
-                        string            ownerTaskId,
-                        CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Get the result from its id
@@ -234,6 +175,36 @@ public interface IResultTable : IInitializable
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
+
+  // TODO Should be compatible with EFCORE : https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete#updating-multiple-properties
+  /// <summary>
+  ///   Update one result with the given new values
+  /// </summary>
+  /// <param name="sessionId">Id of the session where the result to be updated is</param>
+  /// <param name="resultId">Id of the result to be updated</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The result metadata before the update
+  /// </returns>
+  Task<Result> UpdateOneResult(string                                                                      sessionId,
+                               string                                                                      resultId,
+                               ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                               CancellationToken                                                           cancellationToken = default);
+
+
+  /// <summary>
+  ///   Update the results matching the filter with the given new values
+  /// </summary>
+  /// <param name="filter">Filter to select the results to update</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of results matched
+  /// </returns>
+  Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                               ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                               CancellationToken                                                           cancellationToken = default);
 
   /// <summary>
   ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
