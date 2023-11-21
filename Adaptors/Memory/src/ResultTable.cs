@@ -260,10 +260,14 @@ public class ResultTable : IResultTable
       throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
 
-    return Task.FromResult(session.AddOrUpdate(resultId,
-                                               _ => throw new ResultNotFoundException($"Result '{resultId}' not found"),
-                                               (_,
-                                                data) => new Result(data,
-                                                                    updates)));
+    if (!session.TryGetValue(resultId,
+                             out var result))
+    {
+      throw new ResultNotFoundException($"Result '{resultId}' not found");
+    }
+
+    session[resultId] = new Result(result,
+                                   updates);
+    return Task.FromResult(result);
   }
 }
