@@ -51,6 +51,10 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
+    - name: Install AWSCLI (the one in the Github runner does not work)
+      run: |
+        pip install awscli
+
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
@@ -58,12 +62,13 @@ jobs:
     - name: Minio Server UP
       if: ${{ matrix.projects }} == "Adaptors/S3/tests"
       run: |
-          just object=minio deployTargetObject
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just object=minio deployTargetObject
 
     - name: Run tests
       run: |
-        cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+          MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -72,6 +77,13 @@ jobs:
         name: Test - ${{ matrix.os }} ${{ matrix.projects }}
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
+    - name: Upload monitor profile
+      if: always()
+      run: |
+        export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+        export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+        tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz
 
   testsQueueProtos:
     strategy:
@@ -95,6 +107,10 @@ jobs:
       with:
         ref: ${{ github.ref }}
         submodules: true
+
+    - name: Install AWSCLI (the one in the Github runner does not work)
+      run: |
+        pip install awscli
     
     - name: Setup just
       run: |
@@ -102,12 +118,13 @@ jobs:
 
     - name: Set up queue
       run: |
-          just queue=${{ matrix.queue }} deployTargetQueue
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just queue=${{ matrix.queue }} deployTargetQueue
 
     - name: Run tests
       run: |
-        cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+        MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+          dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
       uses: dorny/test-reporter@v1
@@ -116,6 +133,13 @@ jobs:
         name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
+    - name: Upload monitor profile
+      if: always()
+      run: |
+        export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+        export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+        tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
 
   testsWinOnly:
     strategy:
@@ -407,16 +431,17 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
 
       - name: Run Stream Test
         timeout-minutes: 4
         run: |
-          cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
           export Partition=TestPartition0
-          dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+          MONITOR_PREFIX="monitor/test/" MONITOR_CD=./Tests/Stream/Client/ tools/monitor.sh \
+            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -432,6 +457,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
@@ -494,7 +520,8 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
           sleep 10
 
       - name: Print And Time Metrics
@@ -506,7 +533,8 @@ jobs:
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-100-1/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -519,7 +547,8 @@ jobs:
       - name: Run HtcMock test 100 tasks 4 levels
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-100-4/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -532,7 +561,8 @@ jobs:
       - name: Run HtcMock test 100 tasks 4 levels with retries
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-100-4-r/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -546,7 +576,8 @@ jobs:
       - name: Run HtcMock test 100 tasks 4 levels with errors
         timeout-minutes: 3
         run: |
-          ! docker run --net armonik_network --rm \
+          ! MONITOR_PREFIX="monitor/htcmock-100-4-e/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -561,7 +592,8 @@ jobs:
         timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-1000-1/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -575,7 +607,8 @@ jobs:
         timeout-minutes: 3
         if: ${{ matrix.log-level != 'Verbose' }}
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-1000-4/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -597,6 +630,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.tar.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-monitor.tar.gz
 
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
@@ -730,14 +764,16 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
           sleep 10
           ls -la terraform/logs/*.json
 
       - name: Run Bench test tasks - many tasks (400)
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/bench-many-tasks-400/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=400 \
             -e BenchOptions__TaskDurationMs=10 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
@@ -745,7 +781,8 @@ jobs:
       - name: Run Bench test tasks - many tasks (200) with events
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/bench-many-tasks-200-e/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=200 \
             -e BenchOptions__TaskDurationMs=100 \
             -e BenchOptions__ShowEvents=true \
@@ -754,7 +791,8 @@ jobs:
       - name: Run Bench test time - long tasks (10s)
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/bench-long-tasks-10s/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=2 \
             -e BenchOptions__TaskDurationMs=10000 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
@@ -762,7 +800,8 @@ jobs:
       - name: Run Bench test time - large payloads (10MB)
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/bench-large-payload-10m/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
             -e BenchOptions__TaskDurationMs=10 \
             -e BenchOptions__ResultSize=1 \
@@ -772,7 +811,8 @@ jobs:
       - name: Run Bench test time - large results (10MB)
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/bench-large-result-10m/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e BenchOptions__NTasks=10 \
             -e BenchOptions__TaskDurationMs=10 \
             -e BenchOptions__ResultSize=10000 \
@@ -785,6 +825,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
@@ -832,14 +873,16 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
           sleep 10
           ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-default-partition/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=1000 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -855,6 +898,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
@@ -902,14 +946,16 @@ jobs:
 
       - name: Deploy Core
         run: |
-          just tag=${VERSION} object=redis deploy
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just tag=${VERSION} object=redis deploy
           sleep 10
           ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-base/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -931,6 +977,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
+          MONITOR_PREFIX="monitor/htcmock-restarted-db/" tools/monitor.sh \
           docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
@@ -953,7 +1000,8 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-restarted-redis/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -975,7 +1023,8 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 3
         run: |
-          docker run --net armonik_network --rm \
+          MONITOR_PREFIX="monitor/htcmock-restarted-redis2/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
             -e HtcMock__NTasks=100 \
             -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
@@ -991,6 +1040,7 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@59c9656cd3cb7542525f3dce7ae2f44c0ff85d66 # v2
         if: always()
