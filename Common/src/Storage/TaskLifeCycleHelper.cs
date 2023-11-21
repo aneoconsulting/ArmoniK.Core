@@ -261,15 +261,14 @@ public static class TaskLifeCycleHelper
                                                      });
 
     // Add dependency to all results
-    // FIXME: Batch this update
-    await taskDependencies.ParallelForEach(item => resultTable.AddTaskDependency(sessionId,
-                                                                                 item.Value,
-                                                                                 new List<string>
-                                                                                 {
-                                                                                   item.Key,
-                                                                                 },
-                                                                                 cancellationToken))
-                          .ConfigureAwait(false);
+    await resultTable.AddTaskDependencies(sessionId,
+                                          taskDependencies.Where(item => item.Value.Any())
+                                                          .Select(item => (item.Value.AsICollection(), new[]
+                                                                                                       {
+                                                                                                         item.Key,
+                                                                                                       }.AsICollection())),
+                                          cancellationToken)
+                     .ConfigureAwait(false);
 
     // Check all the remaining dependencies
     var completedDependencies = await resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,

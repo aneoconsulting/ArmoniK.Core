@@ -63,6 +63,11 @@ public class SimpleResultTable : IResultTable
                                 CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task AddTaskDependencies(string                                                                    sessionId,
+                                  IEnumerable<(ICollection<string> resultIds, ICollection<string> taskIds)> dependencies,
+                                  CancellationToken                                                         cancellationToken = default)
+    => Task.CompletedTask;
+
   public Task DeleteResult(string            session,
                            string            key,
                            CancellationToken cancellationToken = default)

@@ -109,6 +109,32 @@ public class ResultTable : IResultTable
     }
   }
 
+  /// <inheritdoc />
+  public async Task AddTaskDependencies(string                                                                    sessionId,
+                                        IEnumerable<(ICollection<string> resultIds, ICollection<string> taskIds)> dependencies,
+                                        CancellationToken                                                         cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(AddTaskDependency)}");
+    activity?.SetTag($"{nameof(AddTaskDependency)}_sessionId",
+                     sessionId);
+
+    var resultCollection = resultCollectionProvider_.Get();
+
+    if (!dependencies.Any())
+    {
+      return;
+    }
+
+    await resultCollection.BulkWriteAsync(dependencies.Select(dependency
+                                                                => new UpdateManyModel<Result>(Builders<Result>.Filter.Where(result
+                                                                                                                               => dependency.resultIds
+                                                                                                                                            .Contains(result.ResultId)),
+                                                                                               Builders<Result>.Update.AddToSetEach(result => result.DependentTasks,
+                                                                                                                                    dependency.taskIds))),
+                                          cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
+  }
+
   async Task<Result> IResultTable.GetResult(string            sessionId,
                                             string            resultId,
                                             CancellationToken cancellationToken)

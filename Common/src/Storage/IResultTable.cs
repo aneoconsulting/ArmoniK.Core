@@ -81,6 +81,19 @@ public interface IResultTable : IInitializable
                          CancellationToken   cancellationToken = default);
 
   /// <summary>
+  ///   Add the tasks Ids to the list of reverse dependencies of the given results
+  /// </summary>
+  /// <param name="sessionId">Id of the session containing the result</param>
+  /// <param name="dependencies">Enumeration of dependencies between results and tasks</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task AddTaskDependencies(string                                                                    sessionId,
+                           IEnumerable<(ICollection<string> resultIds, ICollection<string> taskIds)> dependencies,
+                           CancellationToken                                                         cancellationToken = default);
+
+  /// <summary>
   ///   Delete the results from the database
   /// </summary>
   /// <param name="session">id of the session containing the result</param>
