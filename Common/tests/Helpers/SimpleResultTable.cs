@@ -112,42 +112,9 @@ public class SimpleResultTable : IResultTable
                               }),
                         }.AsEnumerable(), 1));
 
-  public Task SetResult(string            sessionId,
-                        string            ownerTaskId,
-                        string            key,
-                        byte[]            smallPayload,
-                        CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task SetResult(string            sessionId,
-                        string            ownerTaskId,
-                        string            key,
-                        CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task<Result> CompleteResult(string            sessionId,
-                                     string            resultId,
-                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(new Result(SessionId,
-                                  OutputId,
-                                  "",
-                                  TaskId,
-                                  ResultStatus.Completed,
-                                  new List<string>(),
-                                  DateTime.Now.ToUniversalTime(),
-                                  new byte[]
-                                  {
-                                    42,
-                                  }));
-
   public Task SetTaskOwnership(string                                        sessionId,
                                ICollection<(string resultId, string taskId)> requests,
                                CancellationToken                             cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task AbortTaskResults(string            sessionId,
-                               string            ownerTaskId,
-                               CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
   public Task<Result> UpdateOneResult(string                                                                      sessionId,
