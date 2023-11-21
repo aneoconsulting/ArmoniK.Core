@@ -235,6 +235,36 @@ public interface IResultTable : IInitializable
     }
   }
 
+  // TODO Should be compatible with EFCORE : https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete#updating-multiple-properties
+  /// <summary>
+  ///   Update one result with the given new values
+  /// </summary>
+  /// <param name="sessionId">Id of the session where the result to be updated is</param>
+  /// <param name="resultId">Id of the result to be updated</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The result metadata before the update
+  /// </returns>
+  Task<Result> UpdateOneResult(string                                                                      sessionId,
+                               string                                                                      resultId,
+                               ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                               CancellationToken                                                           cancellationToken = default);
+
+
+  /// <summary>
+  ///   Update the results matching the filter with the given new values
+  /// </summary>
+  /// <param name="filter">Filter to select the results to update</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of results matched
+  /// </returns>
+  Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                               ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                               CancellationToken                                                           cancellationToken = default);
+
   /// <summary>
   ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
   /// </summary>

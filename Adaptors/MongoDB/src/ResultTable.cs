@@ -380,6 +380,66 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
+  public async Task<Result> UpdateOneResult(string                                                                      sessionId,
+                                            string                                                                      resultId,
+                                            ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                            CancellationToken                                                           cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(UpdateOneResult)}");
+    activity?.SetTag($"{nameof(DeleteResult)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(DeleteResult)}_resultId",
+                     resultId);
+    var resultCollection = resultCollectionProvider_.Get();
+
+    var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
+
+    foreach (var (selector, newValue) in updates)
+    {
+      updateDefinition = updateDefinition.Set(selector,
+                                              newValue);
+    }
+
+    var filter = new FilterDefinitionBuilder<Result>().Where(x => x.ResultId == resultId);
+
+    var result = await resultCollection.FindOneAndUpdateAsync(filter,
+                                                              updateDefinition,
+                                                              new FindOneAndUpdateOptions<Result>
+                                                              {
+                                                                ReturnDocument = ReturnDocument.Before,
+                                                              },
+                                                              cancellationToken)
+                                       .ConfigureAwait(false);
+
+    return result ?? throw new ResultNotFoundException($"Result not found {resultId}");
+  }
+
+  /// <inheritdoc />
+  public async Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                                            ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                            CancellationToken                                                           cancellationToken = default)
+  {
+    using var activity         = activitySource_.StartActivity($"{nameof(UpdateManyResults)}");
+    var       resultCollection = resultCollectionProvider_.Get();
+
+    var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
+
+    foreach (var (selector, newValue) in updates)
+    {
+      updateDefinition = updateDefinition.Set(selector,
+                                              newValue);
+    }
+
+    var result = await resultCollection.UpdateManyAsync(filter,
+                                                        updateDefinition,
+                                                        cancellationToken: cancellationToken)
+                                       .ConfigureAwait(false);
+
+    return result.MatchedCount;
+  }
+
+
+  /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)

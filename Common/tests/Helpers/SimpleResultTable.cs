@@ -149,4 +149,25 @@ public class SimpleResultTable : IResultTable
                                string            ownerTaskId,
                                CancellationToken cancellationToken = default)
     => Task.CompletedTask;
+
+  public Task<Result> UpdateOneResult(string                                                                      sessionId,
+                                      string                                                                      resultId,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+    => Task.FromResult(new Result(SessionId,
+                                  OutputId,
+                                  "",
+                                  TaskId,
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.Now.ToUniversalTime(),
+                                  new byte[]
+                                  {
+                                    42,
+                                  }));
+
+  public Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+    => Task.FromResult(0L);
 }

@@ -308,4 +308,47 @@ public class ResultTable : IResultTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
+
+  /// <inheritdoc />
+  public Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+  {
+    long i = 0;
+    foreach (var session in results_.Values)
+    {
+      foreach (var id in session.Values.AsQueryable()
+                                .Where(filter)
+                                .Select(data => data.ResultId))
+      {
+        i++;
+        session.AddOrUpdate(id,
+                            _ => throw new ResultNotFoundException("Result not found"),
+                            (_,
+                             data) => new Result(data,
+                                                 updates));
+      }
+    }
+
+    return Task.FromResult(i);
+  }
+
+  /// <inheritdoc />
+  public Task<Result> UpdateOneResult(string                                                                      sessionId,
+                                      string                                                                      resultId,
+                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
+                                      CancellationToken                                                           cancellationToken = default)
+  {
+    if (!results_.TryGetValue(sessionId,
+                              out var session))
+    {
+      throw new SessionNotFoundException($"Session '{sessionId}' not found");
+    }
+
+    return Task.FromResult(session.AddOrUpdate(resultId,
+                                               _ => throw new TaskNotFoundException($"Result '{resultId}' not found"),
+                                               (_,
+                                                data) => new Result(data,
+                                                                    updates)));
+  }
 }
