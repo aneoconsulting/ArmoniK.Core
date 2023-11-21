@@ -30,9 +30,7 @@ mon() {
     top -bn1 | head -20
     echo "-----------${time//?/-}-----------"
     df -ah
-
-    # sleeps for 10 seconds and profile docker while we're at it
-    curl -fsSL --unix-socket /var/run/docker.sock http://./debug/pprof/profile?seconds=10 --output "${prefix_dir}${prefix_file}docker-${time}.pprof.gz"
+    sleep 10
   done
 }
 
