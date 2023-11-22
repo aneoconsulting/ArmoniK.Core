@@ -594,7 +594,7 @@ internal static class Program
         await eventTask.WaitAsync(CancellationToken.None)
                        .ConfigureAwait(false);
       }
-      catch (RpcException e) when (e.StatusCode is StatusCode.Cancelled or StatusCode.Aborted)
+      catch (RpcException e) when (e.StatusCode is StatusCode.Cancelled or StatusCode.Aborted or StatusCode.Unavailable)
       {
         logger.LogWarning(e,
                           $"{nameof(Events.EventsClient.GetEvents)} interrupted.");
