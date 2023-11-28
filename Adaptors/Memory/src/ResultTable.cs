@@ -90,18 +90,17 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task AddTaskDependency(string              sessionId,
-                                ICollection<string> resultIds,
-                                ICollection<string> taskIds,
-                                CancellationToken   cancellationToken)
+  public Task AddTaskDependencies(string                                   sessionId,
+                                  IDictionary<string, ICollection<string>> dependencies,
+                                  CancellationToken                        cancellationToken = default)
   {
     if (!results_.TryGetValue(sessionId,
                               out var session))
     {
-      throw new SessionNotFoundException($"Session '{session}' not found");
+      throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
 
-    foreach (var resultId in resultIds)
+    foreach (var (resultId, taskIds) in dependencies)
     {
       if (!session.TryGetValue(resultId,
                                out var result))
@@ -110,34 +109,6 @@ public class ResultTable : IResultTable
       }
 
       result.DependentTasks.AddRange(taskIds);
-    }
-
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task AddTaskDependencies(string                                                                    sessionId,
-                                  IEnumerable<(ICollection<string> resultIds, ICollection<string> taskIds)> dependencies,
-                                  CancellationToken                                                         cancellationToken = default)
-  {
-    if (!results_.TryGetValue(sessionId,
-                              out var session))
-    {
-      throw new SessionNotFoundException($"Session '{sessionId}' not found");
-    }
-
-    foreach (var dependency in dependencies)
-    {
-      foreach (var resultId in dependency.resultIds)
-      {
-        if (!session.TryGetValue(resultId,
-                                 out var result))
-        {
-          throw new ResultNotFoundException($"Key '{resultId}' not found");
-        }
-
-        result.DependentTasks.AddRange(dependency.taskIds);
-      }
     }
 
     return Task.CompletedTask;
