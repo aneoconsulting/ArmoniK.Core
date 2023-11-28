@@ -54,20 +54,22 @@ public class WatchToGrpcTests
 
     var list = new List<EventSubscriptionResponse>();
 
-    Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                   {
-                                                     // Simple* that are used to create this instance return static events
-                                                     await foreach (var eventSubscriptionResponse in watchToGrpcInstance.GetEvents("",
-                                                                                                                                   new List<EventsEnum>(),
-                                                                                                                                   new Filters(),
-                                                                                                                                   new Api.gRPC.V1.Results.Filters(),
-                                                                                                                                   cts.Token)
-                                                                                                                        .ConfigureAwait(false))
-                                                     {
-                                                       Console.WriteLine(eventSubscriptionResponse);
-                                                       list.Add(eventSubscriptionResponse);
-                                                     }
-                                                   });
+    Assert.That(async () =>
+                {
+                  // Simple* that are used to create this instance return static events
+                  await foreach (var eventSubscriptionResponse in watchToGrpcInstance.GetEvents("",
+                                                                                                new List<EventsEnum>(),
+                                                                                                new Filters(),
+                                                                                                new Api.gRPC.V1.Results.Filters(),
+                                                                                                cts.Token)
+                                                                                     .ConfigureAwait(false))
+                  {
+                    Console.WriteLine(eventSubscriptionResponse);
+                    list.Add(eventSubscriptionResponse);
+                  }
+                },
+                Throws.InstanceOf<OperationCanceledException>());
+
     Assert.AreEqual(8,
                     list.Count);
   }
@@ -91,24 +93,21 @@ public class WatchToGrpcTests
                                                                                      new SimpleResultWatcher(),
                                                                                      NullLogger.Instance);
 
-                                           Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                                                                                          {
-                                                                                            // Simple* that are used to create this instance return static events
-                                                                                            await foreach (var eventSubscriptionResponse in watchToGrpcInstance
-                                                                                                                                            .GetEvents("",
-                                                                                                                                                       new List<
-                                                                                                                                                         EventsEnum>(),
-                                                                                                                                                       new Filters(),
-                                                                                                                                                       new Api.gRPC.V1.
-                                                                                                                                                         Results.
-                                                                                                                                                         Filters(),
-                                                                                                                                                       cts.Token)
-                                                                                                                                            .ConfigureAwait(false))
-                                                                                            {
-                                                                                              Console.WriteLine(eventSubscriptionResponse);
-                                                                                              list.Add(eventSubscriptionResponse);
-                                                                                            }
-                                                                                          });
+                                           Assert.That(async () =>
+                                                       {
+                                                         // Simple* that are used to create this instance return static events
+                                                         await foreach (var eventSubscriptionResponse in watchToGrpcInstance.GetEvents("",
+                                                                                                                                       new List<EventsEnum>(),
+                                                                                                                                       new Filters(),
+                                                                                                                                       new Api.gRPC.V1.Results.Filters(),
+                                                                                                                                       cts.Token)
+                                                                                                                            .ConfigureAwait(false))
+                                                         {
+                                                           Console.WriteLine(eventSubscriptionResponse);
+                                                           list.Add(eventSubscriptionResponse);
+                                                         }
+                                                       },
+                                                       Throws.InstanceOf<OperationCanceledException>());
                                          },
                                          CancellationToken.None));
     }
@@ -116,8 +115,8 @@ public class WatchToGrpcTests
     await taskList.WhenAll()
                   .ConfigureAwait(false);
 
-    Assert.AreEqual(8 * nTries,
-                    list.Count);
+    Assert.That(list,
+                Has.Count.EqualTo(8 * nTries));
   }
 
 
@@ -146,32 +145,25 @@ public class WatchToGrpcTests
 
     Assert.That(async () =>
                 {
-                  try
+                  // Simple* that are used to create this instance return static events
+                  await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                new List<EventsEnum>
+                                                                                {
+                                                                                  EventsEnum.NewTask,
+                                                                                },
+                                                                                null,
+                                                                                null,
+                                                                                cts.Token)
+                                                                     .ConfigureAwait(false))
                   {
-                    // Simple* that are used to create this instance return static events
-                    await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
-                                                                                  new List<EventsEnum>
-                                                                                  {
-                                                                                    EventsEnum.NewTask,
-                                                                                  },
-                                                                                  null,
-                                                                                  null,
-                                                                                  cts.Token)
-                                                                       .ConfigureAwait(false))
-                    {
-                      Console.WriteLine(eventSubscriptionResponse);
-                      list.Add(eventSubscriptionResponse);
-                    }
-                  }
-                  catch (OperationCanceledException)
-                  {
-                    throw new TaskCanceledException();
+                    Console.WriteLine(eventSubscriptionResponse);
+                    list.Add(eventSubscriptionResponse);
                   }
                 },
-                Throws.Exception.TypeOf<TaskCanceledException>());
+                Throws.InstanceOf<OperationCanceledException>());
 
-    Assert.AreEqual(6,
-                    list.Count);
+    Assert.That(list,
+                Has.Count.EqualTo(6));
   }
 
   [Test]
@@ -252,32 +244,25 @@ public class WatchToGrpcTests
 
     Assert.That(async () =>
                 {
-                  try
+                  // Simple* that are used to create this instance return static events
+                  await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                new List<EventsEnum>
+                                                                                {
+                                                                                  EventsEnum.NewResult,
+                                                                                },
+                                                                                null,
+                                                                                null,
+                                                                                cts.Token)
+                                                                     .ConfigureAwait(false))
                   {
-                    // Simple* that are used to create this instance return static events
-                    await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
-                                                                                  new List<EventsEnum>
-                                                                                  {
-                                                                                    EventsEnum.NewResult,
-                                                                                  },
-                                                                                  null,
-                                                                                  null,
-                                                                                  cts.Token)
-                                                                       .ConfigureAwait(false))
-                    {
-                      Console.WriteLine(eventSubscriptionResponse);
-                      list.Add(eventSubscriptionResponse);
-                    }
-                  }
-                  catch (OperationCanceledException)
-                  {
-                    throw new TaskCanceledException();
+                    Console.WriteLine(eventSubscriptionResponse);
+                    list.Add(eventSubscriptionResponse);
                   }
                 },
-                Throws.Exception.TypeOf<TaskCanceledException>());
+                Throws.InstanceOf<OperationCanceledException>());
 
-    Assert.AreEqual(5,
-                    list.Count);
+    Assert.That(list,
+                Has.Count.EqualTo(5));
   }
 
   private static readonly TaskOptions Options = new(new Dictionary<string, string>
