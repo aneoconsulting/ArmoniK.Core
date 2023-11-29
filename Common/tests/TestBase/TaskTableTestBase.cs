@@ -1639,12 +1639,6 @@ public class TaskTableTestBase
                                                                   CancellationToken.None)
                                                   .ConfigureAwait(false);
 
-      foreach (var r in results)
-      {
-        Console.WriteLine(r);
-        Console.WriteLine(r.ToTaskDetailed());
-      }
-
       Assert.AreEqual(6,
                       totalCount);
     }
@@ -1667,14 +1661,6 @@ public class TaskTableTestBase
                                                                   CancellationToken.None)
                                                   .ConfigureAwait(false);
 
-      var taskDataHolders = results.ToList();
-      foreach (var r in taskDataHolders)
-      {
-        Console.WriteLine(r);
-        Console.WriteLine(r.ToTaskDetailed());
-        Console.WriteLine(r.ToTaskSummary());
-      }
-
       Assert.AreEqual(1,
                       totalCount);
 
@@ -1688,7 +1674,7 @@ public class TaskTableTestBase
                                   .Invoke(taskData),
                       TaskDataMask.FieldsToTaskDataHolder(field)
                                   .Compile()
-                                  .Invoke(taskDataHolders.Single()));
+                                  .Invoke(results.Single()));
     }
   }
 
