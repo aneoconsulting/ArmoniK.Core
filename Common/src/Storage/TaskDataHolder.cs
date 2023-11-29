@@ -30,61 +30,37 @@ namespace ArmoniK.Core.Common.Storage;
 [UsedImplicitly]
 public record TaskDataHolder
 {
-  /// <summary>
-  ///   Unique identifier of the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.TaskId" />
   public string TaskId { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Unique identifier of the session in which the task belongs
-  /// </summary>
+  /// <inheritdoc cref="TaskData.SessionId" />
   public string SessionId { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Identifier of the polling agent running the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.OwnerPodId" />
   public string OwnerPodId { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Name of the polling agent running the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.OwnerPodName" />
   public string OwnerPodName { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Unique identifier of the payload in input of the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.PayloadId" />
   public string PayloadId { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Task id before retry
-  /// </summary>
+  /// <inheritdoc cref="TaskData.InitialTaskId" />
   public string InitialTaskId { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Message associated to the status
-  /// </summary>
+  /// <inheritdoc cref="TaskData.StatusMessage" />
   public string StatusMessage { get; set; } = string.Empty;
 
-  /// <summary>
-  ///   Unique identifiers of the results the task depends on
-  /// </summary>
+  /// <inheritdoc cref="TaskData.DataDependencies" />
   public IList<string> DataDependencies { get; set; } = Array.Empty<string>();
 
-  /// <summary>
-  ///   Unique identifiers of the tasks that submitted the current task up to the session id which
-  ///   represents a submission from the client
-  /// </summary>
+  /// <inheritdoc cref="TaskData.ParentTaskIds" />
   public IList<string> ParentTaskIds { get; set; } = Array.Empty<string>();
 
-  /// <summary>
-  ///   Identifiers of the outputs the task should produce or should transmit the
-  ///   responsibility to produce
-  /// </summary>
+  /// <inheritdoc cref="TaskData.ExpectedOutputIds" />
   public IList<string> ExpectedOutputIds { get; set; } = Array.Empty<string>();
 
-  /// <summary>
-  ///   List of previous tasks ids before the current retry
-  /// </summary>
+  /// <inheritdoc cref="TaskData.RetryOfIds" />
   public IList<string> RetryOfIds { get; set; } = Array.Empty<string>();
 
   /// <summary>
@@ -107,63 +83,39 @@ public record TaskDataHolder
   /// </summary>
   public int RetryOfIdsCount { get; set; } = 0;
 
-  /// <summary>
-  ///   Date when the task is created
-  /// </summary>
+  /// <inheritdoc cref="TaskData.CreationDate" />
   public DateTime? CreationDate { get; set; } = null;
 
-  /// <summary>
-  ///   Date when the task is submitted
-  /// </summary>
+  /// <inheritdoc cref="TaskData.SubmittedDate" />
   public DateTime? SubmittedDate { get; set; } = null;
 
-  /// <summary>
-  ///   Date when the task execution begins
-  /// </summary>
+  /// <inheritdoc cref="TaskData.StartDate" />
   public DateTime? StartDate { get; set; } = null;
 
-  /// <summary>
-  ///   Date when the task ends
-  /// </summary>
+  /// <inheritdoc cref="TaskData.EndDate" />
   public DateTime? EndDate { get; set; } = null;
 
-  /// <summary>
-  ///   Date when the task is received by the polling agent
-  /// </summary>
+  /// <inheritdoc cref="TaskData.ReceptionDate" />
   public DateTime? ReceptionDate { get; set; } = null;
 
-  /// <summary>
-  ///   Date when the task is acquired by the pollster
-  /// </summary>
+  /// <inheritdoc cref="TaskData.AcquisitionDate" />
   public DateTime? AcquisitionDate { get; set; } = null;
 
-  /// <summary>
-  ///   Duration between the start of processing and the end of the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.ProcessingToEndDuration" />
   public TimeSpan? ProcessingToEndDuration { get; set; } = null;
 
-  /// <summary>
-  ///   Duration between the creation and the end of the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.CreationToEndDuration" />
   public TimeSpan? CreationToEndDuration { get; set; } = null;
 
-  /// <summary>
-  ///   Task Time To Live on the current pod
-  /// </summary>
+  /// <inheritdoc cref="TaskData.PodTtl" />
   public DateTime? PodTtl { get; set; } = null;
 
-  /// <summary>
-  ///   Output of the task after its successful completion
-  /// </summary>
+  /// <inheritdoc cref="TaskData.Output" />
   public Output? Output { get; set; } = null;
 
-  /// <summary>
-  ///   Task options
-  /// </summary>
+  /// <inheritdoc cref="TaskData.Options" />
   public TaskOptions? Options { get; set; } = null;
 
-  /// <summary>
-  ///   Current status of the task
-  /// </summary>
+  /// <inheritdoc cref="TaskData.Status" />
   public TaskStatus Status { get; set; } = TaskStatus.Unspecified;
 }

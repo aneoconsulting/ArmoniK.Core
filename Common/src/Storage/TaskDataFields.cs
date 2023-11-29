@@ -22,31 +22,84 @@ namespace ArmoniK.Core.Common.Storage;
 /// </summary>
 public enum TaskDataFields
 {
+  /// <inheritdoc cref="TaskDataHolder.SessionId" />
   SessionId,
+
+  /// <inheritdoc cref="TaskDataHolder.TaskId" />
   TaskId,
+
+  /// <inheritdoc cref="TaskDataHolder.PayloadId" />
   PayloadId,
+
+  /// <inheritdoc cref="TaskDataHolder.ParentTaskIds" />
   ParentTaskIds,
+
+  /// <inheritdoc cref="TaskDataHolder.ParentTaskIdsCount" />
   ParentTaskIdsCount,
+
+  /// <inheritdoc cref="TaskDataHolder.ExpectedOutputIds" />
   ExpectedOutputIds,
+
+  /// <inheritdoc cref="TaskDataHolder.ExpectedOutputIdsCount" />
   ExpectedOutputIdsCount,
+
+  /// <inheritdoc cref="TaskDataHolder.InitialTaskId" />
   InitialTaskId,
+
+  /// <inheritdoc cref="TaskDataHolder.RetryOfIds" />
   RetryOfIds,
+
+  /// <inheritdoc cref="TaskDataHolder.RetryOfIdsCount" />
   RetryOfIdsCount,
+
+  /// <inheritdoc cref="TaskDataHolder.Status" />
   Status,
+
+  /// <inheritdoc cref="TaskDataHolder.Options" />
   Options,
+
+  /// <inheritdoc cref="TaskDataHolder.DataDependencies" />
   DataDependencies,
+
+  /// <inheritdoc cref="TaskDataHolder.DataDependenciesCount" />
   DataDependenciesCount,
+
+  /// <inheritdoc cref="TaskDataHolder.OwnerPodId" />
   OwnerPodId,
+
+  /// <inheritdoc cref="TaskDataHolder.OwnerPodName" />
   OwnerPodName,
+
+  /// <inheritdoc cref="TaskDataHolder.StatusMessage" />
   StatusMessage,
+
+  /// <inheritdoc cref="TaskDataHolder.CreationDate" />
   CreationDate,
+
+  /// <inheritdoc cref="TaskDataHolder.SubmittedDate" />
   SubmittedDate,
+
+  /// <inheritdoc cref="TaskDataHolder.StartDate" />
   StartDate,
+
+  /// <inheritdoc cref="TaskDataHolder.EndDate" />
   EndDate,
+
+  /// <inheritdoc cref="TaskDataHolder.ReceptionDate" />
   ReceptionDate,
+
+  /// <inheritdoc cref="TaskDataHolder.AcquisitionDate" />
   AcquisitionDate,
+
+  /// <inheritdoc cref="TaskDataHolder.ProcessingToEndDuration" />
   ProcessingToEndDuration,
+
+  /// <inheritdoc cref="TaskDataHolder.CreationToEndDuration" />
   CreationToEndDuration,
+
+  /// <inheritdoc cref="TaskDataHolder.PodTtl" />
   PodTtl,
+
+  /// <inheritdoc cref="TaskDataHolder.Output" />
   Output,
 }
