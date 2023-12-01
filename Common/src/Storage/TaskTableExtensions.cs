@@ -35,6 +35,8 @@ public static class TaskTableExtensions
     TaskStatus.Timeout,
   };
 
+  private static readonly Expression<Func<TaskData, TaskData>> Identity = data => data;
+
   /// <summary>
   ///   Change the status of the task to canceled
   /// </summary>
@@ -243,5 +245,22 @@ public static class TaskTableExtensions
                                          (tdm => tdm.SubmittedDate, DateTime.UtcNow),
                                        },
                                        cancellationToken)
+                      .ConfigureAwait(false);
+
+  /// <summary>
+  ///   Retrieves a task from the data base
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskId">Id of the task to read</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task metadata of the retrieved task
+  /// </returns>
+  public static async Task<TaskData> ReadTaskAsync(this ITaskTable   taskTable,
+                                                   string            taskId,
+                                                   CancellationToken cancellationToken = default)
+    => await taskTable.ReadTaskAsync(taskId,
+                                     Identity,
+                                     cancellationToken)
                       .ConfigureAwait(false);
 }

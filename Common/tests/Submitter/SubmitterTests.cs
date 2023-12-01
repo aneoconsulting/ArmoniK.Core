@@ -964,7 +964,6 @@ public class SubmitterTests
                     .ConfigureAwait(false);
 
     var taskData = await taskTable_!.ReadTaskAsync(abortedTask,
-                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -978,7 +977,6 @@ public class SubmitterTests
                     .ConfigureAwait(false);
 
     taskData = await taskTable_.ReadTaskAsync(abortedTask,
-                                              data => data,
                                               CancellationToken.None)
                                .ConfigureAwait(false);
 
@@ -986,7 +984,6 @@ public class SubmitterTests
                     taskData.Status);
 
     taskData = await taskTable_.ReadTaskAsync(taskWithDependencies,
-                                              data => data,
                                               CancellationToken.None)
                                .ConfigureAwait(false);
 

@@ -160,7 +160,6 @@ public sealed class TaskHandler : IAsyncDisposable
     if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                 data => data,
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
       if (taskData_.Status is TaskStatus.Cancelling)
@@ -188,7 +187,6 @@ public sealed class TaskHandler : IAsyncDisposable
     try
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                 data => data,
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -302,7 +300,6 @@ public sealed class TaskHandler : IAsyncDisposable
             if (!taskProcessingElsewhere)
             {
               taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                         data => data,
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
               logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
@@ -424,7 +421,6 @@ public sealed class TaskHandler : IAsyncDisposable
         if (!taskProcessingElsewhere)
         {
           taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                     data => data,
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",

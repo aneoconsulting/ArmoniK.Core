@@ -279,7 +279,6 @@ public class TaskHandlerTest
                                 .TaskId;
 
     var taskErrorData = await testServiceProvider.TaskTable.ReadTaskAsync(taskErrorId,
-                                                                          data => data,
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
 
@@ -290,7 +289,6 @@ public class TaskHandlerTest
                              .ConfigureAwait(false);
 
     var taskRetriedData = await testServiceProvider.TaskTable.ReadTaskAsync(taskRetriedId,
-                                                                            data => data,
                                                                             CancellationToken.None)
                                                    .ConfigureAwait(false);
 
@@ -393,8 +391,7 @@ public class TaskHandlerTest
                                  .ConfigureAwait(false);
 
 
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     data => data)
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
                                             .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Error,
@@ -433,8 +430,7 @@ public class TaskHandlerTest
                                  .ConfigureAwait(false);
 
 
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     data => data)
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
                                             .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Retried,
@@ -1150,7 +1146,6 @@ public class TaskHandlerTest
                              .ConfigureAwait(false);
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     data => data,
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
@@ -1193,7 +1188,6 @@ public class TaskHandlerTest
                                  .ConfigureAwait(false);
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     data => data,
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
@@ -1224,7 +1218,6 @@ public class TaskHandlerTest
 
 
       taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                   data => data,
                                                                    CancellationToken.None)
                                           .ConfigureAwait(false);
 
@@ -1313,7 +1306,6 @@ public class TaskHandlerTest
                                                                  .ConfigureAwait(false));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     data => data,
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
@@ -1358,7 +1350,6 @@ public class TaskHandlerTest
                                                                               .ConfigureAwait(false));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     data => data,
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
@@ -1369,7 +1360,6 @@ public class TaskHandlerTest
                     sqmh.Status);
 
     var taskDataRetry = await testServiceProvider.TaskTable.ReadTaskAsync(taskId + "###1",
-                                                                          data => data,
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
     Assert.AreEqual(taskId,

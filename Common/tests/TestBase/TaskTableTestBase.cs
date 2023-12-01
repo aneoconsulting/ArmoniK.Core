@@ -334,7 +334,6 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable!.ReadTaskAsync("TaskCompletedId",
-                                                  data => data,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -349,7 +348,6 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable!.ReadTaskAsync("TaskCompletedId",
-                                                  data => data,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -374,7 +372,6 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<TaskNotFoundException>(async () => await TaskTable!.ReadTaskAsync("TaskDoNotExists",
-                                                                                           data => data,
                                                                                            CancellationToken.None)
                                                                             .ConfigureAwait(false));
     }
@@ -716,7 +713,6 @@ public class TaskTableTestBase
                                .Status);
 
       var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
-                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -1163,7 +1159,6 @@ public class TaskTableTestBase
                       .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
-                                                   d => d,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -1257,7 +1252,6 @@ public class TaskTableTestBase
       Assert.ThrowsAsync<TaskNotFoundException>(async () =>
                                                 {
                                                   await TaskTable.ReadTaskAsync("TaskSubmittedId",
-                                                                                data => data,
                                                                                 CancellationToken.None)
                                                                  .ConfigureAwait(false);
                                                 });
@@ -1301,7 +1295,6 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var taskToRetry = await TaskTable!.ReadTaskAsync("TaskFailedId",
-                                                       data => data,
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
 
@@ -1322,7 +1315,6 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var taskToRetry = await TaskTable!.ReadTaskAsync("TaskFailedId",
-                                                       data => data,
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
       for (var i = 0; i < 3; i++)
@@ -1332,7 +1324,6 @@ public class TaskTableTestBase
                                        .ConfigureAwait(false);
 
         var retriedTask = await TaskTable.ReadTaskAsync(newTaskId,
-                                                        data => data,
                                                         CancellationToken.None)
                                          .ConfigureAwait(false);
 
@@ -1665,7 +1656,6 @@ public class TaskTableTestBase
                       totalCount);
 
       var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
-                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -1965,8 +1955,7 @@ public class TaskTableTestBase
       Assert.AreEqual(0,
                       cancelledTasks);
 
-      var taskData = await TaskTable.ReadTaskAsync(taskId,
-                                                   data => data)
+      var taskData = await TaskTable.ReadTaskAsync(taskId)
                                     .ConfigureAwait(false);
       Assert.AreEqual(status,
                       taskData.Status);
@@ -2079,7 +2068,6 @@ public class TaskTableTestBase
                      .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync(taskId,
-                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -2133,7 +2121,6 @@ public class TaskTableTestBase
                      .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync(taskId,
-                                                   data => data,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
