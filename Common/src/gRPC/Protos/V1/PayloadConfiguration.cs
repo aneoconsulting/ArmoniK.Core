@@ -21,5 +21,5 @@ namespace ArmoniK.Api.gRPC.V1;
 
 public static class PayloadConfiguration
 {
-  public const int MaxChunkSize = 84000;
+  public const int MaxChunkSize = 2*1024*1024;
 }
