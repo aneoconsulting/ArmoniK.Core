@@ -21,7 +21,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Utils;
 
 using FluentValidation.Internal;
@@ -49,54 +48,64 @@ public static class MaskedProjection
   ///   Function that gives the expression to convert the <typeparamref name="TField" /> to a member
   ///   of <typeparamref name="TDest" />
   /// </param>
+  /// <param name="assignments">Additional assignments to perform when building <typeparamref name="TDest" /></param>
   /// <returns>
   ///   The <see cref="Expression" /> to convert a <typeparamref name="TOrigin" /> to <typeparamref name="TDest" /> with the
   ///   given mask
   /// </returns>
   public static Expression<Func<TOrigin, TDest>> CreateMaskedProjection<TField, TOrigin, TDest>(IEnumerable<TField>                              fields,
                                                                                                 Func<TField, Expression<Func<TOrigin, object?>>> toOrigin,
-                                                                                                Func<TField, Expression<Func<TDest, object?>>>   toDest)
+                                                                                                Func<TField, Expression<Func<TDest, object?>>>   toDest,
+                                                                                                IEnumerable<MemberAssignment>?                   assignments = null)
     where TField : Enum
   {
     var parameter = Expression.Parameter(typeof(TOrigin));
+
+    var visitor = new ReplaceParameterVisitor(parameter);
 
     var ctor = typeof(TDest).GetConstructors()
                             .First(info => info.GetParameters()
                                                .Length == 0);
 
-    var bindings = fields.Select(field =>
-                                 {
-                                   var destMember = toDest(field)
-                                     .GetMember();
-                                   var origMember = toOrigin(field)
-                                     .GetMember();
+    var bindings = fields.Select(field => Bind(toOrigin(field),
+                                               toDest(field)))
+                         .ToList();
 
-                                   var destType = ((PropertyInfo)destMember).PropertyType;
-                                   var origType = ((PropertyInfo)origMember).PropertyType;
-
-                                   var expr = ExpressionBuilders.GetMemberExpression(ReplaceParameter(parameter,
-                                                                                                      toOrigin(field)));
-                                   return Expression.Bind(destMember,
-                                                          destType == origType
-                                                            ? expr
-                                                            : Expression.Convert(expr,
-                                                                                 destType));
-                                 });
+    if (assignments is not null)
+    {
+      bindings.AddRange(assignments);
+    }
 
     var expr = Expression.MemberInit(Expression.New(ctor),
                                      bindings);
 
-    return Expression.Lambda<Func<TOrigin, TDest>>(expr,
+    return Expression.Lambda<Func<TOrigin, TDest>>(visitor.Visit(expr)!,
                                                    parameter);
   }
 
-  private static Expression<Func<T, object?>> ReplaceParameter<T>(ParameterExpression          parameter,
-                                                                  Expression<Func<T, object?>> expr)
+  private static MemberAssignment Bind<TOrigin, TDest>(Expression<Func<TOrigin, object?>> origExpression,
+                                                       Expression<Func<TDest, object?>>   destExpression)
   {
-    var visitor = new ReplaceExpressionVisitor(expr.Parameters[0],
-                                               parameter);
-    var newExpression = visitor.Visit(expr.Body);
-    return Expression.Lambda<Func<T, object?>>(newExpression!,
-                                               parameter);
+    var destMember = destExpression.GetMember();
+    var origBody   = origExpression.Body;
+
+    if (origBody is UnaryExpression
+                    {
+                      NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked or ExpressionType.TypeAs,
+                    } unaryExpression)
+    {
+      origBody = unaryExpression.Operand;
+    }
+
+    var destType = ((PropertyInfo)destMember).PropertyType;
+    var origType = origBody.Type;
+
+    var assignment = Expression.Bind(destMember,
+                                     destType == origType
+                                       ? origBody
+                                       : Expression.Convert(origBody,
+                                                            destType));
+
+    return assignment;
   }
 }

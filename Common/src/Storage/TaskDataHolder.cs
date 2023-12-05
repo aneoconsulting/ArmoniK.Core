@@ -18,8 +18,6 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Core.Base.DataStructures;
-
 using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -114,7 +112,7 @@ public record TaskDataHolder
   public Output? Output { get; set; } = null;
 
   /// <inheritdoc cref="TaskData.Options" />
-  public TaskOptions? Options { get; set; } = null;
+  public TaskOptionsHolder? Options { get; set; } = null;
 
   /// <inheritdoc cref="TaskData.Status" />
   public TaskStatus Status { get; set; } = TaskStatus.Unspecified;

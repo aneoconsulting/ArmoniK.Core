@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -67,51 +68,60 @@ public class GrpcTasksService : Task.TasksBase
     pushQueueStorage_ = pushQueueStorage;
     httpClient_       = httpClient;
 
-    taskDetailedMask_ = new TaskDataMask(TaskDataFields.SessionId,
-                                         TaskDataFields.TaskId,
-                                         TaskDataFields.Status,
-                                         TaskDataFields.InitialTaskId,
-                                         TaskDataFields.Output,
-                                         TaskDataFields.OwnerPodId,
-                                         TaskDataFields.OwnerPodName,
-                                         TaskDataFields.Options,
-                                         TaskDataFields.DataDependencies,
-                                         TaskDataFields.ExpectedOutputIds,
-                                         TaskDataFields.RetryOfIds,
-                                         TaskDataFields.ParentTaskIds,
-                                         TaskDataFields.CreationDate,
-                                         TaskDataFields.PodTtl,
-                                         TaskDataFields.StartDate,
-                                         TaskDataFields.StatusMessage,
-                                         TaskDataFields.SubmittedDate,
-                                         TaskDataFields.AcquisitionDate,
-                                         TaskDataFields.ReceptionDate,
-                                         TaskDataFields.CreationToEndDuration,
-                                         TaskDataFields.ProcessingToEndDuration,
-                                         TaskDataFields.EndDate);
+    taskDetailedMask_ = new TaskDataMask(new List<TaskDataFields>
+                                         {
+                                           TaskDataFields.SessionId,
+                                           TaskDataFields.TaskId,
+                                           TaskDataFields.Status,
+                                           TaskDataFields.InitialTaskId,
+                                           TaskDataFields.Output,
+                                           TaskDataFields.OwnerPodId,
+                                           TaskDataFields.OwnerPodName,
+                                           TaskDataFields.Options,
+                                           TaskDataFields.DataDependencies,
+                                           TaskDataFields.ExpectedOutputIds,
+                                           TaskDataFields.RetryOfIds,
+                                           TaskDataFields.ParentTaskIds,
+                                           TaskDataFields.CreationDate,
+                                           TaskDataFields.PodTtl,
+                                           TaskDataFields.StartDate,
+                                           TaskDataFields.StatusMessage,
+                                           TaskDataFields.SubmittedDate,
+                                           TaskDataFields.AcquisitionDate,
+                                           TaskDataFields.ReceptionDate,
+                                           TaskDataFields.CreationToEndDuration,
+                                           TaskDataFields.ProcessingToEndDuration,
+                                           TaskDataFields.EndDate,
+                                         },
+                                         new List<TaskOptionsFields>());
 
-    taskSummaryMask_ = new TaskDataMask(TaskDataFields.SessionId,
-                                        TaskDataFields.TaskId,
-                                        TaskDataFields.Status,
-                                        TaskDataFields.InitialTaskId,
-                                        TaskDataFields.Output,
-                                        TaskDataFields.OwnerPodId,
-                                        TaskDataFields.OwnerPodName,
-                                        TaskDataFields.Options,
-                                        TaskDataFields.DataDependenciesCount,
-                                        TaskDataFields.ExpectedOutputIdsCount,
-                                        TaskDataFields.RetryOfIdsCount,
-                                        TaskDataFields.ParentTaskIdsCount,
-                                        TaskDataFields.CreationDate,
-                                        TaskDataFields.PodTtl,
-                                        TaskDataFields.StartDate,
-                                        TaskDataFields.StatusMessage,
-                                        TaskDataFields.SubmittedDate,
-                                        TaskDataFields.AcquisitionDate,
-                                        TaskDataFields.ReceptionDate,
-                                        TaskDataFields.CreationToEndDuration,
-                                        TaskDataFields.ProcessingToEndDuration,
-                                        TaskDataFields.EndDate);
+
+    taskSummaryMask_ = new TaskDataMask(new List<TaskDataFields>
+                                        {
+                                          TaskDataFields.SessionId,
+                                          TaskDataFields.TaskId,
+                                          TaskDataFields.Status,
+                                          TaskDataFields.InitialTaskId,
+                                          TaskDataFields.Output,
+                                          TaskDataFields.OwnerPodId,
+                                          TaskDataFields.OwnerPodName,
+                                          TaskDataFields.Options,
+                                          TaskDataFields.DataDependenciesCount,
+                                          TaskDataFields.ExpectedOutputIdsCount,
+                                          TaskDataFields.RetryOfIdsCount,
+                                          TaskDataFields.ParentTaskIdsCount,
+                                          TaskDataFields.CreationDate,
+                                          TaskDataFields.PodTtl,
+                                          TaskDataFields.StartDate,
+                                          TaskDataFields.StatusMessage,
+                                          TaskDataFields.SubmittedDate,
+                                          TaskDataFields.AcquisitionDate,
+                                          TaskDataFields.ReceptionDate,
+                                          TaskDataFields.CreationToEndDuration,
+                                          TaskDataFields.ProcessingToEndDuration,
+                                          TaskDataFields.EndDate,
+                                        },
+                                        new List<TaskOptionsFields>());
   }
 
   [RequiresPermission(typeof(GrpcTasksService),

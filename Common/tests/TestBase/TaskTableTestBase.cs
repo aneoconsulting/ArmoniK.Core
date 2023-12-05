@@ -1619,7 +1619,8 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var mask = new TaskDataMask(Enum.GetValues<TaskDataFields>());
+      var mask = new TaskDataMask(Enum.GetValues<TaskDataFields>(),
+                                  Enum.GetValues<TaskOptionsFields>());
 
       var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
                                                                   data => data.SessionId,
@@ -1635,13 +1636,51 @@ public class TaskTableTestBase
     }
   }
 
+  public static IEnumerable<TestCaseData> TestCasesMask()
+  {
+    foreach (var value in Enum.GetValues<TaskDataFields>())
+    {
+      yield return new TestCaseData(value,
+                                    new[]
+                                    {
+                                      TaskOptionsFields.ApplicationName,
+                                    });
+    }
+
+    foreach (var value in Enum.GetValues<TaskOptionsFields>())
+    {
+      yield return new TestCaseData(TaskDataFields.Options,
+                                    new[]
+                                    {
+                                      value,
+                                    });
+    }
+
+    yield return new TestCaseData(TaskDataFields.Options,
+                                  new TaskOptionsFields[]
+                                  {
+                                  });
+
+    yield return new TestCaseData(TaskDataFields.Options,
+                                  new[]
+                                  {
+                                    TaskOptionsFields.ApplicationNamespace,
+                                    TaskOptionsFields.ApplicationService,
+                                  });
+  }
 
   [Test]
-  public async Task ListTaskWithIndividualMaskShouldSucceed([Values] TaskDataFields field)
+  [TestCaseSource(nameof(TestCasesMask))]
+  public async Task ListTaskWithIndividualMaskShouldSucceed(TaskDataFields                 field,
+                                                            ICollection<TaskOptionsFields> taskOptionField)
   {
     if (RunTests)
     {
-      var mask = new TaskDataMask(field);
+      var mask = new TaskDataMask(new List<TaskDataFields>
+                                  {
+                                    field,
+                                  },
+                                  taskOptionField);
 
       var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.TaskId == "TaskSubmittedId",
                                                                   data => data.SessionId,
@@ -1659,12 +1698,29 @@ public class TaskTableTestBase
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskDataMask.FieldsToTaskData(field)
-                                  .Compile()
-                                  .Invoke(taskData),
-                      TaskDataMask.FieldsToTaskDataHolder(field)
-                                  .Compile()
-                                  .Invoke(results.Single()));
+      if (field == TaskDataFields.Options)
+      {
+        var options = results.Single()
+                             .Options!;
+        foreach (var tof in taskOptionField)
+        {
+          Assert.AreEqual(TaskDataMask.FieldsToTaskOptions(tof)
+                                      .Compile()
+                                      .Invoke(taskData),
+                          TaskDataMask.FieldsToTaskOptionsHolder(tof)
+                                      .Compile()
+                                      .Invoke(options));
+        }
+      }
+      else
+      {
+        Assert.AreEqual(TaskDataMask.FieldsToTaskData(field)
+                                    .Compile()
+                                    .Invoke(taskData),
+                        TaskDataMask.FieldsToTaskDataHolder(field)
+                                    .Compile()
+                                    .Invoke(results.Single()));
+      }
     }
   }
 
