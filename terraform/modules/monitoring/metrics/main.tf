@@ -1,21 +1,11 @@
 resource "docker_image" "metrics" {
-  count        = var.use_local_image ? 0 : 1
   name         = "${var.image}:${var.tag}"
   keep_locally = true
 }
 
-module "metrics_local" {
-  count           = var.use_local_image ? 1 : 0
-  source          = "../../build_image"
-  use_local_image = var.use_local_image
-  image_name      = "metrics_local"
-  context_path    = "${path.root}/../"
-  dockerfile_path = "${path.root}/../Control/Metrics/src/"
-}
-
 resource "docker_container" "metrics" {
   name  = "armonik.control.metrics"
-  image = one(concat(module.metrics_local, docker_image.metrics)).image_id
+  image = docker_image.metrics.image_id
 
   networks_advanced {
     name = var.network

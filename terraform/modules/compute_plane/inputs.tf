@@ -18,8 +18,7 @@ variable "worker" {
     name                     = string,
     image                    = string,
     port                     = number,
-    serilog_application_name = string,
-    docker_file_path         = string
+    serilog_application_name = string
   })
 }
 
@@ -37,11 +36,6 @@ variable "replica_counter" {
 
 variable "num_partitions" {
   type = number
-}
-
-variable "use_local_image" {
-  type    = bool
-  default = false
 }
 
 variable "network" {
