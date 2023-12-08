@@ -88,7 +88,6 @@ module "submitter" {
   source             = "./modules/submitter"
   container_name     = local.submitter.name
   core_tag           = local.submitter.tag
-  use_local_image    = var.use_local_image
   docker_image       = local.submitter.image
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
@@ -102,7 +101,6 @@ module "compute_plane" {
   replica_counter    = each.key
   num_partitions     = var.num_partitions
   core_tag           = local.compute_plane.tag
-  use_local_image    = var.use_local_image
   polling_agent      = local.compute_plane.polling_agent
   worker             = local.compute_plane.worker
   generated_env_vars = local.environment
@@ -115,7 +113,6 @@ module "metrics_exporter" {
   source             = "./modules/monitoring/metrics"
   tag                = var.core_tag
   image              = var.armonik_metrics_image
-  use_local_image    = var.use_local_image
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
@@ -125,7 +122,6 @@ module "partition_metrics_exporter" {
   source             = "./modules/monitoring/partition_metrics"
   tag                = var.core_tag
   image              = var.armonik_partition_metrics_image
-  use_local_image    = var.use_local_image
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars

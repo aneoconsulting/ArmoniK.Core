@@ -3,11 +3,6 @@ variable "core_tag" {
   default = "test"
 }
 
-variable "use_local_image" {
-  type    = bool
-  default = false
-}
-
 variable "num_replicas" {
   type    = string
   default = "3"
@@ -108,11 +103,6 @@ variable "queue_env_vars" {
 variable "worker_image" {
   type    = string
   default = "dockerhubaneo/armonik_core_htcmock_test_worker"
-}
-
-variable "worker_docker_file_path" {
-  type    = string
-  default = "../Tests/HtcMock/Server/src/"
 }
 
 variable "compute_plane" {
