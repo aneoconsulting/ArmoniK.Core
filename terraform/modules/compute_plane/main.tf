@@ -4,7 +4,7 @@ resource "docker_volume" "socket_vol" {
 
 resource "docker_image" "worker" {
   count        = var.use_local_image ? 0 : 1
-  name         = "${var.worker.image}:${var.core_tag}"
+  name         = var.worker.image
   keep_locally = true
 }
 
@@ -25,7 +25,7 @@ resource "docker_container" "worker" {
     name = var.network
   }
 
-  env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env)
+  env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env, local.common_env)
 
   log_driver = var.log_driver.name
 
@@ -68,7 +68,7 @@ resource "docker_container" "polling_agent" {
     name = var.network
   }
 
-  env = concat(local.env, local.gen_env)
+  env = concat(local.env, local.gen_env, local.common_env)
 
   log_driver = var.log_driver.name
 

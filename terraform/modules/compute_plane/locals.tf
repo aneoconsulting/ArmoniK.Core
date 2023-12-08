@@ -11,5 +11,11 @@ locals {
     "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_delay}",
     "Amqp__PartitionId=TestPartition${local.partition_chooser}",
   ]
+  common_env = [
+    "ComputePlane__WorkerChannel__SocketType=unixdomainsocket",
+    "ComputePlane__WorkerChannel__Address=/cache/armonik_worker.sock",
+    "ComputePlane__AgentChannel__SocketType=unixdomainsocket",
+    "ComputePlane__AgentChannel__Address=/cache/armonik_agent.sock",
+  ]
   gen_env = [for k, v in var.generated_env_vars : "${k}=${v}"]
 }
