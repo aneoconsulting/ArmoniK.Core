@@ -47,11 +47,11 @@ export TF_VAR_object_storage := if object == "redis" {
 
 # Defines worker and environment variables for deployment
 image_worker := if worker == "stream" {
-  "dockerhubaneo/armonik_core_stream_test_worker"
+  "dockerhubaneo/armonik_core_stream_test_worker" + ":" + tag
 } else if worker == "bench" {
-  "dockerhubaneo/armonik_core_bench_test_worker"
+  "dockerhubaneo/armonik_core_bench_test_worker" + ":" + tag
 } else {
-  "dockerhubaneo/armonik_core_htcmock_test_worker"
+  "dockerhubaneo/armonik_core_htcmock_test_worker" + ":" + tag
 }
 # The path is given relative to ArmoniK.Core's root directory
 dockerfile_worker := if worker == "stream" {
