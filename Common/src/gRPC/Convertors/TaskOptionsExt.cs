@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -39,6 +40,24 @@ public static class TaskOptionsExt
     => taskOption?.ToTaskOptions();
 
   public static Api.gRPC.V1.TaskOptions ToGrpcTaskOptions(this TaskOptions taskOption)
+    => new()
+       {
+         MaxDuration          = Duration.FromTimeSpan(taskOption.MaxDuration),
+         ApplicationName      = taskOption.ApplicationName,
+         ApplicationVersion   = taskOption.ApplicationVersion,
+         ApplicationNamespace = taskOption.ApplicationNamespace,
+         ApplicationService   = taskOption.ApplicationService,
+         EngineType           = taskOption.EngineType,
+         MaxRetries           = taskOption.MaxRetries,
+         Options =
+         {
+           taskOption.Options,
+         },
+         Priority    = taskOption.Priority,
+         PartitionId = taskOption.PartitionId,
+       };
+
+  public static Api.gRPC.V1.TaskOptions ToGrpcTaskOptions(this TaskOptionsHolder taskOption)
     => new()
        {
          MaxDuration          = Duration.FromTimeSpan(taskOption.MaxDuration),

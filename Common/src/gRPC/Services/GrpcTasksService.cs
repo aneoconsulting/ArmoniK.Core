@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -49,6 +50,8 @@ public class GrpcTasksService : Task.TasksBase
   private readonly IPushQueueStorage         pushQueueStorage_;
   private readonly IResultTable              resultTable_;
   private readonly ISessionTable             sessionTable_;
+  private readonly TaskDataMask              taskDetailedMask_;
+  private readonly TaskDataMask              taskSummaryMask_;
   private readonly ITaskTable                taskTable_;
 
   public GrpcTasksService(ITaskTable                taskTable,
@@ -64,6 +67,61 @@ public class GrpcTasksService : Task.TasksBase
     resultTable_      = resultTable;
     pushQueueStorage_ = pushQueueStorage;
     httpClient_       = httpClient;
+
+    taskDetailedMask_ = new TaskDataMask(new List<TaskDataFields>
+                                         {
+                                           TaskDataFields.SessionId,
+                                           TaskDataFields.TaskId,
+                                           TaskDataFields.Status,
+                                           TaskDataFields.InitialTaskId,
+                                           TaskDataFields.Output,
+                                           TaskDataFields.OwnerPodId,
+                                           TaskDataFields.OwnerPodName,
+                                           TaskDataFields.Options,
+                                           TaskDataFields.DataDependencies,
+                                           TaskDataFields.ExpectedOutputIds,
+                                           TaskDataFields.RetryOfIds,
+                                           TaskDataFields.ParentTaskIds,
+                                           TaskDataFields.CreationDate,
+                                           TaskDataFields.PodTtl,
+                                           TaskDataFields.StartDate,
+                                           TaskDataFields.StatusMessage,
+                                           TaskDataFields.SubmittedDate,
+                                           TaskDataFields.AcquisitionDate,
+                                           TaskDataFields.ReceptionDate,
+                                           TaskDataFields.CreationToEndDuration,
+                                           TaskDataFields.ProcessingToEndDuration,
+                                           TaskDataFields.EndDate,
+                                         },
+                                         new List<TaskOptionsFields>());
+
+
+    taskSummaryMask_ = new TaskDataMask(new List<TaskDataFields>
+                                        {
+                                          TaskDataFields.SessionId,
+                                          TaskDataFields.TaskId,
+                                          TaskDataFields.Status,
+                                          TaskDataFields.InitialTaskId,
+                                          TaskDataFields.Output,
+                                          TaskDataFields.OwnerPodId,
+                                          TaskDataFields.OwnerPodName,
+                                          TaskDataFields.Options,
+                                          TaskDataFields.DataDependenciesCount,
+                                          TaskDataFields.ExpectedOutputIdsCount,
+                                          TaskDataFields.RetryOfIdsCount,
+                                          TaskDataFields.ParentTaskIdsCount,
+                                          TaskDataFields.CreationDate,
+                                          TaskDataFields.PodTtl,
+                                          TaskDataFields.StartDate,
+                                          TaskDataFields.StatusMessage,
+                                          TaskDataFields.SubmittedDate,
+                                          TaskDataFields.AcquisitionDate,
+                                          TaskDataFields.ReceptionDate,
+                                          TaskDataFields.CreationToEndDuration,
+                                          TaskDataFields.ProcessingToEndDuration,
+                                          TaskDataFields.EndDate,
+                                        },
+                                        new List<TaskOptionsFields>());
   }
 
   [RequiresPermission(typeof(GrpcTasksService),
@@ -76,6 +134,7 @@ public class GrpcTasksService : Task.TasksBase
       return new GetTaskResponse
              {
                Task = (await taskTable_.ReadTaskAsync(request.TaskId,
+                                                      taskDetailedMask_.GetProjection(),
                                                       context.CancellationToken)
                                        .ConfigureAwait(false)).ToTaskDetailed(),
              };
@@ -122,28 +181,7 @@ public class GrpcTasksService : Task.TasksBase
                                                                 request.Sort is null
                                                                   ? data => data.TaskId
                                                                   : request.Sort.ToField(),
-                                                                data => new TaskDataSummary(data.SessionId,
-                                                                                            data.TaskId,
-                                                                                            data.OwnerPodId,
-                                                                                            data.OwnerPodName,
-                                                                                            data.ParentTaskIds.Count,
-                                                                                            data.DataDependencies.Count,
-                                                                                            data.ExpectedOutputIds.Count,
-                                                                                            data.InitialTaskId,
-                                                                                            data.RetryOfIds.Count,
-                                                                                            data.Status,
-                                                                                            data.StatusMessage,
-                                                                                            data.Options,
-                                                                                            data.CreationDate,
-                                                                                            data.SubmittedDate,
-                                                                                            data.StartDate,
-                                                                                            data.EndDate,
-                                                                                            data.ReceptionDate,
-                                                                                            data.AcquisitionDate,
-                                                                                            data.PodTtl,
-                                                                                            data.ProcessingToEndDuration,
-                                                                                            data.CreationToEndDuration,
-                                                                                            data.Output),
+                                                                taskSummaryMask_.GetProjection(),
                                                                 request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                                 request.Page,
                                                                 request.PageSize,
@@ -243,28 +281,7 @@ public class GrpcTasksService : Task.TasksBase
                Tasks =
                {
                  (await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                  data => new TaskDataSummary(data.SessionId,
-                                                                              data.TaskId,
-                                                                              data.OwnerPodId,
-                                                                              data.OwnerPodName,
-                                                                              data.ParentTaskIds.Count,
-                                                                              data.DataDependencies.Count,
-                                                                              data.ExpectedOutputIds.Count,
-                                                                              data.InitialTaskId,
-                                                                              data.RetryOfIds.Count,
-                                                                              data.Status,
-                                                                              data.StatusMessage,
-                                                                              data.Options,
-                                                                              data.CreationDate,
-                                                                              data.SubmittedDate,
-                                                                              data.StartDate,
-                                                                              data.EndDate,
-                                                                              data.ReceptionDate,
-                                                                              data.AcquisitionDate,
-                                                                              data.PodTtl,
-                                                                              data.ProcessingToEndDuration,
-                                                                              data.CreationToEndDuration,
-                                                                              data.Output),
+                                                  taskSummaryMask_.GetProjection(),
                                                   context.CancellationToken)
                                   .ToListAsync(context.CancellationToken)
                                   .ConfigureAwait(false)).Select(data => data.ToTaskSummary()),
@@ -345,7 +362,7 @@ public class GrpcTasksService : Task.TasksBase
                                                                 request.Sort is null
                                                                   ? data => data.TaskId
                                                                   : request.Sort.ToField(),
-                                                                data => data,
+                                                                taskDetailedMask_.GetProjection(),
                                                                 request.Sort is null || request.Sort.Direction == SortDirection.Asc,
                                                                 request.Page,
                                                                 request.PageSize,

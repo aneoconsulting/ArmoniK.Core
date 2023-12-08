@@ -558,8 +558,9 @@ public class TaskHandlerTest
                             CancellationToken     cancellationToken = default)
       => Task.CompletedTask;
 
-    public async Task<TaskData> ReadTaskAsync(string            taskId,
-                                              CancellationToken cancellationToken = default)
+    public async Task<T> ReadTaskAsync<T>(string                        taskId,
+                                          Expression<Func<TaskData, T>> selector,
+                                          CancellationToken             cancellationToken = default)
     {
       if (waitMethod_ == WaitMethod.Read)
       {
@@ -568,40 +569,41 @@ public class TaskHandlerTest
                   .ConfigureAwait(false);
       }
 
-      return new TaskData("SessionId",
-                          "taskId",
-                          "ownerpodid",
-                          "ownerpodname",
-                          "payload",
-                          new List<string>(),
-                          new List<string>(),
-                          new Dictionary<string, bool>(),
-                          new List<string>(),
-                          "taskId",
-                          new List<string>(),
-                          TaskStatus.Submitted,
-                          "",
-                          new TaskOptions(new Dictionary<string, string>(),
-                                          TimeSpan.FromMinutes(2),
-                                          2,
-                                          3,
-                                          "part",
+      return selector.Compile()
+                     .Invoke(new TaskData("SessionId",
+                                          "taskId",
+                                          "ownerpodid",
+                                          "ownerpodname",
+                                          "payload",
+                                          new List<string>(),
+                                          new List<string>(),
+                                          new Dictionary<string, bool>(),
+                                          new List<string>(),
+                                          "taskId",
+                                          new List<string>(),
+                                          TaskStatus.Submitted,
                                           "",
-                                          "",
-                                          "",
-                                          "",
-                                          ""),
-                          DateTime.Now,
-                          DateTime.Now,
-                          DateTime.Now,
-                          DateTime.Now,
-                          DateTime.Now,
-                          DateTime.Now,
-                          DateTime.Now,
-                          TimeSpan.FromSeconds(1),
-                          TimeSpan.FromSeconds(2),
-                          new Output(false,
-                                     ""));
+                                          new TaskOptions(new Dictionary<string, string>(),
+                                                          TimeSpan.FromMinutes(2),
+                                                          2,
+                                                          3,
+                                                          "part",
+                                                          "",
+                                                          "",
+                                                          "",
+                                                          "",
+                                                          ""),
+                                          DateTime.Now,
+                                          DateTime.Now,
+                                          DateTime.Now,
+                                          DateTime.Now,
+                                          DateTime.Now,
+                                          DateTime.Now,
+                                          DateTime.Now,
+                                          TimeSpan.FromSeconds(1),
+                                          TimeSpan.FromSeconds(2),
+                                          new Output(false,
+                                                     "")));
     }
 
     public Task<bool> IsTaskCancelledAsync(string            taskId,

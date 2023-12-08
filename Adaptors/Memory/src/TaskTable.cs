@@ -76,13 +76,15 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<TaskData> ReadTaskAsync(string            taskId,
-                                      CancellationToken cancellationToken = default)
+  public Task<T> ReadTaskAsync<T>(string                        taskId,
+                                  Expression<Func<TaskData, T>> selector,
+                                  CancellationToken             cancellationToken = default)
   {
     if (taskId2TaskData_.TryGetValue(taskId,
                                      out var value))
     {
-      return Task.FromResult(value);
+      return Task.FromResult(selector.Compile()
+                                     .Invoke(value));
     }
 
     throw new TaskNotFoundException($"Key '{taskId}' not found");

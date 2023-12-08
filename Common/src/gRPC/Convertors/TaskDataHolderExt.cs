@@ -24,23 +24,96 @@ using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
-public static class TaskDataSummaryExt
+public static class TaskDataHolderExt
 {
   /// <summary>
-  ///   Conversion operator from <see cref="TaskDataSummary" /> to gRPC <see cref="TaskSummary" />
+  ///   Conversion operator from <see cref="TaskDataHolder" /> to <see cref="TaskDetailed" />
+  /// </summary>
+  /// <param name="taskData">The input task data</param>
+  /// <returns>
+  ///   The converted task data
+  /// </returns>
+  public static TaskDetailed ToTaskDetailed(this TaskDataHolder taskData)
+    => new()
+       {
+         SessionId = taskData.SessionId,
+         Status    = taskData.Status.ToGrpcStatus(),
+         Output = taskData.Output is not null
+                    ? new TaskDetailed.Types.Output
+                      {
+                        Error   = taskData.Output.Error,
+                        Success = taskData.Output.Success,
+                      }
+                    : null,
+         OwnerPodId = taskData.OwnerPodId,
+         Options    = taskData.Options?.ToGrpcTaskOptions(),
+         DataDependencies =
+         {
+           taskData.DataDependencies,
+         },
+         CreatedAt = taskData.CreationDate is not null
+                       ? FromDateTime(taskData.CreationDate.Value)
+                       : null,
+         EndedAt = taskData.EndDate is not null
+                     ? FromDateTime(taskData.EndDate.Value)
+                     : null,
+         ExpectedOutputIds =
+         {
+           taskData.ExpectedOutputIds,
+         },
+         Id = taskData.TaskId,
+         RetryOfIds =
+         {
+           taskData.RetryOfIds,
+         },
+         ParentTaskIds =
+         {
+           taskData.ParentTaskIds,
+         },
+         PodTtl = taskData.PodTtl is not null
+                    ? FromDateTime(taskData.PodTtl.Value)
+                    : null,
+         StartedAt = taskData.StartDate is not null
+                       ? FromDateTime(taskData.StartDate.Value)
+                       : null,
+         StatusMessage = taskData.StatusMessage,
+         SubmittedAt = taskData.SubmittedDate is not null
+                         ? FromDateTime(taskData.SubmittedDate.Value)
+                         : null,
+         AcquiredAt = taskData.AcquisitionDate is not null
+                        ? FromDateTime(taskData.AcquisitionDate.Value)
+                        : null,
+         ReceivedAt = taskData.ReceptionDate is not null
+                        ? FromDateTime(taskData.ReceptionDate.Value)
+                        : null,
+         PodHostname = taskData.OwnerPodName,
+         CreationToEndDuration = taskData.CreationToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskData.CreationToEndDuration.Value)
+                                   : null,
+         ProcessingToEndDuration = taskData.ProcessingToEndDuration is not null
+                                     ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
+                                     : null,
+         InitialTaskId = taskData.InitialTaskId,
+       };
+
+
+  /// <summary>
+  ///   Conversion operator from <see cref="TaskDataHolder" /> to gRPC <see cref="TaskSummary" />
   /// </summary>
   /// <param name="taskDataSummary">The input task data</param>
   /// <returns>
   ///   The converted task data
   /// </returns>
-  public static TaskSummary ToTaskSummary(this TaskDataSummary taskDataSummary)
+  public static TaskSummary ToTaskSummary(this TaskDataHolder taskDataSummary)
     => new()
        {
          SessionId  = taskDataSummary.SessionId,
          Status     = taskDataSummary.Status.ToGrpcStatus(),
          OwnerPodId = taskDataSummary.OwnerPodId,
-         Options    = taskDataSummary.Options.ToGrpcTaskOptions(),
-         CreatedAt  = FromDateTime(taskDataSummary.CreationDate),
+         Options    = taskDataSummary.Options?.ToGrpcTaskOptions(),
+         CreatedAt = taskDataSummary.CreationDate is not null
+                       ? FromDateTime(taskDataSummary.CreationDate.Value)
+                       : null,
          EndedAt = taskDataSummary.EndDate is not null
                      ? FromDateTime(taskDataSummary.EndDate.Value)
                      : null,
@@ -52,7 +125,7 @@ public static class TaskDataSummaryExt
                        ? FromDateTime(taskDataSummary.StartDate.Value)
                        : null,
          Error = taskDataSummary.Status == TaskStatus.Error
-                   ? taskDataSummary.Output.Error
+                   ? taskDataSummary.Output?.Error
                    : "",
          StatusMessage = taskDataSummary.StatusMessage,
          SubmittedAt = taskDataSummary.SubmittedDate is not null

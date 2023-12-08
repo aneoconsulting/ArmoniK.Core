@@ -1614,6 +1614,115 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task ListTaskWithMaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var mask = new TaskDataMask(Enum.GetValues<TaskDataFields>(),
+                                  Enum.GetValues<TaskOptionsFields>());
+
+      var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                                  data => data.SessionId,
+                                                                  mask.GetProjection(),
+                                                                  false,
+                                                                  0,
+                                                                  20,
+                                                                  CancellationToken.None)
+                                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(6,
+                      totalCount);
+    }
+  }
+
+  public static IEnumerable<TestCaseData> TestCasesMask()
+  {
+    foreach (var value in Enum.GetValues<TaskDataFields>())
+    {
+      yield return new TestCaseData(value,
+                                    new[]
+                                    {
+                                      TaskOptionsFields.ApplicationName,
+                                    });
+    }
+
+    foreach (var value in Enum.GetValues<TaskOptionsFields>())
+    {
+      yield return new TestCaseData(TaskDataFields.Options,
+                                    new[]
+                                    {
+                                      value,
+                                    });
+    }
+
+    yield return new TestCaseData(TaskDataFields.Options,
+                                  new TaskOptionsFields[]
+                                  {
+                                  });
+
+    yield return new TestCaseData(TaskDataFields.Options,
+                                  new[]
+                                  {
+                                    TaskOptionsFields.ApplicationNamespace,
+                                    TaskOptionsFields.ApplicationService,
+                                  });
+  }
+
+  [Test]
+  [TestCaseSource(nameof(TestCasesMask))]
+  public async Task ListTaskWithIndividualMaskShouldSucceed(TaskDataFields                 field,
+                                                            ICollection<TaskOptionsFields> taskOptionField)
+  {
+    if (RunTests)
+    {
+      var mask = new TaskDataMask(new List<TaskDataFields>
+                                  {
+                                    field,
+                                  },
+                                  taskOptionField);
+
+      var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.TaskId == "TaskSubmittedId",
+                                                                  data => data.SessionId,
+                                                                  mask.GetProjection(),
+                                                                  false,
+                                                                  0,
+                                                                  20,
+                                                                  CancellationToken.None)
+                                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(1,
+                      totalCount);
+
+      var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      if (field == TaskDataFields.Options)
+      {
+        var options = results.Single()
+                             .Options!;
+        foreach (var tof in taskOptionField)
+        {
+          Assert.AreEqual(TaskDataMask.FieldsToTaskOptions(tof)
+                                      .Compile()
+                                      .Invoke(taskData),
+                          TaskDataMask.FieldsToTaskOptionsHolder(tof)
+                                      .Compile()
+                                      .Invoke(options));
+        }
+      }
+      else
+      {
+        Assert.AreEqual(TaskDataMask.FieldsToTaskData(field)
+                                    .Compile()
+                                    .Invoke(taskData),
+                        TaskDataMask.FieldsToTaskDataHolder(field)
+                                    .Compile()
+                                    .Invoke(results.Single()));
+      }
+    }
+  }
 
   [Test]
   public async Task ListTaskWithRequestOrderByTaskOptionsOptionsShouldSucceed()

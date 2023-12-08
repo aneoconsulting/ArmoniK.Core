@@ -69,24 +69,26 @@ public class SimpleTaskTable : ITaskTable
                           CancellationToken     cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<TaskData> ReadTaskAsync(string            taskId,
-                                      CancellationToken cancellationToken = default)
-    => Task.FromResult(new TaskData(SessionId,
-                                    taskId,
-                                    OwnerPodId,
-                                    PodName,
-                                    PayloadId,
-                                    new List<string>(),
-                                    new List<string>(),
-                                    new List<string>
-                                    {
-                                      OutputId,
-                                    },
-                                    new List<string>(),
-                                    TaskStatus.Completed,
-                                    TaskOptions,
-                                    new Output(true,
-                                               "")));
+  public Task<T> ReadTaskAsync<T>(string                        taskId,
+                                  Expression<Func<TaskData, T>> selector,
+                                  CancellationToken             cancellationToken = default)
+    => Task.FromResult(selector.Compile()
+                               .Invoke(new TaskData(SessionId,
+                                                    taskId,
+                                                    OwnerPodId,
+                                                    PodName,
+                                                    PayloadId,
+                                                    new List<string>(),
+                                                    new List<string>(),
+                                                    new List<string>
+                                                    {
+                                                      OutputId,
+                                                    },
+                                                    new List<string>(),
+                                                    TaskStatus.Completed,
+                                                    TaskOptions,
+                                                    new Output(true,
+                                                               ""))));
 
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)

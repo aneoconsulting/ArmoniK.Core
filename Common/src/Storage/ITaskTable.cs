@@ -69,12 +69,14 @@ public interface ITaskTable : IInitializable
   ///   Retrieves a task from the data base
   /// </summary>
   /// <param name="taskId">Id of the task to read</param>
+  /// <param name="selector">Expression to select part of the returned task data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task metadata of the retrieved task
   /// </returns>
-  Task<TaskData> ReadTaskAsync(string            taskId,
-                               CancellationToken cancellationToken = default);
+  Task<T> ReadTaskAsync<T>(string                        taskId,
+                           Expression<Func<TaskData, T>> selector,
+                           CancellationToken             cancellationToken = default);
 
   /// <summary>
   ///   Query a task status to check for cancellation

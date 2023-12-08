@@ -18,6 +18,8 @@
 using System;
 using System.Linq.Expressions;
 
+using ArmoniK.Core.Common.Utils;
+
 namespace ArmoniK.Core.Common.gRPC;
 
 public static class ExpressionExt
@@ -68,22 +70,4 @@ public static class ExpressionExt
     => MakeBinaryExpression(ExpressionType.OrElse,
                             expr1,
                             expr2);
-
-  private class ReplaceExpressionVisitor : ExpressionVisitor
-  {
-    private readonly Expression newValue_;
-    private readonly Expression oldValue_;
-
-    public ReplaceExpressionVisitor(Expression oldValue,
-                                    Expression newValue)
-    {
-      oldValue_ = oldValue;
-      newValue_ = newValue;
-    }
-
-    public override Expression? Visit(Expression? node)
-      => node == oldValue_
-           ? newValue_
-           : base.Visit(node);
-  }
 }
