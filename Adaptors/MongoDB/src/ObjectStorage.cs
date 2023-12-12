@@ -92,10 +92,11 @@ public class ObjectStorage : IObjectStorage
                          : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
+  public async Task<long> AddOrUpdateAsync(string                                 key,
+                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                           CancellationToken                      cancellationToken = default)
   {
+    long      size             = 0;
     var       dbKey            = objectStorageName_ + key;
     using var _                = logger_.LogFunction(dbKey);
     var       objectCollection = objectCollectionProvider_.Get();
@@ -106,6 +107,7 @@ public class ObjectStorage : IObjectStorage
     await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
+      size += chunk.Length;
       taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
                                                    {
                                                      Chunk    = chunk.ToArray(),
@@ -130,6 +132,8 @@ public class ObjectStorage : IObjectStorage
 
     await taskList.WhenAll()
                   .ConfigureAwait(false);
+
+    return size;
   }
 
   /// <inheritdoc />

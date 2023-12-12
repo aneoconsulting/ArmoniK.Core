@@ -37,6 +37,7 @@ public class ToResultFieldTest
                                               ResultStatus.Created,
                                               new List<string>(),
                                               DateTime.UtcNow,
+                                              0,
                                               Array.Empty<byte>());
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()

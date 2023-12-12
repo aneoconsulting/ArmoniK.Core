@@ -94,10 +94,11 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
+  public async Task<long> AddOrUpdateAsync(string                                 key,
+                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                           CancellationToken                      cancellationToken = default)
   {
+    long size = 0;
     var filename = Path.Combine(path_,
                                 key);
 
@@ -118,6 +119,7 @@ public class ObjectStorage : IObjectStorage
     while (await readTask)
     {
       var chunk = enumerator.Current;
+      size += chunk.Length;
 
       readTask = enumerator.MoveNextAsync()
                            .ConfigureAwait(false);
@@ -132,6 +134,8 @@ public class ObjectStorage : IObjectStorage
 
     await file.FlushAsync(cancellationToken)
               .ConfigureAwait(false);
+
+    return size;
   }
 
   /// <inheritdoc />

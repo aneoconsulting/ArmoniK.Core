@@ -58,6 +58,7 @@ public class ResultTableTestBase
                                            ResultStatus.Completed,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -69,6 +70,7 @@ public class ResultTableTestBase
                                            ResultStatus.Aborted,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -80,6 +82,7 @@ public class ResultTableTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -91,6 +94,7 @@ public class ResultTableTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -106,6 +110,7 @@ public class ResultTableTestBase
                                              "Dependent2",
                                            },
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -213,6 +218,7 @@ public class ResultTableTestBase
                                            ResultStatus.Completed,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -246,6 +252,7 @@ public class ResultTableTestBase
                                                                                     ResultStatus.Unspecified,
                                                                                     new List<string>(),
                                                                                     DateTime.Today,
+                                                                                    1,
                                                                                     new[]
                                                                                     {
                                                                                       (byte)1,
@@ -315,18 +322,21 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      await ResultTable!.SetResult("SessionId",
-                                   "OwnerId",
-                                   "ResultIsNotAvailable",
+      await ResultTable!.SetResult((string)"SessionId",
+                                   (string)"OwnerId",
+                                   (string)"ResultIsNotAvailable",
+                                   5,
                                    CancellationToken.None)
                         .ConfigureAwait(false);
 
-      var result = await ResultTable.GetResult("SessionId",
-                                               "ResultIsNotAvailable",
-                                               CancellationToken.None)
-                                    .ConfigureAwait(false);
+      var result = await ResultTable!.GetResult("SessionId",
+                                                "ResultIsNotAvailable",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
 
       Assert.IsTrue(result.ResultId == "ResultIsNotAvailable");
+      Assert.AreEqual(5,
+                      result.Size);
     }
   }
 
@@ -347,13 +357,15 @@ public class ResultTableTestBase
                                    smallPayload,
                                    CancellationToken.None)
                         .ConfigureAwait(false);
-      var result = await ResultTable.GetResult("SessionId",
-                                               "ResultIsNotAvailable",
-                                               CancellationToken.None)
-                                    .ConfigureAwait(false);
+      var result = await ResultTable!.GetResult("SessionId",
+                                                "ResultIsNotAvailable",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
 
       Assert.AreEqual(result.Data,
                       smallPayload);
+      Assert.AreEqual(smallPayload.Length,
+                      result.Size);
     }
   }
 
@@ -374,6 +386,7 @@ public class ResultTableTestBase
                                                             ResultStatus.Completed,
                                                             new List<string>(),
                                                             DateTime.Today,
+                                                            id.Length,
                                                             Encoding.ASCII.GetBytes(id))))
                         .ConfigureAwait(false);
       var results = await ResultTable!.GetResults("SessionId",
@@ -409,6 +422,7 @@ public class ResultTableTestBase
                                                             ResultStatus.Completed,
                                                             new List<string>(),
                                                             DateTime.Today,
+                                                            id.Length,
                                                             Encoding.ASCII.GetBytes(id))))
                         .ConfigureAwait(false);
 
@@ -648,6 +662,7 @@ public class ResultTableTestBase
                                              ResultStatus.Created,
                                              new List<string>(),
                                              DateTime.UtcNow,
+                                             0,
                                              Array.Empty<byte>()),
                                 })
                         .ConfigureAwait(false);
@@ -765,6 +780,7 @@ public class ResultTableTestBase
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      0,
                                       Array.Empty<byte>()),
                                 },
                                 CancellationToken.None)
@@ -772,6 +788,7 @@ public class ResultTableTestBase
 
       var result = await ResultTable.CompleteResult(sessionId,
                                                     resultId,
+                                                    5,
                                                     CancellationToken.None)
                                     .ConfigureAwait(false);
 
@@ -785,6 +802,8 @@ public class ResultTableTestBase
 
       Assert.AreEqual(ResultStatus.Completed,
                       result.Status);
+      Assert.AreEqual(5,
+                      result.Size);
     }
   }
 
@@ -795,6 +814,7 @@ public class ResultTableTestBase
     {
       Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.CompleteResult("SessionId",
                                                                                                 "NotExistingResult111",
+                                                                                                5,
                                                                                                 CancellationToken.None)
                                                                                 .ConfigureAwait(false));
     }

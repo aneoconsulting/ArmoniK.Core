@@ -411,14 +411,15 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
 
-    await objectStorage_.AddOrUpdateAsync(key,
-                                          chunks,
-                                          cancellationToken)
-                        .ConfigureAwait(false);
+    var size = await objectStorage_.AddOrUpdateAsync(key,
+                                                     chunks,
+                                                     cancellationToken)
+                                   .ConfigureAwait(false);
 
     await resultTable_.SetResult(sessionId,
                                  ownerTaskId,
                                  key,
+                                 size,
                                  cancellationToken)
                       .ConfigureAwait(false);
   }
@@ -448,7 +449,7 @@ public class Submitter : ISubmitter
                                                         ("PartitionId", options.PartitionId));
 
     var requests           = new List<TaskCreationRequest>();
-    var payloadUploadTasks = new List<Task>();
+    var payloadUploadTasks = new List<Task<long>>();
 
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
                                                   .ConfigureAwait(false))
@@ -468,17 +469,20 @@ public class Submitter : ISubmitter
                                                              cancellationToken));
     }
 
-    await payloadUploadTasks.WhenAll()
-                            .ConfigureAwait(false);
+    var payloadSizes = await payloadUploadTasks.WhenAll()
+                                               .ConfigureAwait(false);
 
-    await resultTable_.Create(requests.Select(request => new Result(sessionId,
-                                                                    request.PayloadId,
-                                                                    "",
-                                                                    parentTaskId,
-                                                                    ResultStatus.Completed,
-                                                                    new List<string>(),
-                                                                    DateTime.UtcNow,
-                                                                    Array.Empty<byte>())),
+    await resultTable_.Create(requests.Zip(payloadSizes,
+                                           (request,
+                                            size) => new Result(sessionId,
+                                                                request.PayloadId,
+                                                                "",
+                                                                parentTaskId,
+                                                                ResultStatus.Completed,
+                                                                new List<string>(),
+                                                                DateTime.UtcNow,
+                                                                size,
+                                                                Array.Empty<byte>())),
                               cancellationToken)
                       .ConfigureAwait(false);
 

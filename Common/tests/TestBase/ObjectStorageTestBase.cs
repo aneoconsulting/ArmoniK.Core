@@ -138,9 +138,9 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      await ObjectStorage!.AddOrUpdateAsync("dataKeyNoChunk",
-                                            AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
-                          .ConfigureAwait(false);
+      var size = await ObjectStorage!.AddOrUpdateAsync("dataKeyNoChunk",
+                                                       AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
+                                     .ConfigureAwait(false);
       var data = new List<byte>();
       await foreach (var chunk in ObjectStorage!.GetValuesAsync("dataKeyNoChunk")
                                                 .ConfigureAwait(false))
@@ -150,6 +150,49 @@ public class ObjectStorageTestBase
 
       Assert.AreEqual(0,
                       data.Count);
+      Assert.AreEqual(0,
+                      size);
+    }
+  }
+
+  [Test]
+  [TestCase]
+  [TestCase("")]
+  [TestCase("abc")]
+  [TestCase("",
+            "")]
+  [TestCase("abc",
+            "")]
+  [TestCase("abc",
+            "def")]
+  [TestCase("",
+            "def")]
+  [TestCase("abc",
+            "def",
+            "ghi")]
+  public async Task AddValuesAsyncShouldWork(params string[] inputChunks)
+  {
+    if (RunTests)
+    {
+      var size = await ObjectStorage!.AddOrUpdateAsync("dataKeyTest",
+                                                       inputChunks.ToAsyncEnumerable()
+                                                                  .Select(s => (ReadOnlyMemory<byte>)Encoding.ASCII.GetBytes(s)))
+                                     .ConfigureAwait(false);
+
+      var data = new List<byte>();
+      await foreach (var chunk in ObjectStorage!.GetValuesAsync("dataKeyTest")
+                                                .ConfigureAwait(false))
+      {
+        data.AddRange(chunk);
+      }
+
+      var input = Encoding.ASCII.GetBytes(string.Join(null,
+                                                      inputChunks));
+
+      Assert.AreEqual(input,
+                      data);
+      Assert.AreEqual(input.Length,
+                      size);
     }
   }
 

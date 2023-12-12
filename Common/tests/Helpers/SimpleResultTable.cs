@@ -84,6 +84,7 @@ public class SimpleResultTable : IResultTable
              ResultStatus.Completed,
              new List<string>(),
              DateTime.Now.ToUniversalTime(),
+             1,
              new byte[]
              {
                42,
@@ -106,6 +107,7 @@ public class SimpleResultTable : IResultTable
                               ResultStatus.Completed,
                               new List<string>(),
                               DateTime.UtcNow,
+                              1,
                               new byte[]
                               {
                                 42,
@@ -128,6 +130,7 @@ public class SimpleResultTable : IResultTable
                                   ResultStatus.Completed,
                                   new List<string>(),
                                   DateTime.Now.ToUniversalTime(),
+                                  1,
                                   new byte[]
                                   {
                                     42,

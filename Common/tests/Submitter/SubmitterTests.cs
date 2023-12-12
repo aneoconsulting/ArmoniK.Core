@@ -245,6 +245,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          0,
                                           Array.Empty<byte>()),
                                new Result(sessionId,
                                           ExpectedOutput2,
@@ -253,6 +254,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          0,
                                           Array.Empty<byte>()),
                                new Result(sessionId,
                                           ExpectedOutput6,
@@ -261,6 +263,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          0,
                                           Array.Empty<byte>()),
                              },
                              token)
@@ -362,6 +365,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          0,
                                           Array.Empty<byte>()),
                              },
                              token)
@@ -909,6 +913,7 @@ public class SubmitterTests
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
+                                            0,
                                             Array.Empty<byte>()),
                                  new Result(sessionId,
                                             ExpectedOutput5,
@@ -917,6 +922,7 @@ public class SubmitterTests
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
+                                            0,
                                             Array.Empty<byte>()),
                                },
                                CancellationToken.None)

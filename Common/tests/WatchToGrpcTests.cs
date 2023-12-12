@@ -182,6 +182,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Completed,
                                           new List<string>(),
                                           DateTime.Today,
+                                          1,
                                           new[]
                                           {
                                             (byte)1,
@@ -193,6 +194,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Aborted,
                                           new List<string>(),
                                           DateTime.Today,
+                                          1,
                                           new[]
                                           {
                                             (byte)1,
@@ -204,6 +206,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.Today,
+                                          1,
                                           new[]
                                           {
                                             (byte)1,
@@ -215,6 +218,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.Today,
+                                          1,
                                           new[]
                                           {
                                             (byte)1,
@@ -230,6 +234,7 @@ public class WatchToGrpcTests
                                             "Dependent2",
                                           },
                                           DateTime.Today,
+                                          1,
                                           new[]
                                           {
                                             (byte)1,

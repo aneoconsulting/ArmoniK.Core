@@ -113,6 +113,7 @@ public class PollsterTest
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          0,
                                           Array.Empty<byte>()),
                                new Result(sessionId,
                                           ExpectedOutput2,
@@ -121,6 +122,7 @@ public class PollsterTest
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          0,
                                           Array.Empty<byte>()),
                              },
                              token)

@@ -56,6 +56,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Completed,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -67,6 +68,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Aborted,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -78,6 +80,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -89,6 +92,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -100,6 +104,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -111,6 +116,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           1,
                                            new[]
                                            {
                                              (byte)1,
@@ -185,6 +191,7 @@ public class ResultWatcherTestBase
                                                   ResultStatus.Created,
                                                   new List<string>(),
                                                   DateTime.Today,
+                                                  1,
                                                   new[]
                                                   {
                                                     (byte)1,
@@ -197,6 +204,7 @@ public class ResultWatcherTestBase
                                                   ResultStatus.Created,
                                                   new List<string>(),
                                                   DateTime.Today,
+                                                  1,
                                                   new[]
                                                   {
                                                     (byte)1,
@@ -209,6 +217,7 @@ public class ResultWatcherTestBase
                                                   ResultStatus.Created,
                                                   new List<string>(),
                                                   DateTime.Today,
+                                                  1,
                                                   new[]
                                                   {
                                                     (byte)1,

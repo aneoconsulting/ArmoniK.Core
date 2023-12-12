@@ -132,6 +132,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                           ResultStatus.Created,
                                                           new List<string>(),
                                                           DateTime.UtcNow,
+                                                          0,
                                                           Array.Empty<byte>()))
                          .ToList();
 
@@ -155,25 +156,26 @@ public class GrpcResultsService : Results.ResultsBase
   {
     var results = await request.Results.Select(async rc =>
                                                {
-                                                 var result = new Result(request.SessionId,
-                                                                         Guid.NewGuid()
-                                                                             .ToString(),
-                                                                         rc.Name,
-                                                                         request.SessionId,
-                                                                         ResultStatus.Created,
-                                                                         new List<string>(),
-                                                                         DateTime.UtcNow,
-                                                                         Array.Empty<byte>());
+                                                 var resultId = Guid.NewGuid()
+                                                                    .ToString();
 
-                                                 await objectStorage_.AddOrUpdateAsync(result.ResultId,
-                                                                                       new List<ReadOnlyMemory<byte>>
-                                                                                       {
-                                                                                         rc.Data.Memory,
-                                                                                       }.ToAsyncEnumerable(),
-                                                                                       context.CancellationToken)
-                                                                     .ConfigureAwait(false);
+                                                 var size = await objectStorage_.AddOrUpdateAsync(resultId,
+                                                                                                  new List<ReadOnlyMemory<byte>>
+                                                                                                  {
+                                                                                                    rc.Data.Memory,
+                                                                                                  }.ToAsyncEnumerable(),
+                                                                                                  context.CancellationToken)
+                                                                                .ConfigureAwait(false);
 
-                                                 return result;
+                                                 return new Result(request.SessionId,
+                                                                   resultId,
+                                                                   rc.Name,
+                                                                   request.SessionId,
+                                                                   ResultStatus.Created,
+                                                                   new List<string>(),
+                                                                   DateTime.UtcNow,
+                                                                   size,
+                                                                   Array.Empty<byte>());
                                                })
                                .WhenAll()
                                .ConfigureAwait(false);
@@ -183,7 +185,8 @@ public class GrpcResultsService : Results.ResultsBase
                       .ConfigureAwait(false);
 
     var resultList = await results.Select(async r => await resultTable_.CompleteResult(request.SessionId,
-                                                                                       r.ResultId)
+                                                                                       r.ResultId,
+                                                                                       r.Size)
                                                                        .ConfigureAwait(false))
                                   .WhenAll()
                                   .ConfigureAwait(false);
@@ -288,10 +291,15 @@ public class GrpcResultsService : Results.ResultsBase
 
     var id = current.Id;
 
+    long size = 0;
 
     await objectStorage_.AddOrUpdateAsync(id.ResultId,
                                           requestStream.ReadAllAsync(context.CancellationToken)
-                                                       .Select(r => r.DataChunk.Memory),
+                                                       .Select(r =>
+                                                               {
+                                                                 size += r.DataChunk.Length;
+                                                                 return r.DataChunk.Memory;
+                                                               }),
                                           context.CancellationToken)
                         .ConfigureAwait(false);
 
@@ -299,6 +307,7 @@ public class GrpcResultsService : Results.ResultsBase
     {
       var resultData = await resultTable_.CompleteResult(id.SessionId,
                                                          id.ResultId,
+                                                         size,
                                                          context.CancellationToken)
                                          .ConfigureAwait(false);
 

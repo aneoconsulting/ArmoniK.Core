@@ -40,6 +40,7 @@ public class ToResultFilterTest
                                         ResultStatus.Created,
                                         new List<string>(),
                                         DateTime.UtcNow,
+                                        0,
                                         Array.Empty<byte>());
 
   private static readonly ListResultsRequest.Types.Sort Sort = new()

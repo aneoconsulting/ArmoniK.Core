@@ -179,6 +179,7 @@ public class AgentTest
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      0,
                                       Array.Empty<byte>()),
                            new Result(sessionData.SessionId,
                                       DataDependency2,
@@ -187,6 +188,7 @@ public class AgentTest
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      0,
                                       Array.Empty<byte>()),
                            new Result(Session,
                                       ExpectedOutput1,
@@ -195,6 +197,7 @@ public class AgentTest
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      0,
                                       Array.Empty<byte>()),
                            new Result(Session,
                                       ExpectedOutput2,
@@ -203,6 +206,7 @@ public class AgentTest
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      0,
                                       Array.Empty<byte>()),
                          },
                          CancellationToken.None)
@@ -443,6 +447,8 @@ public class AgentTest
                     resultData.Status);
     Assert.AreEqual(holder.TaskData.TaskId,
                     resultData.OwnerTaskId);
+    Assert.AreEqual(data.Length,
+                    resultData.Size);
 
     var dependents = await holder.ResultTable.GetDependents(holder.Session,
                                                             ExpectedOutput1,
@@ -809,6 +815,8 @@ public class AgentTest
                       resultMetadata.Name);
       Assert.AreEqual(ResultStatus.Completed,
                       resultMetadata.Status);
+      Assert.AreEqual(7,
+                      resultMetadata.Size);
     }
   }
 
@@ -1031,6 +1039,8 @@ public class AgentTest
 
     Assert.AreEqual(ResultStatus.Completed,
                     uploadedResultData.Status);
+    Assert.AreEqual(10,
+                    uploadedResultData.Size);
 
     taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
                                                          .TaskId,
