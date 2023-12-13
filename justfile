@@ -227,7 +227,7 @@ build imageTag dockerFile target="":
   esac
 
 # Build Worker
-buildWorker: (build TF_VAR_worker_image + ":" + tag TF_VAR_worker_docker_file_path + "Dockerfile")
+buildWorker: (build TF_VAR_worker_image TF_VAR_worker_docker_file_path + "Dockerfile")
 
 # Build Metrics
 buildMetrics: (build ARMONIK_METRICS "./Dockerfile" "metrics")
