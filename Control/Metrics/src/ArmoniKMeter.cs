@@ -35,155 +35,184 @@ namespace ArmoniK.Core.Control.Metrics;
 
 public class ArmoniKMeter : Meter, IHostedService
 {
-  private const    string                                                        QueuedName = "queued";
-  private readonly IDictionary<Tuple<string, string>, ObservableGauge<long>>     gauges_;
-  private readonly ILogger                                                       logger_;
-  private readonly ExecutionSingleizer<IDictionary<Tuple<string, string>, long>> measurements_;
-  private readonly ITaskTable                                                    taskTable_;
-  private          int                                                           i_;
+  private const string QueuedName = "queued";
+
+  private static readonly TaskStatus[] Statuses =
+  {
+    //TaskStatus.Unspecified,
+    TaskStatus.Creating,
+    TaskStatus.Submitted,
+    TaskStatus.Dispatched,
+    //TaskStatus.Completed,
+    //TaskStatus.Error,
+    //TaskStatus.Timeout,
+    //TaskStatus.Cancelling,
+    //TaskStatus.Cancelled,
+    TaskStatus.Processing,
+    TaskStatus.Processed,
+    TaskStatus.Retried,
+  };
+
+  private readonly IDictionary<(string partition, string status), MeasurementReader<long>> gauges_;
+  private readonly ILogger                                                                 logger_;
+  private readonly IPartitionTable                                                         partitionTable_;
+  private readonly ITaskTable                                                              taskTable_;
 
   public ArmoniKMeter(ITaskTable            taskTable,
+                      IPartitionTable       partitionTable,
                       ILogger<ArmoniKMeter> logger)
     : base(nameof(ArmoniKMeter))
   {
     using var _ = logger.LogFunction();
 
-    taskTable_    = taskTable;
-    logger_       = logger;
-    gauges_       = new Dictionary<Tuple<string, string>, ObservableGauge<long>>();
-    measurements_ = new ExecutionSingleizer<IDictionary<Tuple<string, string>, long>>(TimeSpan.FromSeconds(5));
+    taskTable_      = taskTable;
+    partitionTable_ = partitionTable;
+    logger_         = logger;
+    gauges_         = new Dictionary<(string partition, string status), MeasurementReader<long>>();
 
-    CreateObservableCounter("test",
-                            () => i_++);
-    logger.LogDebug("Meter added");
+    var statusNames = Statuses.Select(status => status.ToString())
+                              .ToList();
+    statusNames.Add(QueuedName);
+
+    var partitionExec = new ExecutionSingleizer<ICollection<string>>(ExpireAfter);
+
+    foreach (var statusName in statusNames)
+    {
+      AddGauge("",
+               statusName,
+               async ct =>
+               {
+                 var partitions = await partitionExec.Call(AddPartitionGauges,
+                                                           ct)
+                                                     .ConfigureAwait(false);
+                 var counts = await partitions.Select(partition => gauges_[(partition, statusName)]
+                                                        .ReadAsync(ct))
+                                              .WhenAll()
+                                              .ConfigureAwait(false);
+                 return counts.Sum();
+               });
+    }
   }
 
-  public async Task StartAsync(CancellationToken cancellationToken)
-    // Call FetchMeasurementsAsync in order to populate gauges.
-    => await measurements_.Call(FetchMeasurementsAsync,
-                                CancellationToken.None)
-                          .ConfigureAwait(false);
+  private static TimeSpan ExpireAfter
+    => TimeSpan.FromSeconds(5);
+
+  public async Task StartAsync(CancellationToken cancellationToken) // Call an aggregate gauge in order to populate all gauges.
+  {
+    await gauges_[("", QueuedName)]
+          .ReadAsync(cancellationToken)
+          .ConfigureAwait(false);
+
+    logger_.LogDebug("Added the following gauges: {Gauges}",
+                     gauges_.Values.Select(reader => reader.Name));
+  }
 
   public Task StopAsync(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  /// <summary>
-  ///   Fetch all the measurements from the taskTable.
-  /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Dictionary of the task count for each partition/status.
-  /// </returns>
-  private async Task<IDictionary<Tuple<string, string>, long>> FetchMeasurementsAsync(CancellationToken cancellationToken)
+  private async Task<ICollection<string>> AddPartitionGauges(CancellationToken cancellationToken)
   {
-    _ = logger_;
+    var partitions = await partitionTable_.FindPartitionsAsync(partition => true,
+                                                               partition => partition.PartitionId,
+                                                               cancellationToken)
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
 
-    // DB request
-    var partitionStatusCounts = await taskTable_.CountPartitionTasksAsync(cancellationToken)
-                                                .ConfigureAwait(false);
-
-    // Populate dictionary from request
-    var measurements = new Dictionary<Tuple<string, string>, long>();
-
-    // Aggregates across partitions
-    foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
+    foreach (var partition in partitions)
     {
-      var statusName = status.ToString();
-      measurements[Tuple.Create("",
-                                statusName)] = 0;
-      AddGauge("",
-               statusName);
-    }
+      var queuedReaders = new List<MeasurementReader<long>>();
 
-    measurements[Tuple.Create("",
-                              QueuedName)] = 0;
-    AddGauge("",
-             QueuedName);
-
-    // initialize all the gauges for each partition
-    foreach (var partition in partitionStatusCounts.Select(p => p.PartitionId)
-                                                   .Distinct())
-    {
-      foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
+      foreach (var status in Statuses)
       {
         var statusName = status.ToString();
-        measurements[Tuple.Create(partition,
-                                  statusName)] = 0;
-        AddGauge(partition,
-                 statusName);
+        var reader = AddGauge(partition,
+                              statusName,
+                              ct => CountPartitionStatus(partition,
+                                                         status,
+                                                         ct));
+
+        if (status is TaskStatus.Dispatched or TaskStatus.Submitted or TaskStatus.Processing)
+        {
+          queuedReaders.Add(reader);
+        }
       }
 
-      measurements[Tuple.Create(partition,
-                                QueuedName)] = 0;
       AddGauge(partition,
-               QueuedName);
+               QueuedName,
+               async ct =>
+               {
+                 var counts = await queuedReaders.Select(reader => reader.ReadAsync(ct))
+                                                 .WhenAll()
+                                                 .ConfigureAwait(false);
+                 return counts.Sum();
+               });
     }
 
-    // Count per partitions
-    foreach (var psc in partitionStatusCounts)
-    {
-      var statusName = psc.Status.ToString();
-      measurements[Tuple.Create(psc.PartitionId,
-                                statusName)] += psc.Count;
-      measurements[Tuple.Create("",
-                                statusName)] += psc.Count;
-      if (psc.Status is TaskStatus.Dispatched or TaskStatus.Submitted or TaskStatus.Processing)
-      {
-        measurements[Tuple.Create(psc.PartitionId,
-                                  QueuedName)] += psc.Count;
-        measurements[Tuple.Create("",
-                                  QueuedName)] += psc.Count;
-      }
-    }
-
-    return measurements;
+    return partitions;
   }
 
-  /// <summary>
-  ///   Get the Number of tasks for a given partition and task status.
-  /// </summary>
-  /// <param name="partition">Name of the partition to filter on</param>
-  /// <param name="status">Name of the status to filter on</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Number of tasks for the given partition and status.
-  /// </returns>
-  private async Task<long> GetMeasurementAsync(string            partition,
-                                               string            status,
-                                               CancellationToken cancellationToken)
+  private MeasurementReader<long> AddGauge(string                              partition,
+                                           string                              statusName,
+                                           Func<CancellationToken, Task<long>> f)
   {
-    var measurements = await measurements_.Call(FetchMeasurementsAsync,
-                                                cancellationToken)
-                                          .ConfigureAwait(false);
-    return measurements[Tuple.Create(partition,
-                                     status)];
-  }
-
-  /// <summary>
-  ///   Add gauge if it does not already exist
-  /// </summary>
-  /// <param name="partition">Name of the partition to be metered</param>
-  /// <param name="statusName">Name of the Status to be metered</param>
-  private void AddGauge(string partition,
-                        string statusName)
-  {
-    var key = Tuple.Create(partition,
-                           statusName);
-    if (gauges_.ContainsKey(key))
+    if (gauges_.TryGetValue((partition, statusName),
+                            out var reader))
     {
-      return;
+      return reader;
     }
 
-    var metricName = string.IsNullOrEmpty(partition)
-                       ? $"armonik_tasks_{statusName.ToLower()}"
-                       : $"armonik_{partition}_tasks_{statusName.ToLower()}";
+    reader = new MeasurementReader<long>(partition,
+                                         statusName,
+                                         f);
+    CreateObservableGauge(reader.Name,
+                          reader.Read);
+    gauges_.Add((partition, statusName),
+                reader);
 
-    var gauge = CreateObservableGauge(metricName,
-                                      () => new Measurement<long>(GetMeasurementAsync(partition,
-                                                                                      statusName,
-                                                                                      CancellationToken.None)
-                                                                    .Result));
+    return reader;
+  }
 
-    gauges_[key] = gauge;
+  private async Task<long> CountPartitionStatus(string            partitionId,
+                                                TaskStatus        status,
+                                                CancellationToken cancellationToken)
+  {
+    var (_, count) = await taskTable_.ListTasksAsync(task => task.Options.PartitionId == partitionId && task.Status == status,
+                                                     task => task.TaskId,
+                                                     task => new ValueTuple(),
+                                                     true,
+                                                     0,
+                                                     0,
+                                                     cancellationToken)
+                                     .ConfigureAwait(false);
+
+    return count;
+  }
+
+  private class MeasurementReader<T>
+    where T : struct
+  {
+    private readonly ExecutionSingleizer<T>           exec_;
+    private readonly Func<CancellationToken, Task<T>> readFunc_;
+
+    public MeasurementReader(string                           partition,
+                             string                           status,
+                             Func<CancellationToken, Task<T>> readFunc)
+    {
+      Name = string.IsNullOrEmpty(partition)
+               ? $"armonik_tasks_{status.ToLower()}"
+               : $"armonik_{partition}_tasks_{status.ToLower()}";
+      exec_     = new ExecutionSingleizer<T>(ExpireAfter);
+      readFunc_ = readFunc;
+    }
+
+    public string Name { get; }
+
+    public Task<T> ReadAsync(CancellationToken cancellationToken)
+      => exec_.Call(readFunc_,
+                    cancellationToken);
+
+    public T Read()
+      => ReadAsync(CancellationToken.None)
+        .WaitSync();
   }
 }

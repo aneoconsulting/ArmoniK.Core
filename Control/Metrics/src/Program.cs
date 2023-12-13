@@ -105,13 +105,16 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      var sessionProvider        = app.Services.GetRequiredService<SessionProvider>();
-      var taskCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
+      var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
       await taskCollectionProvider.Init(CancellationToken.None)
                                   .ConfigureAwait(false);
+      await partitionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
       await app.RunAsync()
                .ConfigureAwait(false);
 
