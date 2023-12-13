@@ -165,20 +165,28 @@ public class SessionTable : ISessionTable
     var       sessionHandle     = sessionProvider_.Get();
     var       sessionCollection = sessionCollectionProvider_.Get();
 
-    var findFluent = sessionCollection.Find(sessionHandle,
-                                            filter);
+    var sessionList = Task.FromResult(new List<SessionData>());
+    if (pageSize > 0)
+    {
+      var findFluent1 = sessionCollection.Find(sessionHandle,
+                                               filter);
 
-    var ordered = ascOrder
-                    ? findFluent.SortBy(orderField)
-                    : findFluent.SortByDescending(orderField);
+      var ordered = ascOrder
+                      ? findFluent1.SortBy(orderField)
+                      : findFluent1.SortByDescending(orderField);
 
-    return (await ordered.Skip(page * pageSize)
-                         .Limit(pageSize)
-                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                         .ConfigureAwait(false), await sessionCollection.Find(sessionHandle,
-                                                                              filter)
-                                                                        .CountDocumentsAsync(cancellationToken)
-                                                                        .ConfigureAwait(false));
+      sessionList = ordered.Skip(page * pageSize)
+                           .Limit(pageSize)
+                           .ToListAsync(cancellationToken);
+    }
+
+    // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
+    var findFluent2 = sessionCollection.Find(sessionHandle,
+                                             filter);
+
+    var sessionCount = findFluent2.CountDocumentsAsync(cancellationToken);
+
+    return (await sessionList.ConfigureAwait(false), await sessionCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />

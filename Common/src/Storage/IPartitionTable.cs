@@ -99,10 +99,27 @@ public interface IPartitionTable : IInitializable
   /// <returns>
   ///   Collection of partition metadata matching the request and total number of results without paging
   /// </returns>
+  /// <remarks>
+  ///   If <paramref name="pageSize" /> is 0, this function can be used to count the number of partitions
+  ///   satisfying the condition specified by <paramref name="filter" />
+  /// </remarks>
   Task<(IEnumerable<PartitionData> partitions, int totalCount)> ListPartitionsAsync(Expression<Func<PartitionData, bool>>    filter,
                                                                                     Expression<Func<PartitionData, object?>> orderField,
                                                                                     bool                                     ascOrder,
                                                                                     int                                      page,
                                                                                     int                                      pageSize,
                                                                                     CancellationToken                        cancellationToken = default);
+
+  /// <summary>
+  ///   Find all partitions matching the given filter
+  /// </summary>
+  /// <param name="filter">Filter to select partitions</param>
+  /// <param name="selector">Expression to select part of the returned partition</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   List of partitions that match the filter
+  /// </returns>
+  IAsyncEnumerable<T> FindPartitionsAsync<T>(Expression<Func<PartitionData, bool>> filter,
+                                             Expression<Func<PartitionData, T>>    selector,
+                                             CancellationToken                     cancellationToken = default);
 }

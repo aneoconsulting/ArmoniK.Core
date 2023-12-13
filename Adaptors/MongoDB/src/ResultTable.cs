@@ -145,18 +145,28 @@ public class ResultTable : IResultTable
     var       resultCollection = resultCollectionProvider_.Get();
 
 
-    var queryable = resultCollection.AsQueryable(sessionHandle)
-                                    .Where(filter);
+    var resultList = Task.FromResult(new List<Result>());
+    if (pageSize > 0)
+    {
+      var findFluent1 = resultCollection.Find(sessionHandle,
+                                              filter);
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+      var ordered = ascOrder
+                      ? findFluent1.SortBy(orderField)
+                      : findFluent1.SortByDescending(orderField);
 
-    return (await ordered.Skip(page * pageSize)
-                         .Take(pageSize)
-                         .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
-                         .ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                              .ConfigureAwait(false));
+      resultList = ordered.Skip(page * pageSize)
+                          .Limit(pageSize)
+                          .ToListAsync(cancellationToken);
+    }
+
+    // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
+    var findFluent2 = resultCollection.Find(sessionHandle,
+                                            filter);
+
+    var resultCount = findFluent2.CountDocumentsAsync(cancellationToken);
+
+    return (await resultList.ConfigureAwait(false), (int)await resultCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />

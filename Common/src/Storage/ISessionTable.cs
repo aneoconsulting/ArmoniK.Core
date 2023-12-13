@@ -99,6 +99,10 @@ public interface ISessionTable : IInitializable
   /// <returns>
   ///   Collection of sessions metadata that matched the filter and total number of results without paging
   /// </returns>
+  /// <remarks>
+  ///   If <paramref name="pageSize" /> is 0, this function can be used to count the number of sessions
+  ///   satisfying the condition specified by <paramref name="filter" />
+  /// </remarks>
   Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
                                                                                Expression<Func<SessionData, object?>> orderField,
                                                                                bool                                   ascOrder,
