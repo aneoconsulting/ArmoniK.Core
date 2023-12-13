@@ -93,11 +93,12 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                                                      ILogger<IMongoCollection<TData>> logger,
                                                                      CancellationToken                cancellationToken = default)
   {
-    var model = new TModelMapping();
+    var        model         = new TModelMapping();
+    Exception? lastException = null;
 
-    var collectionRetry = 1;
-    for (; collectionRetry < options.MaxRetries; collectionRetry++)
+    for (var collectionRetry = 1; collectionRetry < options.MaxRetries; collectionRetry++)
     {
+      lastException = null;
       try
       {
         await mongoDatabase.CreateCollectionAsync(model.CollectionName,
@@ -108,25 +109,27 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
       catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
       {
-        logger.LogInformation(ex,
-                              "Use already existing instance of Collection {CollectionName}",
-                              model.CollectionName);
+        logger.LogDebug(ex,
+                        "Use already existing instance of Collection {CollectionName}",
+                        model.CollectionName);
         break;
       }
       catch (Exception ex)
       {
-        logger.LogInformation(ex,
-                              "Retrying to create Collection {CollectionName}",
-                              model.CollectionName);
+        lastException = ex;
+        logger.LogDebug(ex,
+                        "Retrying to create Collection {CollectionName}",
+                        model.CollectionName);
         await Task.Delay(1000 * collectionRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
     }
 
-    if (collectionRetry == options.MaxRetries)
+    if (lastException is not null)
     {
-      throw new TimeoutException($"Create {model.CollectionName}: Max retries reached");
+      throw new TimeoutException($"Create {model.CollectionName}: Max retries reached",
+                                 lastException);
     }
 
     var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
@@ -134,9 +137,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                          .ConfigureAwait(false);
     var session = sessionProvider.Get();
 
-    var indexRetry = 1;
-    for (; indexRetry < options.MaxRetries; indexRetry++)
+    for (var indexRetry = 1; indexRetry < options.MaxRetries; indexRetry++)
     {
+      lastException = null;
       try
       {
         await model.InitializeIndexesAsync(session,
@@ -145,20 +148,29 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                    .ConfigureAwait(false);
         break;
       }
+      catch (MongoCommandException ex) when (ex.CodeName == "IndexOptionsConflict")
+      {
+        logger.LogWarning(ex,
+                          "Index options conflict for {CollectionName} collection",
+                          model.CollectionName);
+        break;
+      }
       catch (Exception ex)
       {
-        logger.LogInformation(ex,
-                              "Retrying to Initialize indexes for {CollectionName} collection",
-                              model.CollectionName);
+        lastException = ex;
+        logger.LogDebug(ex,
+                        "Retrying to Initialize indexes for {CollectionName} collection",
+                        model.CollectionName);
         await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
     }
 
-    if (indexRetry == options.MaxRetries)
+    if (lastException is not null)
     {
-      throw new TimeoutException($"Init Indexes for {model.CollectionName}: Max retries reached");
+      throw new TimeoutException($"Init Indexes for {model.CollectionName}: Max retries reached",
+                                 lastException);
     }
 
     return output;
