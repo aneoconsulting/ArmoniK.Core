@@ -48,6 +48,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetDefaultValue(new List<string>());
                                               cm.MapProperty(nameof(Result.CreationDate))
                                                 .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.Size))
+                                                .SetIgnoreIfDefault(true)
+                                                .SetDefaultValue(0);
                                               cm.MapProperty(nameof(Result.Data))
                                                 .SetIsRequired(true);
                                               cm.SetIgnoreExtraElements(true);
@@ -58,6 +61,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                                 model.Status,
                                                                                 model.DependentTasks,
                                                                                 model.CreationDate,
+                                                                                model.Size,
                                                                                 model.Data));
                                             });
     }

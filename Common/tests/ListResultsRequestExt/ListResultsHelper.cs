@@ -123,4 +123,23 @@ public static class ListResultsHelper
                         Value    = FromDateTime(value),
                       },
        };
+
+  public static FilterField CreateListResultsFilterNumber(ResultRawEnumField   field,
+                                                          FilterNumberOperator op,
+                                                          long                 value)
+    => new()
+       {
+         Field = new ResultField
+                 {
+                   ResultRawField = new ResultRawField
+                                    {
+                                      Field = field,
+                                    },
+                 },
+         FilterNumber = new FilterNumber
+                        {
+                          Operator = op,
+                          Value    = value,
+                        },
+       };
 }

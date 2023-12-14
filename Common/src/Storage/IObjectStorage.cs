@@ -39,12 +39,12 @@ public interface IObjectStorage : IInitializable
   /// <param name="valueChunks">Chunks of data that will be stored in the Object Storage</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   The size of the object that has been uploaded.
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task AddOrUpdateAsync(string                                 key,
-                        IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                        CancellationToken                      cancellationToken = default);
+  Task<long> AddOrUpdateAsync(string                                 key,
+                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                              CancellationToken                      cancellationToken = default);
 
   /// <summary>
   ///   Get object in the Object Storage

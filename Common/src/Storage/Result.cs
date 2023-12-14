@@ -32,6 +32,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
 /// <param name="DependentTasks">List of tasks that depend on this result.</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
+/// <param name="Size">Size of the result.</param>
 /// <param name="Data">Data for the current <paramref name="Name" /></param>
 public record Result(string       SessionId,
                      string       ResultId,
@@ -40,6 +41,7 @@ public record Result(string       SessionId,
                      ResultStatus Status,
                      List<string> DependentTasks,
                      DateTime     CreationDate,
+                     long         Size,
                      byte[]       Data)
 {
   /// <summary>

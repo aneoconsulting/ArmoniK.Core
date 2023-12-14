@@ -88,6 +88,7 @@ internal class BsonSerializerTest
                          },
                          DateTime.Parse("2022-02-15 8:55:05.954")
                                  .ToUniversalTime(),
+                         3,
                          new[]
                          {
                            (byte)1,

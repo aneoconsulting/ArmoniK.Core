@@ -190,11 +190,15 @@ public class ObjectStorage : IObjectStorage
     => throw new NotImplementedException();
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
+  public async Task<long> AddOrUpdateAsync(string                                 key,
+                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                           CancellationToken                      cancellationToken = default)
 
   {
+    long[] sizeBox =
+    {
+      0,
+    };
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
     using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
@@ -213,6 +217,7 @@ public class ObjectStorage : IObjectStorage
       var uploadRequest = PreparePartRequestsAsync(objectStorageFullName,
                                                    initResponse.UploadId,
                                                    valueChunks,
+                                                   sizeBox,
                                                    cancellationToken);
       var uploadResponses = await uploadRequest.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
@@ -246,13 +251,17 @@ public class ObjectStorage : IObjectStorage
                                                 cancellationToken);
       throw;
     }
+
+    return sizeBox[0];
   }
 
   private async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     objectKey,
                                                                              string                                     uploadId,
                                                                              IAsyncEnumerable<ReadOnlyMemory<byte>>     valueChunks,
+                                                                             long[]                                     sizeBox,
                                                                              [EnumeratorCancellation] CancellationToken cancellationToken)
   {
+    long size              = 0;
     var  partNumber        = 1;
     long bytesRead         = 0;
     var  currentPartSize   = MinPartSize;
@@ -262,6 +271,7 @@ public class ObjectStorage : IObjectStorage
                                            .ConfigureAwait(false))
     {
       long chunkSize = chunk.Length;
+      size      += chunkSize;
       bytesRead += chunkSize;
       var remainingStream = new MemoryStream();
 
@@ -331,5 +341,9 @@ public class ObjectStorage : IObjectStorage
                         };
       yield return partRequest;
     }
+
+    // It is not possible to pass a ref parameter to an Iterator function
+    // So boxing is required to pass the value back to the caller after the enumeration
+    sizeBox[0] = size;
   }
 }

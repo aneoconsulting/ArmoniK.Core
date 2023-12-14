@@ -37,10 +37,10 @@ public class SimpleObjectStorage : IObjectStorage
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task AddOrUpdateAsync(string                                 key,
-                               IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                               CancellationToken                      cancellationToken = default)
-    => Task.CompletedTask;
+  public Task<long> AddOrUpdateAsync(string                                 key,
+                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                     CancellationToken                      cancellationToken = default)
+    => Task.FromResult((long)0);
 
   public IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
                                                  CancellationToken cancellationToken = default)

@@ -40,6 +40,7 @@ public class ToResultFilterTest
                                         ResultStatus.Created,
                                         new List<string>(),
                                         DateTime.UtcNow,
+                                        0,
                                         Array.Empty<byte>());
 
   private static readonly ListResultsRequest.Types.Sort Sort = new()
@@ -127,5 +128,12 @@ public class ToResultFilterTest
     yield return CaseFalse(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
                                                                          FilterDateOperator.Before,
                                                                          DateTime.UtcNow));
+
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterNumber(ResultRawEnumField.Size,
+                                                                          FilterNumberOperator.LessThan,
+                                                                          1));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterNumber(ResultRawEnumField.Size,
+                                                                           FilterNumberOperator.GreaterThan,
+                                                                           1));
   }
 }

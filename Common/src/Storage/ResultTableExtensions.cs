@@ -55,6 +55,7 @@ public static class ResultTableExtensions
   /// <param name="resultTable">Interface to manage results</param>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="resultId">Id of the result to complete</param>
+  /// <param name="size">Size of the result to complete</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The new version of the result metadata
@@ -63,6 +64,7 @@ public static class ResultTableExtensions
   public static async Task<Result> CompleteResult(this IResultTable resultTable,
                                                   string            sessionId,
                                                   string            resultId,
+                                                  long              size,
                                                   CancellationToken cancellationToken = default)
   {
     var result = await resultTable.UpdateOneResult(sessionId,
@@ -70,12 +72,14 @@ public static class ResultTableExtensions
                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                                    {
                                                      (data => data.Status, ResultStatus.Completed),
+                                                     (data => data.Size, size),
                                                    },
                                                    cancellationToken)
                                   .ConfigureAwait(false);
     return result with
            {
              Status = ResultStatus.Completed,
+             Size = size,
            };
   }
 
@@ -102,6 +106,7 @@ public static class ResultTableExtensions
                                                     new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                                     {
                                                       (result => result.Status, ResultStatus.Completed),
+                                                      (data => data.Size, (long)smallPayload.Length),
                                                       (result => result.Data, smallPayload),
                                                     },
                                                     cancellationToken)
@@ -120,6 +125,7 @@ public static class ResultTableExtensions
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="ownerTaskId">id of the task owning the result</param>
   /// <param name="resultId">id of the result to be modified</param>
+  /// <param name="size">Size of the result to be modified</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
@@ -128,12 +134,14 @@ public static class ResultTableExtensions
                                      string            sessionId,
                                      string            ownerTaskId,
                                      string            resultId,
+                                     long              size,
                                      CancellationToken cancellationToken = default)
   {
     var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
                                                     new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                                     {
                                                       (result => result.Status, ResultStatus.Completed),
+                                                      (result => result.Size, size),
                                                     },
                                                     cancellationToken)
                                  .ConfigureAwait(false);

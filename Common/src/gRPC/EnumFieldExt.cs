@@ -170,6 +170,7 @@ public static class EnumFieldExt
          ResultRawEnumField.Status      => result => result.Status,
          ResultRawEnumField.CreatedAt   => result => result.CreationDate,
          ResultRawEnumField.ResultId    => result => result.ResultId,
+         ResultRawEnumField.Size        => result => result.Size,
          ResultRawEnumField.CompletedAt => throw new ArgumentOutOfRangeException(nameof(enumField)),
          ResultRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(nameof(enumField)),
          _                              => throw new ArgumentOutOfRangeException(nameof(enumField)),

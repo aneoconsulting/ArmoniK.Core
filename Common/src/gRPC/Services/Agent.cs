@@ -56,7 +56,7 @@ public sealed class Agent : IAgent
   private readonly IObjectStorage            objectStorage_;
   private readonly IPushQueueStorage         pushQueueStorage_;
   private readonly IResultTable              resultTable_;
-  private readonly List<string>              sentResults_;
+  private readonly Dictionary<string, long>  sentResults_;
   private readonly SessionData               sessionData_;
   private readonly ISubmitter                submitter_;
   private readonly TaskData                  taskData_;
@@ -94,7 +94,7 @@ public sealed class Agent : IAgent
     taskTable_        = taskTable;
     logger_           = logger;
     createdTasks_     = new List<TaskCreationRequest>();
-    sentResults_      = new List<string>();
+    sentResults_      = new Dictionary<string, long>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     folder_           = folder;
@@ -117,10 +117,11 @@ public sealed class Agent : IAgent
                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    foreach (var result in sentResults_)
+    foreach (var (result, size) in sentResults_)
     {
       await resultTable_.CompleteResult(taskData_.SessionId,
                                         result,
+                                        size,
                                         cancellationToken)
                         .ConfigureAwait(false);
     }
@@ -129,7 +130,7 @@ public sealed class Agent : IAgent
                                                   resultTable_,
                                                   pushQueueStorage_,
                                                   sessionData_.SessionId,
-                                                  sentResults_,
+                                                  sentResults_.Keys,
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
@@ -315,6 +316,7 @@ public sealed class Agent : IAgent
                                                           ResultStatus.Created,
                                                           new List<string>(),
                                                           DateTime.UtcNow,
+                                                          0,
                                                           Array.Empty<byte>()))
                          .ToList();
 
@@ -397,25 +399,26 @@ public sealed class Agent : IAgent
   {
     var results = await request.Results.Select(async rc =>
                                                {
-                                                 var result = new Result(request.SessionId,
-                                                                         Guid.NewGuid()
-                                                                             .ToString(),
-                                                                         rc.Name,
-                                                                         "",
-                                                                         ResultStatus.Created,
-                                                                         new List<string>(),
-                                                                         DateTime.UtcNow,
-                                                                         Array.Empty<byte>());
+                                                 var resultId = Guid.NewGuid()
+                                                                    .ToString();
 
-                                                 await objectStorage_.AddOrUpdateAsync(result.ResultId,
-                                                                                       new List<ReadOnlyMemory<byte>>
-                                                                                       {
-                                                                                         rc.Data.Memory,
-                                                                                       }.ToAsyncEnumerable(),
-                                                                                       cancellationToken)
-                                                                     .ConfigureAwait(false);
+                                                 var size = await objectStorage_.AddOrUpdateAsync(resultId,
+                                                                                                  new List<ReadOnlyMemory<byte>>
+                                                                                                  {
+                                                                                                    rc.Data.Memory,
+                                                                                                  }.ToAsyncEnumerable(),
+                                                                                                  cancellationToken)
+                                                                                .ConfigureAwait(false);
 
-                                                 return result;
+                                                 return new Result(request.SessionId,
+                                                                   resultId,
+                                                                   rc.Name,
+                                                                   "",
+                                                                   ResultStatus.Created,
+                                                                   new List<string>(),
+                                                                   DateTime.UtcNow,
+                                                                   size,
+                                                                   Array.Empty<byte>());
                                                })
                                .WhenAll()
                                .ConfigureAwait(false);
@@ -424,7 +427,11 @@ public sealed class Agent : IAgent
                               cancellationToken)
                       .ConfigureAwait(false);
 
-    sentResults_.AddRange(results.Select(r => r.ResultId));
+    foreach (var result in results)
+    {
+      sentResults_.Add(result.ResultId,
+                       result.Size);
+    }
 
     return new CreateResultsResponse
            {
@@ -472,13 +479,15 @@ public sealed class Agent : IAgent
                                                 channel.Reader.ReadAllAsync(cancellationToken),
                                                 cancellationToken);
 
-      int read;
+      long size = 0;
+      int  read;
       do
       {
         var buffer = new byte[PayloadConfiguration.MaxChunkSize];
         read = r.Read(buffer,
                       0,
                       PayloadConfiguration.MaxChunkSize);
+        size += read;
         if (read > 0)
         {
           await channel.Writer.WriteAsync(buffer.AsMemory(0,
@@ -491,7 +500,8 @@ public sealed class Agent : IAgent
       channel.Writer.Complete();
 
       await add.ConfigureAwait(false);
-      sentResults_.Add(result.ResultId);
+      sentResults_.Add(result.ResultId,
+                       size);
     }
 
     return new NotifyResultDataResponse

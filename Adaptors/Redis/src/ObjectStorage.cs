@@ -87,10 +87,11 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
+  public async Task<long> AddOrUpdateAsync(string                                 key,
+                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                           CancellationToken                      cancellationToken = default)
   {
+    long      size           = 0;
     var       storageNameKey = objectStorageName_ + key;
     using var _              = logger_.LogFunction(storageNameKey);
 
@@ -99,6 +100,7 @@ public class ObjectStorage : IObjectStorage
     await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
+      size += chunk.Length;
       var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
       taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
                                                                chunk)));
@@ -109,6 +111,8 @@ public class ObjectStorage : IObjectStorage
                                                              idx)));
     await taskList.WhenAll()
                   .ConfigureAwait(false);
+
+    return size;
   }
 
   /// <inheritdoc />
