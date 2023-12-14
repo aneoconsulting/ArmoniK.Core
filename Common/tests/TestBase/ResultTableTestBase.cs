@@ -653,16 +653,17 @@ public class ResultTableTestBase
                         .ConfigureAwait(false);
 
 
-      await ResultTable.AddTaskDependency(sessionId,
-                                          new List<string>
-                                          {
-                                            resultId,
-                                          },
-                                          new List<string>
-                                          {
-                                            "Task1",
-                                            "Task2",
-                                          })
+      await ResultTable.AddTaskDependencies(sessionId,
+                                            new Dictionary<string, ICollection<string>>
+                                            {
+                                              {
+                                                resultId, new[]
+                                                          {
+                                                            "Task1",
+                                                            "Task2",
+                                                          }
+                                              },
+                                            })
                        .ConfigureAwait(false);
 
       var dependents = await ResultTable.GetDependents(sessionId,
@@ -683,16 +684,17 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.AddTaskDependency("SessionId",
-                                                                                                   new List<string>
-                                                                                                   {
-                                                                                                     "resultDoesNotExist",
-                                                                                                   },
-                                                                                                   new List<string>
-                                                                                                   {
-                                                                                                     "Task1",
-                                                                                                     "Task2",
-                                                                                                   })
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.AddTaskDependencies("SessionId",
+                                                                                                     new Dictionary<string, ICollection<string>>
+                                                                                                     {
+                                                                                                       {
+                                                                                                         "resultDoesNotExist", new[]
+                                                                                                                               {
+                                                                                                                                 "Task1",
+                                                                                                                                 "Task2",
+                                                                                                                               }
+                                                                                                       },
+                                                                                                     })
                                                                                 .ConfigureAwait(false));
     }
   }

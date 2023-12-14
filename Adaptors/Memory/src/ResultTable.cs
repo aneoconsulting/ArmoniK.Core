@@ -90,18 +90,17 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task AddTaskDependency(string              sessionId,
-                                ICollection<string> resultIds,
-                                ICollection<string> taskIds,
-                                CancellationToken   cancellationToken)
+  public Task AddTaskDependencies(string                                   sessionId,
+                                  IDictionary<string, ICollection<string>> dependencies,
+                                  CancellationToken                        cancellationToken = default)
   {
     if (!results_.TryGetValue(sessionId,
                               out var session))
     {
-      throw new SessionNotFoundException($"Session '{session}' not found");
+      throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
 
-    foreach (var resultId in resultIds)
+    foreach (var (resultId, taskIds) in dependencies)
     {
       if (!session.TryGetValue(resultId,
                                out var result))

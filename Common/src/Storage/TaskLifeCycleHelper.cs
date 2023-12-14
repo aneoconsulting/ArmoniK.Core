@@ -209,133 +209,148 @@ public static class TaskLifeCycleHelper
       return;
     }
 
-    var parentExpectedOutputKeys = new List<string>();
+    var prepareTaskDependencies = PrepareTaskDependencies(taskTable,
+                                                          resultTable,
+                                                          taskRequests,
+                                                          sessionId,
+                                                          logger,
+                                                          cancellationToken);
 
+    // Transfer ownership while dependencies are in preparation
     if (!parentTaskId.Equals(sessionId))
     {
-      parentExpectedOutputKeys.AddRange(await taskTable.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                  cancellationToken)
-                                                       .ConfigureAwait(false));
+      var parentExpectedOutputKeys = (await taskTable.GetTaskExpectedOutputKeys(parentTaskId,
+                                                                                cancellationToken)
+                                                     .ConfigureAwait(false)).ToHashSet();
+      var taskDataModels =
+        taskRequests.Select(request => new IResultTable.ChangeResultOwnershipRequest(request.ExpectedOutputKeys.Where(id => parentExpectedOutputKeys.Contains(id)),
+                                                                                     request.TaskId));
+      await resultTable.ChangeResultOwnership(sessionId,
+                                              parentTaskId,
+                                              taskDataModels,
+                                              cancellationToken)
+                       .ConfigureAwait(false);
     }
 
-    var taskDataModels = taskRequests.Select(request => new IResultTable.ChangeResultOwnershipRequest(parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys),
-                                                                                                      request.TaskId));
-    await resultTable.ChangeResultOwnership(sessionId,
-                                            parentTaskId,
-                                            taskDataModels,
-                                            cancellationToken)
-                     .ConfigureAwait(false);
+    await EnqueueReadyTasks(taskTable,
+                            pushQueueStorage,
+                            await prepareTaskDependencies.ConfigureAwait(false),
+                            cancellationToken)
+      .ConfigureAwait(false);
+  }
 
-    var readyTasks = new Dictionary<string, List<MessageData>>();
+  /// <summary>
+  ///   Collect and record all the task dependencies specified in the <paramref name="taskRequests" />,
+  ///   and return all the tasks that are ready to be enqueued.
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="taskRequests">Tasks requests to finalize</param>
+  /// <param name="sessionId">Session Id of the completed results</param>
+  /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Queue messages for ready tasks
+  /// </returns>
+  private static async Task<ICollection<MessageData>> PrepareTaskDependencies(ITaskTable                       taskTable,
+                                                                              IResultTable                     resultTable,
+                                                                              ICollection<TaskCreationRequest> taskRequests,
+                                                                              string                           sessionId,
+                                                                              ILogger                          logger,
+                                                                              CancellationToken                cancellationToken)
+  {
+    var allDependencies = new HashSet<string>();
 
-
+    // Get all the results that are a dependency of at least one task
     foreach (var request in taskRequests)
     {
-      var dependencies = request.DataDependencies.ToList();
-      dependencies.Add(request.PayloadId);
+      allDependencies.UnionWith(request.DataDependencies);
+      allDependencies.Add(request.PayloadId);
+    }
 
-      logger.LogDebug("Process task request {request} with dependencies {dependencies}",
-                      request,
-                      dependencies);
+    // Get the dependencies that are already completed to avoid tracking already completed results
+    await foreach (var resultId in resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                          result => result.ResultId,
+                                                          cancellationToken)
+                                              .ConfigureAwait(false))
+    {
+      allDependencies.Remove(resultId);
+    }
 
-      if (dependencies.Any())
+    // Build the mapping between tasks and their dependencies
+    var taskDependencies = taskRequests.ToDictionary(request => request.TaskId,
+                                                     request =>
+                                                     {
+                                                       var dependencies = request.DataDependencies.Where(resultId => allDependencies.Contains(resultId))
+                                                                                 .ToList();
+                                                       if (allDependencies.Contains(request.PayloadId))
+                                                       {
+                                                         dependencies.Add(request.PayloadId);
+                                                       }
+
+                                                       return dependencies;
+                                                     });
+
+    // Build the mapping between results and their dependents
+    var resultDependencies = new Dictionary<string, ICollection<string>>();
+    foreach (var (taskId, resultIds) in taskDependencies)
+    {
+      if (!resultIds.Any())
       {
-        // If there is dependencies, we need to register the current task as a dependent of its dependencies.
-        // This should be done *before* verifying if the dependencies are satisfied in order to avoid missing
-        // any result completion.
-        // If a result is completed at the same time, either the submitter will see the result has been completed,
-        // Or the Agent will remove the result from the remaining dependencies of the task.
-        await resultTable.AddTaskDependency(sessionId,
-                                            dependencies,
-                                            new List<string>
-                                            {
-                                              request.TaskId,
-                                            },
-                                            cancellationToken)
-                         .ConfigureAwait(false);
-
-        // Get the dependencies that are already completed in order to remove them from the remaining dependencies.
-        var completedDependencies = await resultTable.GetResults(sessionId,
-                                                                 dependencies,
-                                                                 cancellationToken)
-                                                     .Where(result => result.Status == ResultStatus.Completed)
-                                                     .Select(result => result.ResultId)
-                                                     .ToListAsync(cancellationToken)
-                                                     .ConfigureAwait(false);
-
-        // Remove all the dependencies that are already completed from the task.
-        // If an Agent has completed one of the dependencies between the GetResults and this remove,
-        // One will succeed removing the dependency, the other will silently fail.
-        // In either case, the task will be submitted without error by the Agent.
-        // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
-        // and both will queue the task.
-        // This is benign as it will be handled during dequeue with message deduplication.
-        await taskTable.RemoveRemainingDataDependenciesAsync(new[]
-                                                             {
-                                                               request.TaskId,
-                                                             },
-                                                             completedDependencies,
-                                                             cancellationToken)
-                       .ConfigureAwait(false);
-
-        // If all dependencies were already completed, the task is ready to be started.
-        if (dependencies.Count == completedDependencies.Count)
-        {
-          if (readyTasks.TryGetValue(request.Options.PartitionId,
-                                     out var msgsData))
-          {
-            msgsData.Add(new MessageData(request.TaskId,
-                                         sessionId,
-                                         request.Options));
-          }
-          else
-          {
-            readyTasks.Add(request.Options.PartitionId,
-                           new List<MessageData>
-                           {
-                             new(request.TaskId,
-                                 sessionId,
-                                 request.Options),
-                           });
-          }
-        }
+        continue;
       }
-      else
+
+      foreach (var resultId in resultIds)
       {
-        if (readyTasks.TryGetValue(request.Options.PartitionId,
-                                   out var msgsData))
+        if (resultDependencies.TryGetValue(resultId,
+                                           out var resultDependency))
         {
-          msgsData.Add(new MessageData(request.TaskId,
-                                       sessionId,
-                                       request.Options));
+          resultDependency.Add(taskId);
         }
         else
         {
-          readyTasks.Add(request.Options.PartitionId,
-                         new List<MessageData>
-                         {
-                           new(request.TaskId,
-                               sessionId,
-                               request.Options),
-                         });
+          resultDependencies.Add(resultId,
+                                 new HashSet<string>
+                                 {
+                                   taskId,
+                                 });
         }
       }
     }
 
-    if (readyTasks.Any())
-    {
-      foreach (var item in readyTasks)
-      {
-        await pushQueueStorage.PushMessagesAsync(item.Value,
-                                                 item.Key,
-                                                 cancellationToken)
-                              .ConfigureAwait(false);
-        await taskTable.FinalizeTaskCreation(item.Value.Select(data => data.TaskId)
-                                                 .ToList(),
-                                             cancellationToken)
-                       .ConfigureAwait(false);
-      }
-    }
+    // Add dependency to all results
+    await resultTable.AddTaskDependencies(sessionId,
+                                          resultDependencies,
+                                          cancellationToken)
+                     .ConfigureAwait(false);
+
+    // Check all the remaining dependencies
+    var completedDependencies = await resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                             result => result.ResultId,
+                                                             cancellationToken)
+                                                 .ToListAsync(cancellationToken)
+                                                 .ConfigureAwait(false);
+    allDependencies.ExceptWith(completedDependencies);
+
+    // Remove all the dependencies that are already completed from the task.
+    // If an Agent has completed one of the dependencies between the GetResults and this remove,
+    // One will succeed removing the dependency, the other will silently fail.
+    // In either case, the task will be submitted without error by the Agent.
+    // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
+    // and both will queue the task.
+    // This is benign as it will be handled during dequeue with message deduplication.
+    await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
+                                                         completedDependencies,
+                                                         cancellationToken)
+                   .ConfigureAwait(false);
+
+    // Return all the tasks that are ready and shall be enqueued
+    return taskRequests.Where(request => !taskDependencies[request.TaskId]
+                                           .Any(resultId => allDependencies.Contains(resultId)))
+                       .Select(request => new MessageData(request.TaskId,
+                                                          sessionId,
+                                                          request.Options))
+                       .AsICollection();
   }
 
   /// <summary>
@@ -391,36 +406,53 @@ public static class TaskLifeCycleHelper
     // Find all tasks whose dependencies are now complete in order to start them.
     // Multiple agents can see the same task as ready and will try to start it multiple times.
     // This is benign as it will be handled during dequeue with message deduplication.
-    var groups = (await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
-                                                         data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
-                                                 data => new
-                                                         {
-                                                           data.TaskId,
-                                                           data.SessionId,
-                                                           data.Options,
-                                                           data.Options.PartitionId,
-                                                           data.Options.Priority,
-                                                         },
-                                                 cancellationToken)
-                                 .ToListAsync(cancellationToken)
-                                 .ConfigureAwait(false)).GroupBy(data => (data.PartitionId, data.Priority));
+    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+                                                            data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+                                                    data => new MessageData(data.TaskId,
+                                                                            data.SessionId,
+                                                                            data.Options),
+                                                    cancellationToken)
+                                    .ToListAsync(cancellationToken)
+                                    .ConfigureAwait(false);
 
-    foreach (var group in groups)
+    await EnqueueReadyTasks(taskTable,
+                            pushQueueStorage,
+                            readyTasks,
+                            cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  /// <summary>
+  ///   Enqueue all the messages that are ready for enqueueing, and mark them as enqueued in the task table
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
+  /// <param name="messages">Messages to enqueue</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  private static async Task EnqueueReadyTasks(ITaskTable               taskTable,
+                                              IPushQueueStorage        pushQueueStorage,
+                                              ICollection<MessageData> messages,
+                                              CancellationToken        cancellationToken)
+  {
+    if (!messages.Any())
     {
-      var ids = group.Select(data => data.TaskId)
-                     .ToList();
+      return;
+    }
 
-      var msgsData = group.Select(data => new MessageData(data.TaskId,
-                                                          data.SessionId,
-                                                          data.Options));
-      await pushQueueStorage.PushMessagesAsync(msgsData,
+    foreach (var group in messages.GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority)))
+    {
+      await pushQueueStorage.PushMessagesAsync(group,
                                                group.Key.PartitionId,
                                                cancellationToken)
                             .ConfigureAwait(false);
-
-      await taskTable.FinalizeTaskCreation(ids,
-                                           cancellationToken)
-                     .ConfigureAwait(false);
     }
+
+    await taskTable.FinalizeTaskCreation(messages.Select(task => task.TaskId)
+                                                 .AsICollection(),
+                                         cancellationToken)
+                   .ConfigureAwait(false);
   }
 }

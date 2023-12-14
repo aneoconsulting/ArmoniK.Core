@@ -86,26 +86,36 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task AddTaskDependency(string              sessionId,
-                                      ICollection<string> resultIds,
-                                      ICollection<string> taskIds,
-                                      CancellationToken   cancellationToken)
+  public async Task AddTaskDependencies(string                                   sessionId,
+                                        IDictionary<string, ICollection<string>> dependencies,
+                                        CancellationToken                        cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(AddTaskDependency)}");
-    activity?.SetTag($"{nameof(AddTaskDependency)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(AddTaskDependencies)}");
+    activity?.SetTag($"{nameof(AddTaskDependencies)}_sessionId",
                      sessionId);
 
     var resultCollection = resultCollectionProvider_.Get();
 
-    var result = await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => resultIds.Contains(model.ResultId)),
-                                                        Builders<Result>.Update.AddToSetEach(model => model.DependentTasks,
-                                                                                             taskIds),
-                                                        cancellationToken: cancellationToken)
-                                       .ConfigureAwait(false);
-
-    if (result.ModifiedCount != resultIds.Count)
+    if (!dependencies.Any())
     {
-      throw new ResultNotFoundException("One of the input result was not found");
+      return;
+    }
+
+    var dependencyRequests = dependencies.Select(dependency => new UpdateManyModel<Result>(Builders<Result>.Filter.Where(result => dependency.Key == result.ResultId),
+                                                                                           Builders<Result>.Update.AddToSetEach(result => result.DependentTasks,
+                                                                                                                                dependency.Value)));
+
+    var writeResult = await resultCollection.BulkWriteAsync(dependencyRequests,
+                                                            new BulkWriteOptions
+                                                            {
+                                                              IsOrdered = false,
+                                                            },
+                                                            cancellationToken)
+                                            .ConfigureAwait(false);
+
+    if (writeResult.ModifiedCount != dependencies.Count)
+    {
+      throw new ResultNotFoundException($"One of the input result was not found: expected: {dependencies.Count}, found: {writeResult.ModifiedCount}");
     }
   }
 
