@@ -55,6 +55,8 @@ public class ToResultFieldTest
                       Result.ResultId);
     yield return Case(ResultRawEnumField.SessionId,
                       Result.SessionId);
+    yield return Case(ResultRawEnumField.Size,
+                      Result.Size);
   }
 
   private static TestCaseData Case(ResultRawEnumField field,

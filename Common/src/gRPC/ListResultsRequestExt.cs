@@ -94,6 +94,10 @@ public static class ListResultsRequestExt
             exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),
                                                                                       filterField.FilterArray.Value));
             break;
+          case FilterField.ValueConditionOneofCase.FilterNumber:
+            exprAnd = exprAnd.ExpressionAnd(filterField.FilterNumber.Operator.ToFilter(filterField.Field.ToField(),
+                                                                                       filterField.FilterNumber.Value));
+            break;
           case FilterField.ValueConditionOneofCase.None:
           default:
             throw new ArgumentOutOfRangeException(nameof(filters));
