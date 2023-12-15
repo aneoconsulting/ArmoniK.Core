@@ -7,10 +7,14 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj", "Tests/HtcMock/Client/src/"]
 COPY ["Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj", "Tests/Common/Client/src/"]
+COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
+COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj"
 COPY ["Tests/HtcMock/Client/src", "Tests/HtcMock/Client/src"]
 COPY ["Tests/Common/Client/src", "Tests/Common/Client/src"]
+COPY ["Utils/src/", "Utils/src/"]
+COPY ["Base/src/", "Base/src/"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Client/src"
 RUN dotnet build "ArmoniK.Samples.HtcMock.Client.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
