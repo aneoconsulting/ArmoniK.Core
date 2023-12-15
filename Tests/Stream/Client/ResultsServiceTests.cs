@@ -29,6 +29,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -64,8 +65,7 @@ internal class ResultsServiceTests
     var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
                                             .AddEnvironmentVariables();
     var configuration = builder.Build();
-    var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
-                               .Get<GrpcClient>();
+    var options       = configuration.GetRequiredValue<GrpcClient>(GrpcClient.SettingSection);
 
     partition_ = configuration.GetValue<string>("Partition");
 

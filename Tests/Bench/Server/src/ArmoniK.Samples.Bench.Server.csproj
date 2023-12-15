@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.15.0-edge.21.a4c815b" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.15.0-edge.23.b178614" />
   </ItemGroup>
 
   <ItemGroup>

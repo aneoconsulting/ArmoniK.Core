@@ -23,6 +23,7 @@ using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Utils;
 
 using Grpc.Core;
 
@@ -118,8 +119,7 @@ internal class ConnectionTest
     var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
                                             .AddEnvironmentVariables();
     var configuration = builder.Build();
-    var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
-                               .Get<GrpcClient>();
+    var options       = configuration.GetRequiredValue<GrpcClient>(GrpcClient.SettingSection);
 
     if (caIsInstalled && !allowInsecure && Environment.GetEnvironmentVariable("CA_INSTALLED") != "true")
     {
