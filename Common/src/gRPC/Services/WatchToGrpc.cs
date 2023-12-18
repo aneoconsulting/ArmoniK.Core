@@ -97,39 +97,38 @@ public class WatchToGrpc
 
     if (!events.Any() || events.Contains(EventsEnum.NewTask))
     {
+      var newTasks = (await taskWatcher_.GetNewTasks(internalTasksFilter,
+                                                     cancellationToken)
+                                        .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
+                                                                              {
+                                                                                NewTask = new EventSubscriptionResponse.Types.NewTask
+                                                                                          {
+                                                                                            ParentTaskIds =
+                                                                                            {
+                                                                                              cur.ParentTaskIds,
+                                                                                            },
+                                                                                            DataDependencies =
+                                                                                            {
+                                                                                              cur.DataDependencies,
+                                                                                            },
+                                                                                            ExpectedOutputKeys =
+                                                                                            {
+                                                                                              cur.ExpectedOutputKeys,
+                                                                                            },
+                                                                                            OriginTaskId = cur.OriginTaskId,
+                                                                                            PayloadId    = cur.PayloadId,
+                                                                                            RetryOfIds =
+                                                                                            {
+                                                                                              cur.RetryOfIds,
+                                                                                            },
+                                                                                            Status = cur.Status.ToGrpcStatus(),
+                                                                                            TaskId = cur.TaskId,
+                                                                                          },
+                                                                                SessionId = cur.SessionId,
+                                                                              });
+
       await Task.Factory.StartNew(async () =>
                                   {
-                                    var newTasks = (await taskWatcher_.GetNewTasks(internalTasksFilter,
-                                                                                   cancellationToken)
-                                                                      .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
-                                                                                                            {
-                                                                                                              NewTask = new EventSubscriptionResponse.Types.NewTask
-                                                                                                                        {
-                                                                                                                          ParentTaskIds =
-                                                                                                                          {
-                                                                                                                            cur.ParentTaskIds,
-                                                                                                                          },
-                                                                                                                          DataDependencies =
-                                                                                                                          {
-                                                                                                                            cur.DataDependencies,
-                                                                                                                          },
-                                                                                                                          ExpectedOutputKeys =
-                                                                                                                          {
-                                                                                                                            cur.ExpectedOutputKeys,
-                                                                                                                          },
-                                                                                                                          OriginTaskId = cur.OriginTaskId,
-                                                                                                                          PayloadId    = cur.PayloadId,
-                                                                                                                          RetryOfIds =
-                                                                                                                          {
-                                                                                                                            cur.RetryOfIds,
-                                                                                                                          },
-                                                                                                                          Status = cur.Status.ToGrpcStatus(),
-                                                                                                                          TaskId = cur.TaskId,
-                                                                                                                        },
-                                                                                                              SessionId = cur.SessionId,
-                                                                                                            });
-
-
                                     await foreach (var cur in newTasks.WithCancellation(cancellationToken)
                                                                       .ConfigureAwait(false))
                                     {
@@ -147,21 +146,20 @@ public class WatchToGrpc
 
     if (!events.Any() || events.Contains(EventsEnum.TaskStatusUpdate))
     {
+      var newTasks = (await taskWatcher_.GetTaskStatusUpdates(internalTasksFilter,
+                                                              cancellationToken)
+                                        .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
+                                                                              {
+                                                                                TaskStatusUpdate = new EventSubscriptionResponse.Types.TaskStatusUpdate
+                                                                                                   {
+                                                                                                     Status = cur.Status.ToGrpcStatus(),
+                                                                                                     TaskId = cur.TaskId,
+                                                                                                   },
+                                                                                SessionId = cur.SessionId,
+                                                                              });
+
       await Task.Factory.StartNew(async () =>
                                   {
-                                    var newTasks = (await taskWatcher_.GetTaskStatusUpdates(internalTasksFilter,
-                                                                                            cancellationToken)
-                                                                      .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
-                                                                                                            {
-                                                                                                              TaskStatusUpdate =
-                                                                                                                new EventSubscriptionResponse.Types.TaskStatusUpdate
-                                                                                                                {
-                                                                                                                  Status = cur.Status.ToGrpcStatus(),
-                                                                                                                  TaskId = cur.TaskId,
-                                                                                                                },
-                                                                                                              SessionId = cur.SessionId,
-                                                                                                            });
-
                                     await foreach (var cur in newTasks.WithCancellation(cancellationToken)
                                                                       .ConfigureAwait(false))
                                     {
@@ -178,22 +176,21 @@ public class WatchToGrpc
 
     if (!events.Any() || events.Contains(EventsEnum.NewResult))
     {
+      var newResults = (await resultWatcher_.GetNewResults(internalResultsFilter,
+                                                           cancellationToken)
+                                            .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
+                                                                                  {
+                                                                                    NewResult = new EventSubscriptionResponse.Types.NewResult
+                                                                                                {
+                                                                                                  Status   = cur.Status.ToGrpcStatus(),
+                                                                                                  OwnerId  = cur.OwnerId,
+                                                                                                  ResultId = cur.ResultId,
+                                                                                                },
+                                                                                    SessionId = cur.SessionId,
+                                                                                  });
+
       await Task.Factory.StartNew(async () =>
                                   {
-                                    var newResults = (await resultWatcher_.GetNewResults(internalResultsFilter,
-                                                                                         cancellationToken)
-                                                                          .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
-                                                                                                                {
-                                                                                                                  NewResult =
-                                                                                                                    new EventSubscriptionResponse.Types.NewResult
-                                                                                                                    {
-                                                                                                                      Status   = cur.Status.ToGrpcStatus(),
-                                                                                                                      OwnerId  = cur.OwnerId,
-                                                                                                                      ResultId = cur.ResultId,
-                                                                                                                    },
-                                                                                                                  SessionId = cur.SessionId,
-                                                                                                                });
-
                                     await foreach (var cur in newResults.WithCancellation(cancellationToken)
                                                                         .ConfigureAwait(false))
                                     {
@@ -210,22 +207,20 @@ public class WatchToGrpc
 
     if (!events.Any() || events.Contains(EventsEnum.ResultStatusUpdate))
     {
+      var newResults = (await resultWatcher_.GetResultStatusUpdates(internalResultsFilter,
+                                                                    cancellationToken)
+                                            .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
+                                                                                  {
+                                                                                    ResultStatusUpdate = new EventSubscriptionResponse.Types.ResultStatusUpdate
+                                                                                                         {
+                                                                                                           ResultId = cur.ResultId,
+                                                                                                           Status   = cur.Status.ToGrpcStatus(),
+                                                                                                         },
+                                                                                    SessionId = cur.SessionId,
+                                                                                  });
+
       await Task.Factory.StartNew(async () =>
                                   {
-                                    var newResults = (await resultWatcher_.GetResultStatusUpdates(internalResultsFilter,
-                                                                                                  cancellationToken)
-                                                                          .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
-                                                                                                                {
-                                                                                                                  ResultStatusUpdate =
-                                                                                                                    new EventSubscriptionResponse.Types.
-                                                                                                                    ResultStatusUpdate
-                                                                                                                    {
-                                                                                                                      ResultId = cur.ResultId,
-                                                                                                                      Status   = cur.Status.ToGrpcStatus(),
-                                                                                                                    },
-                                                                                                                  SessionId = cur.SessionId,
-                                                                                                                });
-
                                     await foreach (var cur in newResults.WithCancellation(cancellationToken)
                                                                         .ConfigureAwait(false))
                                     {
@@ -242,22 +237,21 @@ public class WatchToGrpc
 
     if (!events.Any() || events.Contains(EventsEnum.ResultOwnerUpdate))
     {
+      var newResults = (await resultWatcher_.GetResultOwnerUpdates(internalResultsFilter,
+                                                                   cancellationToken)
+                                            .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
+                                                                                  {
+                                                                                    ResultOwnerUpdate = new EventSubscriptionResponse.Types.ResultOwnerUpdate
+                                                                                                        {
+                                                                                                          ResultId        = cur.ResultId,
+                                                                                                          CurrentOwnerId  = cur.NewOwner,
+                                                                                                          PreviousOwnerId = cur.PreviousOwnerId,
+                                                                                                        },
+                                                                                    SessionId = cur.SessionId,
+                                                                                  });
+
       await Task.Factory.StartNew(async () =>
                                   {
-                                    var newResults = (await resultWatcher_.GetResultOwnerUpdates(internalResultsFilter,
-                                                                                                 cancellationToken)
-                                                                          .ConfigureAwait(false)).Select(cur => new EventSubscriptionResponse
-                                                                                                                {
-                                                                                                                  ResultOwnerUpdate =
-                                                                                                                    new EventSubscriptionResponse.Types.ResultOwnerUpdate
-                                                                                                                    {
-                                                                                                                      ResultId        = cur.ResultId,
-                                                                                                                      CurrentOwnerId  = cur.NewOwner,
-                                                                                                                      PreviousOwnerId = cur.PreviousOwnerId,
-                                                                                                                    },
-                                                                                                                  SessionId = cur.SessionId,
-                                                                                                                });
-
                                     await foreach (var cur in newResults.WithCancellation(cancellationToken)
                                                                         .ConfigureAwait(false))
                                     {
