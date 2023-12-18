@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Control.Metrics.Options;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Hosting;
@@ -37,46 +38,88 @@ public class ArmoniKMeter : Meter, IHostedService
 {
   private const string QueuedName = "queued";
 
-  private static readonly TaskStatus[] Statuses =
-  {
-    //TaskStatus.Unspecified,
-    TaskStatus.Creating,
-    TaskStatus.Submitted,
-    TaskStatus.Dispatched,
-    //TaskStatus.Completed,
-    //TaskStatus.Error,
-    //TaskStatus.Timeout,
-    //TaskStatus.Cancelling,
-    //TaskStatus.Cancelled,
-    TaskStatus.Processing,
-    TaskStatus.Processed,
-    TaskStatus.Retried,
-  };
+  private static readonly Dictionary<string, TaskStatus[]> ComputedStatuses = new()
+                                                                              {
+                                                                                {
+                                                                                  QueuedName, new[]
+                                                                                              {
+                                                                                                TaskStatus.Submitted,
+                                                                                                TaskStatus.Dispatched,
+                                                                                                TaskStatus.Processing,
+                                                                                              }
+                                                                                },
+                                                                              };
+
+  private readonly IDictionary<string, HashSet<string>> computedStatuses_;
+
+  private readonly TimeSpan expireAfter_;
 
   private readonly IDictionary<(string partition, string status), MeasurementReader<long>> gauges_;
   private readonly ILogger                                                                 logger_;
   private readonly IPartitionTable                                                         partitionTable_;
-  private readonly ITaskTable                                                              taskTable_;
+
+  private readonly HashSet<TaskStatus> statuses_;
+  private readonly ITaskTable          taskTable_;
 
   public ArmoniKMeter(ITaskTable            taskTable,
                       IPartitionTable       partitionTable,
+                      MetricsExporter       configuration,
                       ILogger<ArmoniKMeter> logger)
     : base(nameof(ArmoniKMeter))
   {
     using var _ = logger.LogFunction();
 
-    taskTable_      = taskTable;
-    partitionTable_ = partitionTable;
-    logger_         = logger;
-    gauges_         = new Dictionary<(string partition, string status), MeasurementReader<long>>();
+    taskTable_        = taskTable;
+    partitionTable_   = partitionTable;
+    expireAfter_      = configuration.CacheValidity;
+    logger_           = logger;
+    gauges_           = new Dictionary<(string partition, string status), MeasurementReader<long>>();
+    statuses_         = new HashSet<TaskStatus>();
+    computedStatuses_ = new Dictionary<string, HashSet<string>>();
 
-    var statusNames = Statuses.Select(status => status.ToString())
-                              .ToList();
-    statusNames.Add(QueuedName);
+    IEnumerable<string> allMetrics = new[]
+                                     {
+                                       QueuedName,
+                                     };
 
-    var partitionExec = new ExecutionSingleizer<ICollection<string>>(ExpireAfter);
+    if (configuration.Metrics.Any())
+    {
+      allMetrics = allMetrics.Concat(configuration.Metrics.ToLower()
+                                                  .Split(","));
+    }
 
-    foreach (var statusName in statusNames)
+    // Get all the metrics that are required from the configuration
+    foreach (var metrics in allMetrics)
+    {
+      if (ComputedStatuses.TryGetValue(metrics,
+                                       out var statuses))
+      {
+        computedStatuses_.Add(metrics,
+                              statuses.Select(status => status.ToString()
+                                                              .ToLower())
+                                      .ToHashSet());
+        statuses_.UnionWith(statuses);
+      }
+      else if (Enum.TryParse<TaskStatus>(metrics,
+                                         true,
+                                         out var status))
+      {
+        statuses_.Add(status);
+      }
+      else
+      {
+        logger_.LogWarning("{Metrics} is not a valid metrics, ignored",
+                           metrics);
+      }
+    }
+
+
+    // Add root gauges
+    var partitionExec = new ExecutionSingleizer<ICollection<string>>(expireAfter_);
+
+    foreach (var statusName in statuses_.Select(status => status.ToString()
+                                                                .ToLower())
+                                        .Concat(computedStatuses_.Keys))
     {
       AddGauge("",
                statusName,
@@ -94,11 +137,9 @@ public class ArmoniKMeter : Meter, IHostedService
     }
   }
 
-  private static TimeSpan ExpireAfter
-    => TimeSpan.FromSeconds(5);
-
-  public async Task StartAsync(CancellationToken cancellationToken) // Call an aggregate gauge in order to populate all gauges.
+  public async Task StartAsync(CancellationToken cancellationToken)
   {
+    // Call an aggregate gauge in order to populate all gauges.
     await gauges_[("", QueuedName)]
           .ReadAsync(cancellationToken)
           .ConfigureAwait(false);
@@ -120,56 +161,52 @@ public class ArmoniKMeter : Meter, IHostedService
 
     foreach (var partition in partitions)
     {
-      var queuedReaders = new List<MeasurementReader<long>>();
-
-      foreach (var status in Statuses)
+      foreach (var status in statuses_)
       {
-        var statusName = status.ToString();
-        var reader = AddGauge(partition,
-                              statusName,
-                              ct => CountPartitionStatus(partition,
-                                                         status,
-                                                         ct));
-
-        if (status is TaskStatus.Dispatched or TaskStatus.Submitted or TaskStatus.Processing)
-        {
-          queuedReaders.Add(reader);
-        }
+        AddGauge(partition,
+                 status.ToString()
+                       .ToLower(),
+                 ct => CountPartitionStatus(partition,
+                                            status,
+                                            ct));
       }
 
-      AddGauge(partition,
-               QueuedName,
-               async ct =>
-               {
-                 var counts = await queuedReaders.Select(reader => reader.ReadAsync(ct))
+      foreach (var (metrics, statusNames) in computedStatuses_)
+      {
+        AddGauge(partition,
+                 metrics,
+                 async ct =>
+                 {
+                   var counts = await statusNames.Select(statusName => gauges_[(partition, statusName)]
+                                                           .ReadAsync(ct))
                                                  .WhenAll()
                                                  .ConfigureAwait(false);
-                 return counts.Sum();
-               });
+                   return counts.Sum();
+                 });
+      }
     }
 
     return partitions;
   }
 
-  private MeasurementReader<long> AddGauge(string                              partition,
-                                           string                              statusName,
-                                           Func<CancellationToken, Task<long>> f)
+  private void AddGauge(string                              partition,
+                        string                              statusName,
+                        Func<CancellationToken, Task<long>> f)
   {
     if (gauges_.TryGetValue((partition, statusName),
                             out var reader))
     {
-      return reader;
+      return;
     }
 
     reader = new MeasurementReader<long>(partition,
                                          statusName,
+                                         expireAfter_,
                                          f);
     CreateObservableGauge(reader.Name,
                           reader.Read);
     gauges_.Add((partition, statusName),
                 reader);
-
-    return reader;
   }
 
   private async Task<long> CountPartitionStatus(string            partitionId,
@@ -196,12 +233,13 @@ public class ArmoniKMeter : Meter, IHostedService
 
     public MeasurementReader(string                           partition,
                              string                           status,
+                             TimeSpan                         expireAfter,
                              Func<CancellationToken, Task<T>> readFunc)
     {
       Name = string.IsNullOrEmpty(partition)
                ? $"armonik_tasks_{status.ToLower()}"
                : $"armonik_{partition}_tasks_{status.ToLower()}";
-      exec_     = new ExecutionSingleizer<T>(ExpireAfter);
+      exec_     = new ExecutionSingleizer<T>(expireAfter);
       readFunc_ = readFunc;
     }
 
