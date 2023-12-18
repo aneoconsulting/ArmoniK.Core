@@ -28,6 +28,7 @@ using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
+using ArmoniK.Api.gRPC.V1.HealthChecks;
 using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
@@ -214,6 +215,15 @@ internal static class Program
     logger.LogInformation("{@partitions}",
                           partitions);
 
+    var healthChecks = await channelPool.WithInstanceAsync(async channel =>
+                                                           {
+                                                             var client = new HealthChecksService.HealthChecksServiceClient(channel);
+                                                             return await client.CheckHealthAsync(new CheckHealthRequest());
+                                                           })
+                                        .ConfigureAwait(false);
+
+    logger.LogInformation("{@healthChecks}",
+                          healthChecks);
 
     // Create a new session
     var start = Stopwatch.GetTimestamp();
