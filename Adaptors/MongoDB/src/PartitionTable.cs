@@ -225,7 +225,5 @@ public class PartitionTable : IPartitionTable
     {
       yield return partition;
     }
-
-    ;
   }
 }

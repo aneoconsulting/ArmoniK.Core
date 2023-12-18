@@ -225,7 +225,7 @@ public class ArmoniKMeter : Meter, IHostedService
     return count;
   }
 
-  private class MeasurementReader<T>
+  private sealed class MeasurementReader<T>
     where T : struct
   {
     private readonly ExecutionSingleizer<T>           exec_;
