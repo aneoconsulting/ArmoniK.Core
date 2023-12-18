@@ -56,20 +56,14 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
   public override async Task<CheckHealthResponse> CheckHealth(CheckHealthRequest request,
                                                               ServerCallContext  context)
   {
-    var checks = new Dictionary<string, Task<HealthCheckResult>>
-                 {
-                   {
-                     "database", taskTable_.Check(HealthCheckTag.Liveness)
-                   },
-                   {
-                     "object", objectStorage_.Check(HealthCheckTag.Liveness)
-                   },
-                   {
-                     "queue", queueStorage_.Check(HealthCheckTag.Liveness)
-                   },
-                 };
-    await checks.Values.WhenAll()
-                .ConfigureAwait(false);
+    var checks = await new[]
+                       {
+                         ("database", taskTable_.Check(HealthCheckTag.Liveness)),
+                         ("object", objectStorage_.Check(HealthCheckTag.Liveness)),
+                         ("queue", queueStorage_.Check(HealthCheckTag.Liveness)),
+                       }.Select(async service => (Name: service.Item1, Check: await service.Item2.ConfigureAwait(false)))
+                        .WhenAll()
+                        .ConfigureAwait(false);
 
     return new CheckHealthResponse
            {
@@ -77,9 +71,9 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
              {
                checks.Select(pair => new CheckHealthResponse.Types.ServiceHealth
                                      {
-                                       Name    = pair.Key,
-                                       Healthy = pair.Value.Result.Status.ToGrpcHealthStatusEnum(),
-                                       Message = pair.Value.Result.Description ?? string.Empty,
+                                       Name    = pair.Name,
+                                       Healthy = pair.Check.Status.ToGrpcHealthStatusEnum(),
+                                       Message = pair.Check.Description ?? string.Empty,
                                      }),
              },
            };
