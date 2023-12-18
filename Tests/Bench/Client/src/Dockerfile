@@ -7,10 +7,14 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Tests/Bench/Client/src/ArmoniK.Samples.Bench.Client.csproj", "Tests/Bench/Client/src/"]
 COPY ["Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj", "Tests/Common/Client/src/"]
+COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
+COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/Bench/Client/src/ArmoniK.Samples.Bench.Client.csproj"
 COPY ["Tests/Bench/Client/src", "Tests/Bench/Client/src"]
 COPY ["Tests/Common/Client/src", "Tests/Common/Client/src"]
+COPY ["Utils/src/", "Utils/src/"]
+COPY ["Base/src/", "Base/src/"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/Bench/Client/src"
 RUN dotnet build "ArmoniK.Samples.Bench.Client.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
