@@ -123,7 +123,8 @@ public class WatchToGrpcTests
   [Test]
   public async Task UseMongoForTasksShouldSucceed()
   {
-    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>());
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>(),
+                                                useSingleNodeReplicaSet: true);
 
     var taskTable = helper.GetRequiredService<ITaskTable>();
 
@@ -169,7 +170,8 @@ public class WatchToGrpcTests
   [Test]
   public async Task UseMongoForResultsShouldSucceed()
   {
-    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>());
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<WatchToGrpc>(),
+                                                useSingleNodeReplicaSet: true);
 
     var resultTable = helper.GetRequiredService<IResultTable>();
 
