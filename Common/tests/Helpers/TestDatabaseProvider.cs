@@ -56,12 +56,13 @@ public class TestDatabaseProvider : IDisposable
                               Action<IApplicationBuilder>?   applicationBuilderConfigurator   = null,
                               Action<IEndpointRouteBuilder>? endpointRouteBuilderConfigurator = null,
                               bool                           logMongoRequests                 = false,
-                              bool                           validateGrpcRequests             = false)
+                              bool                           validateGrpcRequests             = false,
+                              bool                           useSingleNodeReplicaSet          = false)
   {
     var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
                   {
-                    UseSingleNodeReplicaSet = false,
+                    UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
 #pragma warning disable CA2254 // log inputs should be constant
                     StandardOuputLogger = line => logger.LogInformation(line),
                     StandardErrorLogger = line => logger.LogError(line),
