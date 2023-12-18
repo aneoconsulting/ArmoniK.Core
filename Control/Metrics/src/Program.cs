@@ -26,6 +26,8 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Control.Metrics.Options;
+using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -63,6 +65,7 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
+             .AddSingleton(builder.Configuration.GetInitializedValue<MetricsExporter>(MetricsExporter.SettingSection))
              .AddHostedService<ArmoniKMeter>()
              .AddControllers();
 
@@ -105,13 +108,16 @@ public static class Program
                          endpoints.MapControllers();
                        });
 
-      var sessionProvider        = app.Services.GetRequiredService<SessionProvider>();
-      var taskCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
+      var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
+      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
 
       await sessionProvider.Init(CancellationToken.None)
                            .ConfigureAwait(false);
       await taskCollectionProvider.Init(CancellationToken.None)
                                   .ConfigureAwait(false);
+      await partitionCollectionProvider.Init(CancellationToken.None)
+                                       .ConfigureAwait(false);
       await app.RunAsync()
                .ConfigureAwait(false);
 

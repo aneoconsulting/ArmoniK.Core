@@ -162,6 +162,10 @@ public interface ITaskTable : IInitializable
   /// <returns>
   ///   Collection of task metadata matching the request and total number of results without paging
   /// </returns>
+  /// <remarks>
+  ///   If <paramref name="pageSize" /> is 0, this function can be used to count the number of tasks
+  ///   satisfying the condition specified by <paramref name="filter" />
+  /// </remarks>
   Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                   Expression<Func<TaskData, object?>> orderField,
                                                                   Expression<Func<TaskData, T>>       selector,

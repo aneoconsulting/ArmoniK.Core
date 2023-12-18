@@ -77,4 +77,9 @@ public class SimplePartitionTable : IPartitionTable
                         {
                           PartitionData,
                         }.AsEnumerable(), 1));
+
+  public IAsyncEnumerable<T> FindPartitionsAsync<T>(Expression<Func<PartitionData, bool>> filter,
+                                                    Expression<Func<PartitionData, T>>    selector,
+                                                    CancellationToken                     cancellationToken = default)
+    => AsyncEnumerable.Empty<T>();
 }

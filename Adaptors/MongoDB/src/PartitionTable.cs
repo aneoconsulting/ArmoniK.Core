@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -176,18 +177,53 @@ public class PartitionTable : IPartitionTable
     var       sessionHandle       = sessionProvider_.Get();
     var       partitionCollection = partitionCollectionProvider_.Get();
 
-    var queryable = partitionCollection.AsQueryable(sessionHandle)
-                                       .Where(filter);
+    var partitionList = Task.FromResult(new List<PartitionData>());
+    if (pageSize > 0)
+    {
+      var findFluent1 = partitionCollection.Find(sessionHandle,
+                                                 filter);
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
+      var ordered = ascOrder
+                      ? findFluent1.SortBy(orderField)
+                      : findFluent1.SortByDescending(orderField);
 
-    var partitionResult = ordered.Skip(page * pageSize)
-                                 .Take(pageSize)
-                                 .ToListAsync(cancellationToken);
+      partitionList = ordered.Skip(page * pageSize)
+                             .Limit(pageSize)
+                             .ToListAsync(cancellationToken);
+    }
 
-    return (await partitionResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                                      .ConfigureAwait(false));
+    // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
+    var partitionCount = partitionCollection.CountDocumentsAsync(sessionHandle,
+                                                                 filter,
+                                                                 cancellationToken: cancellationToken);
+
+    return (await partitionList.ConfigureAwait(false), (int)await partitionCount.ConfigureAwait(false));
+  }
+
+  /// <summary>
+  ///   Find all partitions matching the given filter
+  /// </summary>
+  /// <param name="filter">Filter to select partitions</param>
+  /// <param name="selector">Expression to select part of the returned partition</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   List of partitions that match the filter
+  /// </returns>
+  public async IAsyncEnumerable<T> FindPartitionsAsync<T>(Expression<Func<PartitionData, bool>>      filter,
+                                                          Expression<Func<PartitionData, T>>         selector,
+                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    using var activity            = activitySource_.StartActivity($"{nameof(FindPartitionsAsync)}");
+    var       sessionHandle       = sessionProvider_.Get();
+    var       partitionCollection = partitionCollectionProvider_.Get();
+
+    await foreach (var partition in partitionCollection.Find(sessionHandle,
+                                                             filter)
+                                                       .Project(selector)
+                                                       .ToAsyncEnumerable(cancellationToken)
+                                                       .ConfigureAwait(false))
+    {
+      yield return partition;
+    }
   }
 }

@@ -219,6 +219,7 @@ variable "ingress" {
 variable "custom_env_vars" {
   type = map(string)
   default = {
+    MetricsExporter__Metrics = "completed,error,retried"
   }
 }
 

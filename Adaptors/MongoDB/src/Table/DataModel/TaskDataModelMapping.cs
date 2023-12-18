@@ -190,6 +190,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.EndDate),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationToEndDuration),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.ProcessingToEndDuration),
+                        IndexHelper.CreateCombinedIndex<TaskData>(model => model.Options.PartitionId,
+                                                                  model => model.Status),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

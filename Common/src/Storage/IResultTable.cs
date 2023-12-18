@@ -127,6 +127,10 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   Collection of results metadata that matched the filter and total number of results without paging
   /// </returns>
+  /// <remarks>
+  ///   If <paramref name="pageSize" /> is 0, this function can be used to count the number of results
+  ///   satisfying the condition specified by <paramref name="filter" />
+  /// </remarks>
   Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
                                                                        Expression<Func<Result, object?>> orderField,
                                                                        bool                              ascOrder,
