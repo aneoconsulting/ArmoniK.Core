@@ -193,10 +193,9 @@ public class PartitionTable : IPartitionTable
     }
 
     // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
-    var findFluent2 = partitionCollection.Find(sessionHandle,
-                                               filter);
-
-    var partitionCount = findFluent2.CountDocumentsAsync(cancellationToken);
+    var partitionCount = partitionCollection.CountDocumentsAsync(sessionHandle,
+                                                                 filter,
+                                                                 cancellationToken: cancellationToken);
 
     return (await partitionList.ConfigureAwait(false), (int)await partitionCount.ConfigureAwait(false));
   }

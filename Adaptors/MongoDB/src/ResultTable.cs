@@ -161,10 +161,9 @@ public class ResultTable : IResultTable
     }
 
     // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
-    var findFluent2 = resultCollection.Find(sessionHandle,
-                                            filter);
-
-    var resultCount = findFluent2.CountDocumentsAsync(cancellationToken);
+    var resultCount = resultCollection.CountDocumentsAsync(sessionHandle,
+                                                           filter,
+                                                           cancellationToken: cancellationToken);
 
     return (await resultList.ConfigureAwait(false), (int)await resultCount.ConfigureAwait(false));
   }

@@ -116,6 +116,24 @@ public class IndexHelper
            });
 
   /// <summary>
+  ///   Creates a combined index model from expression
+  /// </summary>
+  /// <typeparam name="T">Type stored in database</typeparam>
+  /// <param name="first">Expression to select the field for the first index</param>
+  /// <param name="second">Expression to select the field for the second index</param>
+  /// <returns>
+  ///   The combined index model
+  /// </returns>
+  public static CreateIndexModel<T> CreateCombinedIndex<T>(Expression<Func<T, object?>> first,
+                                                           Expression<Func<T, object?>> second)
+    => new(Builders<T>.IndexKeys.Combine(Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(first)),
+                                         Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(second))),
+           new CreateIndexOptions
+           {
+             Name = $"{first.GetMember().Name}_1_{second.GetMember().Name}_1",
+           });
+
+  /// <summary>
   ///   Creates a combined index model (hashed + ascending) from expression
   /// </summary>
   /// <typeparam name="T">Type stored in database</typeparam>
@@ -124,8 +142,8 @@ public class IndexHelper
   /// <returns>
   ///   The combined index model
   /// </returns>
-  public static CreateIndexModel<T> CreateCombinedIndex<T>(Expression<Func<T, object?>> hashed,
-                                                           Expression<Func<T, object?>> ascending)
+  public static CreateIndexModel<T> CreateHashedCombinedIndex<T>(Expression<Func<T, object?>> hashed,
+                                                                 Expression<Func<T, object?>> ascending)
     => new(Builders<T>.IndexKeys.Combine(Builders<T>.IndexKeys.Hashed(new ExpressionFieldDefinition<T>(hashed)),
                                          Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(ascending))),
            new CreateIndexOptions

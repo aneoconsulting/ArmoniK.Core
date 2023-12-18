@@ -181,10 +181,9 @@ public class SessionTable : ISessionTable
     }
 
     // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
-    var findFluent2 = sessionCollection.Find(sessionHandle,
-                                             filter);
-
-    var sessionCount = findFluent2.CountDocumentsAsync(cancellationToken);
+    var sessionCount = sessionCollection.CountDocumentsAsync(sessionHandle,
+                                                             filter,
+                                                             cancellationToken: cancellationToken);
 
     return (await sessionList.ConfigureAwait(false), await sessionCount.ConfigureAwait(false));
   }

@@ -270,10 +270,9 @@ public class TaskTable : ITaskTable
     }
 
     // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
-    var findFluent2 = taskCollection.Find(sessionHandle,
-                                          filter);
-
-    var taskCount = findFluent2.CountDocumentsAsync(cancellationToken);
+    var taskCount = taskCollection.CountDocumentsAsync(sessionHandle,
+                                                       filter,
+                                                       cancellationToken: cancellationToken);
 
     return (await taskList.ConfigureAwait(false), await taskCount.ConfigureAwait(false));
   }

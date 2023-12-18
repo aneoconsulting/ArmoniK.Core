@@ -214,6 +214,8 @@ internal class IndexTest
                                                                   model => model.SessionId),
                         IndexHelper.CreateCombinedIndex<TaskData>(model => model.TaskId,
                                                                   model => model.Status),
+                        IndexHelper.CreateHashedCombinedIndex<TaskData>(model => model.TaskId,
+                                                                        model => model.Status),
                       };
 
     collection.Indexes.CreateMany(indexModels);
