@@ -199,6 +199,8 @@ public static class Program
          .EnableGrpcWeb();
       app.MapGrpcService<GrpcVersionsService>()
          .EnableGrpcWeb();
+      app.MapGrpcService<GrpcHealthChecksService>()
+         .EnableGrpcWeb();
 
       app.UseHealthChecks("/startup",
                           1081,
