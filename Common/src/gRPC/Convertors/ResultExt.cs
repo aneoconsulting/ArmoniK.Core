@@ -40,5 +40,6 @@ public static class ResultExt
          Name        = result.Name,
          OwnerTaskId = result.OwnerTaskId,
          ResultId    = result.ResultId,
+         Size        = result.Size,
        };
 }
