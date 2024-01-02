@@ -676,6 +676,11 @@ public sealed class TaskHandler : IAsyncDisposable
         await agent_.FinalizeTaskCreation(CancellationToken.None)
                     .ConfigureAwait(false);
       }
+      else
+      {
+        await agent_.CancelChildTasks(CancellationToken.None)
+                    .ConfigureAwait(false);
+      }
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          false,
@@ -731,6 +736,11 @@ public sealed class TaskHandler : IAsyncDisposable
                                               bool              requeueIfUnavailable,
                                               CancellationToken cancellationToken)
   {
+    if (agent_ is null)
+    {
+      throw new NullReferenceException(nameof(agent_) + " is null.");
+    }
+
     if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
@@ -777,6 +787,9 @@ public sealed class TaskHandler : IAsyncDisposable
                                    ? QueueMessageStatus.Cancelled
                                    : QueueMessageStatus.Processed;
       }
+
+      await agent_.CancelChildTasks(CancellationToken.None)
+                  .ConfigureAwait(false);
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop

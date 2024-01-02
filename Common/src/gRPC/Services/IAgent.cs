@@ -126,4 +126,13 @@ public interface IAgent : IDisposable
   /// </returns>
   Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
                                                   CancellationToken       cancellationToken);
+
+  /// <summary>
+  ///   Cancel child tasks created by the current task in processing
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task CancelChildTasks(CancellationToken cancellationToken);
 }
