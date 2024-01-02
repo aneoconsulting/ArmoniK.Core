@@ -618,4 +618,19 @@ public sealed class Agent : IAgent
 
     throw new NotImplementedException("Direct data are not implemented yet");
   }
+
+  /// <inheritdoc />
+  public async Task CancelChildTasks(CancellationToken cancellationToken)
+  {
+    if (createdTasks_.Any())
+    {
+      await taskTable_.CancelTaskAsync(createdTasks_.Select(request => request.TaskId)
+                                                    .AsICollection(),
+                                       cancellationToken)
+                      .ConfigureAwait(false);
+    }
+
+    logger_.LogDebug("Cancel {n} child tasks created by this task",
+                     createdTasks_.Count);
+  }
 }

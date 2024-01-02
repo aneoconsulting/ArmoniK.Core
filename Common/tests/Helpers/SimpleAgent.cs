@@ -64,6 +64,9 @@ public class SimpleAgent : IAgent
                                                          CancellationToken       cancellationToken)
     => Task.FromResult(new NotifyResultDataResponse());
 
+  public Task CancelChildTasks(CancellationToken cancellationToken)
+    => Task.CompletedTask;
+
   public void Dispose()
     => GC.SuppressFinalize(this);
 }
