@@ -36,7 +36,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Control.PartitionMetrics;
 
-public class ArmoniKMeter : Meter, IHostedService
+public class ArmoniKMeter : Meter, IHostedService, IDisposable
 {
   private readonly HttpClient                                     client_;
   private readonly IDictionary<string, ObservableGauge<long>>     gauges_;
@@ -67,6 +67,12 @@ public class ArmoniKMeter : Meter, IHostedService
 
     metricsExporterUri_ = $"{optionsMetricsExporter.Host}:{optionsMetricsExporter.Port}{optionsMetricsExporter.Path}";
     AddGauge("");
+  }
+
+  public void Dispose()
+  {
+    client_.Dispose();
+    measurements_.Dispose();
   }
 
   public async Task StartAsync(CancellationToken cancellationToken)
