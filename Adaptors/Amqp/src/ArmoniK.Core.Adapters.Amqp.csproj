@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Company>ANEO</Company>
     <Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <PackageReference Include="AMQPNetLite.Core" Version="2.4.6" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
