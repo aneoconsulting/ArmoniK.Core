@@ -525,33 +525,6 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task IsTaskCanceledShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var result = await TaskTable!.IsTaskCancelledAsync("TaskCreatingId",
-                                                         CancellationToken.None)
-                                   .ConfigureAwait(false);
-
-      Assert.IsFalse(result);
-    }
-  }
-
-  [Test]
-  public void IsTaskCanceledShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.IsTaskCancelledAsync("TaskDoesNotExist",
-                                                                                        CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
-    }
-  }
-
-  [Test]
   public async Task CancelSessionAsyncShouldSucceed()
   {
     if (RunTests)

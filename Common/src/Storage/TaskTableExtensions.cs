@@ -328,24 +328,6 @@ public static class TaskTableExtensions
                                data => data.Output,
                                cancellationToken);
 
-
-  /// <summary>
-  ///   Query a task status to check for cancellation
-  /// </summary>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="taskId">Id of the task to check</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Boolean representing the cancellation status of the task
-  /// </returns>
-  public static Task<bool> IsTaskCancelledAsync(this ITaskTable   taskTable,
-                                                string            taskId,
-                                                CancellationToken cancellationToken = default)
-    => taskTable.ReadTaskAsync(taskId,
-                               data => data.Status == TaskStatus.Cancelled,
-                               cancellationToken);
-
-
   /// <summary>
   ///   Get reply status metadata of a task given its id
   /// </summary>
