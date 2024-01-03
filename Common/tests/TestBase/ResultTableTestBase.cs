@@ -181,8 +181,7 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      await ResultTable!.ChangeResultOwnership("SessionId",
-                                               "OwnerId",
+      await ResultTable!.ChangeResultOwnership("OwnerId",
                                                new IResultTable.ChangeResultOwnershipRequest[]
                                                {
                                                  new(new[]
@@ -193,8 +192,7 @@ public class ResultTableTestBase
                                                },
                                                CancellationToken.None)
                         .ConfigureAwait(false);
-      var result = await ResultTable.GetResult("SessionId",
-                                               "ResultIsAvailable",
+      var result = await ResultTable.GetResult("ResultIsAvailable",
                                                CancellationToken.None)
                                     .ConfigureAwait(false);
       Assert.IsTrue(result.OwnerTaskId == "NewOwnerId");
@@ -226,8 +224,7 @@ public class ResultTableTestBase
                               })
                       .ConfigureAwait(false);
 
-    var result = await ResultTable.GetResult("AnotherSessionId",
-                                             "Key",
+    var result = await ResultTable.GetResult("Key",
                                              CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -287,15 +284,13 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      await ResultTable!.DeleteResult("SessionId",
-                                      "ResultIsAvailable",
+      await ResultTable!.DeleteResult("ResultIsAvailable",
                                       CancellationToken.None)
                         .ConfigureAwait(false);
 
       Assert.ThrowsAsync<ResultNotFoundException>(async () =>
                                                   {
-                                                    await ResultTable.GetResult("SessionId",
-                                                                                "ResultIsAvailable",
+                                                    await ResultTable.GetResult("ResultIsAvailable",
                                                                                 CancellationToken.None)
                                                                      .ConfigureAwait(false);
                                                   });
@@ -309,8 +304,7 @@ public class ResultTableTestBase
     {
       Assert.ThrowsAsync<ResultNotFoundException>(async () =>
                                                   {
-                                                    await ResultTable!.DeleteResult("SessionId",
-                                                                                    "unknown",
+                                                    await ResultTable!.DeleteResult("unknown",
                                                                                     CancellationToken.None)
                                                                       .ConfigureAwait(false);
                                                   });
@@ -329,8 +323,7 @@ public class ResultTableTestBase
                                    CancellationToken.None)
                         .ConfigureAwait(false);
 
-      var result = await ResultTable!.GetResult("SessionId",
-                                                "ResultIsNotAvailable",
+      var result = await ResultTable!.GetResult("ResultIsNotAvailable",
                                                 CancellationToken.None)
                                      .ConfigureAwait(false);
 
@@ -357,8 +350,7 @@ public class ResultTableTestBase
                                    smallPayload,
                                    CancellationToken.None)
                         .ConfigureAwait(false);
-      var result = await ResultTable!.GetResult("SessionId",
-                                                "ResultIsNotAvailable",
+      var result = await ResultTable!.GetResult("ResultIsNotAvailable",
                                                 CancellationToken.None)
                                      .ConfigureAwait(false);
 
@@ -431,8 +423,7 @@ public class ResultTableTestBase
       List<Result> results = new(n);
       foreach (var id in ids)
       {
-        results.Add(await ResultTable.GetResult("SessionId",
-                                                id)
+        results.Add(await ResultTable.GetResult(id)
                                      .ConfigureAwait(false));
       }
 
@@ -670,8 +661,7 @@ public class ResultTableTestBase
                         .ConfigureAwait(false);
 
 
-      await ResultTable.AddTaskDependencies(sessionId,
-                                            new Dictionary<string, ICollection<string>>
+      await ResultTable.AddTaskDependencies(new Dictionary<string, ICollection<string>>
                                             {
                                               {
                                                 resultId, new[]
@@ -701,8 +691,7 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.AddTaskDependencies("SessionId",
-                                                                                                     new Dictionary<string, ICollection<string>>
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.AddTaskDependencies(new Dictionary<string, ICollection<string>>
                                                                                                      {
                                                                                                        {
                                                                                                          "resultDoesNotExist", new[]
@@ -721,30 +710,26 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      await ResultTable!.SetTaskOwnership("SessionId",
-                                          new[]
+      await ResultTable!.SetTaskOwnership(new[]
                                           {
                                             ("ResultIsCreated2", "NewTaskId"),
                                           })
                         .ConfigureAwait(false);
 
-      var res = await ResultTable.GetResult("SessionId",
-                                            "ResultIsCreated2")
+      var res = await ResultTable.GetResult("ResultIsCreated2")
                                  .ConfigureAwait(false);
 
       Assert.AreEqual("NewTaskId",
                       res.OwnerTaskId);
 
       // Overriding an existing result should succeed
-      await ResultTable!.SetTaskOwnership("SessionId",
-                                          new[]
+      await ResultTable!.SetTaskOwnership(new[]
                                           {
                                             ("ResultIsCreated2", "NewTaskId2"),
                                           })
                         .ConfigureAwait(false);
 
-      res = await ResultTable.GetResult("SessionId",
-                                        "ResultIsCreated2")
+      res = await ResultTable.GetResult("ResultIsCreated2")
                              .ConfigureAwait(false);
 
       Assert.AreEqual("NewTaskId2",
@@ -757,8 +742,7 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.SetTaskOwnership("SessionId",
-                                                                                                  new[]
+      Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.SetTaskOwnership(new[]
                                                                                                   {
                                                                                                     ("ResultDoesNotExist", "NewTaskId"),
                                                                                                   })
@@ -799,8 +783,7 @@ public class ResultTableTestBase
       Assert.AreEqual(ResultStatus.Completed,
                       result.Status);
 
-      result = await ResultTable.GetResult(sessionId,
-                                           resultId,
+      result = await ResultTable.GetResult(resultId,
                                            CancellationToken.None)
                                 .ConfigureAwait(false);
 

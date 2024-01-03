@@ -173,8 +173,7 @@ public static class TaskLifeCycleHelper
       }
     }
 
-    await resultTable.SetTaskOwnership(sessionId,
-                                       dict.Where(pair => pair.Value != "")
+    await resultTable.SetTaskOwnership(dict.Where(pair => pair.Value != "")
                                            .Select(pair => (pair.Key, pair.Value))
                                            .AsICollection(),
                                        cancellationToken)
@@ -225,8 +224,7 @@ public static class TaskLifeCycleHelper
       var taskDataModels =
         taskRequests.Select(request => new IResultTable.ChangeResultOwnershipRequest(request.ExpectedOutputKeys.Where(id => parentExpectedOutputKeys.Contains(id)),
                                                                                      request.TaskId));
-      await resultTable.ChangeResultOwnership(sessionId,
-                                              parentTaskId,
+      await resultTable.ChangeResultOwnership(parentTaskId,
                                               taskDataModels,
                                               cancellationToken)
                        .ConfigureAwait(false);
@@ -319,8 +317,7 @@ public static class TaskLifeCycleHelper
     }
 
     // Add dependency to all results
-    await resultTable.AddTaskDependencies(sessionId,
-                                          resultDependencies,
+    await resultTable.AddTaskDependencies(resultDependencies,
                                           cancellationToken)
                      .ConfigureAwait(false);
 
