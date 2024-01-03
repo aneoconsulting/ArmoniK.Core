@@ -76,6 +76,9 @@ public class ResultTable : IResultTable
                                               },
                                               cancellationToken)
                               .ConfigureAwait(false);
+
+        Logger.LogDebug("Created {results}",
+                        results);
       }
     }
     catch (Exception e)
