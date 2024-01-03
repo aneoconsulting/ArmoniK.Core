@@ -90,9 +90,6 @@ public class SimpleTaskTable : ITaskTable
                                                     new Output(true,
                                                                ""))));
 
-  public Task<bool> IsTaskCancelledAsync(string            taskId,
-                                         CancellationToken cancellationToken = default)
-    => Task.FromResult(false);
 
   public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
@@ -219,11 +216,6 @@ public class SimpleTaskTable : ITaskTable
                                                    CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<Output> GetTaskOutput(string            taskId,
-                                    CancellationToken cancellationToken = default)
-    => Task.FromResult(new Output(true,
-                                  ""));
-
   public Task<TaskData> AcquireTask(TaskData          taskData,
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(new TaskData(SessionId,
@@ -262,29 +254,8 @@ public class SimpleTaskTable : ITaskTable
                                     new Output(true,
                                                "")));
 
-  public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
-                                                                                                              CancellationToken   cancellationToken = default)
-    => new List<(string taskId, IEnumerable<string> expectedOutputKeys)>
-       {
-         (TaskId, new List<string>()),
-       }.ToAsyncEnumerable();
-
-  public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                    CancellationToken cancellationToken = default)
-    => Task.FromResult<IEnumerable<string>>(new List<string>
-                                            {
-                                              TaskId,
-                                            });
 
   public Task<string> RetryTask(TaskData          taskData,
                                 CancellationToken cancellationToken = default)
     => Task.FromResult(TaskId);
-
-  public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                       CancellationToken   cancellationToken = default)
-    => Task.FromResult<IEnumerable<TaskIdStatus>>(new List<TaskIdStatus>
-                                                  {
-                                                    new("",
-                                                        TaskStatus.Unspecified),
-                                                  });
 }

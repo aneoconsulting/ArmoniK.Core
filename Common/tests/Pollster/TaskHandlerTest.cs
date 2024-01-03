@@ -613,10 +613,6 @@ public class TaskHandlerTest
                                                      "")));
     }
 
-    public Task<bool> IsTaskCancelledAsync(string            taskId,
-                                           CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
@@ -706,10 +702,6 @@ public class TaskHandlerTest
                                                      CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
 
-    public Task<Output> GetTaskOutput(string            taskId,
-                                      CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public async Task<TaskData> AcquireTask(TaskData          taskData,
                                             CancellationToken cancellationToken = default)
     {
@@ -793,26 +785,10 @@ public class TaskHandlerTest
                                       new Output(false,
                                                  "")));
 
-    public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
-                                                                                                                CancellationToken   cancellationToken = default)
-      => taskIds.Select(s => (s, new[]
-                                 {
-                                   "",
-                                 }.AsEnumerable()))
-                .ToAsyncEnumerable();
-
-    public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                      CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
     public Task<string> RetryTask(TaskData          taskData,
                                   CancellationToken cancellationToken)
       => Task.FromResult(Guid.NewGuid()
                              .ToString());
-
-    public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskId,
-                                                         CancellationToken   cancellationToken = default)
-      => throw new NotImplementedException();
   }
 
   public class WaitSessionTable : ISessionTable
@@ -1106,12 +1082,9 @@ public class TaskHandlerTest
     Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
                                                                  .ConfigureAwait(false));
 
-    return ((await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                               {
-                                                                 taskId,
-                                                               })
-                                      .ConfigureAwait(false)).Single()
-                                                             .Status, sqmh.Status);
+    return (await testServiceProvider.TaskTable.GetTaskStatus(taskId,
+                                                              CancellationToken.None)
+                                     .ConfigureAwait(false), sqmh.Status);
   }
 
   [Test]
@@ -1426,12 +1399,8 @@ public class TaskHandlerTest
                              .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskId,
-                                                                       })
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                             .ConfigureAwait(false));
   }
 
   [Test]
@@ -1496,12 +1465,8 @@ public class TaskHandlerTest
     Assert.ThrowsAsync<TaskCanceledException>(() => exec);
 
     Assert.AreEqual(TaskStatus.Cancelling,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskId,
-                                                                       })
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                             .ConfigureAwait(false));
 
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);

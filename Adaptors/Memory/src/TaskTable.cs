@@ -91,19 +91,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<bool> IsTaskCancelledAsync(string            taskId,
-                                         CancellationToken cancellationToken = default)
-  {
-    if (!taskId2TaskData_.TryGetValue(taskId,
-                                      out var value))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    return Task.FromResult(value.Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
-  }
-
-  /// <inheritdoc />
   public Task StartTask(TaskData          taskData,
                         CancellationToken cancellationToken = default)
   {
@@ -126,6 +113,11 @@ public class TaskTable : ITaskTable
                                  });
     return Task.CompletedTask;
   }
+
+  /// <inheritdoc />
+  public Task<int> CountAllTasksAsync(TaskStatus        status,
+                                      CancellationToken cancellationToken = default)
+    => Task.FromResult(taskId2TaskData_.Count(pair => pair.Value.Status == status));
 
   /// <inheritdoc />
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
@@ -334,25 +326,6 @@ public class TaskTable : ITaskTable
                                                              };
                                                     }));
 
-  public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
-                                                                                                              CancellationToken   cancellationToken = default)
-    => taskId2TaskData_.Where(pair => taskIds.Contains(pair.Key))
-                       .Select(pair => (pair.Key, pair.Value.ExpectedOutputIds as IEnumerable<string>))
-                       .ToAsyncEnumerable();
-
-  /// <inheritdoc />
-  public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                    CancellationToken cancellationToken = default)
-  {
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .ParentTaskIds as IEnumerable<string>);
-  }
-
   /// <inheritdoc />
   public Task<string> RetryTask(TaskData          taskData,
                                 CancellationToken cancellationToken = default)
@@ -416,29 +389,4 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
-
-  /// <inheritdoc />
-  public Task<int> CountAllTasksAsync(TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.Count(pair => pair.Value.Status == status));
-
-  /// <inheritdoc />
-  public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                       CancellationToken   cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.Where(tdm => taskIds.Contains(tdm.Key))
-                                       .Select(model => new TaskIdStatus(model.Value.TaskId,
-                                                                         model.Value.Status)));
-
-  /// <inheritdoc />
-  public Task<Output> GetTaskOutput(string            taskId,
-                                    CancellationToken cancellationToken = default)
-  {
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Output);
-  }
 }

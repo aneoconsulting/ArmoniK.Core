@@ -735,16 +735,12 @@ public class SubmitterTests
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    var result = await taskTable_!.GetTaskStatus(new[]
-                                                 {
-                                                   taskSubmitted,
-                                                 },
+    var result = await taskTable_!.GetTaskStatus(taskSubmitted,
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Submitted,
-                    result.Single()
-                          .Status);
+                    result);
   }
 
   [Test]

@@ -471,13 +471,9 @@ public class PollsterTest
     Assert.True(source.Token.IsCancellationRequested);
 
     Assert.AreEqual(TaskStatus.Completed,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskSubmitted,
-                                                                       },
-                                                                       CancellationToken.None)
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                      CancellationToken.None)
+                                             .ConfigureAwait(false));
   }
 
   [Test]
@@ -536,13 +532,9 @@ public class PollsterTest
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.That((await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                   {
-                                                                     taskSubmitted,
-                                                                   },
-                                                                   CancellationToken.None)
-                                          .ConfigureAwait(false)).Single()
-                                                                 .Status,
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                  CancellationToken.None)
+                                         .ConfigureAwait(false),
                 Is.AnyOf(TaskStatus.Cancelled,
                          TaskStatus.Cancelling));
 
@@ -669,13 +661,9 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
 
     Assert.AreEqual(TaskStatus.Submitted,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         taskSubmitted,
-                                                                       },
-                                                                       CancellationToken.None)
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                      CancellationToken.None)
+                                             .ConfigureAwait(false));
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
   }
