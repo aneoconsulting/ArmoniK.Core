@@ -436,8 +436,7 @@ public class AgentTest
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
-    var resultData = await holder.ResultTable.GetResult(holder.Session,
-                                                        ExpectedOutput1,
+    var resultData = await holder.ResultTable.GetResult(ExpectedOutput1,
                                                         CancellationToken.None)
                                  .ConfigureAwait(false);
 
@@ -780,8 +779,7 @@ public class AgentTest
     {
       Console.WriteLine(result);
 
-      var resultMetadata = await holder.ResultTable.GetResult(holder.Session,
-                                                              result.ResultId,
+      var resultMetadata = await holder.ResultTable.GetResult(result.ResultId,
                                                               CancellationToken.None)
                                        .ConfigureAwait(false);
 
@@ -806,8 +804,7 @@ public class AgentTest
     {
       Console.WriteLine(result);
 
-      var resultMetadata = await holder.ResultTable.GetResult(holder.Session,
-                                                              result.ResultId,
+      var resultMetadata = await holder.ResultTable.GetResult(result.ResultId,
                                                               CancellationToken.None)
                                        .ConfigureAwait(false);
 
@@ -1013,8 +1010,7 @@ public class AgentTest
                            .ExpectedOutputIds);
     }
 
-    var uploadedResultData = await holder.ResultTable.GetResult(holder.Session,
-                                                                eok.Results.Last()
+    var uploadedResultData = await holder.ResultTable.GetResult(eok.Results.Last()
                                                                    .ResultId)
                                          .ConfigureAwait(false);
 
@@ -1032,8 +1028,7 @@ public class AgentTest
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
-    uploadedResultData = await holder.ResultTable.GetResult(holder.Session,
-                                                            eok.Results.Last()
+    uploadedResultData = await holder.ResultTable.GetResult(eok.Results.Last()
                                                                .ResultId)
                                      .ConfigureAwait(false);
 

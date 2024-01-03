@@ -45,7 +45,7 @@ public static class ResultTableExtensions
                                             string            ownerTaskId,
                                             CancellationToken cancellationToken = default)
   {
-    await resultTable.UpdateManyResults(result => result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+    await resultTable.UpdateManyResults(result => result.OwnerTaskId == ownerTaskId,
                                         new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                         {
                                           (data => data.Status, ResultStatus.Aborted),
@@ -75,8 +75,7 @@ public static class ResultTableExtensions
                                                   long              size,
                                                   CancellationToken cancellationToken = default)
   {
-    var result = await resultTable.UpdateOneResult(sessionId,
-                                                   resultId,
+    var result = await resultTable.UpdateOneResult(resultId,
                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                                    {
                                                      (data => data.Status, ResultStatus.Completed),
@@ -115,7 +114,7 @@ public static class ResultTableExtensions
                                      byte[]            smallPayload,
                                      CancellationToken cancellationToken = default)
   {
-    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
                                                     new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                                     {
                                                       (result => result.Status, ResultStatus.Completed),
@@ -155,7 +154,7 @@ public static class ResultTableExtensions
                                      long              size,
                                      CancellationToken cancellationToken = default)
   {
-    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
                                                     new (Expression<Func<Result, object?>> selector, object? newValue)[]
                                                     {
                                                       (result => result.Status, ResultStatus.Completed),

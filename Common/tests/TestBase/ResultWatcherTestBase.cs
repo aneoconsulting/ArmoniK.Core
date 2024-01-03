@@ -267,8 +267,7 @@ public class ResultWatcherTestBase
                                        CancellationToken.None)
                      .ConfigureAwait(false);
 
-    await resultTable.ChangeResultOwnership("SessionId",
-                                            "OwnerId2",
+    await resultTable.ChangeResultOwnership("OwnerId2",
                                             new[]
                                             {
                                               new IResultTable.ChangeResultOwnershipRequest(new List<string>

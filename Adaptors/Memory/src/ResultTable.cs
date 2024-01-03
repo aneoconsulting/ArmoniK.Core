@@ -41,29 +41,6 @@ public class ResultTable : IResultTable
   private bool isInitialized_;
 
   /// <inheritdoc />
-  public Task ChangeResultOwnership(string                                                 sessionId,
-                                    string                                                 oldTaskId,
-                                    IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
-                                    CancellationToken                                      cancellationToken)
-  {
-    foreach (var request in requests)
-    {
-      foreach (var result in results_.Values.ToImmutableList()
-                                     .Where(result => result.OwnerTaskId == oldTaskId))
-      {
-        results_.TryUpdate(result.ResultId,
-                           result with
-                           {
-                             OwnerTaskId = request.NewTaskId,
-                           },
-                           result);
-      }
-    }
-
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
   public Task Create(ICollection<Result> results,
                      CancellationToken   cancellationToken = default)
   {
@@ -77,39 +54,6 @@ public class ResultTable : IResultTable
     }
 
     return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task AddTaskDependencies(string                                   sessionId,
-                                  IDictionary<string, ICollection<string>> dependencies,
-                                  CancellationToken                        cancellationToken = default)
-  {
-    foreach (var (resultId, taskIds) in dependencies)
-    {
-      if (!results_.TryGetValue(resultId,
-                                out var result))
-      {
-        throw new ResultNotFoundException($"Key '{resultId}' not found");
-      }
-
-      result.DependentTasks.AddRange(taskIds);
-    }
-
-    return Task.CompletedTask;
-  }
-
-  /// <inheritdoc />
-  public Task DeleteResult(string            session,
-                           string            key,
-                           CancellationToken cancellationToken = default)
-  {
-    if (!results_.ContainsKey(key))
-    {
-      throw new ResultNotFoundException($"Key '{key}' not found");
-    }
-
-    return Task.FromResult(results_.Remove(key,
-                                           out _));
   }
 
   /// <inheritdoc />
@@ -155,8 +99,7 @@ public class ResultTable : IResultTable
                                                                                   .Take(pageSize), ordered.Count()));
   }
 
-  public Task SetTaskOwnership(string                                        sessionId,
-                               ICollection<(string resultId, string taskId)> requests,
+  public Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                CancellationToken                             cancellationToken = default)
   {
     foreach (var (resultId, taskId) in requests)
@@ -216,8 +159,7 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<Result> UpdateOneResult(string                                                                      sessionId,
-                                      string                                                                      resultId,
+  public Task<Result> UpdateOneResult(string                                                                      resultId,
                                       ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
                                       CancellationToken                                                           cancellationToken = default)
   {
@@ -230,5 +172,58 @@ public class ResultTable : IResultTable
     results_[resultId] = new Result(result,
                                     updates);
     return Task.FromResult(result);
+  }
+
+  /// <inheritdoc />
+  public Task ChangeResultOwnership(string                                                 oldTaskId,
+                                    IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
+                                    CancellationToken                                      cancellationToken)
+  {
+    foreach (var request in requests)
+    {
+      foreach (var result in results_.Values.ToImmutableList()
+                                     .Where(result => result.OwnerTaskId == oldTaskId))
+      {
+        results_.TryUpdate(result.ResultId,
+                           result with
+                           {
+                             OwnerTaskId = request.NewTaskId,
+                           },
+                           result);
+      }
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
+                                  CancellationToken                        cancellationToken = default)
+  {
+    foreach (var (resultId, taskIds) in dependencies)
+    {
+      if (!results_.TryGetValue(resultId,
+                                out var result))
+      {
+        throw new ResultNotFoundException($"Key '{resultId}' not found");
+      }
+
+      result.DependentTasks.AddRange(taskIds);
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task DeleteResult(string            key,
+                           CancellationToken cancellationToken = default)
+  {
+    if (!results_.ContainsKey(key))
+    {
+      throw new ResultNotFoundException($"Key '{key}' not found");
+    }
+
+    return Task.FromResult(results_.Remove(key,
+                                           out _));
   }
 }

@@ -42,15 +42,13 @@ public interface IResultTable : IInitializable
   /// <summary>
   ///   Change ownership (in batch) of the results in the given request
   /// </summary>
-  /// <param name="sessionId">Session id of the session using the results</param>
   /// <param name="oldTaskId">Task Id of the previous owner</param>
   /// <param name="requests">Change ownership requests that will be executed</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task ChangeResultOwnership(string                                    sessionId,
-                             string                                    oldTaskId,
+  Task ChangeResultOwnership(string                                    oldTaskId,
                              IEnumerable<ChangeResultOwnershipRequest> requests,
                              CancellationToken                         cancellationToken);
 
@@ -68,27 +66,23 @@ public interface IResultTable : IInitializable
   /// <summary>
   ///   Add the tasks Ids to the list of reverse dependencies of the given results
   /// </summary>
-  /// <param name="sessionId">Id of the session containing the result</param>
   /// <param name="dependencies">Dictionary of the dependant tasks for each result</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task AddTaskDependencies(string                                   sessionId,
-                           IDictionary<string, ICollection<string>> dependencies,
+  Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
                            CancellationToken                        cancellationToken = default);
 
   /// <summary>
   ///   Delete the results from the database
   /// </summary>
-  /// <param name="session">id of the session containing the result</param>
   /// <param name="key">id of the result to be deleted</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task DeleteResult(string            session,
-                    string            key,
+  Task DeleteResult(string            key,
                     CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -141,27 +135,23 @@ public interface IResultTable : IInitializable
   /// <summary>
   ///   Set Task that should produce the result
   /// </summary>
-  /// <param name="sessionId"></param>
   /// <param name="requests">Results to update with the associated task id</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task SetTaskOwnership(string                                        sessionId,
-                        ICollection<(string resultId, string taskId)> requests,
+  Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                         CancellationToken                             cancellationToken = default);
 
   /// <summary>
   ///   Get the result from its id
   /// </summary>
-  /// <param name="sessionId">id of the session containing the result</param>
   /// <param name="key">id of the result to be retrieved</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Result metadata from the database
   /// </returns>
-  public async Task<Result> GetResult(string            sessionId,
-                                      string            key,
+  public async Task<Result> GetResult(string            key,
                                       CancellationToken cancellationToken = default)
   {
     try
@@ -182,15 +172,13 @@ public interface IResultTable : IInitializable
   /// <summary>
   ///   Update one result with the given new values
   /// </summary>
-  /// <param name="sessionId">Id of the session where the result to be updated is</param>
   /// <param name="resultId">Id of the result to be updated</param>
   /// <param name="updates">Collection of fields to update and their new value</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The result metadata before the update
   /// </returns>
-  Task<Result> UpdateOneResult(string                                                                      sessionId,
-                               string                                                                      resultId,
+  Task<Result> UpdateOneResult(string                                                                      resultId,
                                ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
                                CancellationToken                                                           cancellationToken = default);
 

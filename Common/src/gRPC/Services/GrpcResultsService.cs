@@ -343,8 +343,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<GetResultResponse> GetResult(GetResultRequest  request,
                                                           ServerCallContext context)
   {
-    var result = await resultTable_.GetResult("",
-                                              request.ResultId,
+    var result = await resultTable_.GetResult(request.ResultId,
                                               context.CancellationToken)
                                    .ConfigureAwait(false);
 

@@ -47,24 +47,8 @@ public class SimpleResultTable : IResultTable
 
   public ILogger Logger { get; } = new Logger<SimpleResultTable>(new LoggerFactory());
 
-  public Task ChangeResultOwnership(string                                                 sessionId,
-                                    string                                                 oldTaskId,
-                                    IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
-                                    CancellationToken                                      cancellationToken)
-    => Task.CompletedTask;
-
   public Task Create(ICollection<Result> results,
                      CancellationToken   cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task AddTaskDependencies(string                                   sessionId,
-                                  IDictionary<string, ICollection<string>> dependencies,
-                                  CancellationToken                        cancellationToken = default)
-    => Task.CompletedTask;
-
-  public Task DeleteResult(string            session,
-                           string            key,
-                           CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
   public Task DeleteResults(string            sessionId,
@@ -113,13 +97,11 @@ public class SimpleResultTable : IResultTable
                               }),
                         }.AsEnumerable(), 1));
 
-  public Task SetTaskOwnership(string                                        sessionId,
-                               ICollection<(string resultId, string taskId)> requests,
+  public Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                CancellationToken                             cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<Result> UpdateOneResult(string                                                                      sessionId,
-                                      string                                                                      resultId,
+  public Task<Result> UpdateOneResult(string                                                                      resultId,
                                       ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
                                       CancellationToken                                                           cancellationToken = default)
     => Task.FromResult(new Result(SessionId,
@@ -139,4 +121,17 @@ public class SimpleResultTable : IResultTable
                                       ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
                                       CancellationToken                                                           cancellationToken = default)
     => Task.FromResult(0L);
+
+  public Task ChangeResultOwnership(string                                                 oldTaskId,
+                                    IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
+                                    CancellationToken                                      cancellationToken)
+    => Task.CompletedTask;
+
+  public Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
+                                  CancellationToken                        cancellationToken = default)
+    => Task.CompletedTask;
+
+  public Task DeleteResult(string            key,
+                           CancellationToken cancellationToken = default)
+    => Task.CompletedTask;
 }

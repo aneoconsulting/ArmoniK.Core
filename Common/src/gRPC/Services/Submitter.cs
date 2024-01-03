@@ -155,8 +155,7 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
 
-    var result = await resultTable_.GetResult(request.Session,
-                                              request.ResultId,
+    var result = await resultTable_.GetResult(request.ResultId,
                                               cancellationToken)
                                    .ConfigureAwait(false);
 
@@ -353,8 +352,7 @@ public class Submitter : ISubmitter
     var currentPollingDelay = taskTable_.PollingDelayMin;
     while (true)
     {
-      var result = await resultTable_.GetResult(request.Session,
-                                                request.ResultId,
+      var result = await resultTable_.GetResult(request.ResultId,
                                                 contextCancellationToken)
                                      .ConfigureAwait(false);
 

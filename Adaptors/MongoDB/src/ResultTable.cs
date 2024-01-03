@@ -89,15 +89,11 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task AddTaskDependencies(string                                   sessionId,
-                                        IDictionary<string, ICollection<string>> dependencies,
+  public async Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
                                         CancellationToken                        cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(AddTaskDependencies)}");
-    activity?.SetTag($"{nameof(AddTaskDependencies)}_sessionId",
-                     sessionId);
-
-    var resultCollection = resultCollectionProvider_.Get();
+    using var activity         = activitySource_.StartActivity($"{nameof(AddTaskDependencies)}");
+    var       resultCollection = resultCollectionProvider_.Get();
 
     if (!dependencies.Any())
     {
@@ -122,15 +118,12 @@ public class ResultTable : IResultTable
     }
   }
 
-  async Task<Result> IResultTable.GetResult(string            sessionId,
-                                            string            resultId,
+  async Task<Result> IResultTable.GetResult(string            resultId,
                                             CancellationToken cancellationToken)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
-    activity?.SetTag($"{nameof(IResultTable.GetResult)}_sessionId",
-                     sessionId);
-    var sessionHandle    = sessionProvider_.Get();
-    var resultCollection = resultCollectionProvider_.Get();
+    using var activity         = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
+    var       sessionHandle    = sessionProvider_.Get();
+    var       resultCollection = resultCollectionProvider_.Get();
     try
     {
       return await resultCollection.AsQueryable(sessionHandle)
@@ -182,8 +175,7 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task SetTaskOwnership(string                                        sessionId,
-                                     ICollection<(string resultId, string taskId)> requests,
+  public async Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                      CancellationToken                             cancellationToken = default)
   {
     using var activity         = activitySource_.StartActivity($"{nameof(SetTaskOwnership)}");
@@ -208,16 +200,12 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task ChangeResultOwnership(string                                                 sessionId,
-                                          string                                                 oldTaskId,
+  public async Task ChangeResultOwnership(string                                                 oldTaskId,
                                           IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
                                           CancellationToken                                      cancellationToken)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
-    activity?.SetTag($"{nameof(ChangeResultOwnership)}_sessionId",
-                     sessionId);
-
-    var resultCollection = resultCollectionProvider_.Get();
+    using var activity         = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
+    var       resultCollection = resultCollectionProvider_.Get();
 
     await resultCollection.BulkWriteAsync(requests.Select(r =>
                                                           {
@@ -228,10 +216,7 @@ public class ResultTable : IResultTable
                                                                                                                            Builders<Result>.Filter
                                                                                                                                            .Eq(model
                                                                                                                                                  => model.OwnerTaskId,
-                                                                                                                                               oldTaskId),
-                                                                                                                           Builders<Result>.Filter
-                                                                                                                                           .Eq(model => model.SessionId,
-                                                                                                                                               sessionId)),
+                                                                                                                                               oldTaskId)),
                                                                                                Builders<Result>.Update.Set(model => model.OwnerTaskId,
                                                                                                                            r.NewTaskId));
                                                           }),
@@ -241,13 +226,10 @@ public class ResultTable : IResultTable
 
 
   /// <inheritdoc />
-  public async Task DeleteResult(string            session,
-                                 string            key,
+  public async Task DeleteResult(string            key,
                                  CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(DeleteResult)}");
-    activity?.SetTag($"{nameof(DeleteResult)}_sessionId",
-                     session);
     activity?.SetTag($"{nameof(DeleteResult)}_key",
                      key);
     var resultCollection = resultCollectionProvider_.Get();
@@ -296,14 +278,11 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<Result> UpdateOneResult(string                                                                      sessionId,
-                                            string                                                                      resultId,
+  public async Task<Result> UpdateOneResult(string                                                                      resultId,
                                             ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
                                             CancellationToken                                                           cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(UpdateOneResult)}");
-    activity?.SetTag($"{nameof(DeleteResult)}_sessionId",
-                     sessionId);
     activity?.SetTag($"{nameof(DeleteResult)}_resultId",
                      resultId);
     var resultCollection = resultCollectionProvider_.Get();
