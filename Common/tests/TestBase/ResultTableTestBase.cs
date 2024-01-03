@@ -387,7 +387,8 @@ public class ResultTableTestBase
                                                             new List<string>(),
                                                             DateTime.Today,
                                                             id.Length,
-                                                            Encoding.ASCII.GetBytes(id))))
+                                                            Encoding.ASCII.GetBytes(id)))
+                                   .AsICollection())
                         .ConfigureAwait(false);
       var results = await ResultTable!.GetResults("SessionId",
                                                   ids,
@@ -423,7 +424,8 @@ public class ResultTableTestBase
                                                             new List<string>(),
                                                             DateTime.Today,
                                                             id.Length,
-                                                            Encoding.ASCII.GetBytes(id))))
+                                                            Encoding.ASCII.GetBytes(id)))
+                                   .AsICollection())
                         .ConfigureAwait(false);
 
       List<Result> results = new(n);

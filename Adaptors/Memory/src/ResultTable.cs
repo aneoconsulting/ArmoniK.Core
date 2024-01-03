@@ -72,7 +72,7 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task Create(IEnumerable<Result> results,
+  public Task Create(ICollection<Result> results,
                      CancellationToken   cancellationToken = default)
   {
     foreach (var result in results)

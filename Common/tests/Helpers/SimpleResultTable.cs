@@ -53,7 +53,7 @@ public class SimpleResultTable : IResultTable
                                     CancellationToken                                      cancellationToken)
     => Task.CompletedTask;
 
-  public Task Create(IEnumerable<Result> results,
+  public Task Create(ICollection<Result> results,
                      CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 

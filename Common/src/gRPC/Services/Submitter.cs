@@ -482,7 +482,8 @@ public class Submitter : ISubmitter
                                                                 new List<string>(),
                                                                 DateTime.UtcNow,
                                                                 size,
-                                                                Array.Empty<byte>())),
+                                                                Array.Empty<byte>()))
+                                      .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);
 
