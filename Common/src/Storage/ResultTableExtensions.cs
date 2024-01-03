@@ -24,6 +24,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Exceptions;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Common.Storage;
 
 public static class ResultTableExtensions
@@ -38,16 +40,22 @@ public static class ResultTableExtensions
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public static Task AbortTaskResults(this IResultTable resultTable,
-                                      string            sessionId,
-                                      string            ownerTaskId,
-                                      CancellationToken cancellationToken = default)
-    => resultTable.UpdateManyResults(result => result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
-                                     new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                     {
-                                       (data => data.Status, ResultStatus.Aborted),
-                                     },
-                                     cancellationToken);
+  public static async Task AbortTaskResults(this IResultTable resultTable,
+                                            string            sessionId,
+                                            string            ownerTaskId,
+                                            CancellationToken cancellationToken = default)
+  {
+    await resultTable.UpdateManyResults(result => result.SessionId == sessionId && result.OwnerTaskId == ownerTaskId,
+                                        new (Expression<Func<Result, object?>> selector, object? newValue)[]
+                                        {
+                                          (data => data.Status, ResultStatus.Aborted),
+                                        },
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+
+    resultTable.Logger.LogDebug("Abort results from {owner}",
+                                ownerTaskId);
+  }
 
   /// <summary>
   ///   Complete result
@@ -76,6 +84,11 @@ public static class ResultTableExtensions
                                                    },
                                                    cancellationToken)
                                   .ConfigureAwait(false);
+
+    resultTable.Logger.LogDebug("Update {result} to {status}",
+                                resultId,
+                                ResultStatus.Completed);
+
     return result with
            {
              Status = ResultStatus.Completed,
@@ -112,6 +125,11 @@ public static class ResultTableExtensions
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 
+    resultTable.Logger.LogDebug("Update {result} from {owner} to {status}",
+                                resultId,
+                                ownerTaskId,
+                                ResultStatus.Completed);
+
     if (count == 0)
     {
       throw new ResultNotFoundException($"Result '{resultId}' was not found for '{ownerTaskId}'");
@@ -145,6 +163,11 @@ public static class ResultTableExtensions
                                                     },
                                                     cancellationToken)
                                  .ConfigureAwait(false);
+
+    resultTable.Logger.LogDebug("Update {result} from {owner} to {status}",
+                                resultId,
+                                ownerTaskId,
+                                ResultStatus.Completed);
 
     if (count == 0)
     {

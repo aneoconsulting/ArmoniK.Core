@@ -62,7 +62,7 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task Create(IEnumerable<Result> results,
+  Task Create(ICollection<Result> results,
               CancellationToken   cancellationToken = default);
 
   /// <summary>

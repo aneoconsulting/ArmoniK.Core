@@ -482,7 +482,8 @@ public class Submitter : ISubmitter
                                                                 new List<string>(),
                                                                 DateTime.UtcNow,
                                                                 size,
-                                                                Array.Empty<byte>())),
+                                                                Array.Empty<byte>()))
+                                      .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);
 
@@ -519,14 +520,15 @@ public class Submitter : ISubmitter
                                            cancellationToken)
                       .ConfigureAwait(false);
 
-      logger_.LogInformation("Remove input payload of {task}",
-                             taskData.TaskId);
 
       //Discard value is used to remove warnings CS4014 !!
       _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(taskData.TaskId,
                                                                                 CancellationToken.None)
                                                                 .ConfigureAwait(false),
                                 cancellationToken);
+
+      logger_.LogInformation("Remove input payload of {task}",
+                             taskData.TaskId);
     }
     else
     {

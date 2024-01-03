@@ -58,7 +58,7 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task Create(IEnumerable<Result> results,
+  public async Task Create(ICollection<Result> results,
                            CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(Create)}");
@@ -76,6 +76,9 @@ public class ResultTable : IResultTable
                                               },
                                               cancellationToken)
                               .ConfigureAwait(false);
+
+        Logger.LogDebug("Created {results}",
+                        results);
       }
     }
     catch (Exception e)
