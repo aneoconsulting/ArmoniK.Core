@@ -4,13 +4,9 @@ Hi! We are very happy that you are interested in contributing to ArmoniK.Core pr
 
 ## Pull Request Process
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a
-   build.
-2. Update the README.md with details of changes to the interface, this includes new environment
-   variables, exposed ports, useful file locations and container parameters.
-3. Make sure to do a PR against main
-4. Make sure you clearly define the changes in the description of the PR
-5. Make sure all tests pass
+1. Make sure to do a PR against main
+2. Make sure you clearly define the changes in the description of the PR
+3. Make sure all tests pass by following the instructions available [here](.docs/content/0.installation/3.execute-tests.md)
 
 ## Release Process
 
@@ -24,7 +20,8 @@ When necessary, maintainers can release a new version. This new version will pub
 2. Make sure that ArmoniK.Api.* versions are releases
   1. `git grep '"ArmoniK\.Api\.'` to check which version is used. You can also see that with any editor in csproj files.
   2. If the versions are not a release, a PR should be opened to update them.
-3. Create a new release named `<version>` using the GitHub interface (be sure to select the main branch and to create a tag)
+3. Make sure all tests pass by following the instructions available [here](.docs/content/0.installation/3.execute-tests.md)
+4. Create a new release named `<version>` using the GitHub interface (be sure to select the main branch and to create a tag)
 
 And _voilà_! The new version is released and a CI workflow will publish packages to registries.
 
