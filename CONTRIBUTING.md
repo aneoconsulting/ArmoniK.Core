@@ -14,7 +14,7 @@ When necessary, maintainers can release a new version. This new version will pub
 
 ### Release a new version
 
-> Replace <version> with the new version number
+> Replace `<version>` with the new version number. The new version number should follow semantic versionning and is computed by the pipeline. You can find it in the `Versionning` job.
 
 1. Install .Net latest release version (https://dotnet.microsoft.com/en-us/download)
 2. Make sure that ArmoniK.Api.* versions are releases
