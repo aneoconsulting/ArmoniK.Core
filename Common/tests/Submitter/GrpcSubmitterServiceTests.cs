@@ -352,8 +352,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputInvalidOperationExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskOutput(It.IsAny<string>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
+                                                    It.IsAny<Expression<Func<TaskData, Output>>>(),
+                                                    It.IsAny<CancellationToken>()))
         .Returns(() => throw new InvalidOperationException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -385,8 +386,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputArmonikExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskOutput(It.IsAny<string>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
+                                                    It.IsAny<Expression<Func<TaskData, Output>>>(),
+                                                    It.IsAny<CancellationToken>()))
         .Returns(() => throw new ArmoniKException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -418,8 +420,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskOutput(It.IsAny<string>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
+                                                    It.IsAny<Expression<Func<TaskData, Output>>>(),
+                                                    It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult(new Output(true,
                                                   "")));
 
@@ -445,8 +448,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputShouldSucceed2()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskOutput(It.IsAny<string>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
+                                                    It.IsAny<Expression<Func<TaskData, Output>>>(),
+                                                    It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult(new Output(false,
                                                   "Test Error")));
 
@@ -1521,13 +1525,14 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskStatus(It.IsAny<ICollection<string>>(),
-                                                    CancellationToken.None))
-        .Returns(() => Task.FromResult(new[]
-                                       {
-                                         new TaskIdStatus("TaskId",
-                                                          Storage.TaskStatus.Completed),
-                                       }.AsEnumerable()));
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
+                                                     It.IsAny<CancellationToken>()))
+        .Returns(() => new[]
+                       {
+                         new TaskIdStatus("TaskId",
+                                          Storage.TaskStatus.Completed),
+                       }.ToAsyncEnumerable());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
                                            mock.Object,
@@ -1554,8 +1559,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusTaskNotFoundExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskStatus(It.IsAny<ICollection<string>>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
+                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new TaskNotFoundException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -1589,8 +1595,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusArmonikExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskStatus(It.IsAny<ICollection<string>>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
+                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new ArmoniKException());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -1624,8 +1631,9 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
-    mock.Setup(taskTable => taskTable.GetTaskStatus(It.IsAny<ICollection<string>>(),
-                                                    CancellationToken.None))
+    mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
+                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new Exception());
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,

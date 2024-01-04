@@ -90,10 +90,12 @@ public static class ResultLifeCycleHelper
                                           .ToListAsync(cancellationToken)
                                           .ConfigureAwait(false);
 
-    foreach (var task in (await taskTable.GetTaskStatus(dependentTasks,
-                                                        cancellationToken)
-                                         .ConfigureAwait(false)).Where(status => status.Status != TaskStatus.Error)
-                                                                .Select(status => status.TaskId))
+    await foreach (var task in taskTable.GetTaskStatus(dependentTasks,
+                                                       cancellationToken)
+                                        .Where(status => status.Status != TaskStatus.Error)
+                                        .Select(status => status.TaskId)
+                                        .WithCancellation(cancellationToken)
+                                        .ConfigureAwait(false))
     {
       await AbortTaskAndResults(taskTable,
                                 resultTable,

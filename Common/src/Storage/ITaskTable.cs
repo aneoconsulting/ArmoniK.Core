@@ -17,13 +17,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Exceptions;
 
 using Microsoft.Extensions.Logging;
 
@@ -77,17 +75,6 @@ public interface ITaskTable : IInitializable
   Task<T> ReadTaskAsync<T>(string                        taskId,
                            Expression<Func<TaskData, T>> selector,
                            CancellationToken             cancellationToken = default);
-
-  /// <summary>
-  ///   Query a task status to check for cancellation
-  /// </summary>
-  /// <param name="taskId">Id of the task to check</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Boolean representing the cancellation status of the task
-  /// </returns>
-  Task<bool> IsTaskCancelledAsync(string            taskId,
-                                  CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Update a task status to TaskStatus.Processing
@@ -248,17 +235,6 @@ public interface ITaskTable : IInitializable
                                             CancellationToken   cancellationToken = default);
 
   /// <summary>
-  ///   Retrieve a task's output
-  /// </summary>
-  /// <param name="taskId">Id of the target task</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task's output
-  /// </returns>
-  Task<Output> GetTaskOutput(string            taskId,
-                             CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Acquire the task to process it on the current agent
   /// </summary>
   /// <remarks>
@@ -297,67 +273,6 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<TaskData> ReleaseTask(TaskData          taskData,
                              CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Get reply status metadata of a task given its id
-  /// </summary>
-  /// <param name="taskIds">Id of the target task</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Reply status metadata
-  /// </returns>
-  Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   Get expected output keys of tasks given their ids
-  /// </summary>
-  /// <param name="taskIds">Collection of task ids</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The expected output keys
-  /// </returns>
-  IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
-                                                                                                       CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   Get expected output keys of a task given its id
-  /// </summary>
-  /// <param name="taskId">Id of the target task</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The expected output keys
-  /// </returns>
-  public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
-                                                                   CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      return await GetTasksExpectedOutputKeys(new[]
-                                              {
-                                                taskId,
-                                              },
-                                              cancellationToken)
-                   .Select(tuple => tuple.expectedOutputKeys)
-                   .SingleAsync(cancellationToken)
-                   .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException)
-    {
-      throw new TaskNotFoundException($"Task '{taskId}' not found");
-    }
-  }
-
-  /// <summary>
-  ///   Get expected parent's ids of a task given its id
-  /// </summary>
-  /// <param name="taskId">Id of the target task</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The parent's ids
-  /// </returns>
-  Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                             CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Retry a task identified by its meta data

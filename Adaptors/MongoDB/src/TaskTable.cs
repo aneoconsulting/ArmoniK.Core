@@ -29,7 +29,6 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -105,30 +104,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<bool> IsTaskCancelledAsync(string            taskId,
-                                               CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(IsTaskCancelledAsync)}");
-    activity?.SetTag($"{nameof(IsTaskCancelledAsync)}_taskId",
-                     taskId);
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    try
-    {
-      return await taskCollection.Find(model => model.TaskId == taskId)
-                                 .Project(model => model.Status == TaskStatus.Cancelled || model.Status == TaskStatus.Cancelling)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new TaskNotFoundException($"Task '{taskId}' not found.",
-                                      e);
-    }
-  }
-
-  /// <inheritdoc />
   public async Task StartTask(TaskData          taskData,
                               CancellationToken cancellationToken = default)
   {
@@ -154,19 +129,12 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        var taskStatus = (await GetTaskStatus(new[]
-                                              {
-                                                taskData.TaskId,
-                                              },
-                                              cancellationToken)
-                            .ConfigureAwait(false)).AsICollection();
+        var taskStatus = await ReadTaskAsync(taskData.TaskId,
+                                             data => data.Status,
+                                             cancellationToken)
+                           .ConfigureAwait(false);
 
-        if (!taskStatus.Any())
-        {
-          throw new TaskNotFoundException($"Task {taskData.TaskId} not found");
-        }
-
-        throw new ArmoniKException($"Fail to start task because task was not acquired - {taskStatus.Single()} to {TaskStatus.Processing}");
+        throw new ArmoniKException($"Fail to start task because task was not acquired - {taskStatus} to {TaskStatus.Processing}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -410,31 +378,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<Output> GetTaskOutput(string            taskId,
-                                          CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskOutput)}");
-    activity?.SetTag($"{nameof(GetTaskOutput)}_TaskId",
-                     taskId);
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    try
-    {
-      return await taskCollection.AsQueryable(sessionHandle)
-                                 .Where(tdm => tdm.TaskId == taskId)
-                                 .Select(model => model.Output)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new TaskNotFoundException($"Task not found {taskId}",
-                                      e);
-    }
-  }
-
-  /// <inheritdoc />
   public async Task<TaskData> AcquireTask(TaskData          taskData,
                                           CancellationToken cancellationToken = default)
   {
@@ -522,68 +465,6 @@ public class TaskTable : ITaskTable
              .ConfigureAwait(false);
   }
 
-  public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
-                                                                                                              CancellationToken   cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetTasksExpectedOutputKeys)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    return taskCollection.AsQueryable(sessionHandle)
-                         .Where(tdm => taskIds.Contains(tdm.TaskId))
-                         .Select(model => new
-                                          {
-                                            model.TaskId,
-                                            model.ExpectedOutputIds,
-                                          })
-                         .ToAsyncEnumerable(cancellationToken)
-                         .Select(model => (model.TaskId, model.ExpectedOutputIds.AsEnumerable()));
-  }
-
-  public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
-                                                                   CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskExpectedOutputKeys)}");
-    activity?.SetTag($"{nameof(GetTaskExpectedOutputKeys)}_TaskId",
-                     taskId);
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    try
-    {
-      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
-                                 .Project(model => model.ExpectedOutputIds)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException)
-    {
-      throw new TaskNotFoundException($"Task '{taskId}' not found.");
-    }
-  }
-
-  public async Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                          CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetParentTaskIds)}");
-    activity?.SetTag($"{nameof(GetParentTaskIds)}_TaskId",
-                     taskId);
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    try
-    {
-      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
-                                 .Project(model => model.ParentTaskIds)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException)
-    {
-      throw new TaskNotFoundException($"Task '{taskId}' not found.");
-    }
-  }
-
   public async Task<string> RetryTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
   {
@@ -666,21 +547,5 @@ public class TaskTable : ITaskTable
                             .Count(model => model.Status == status);
 
     return Task.FromResult(res);
-  }
-
-  /// <inheritdoc />
-  public async Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                             CancellationToken   cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetTaskStatus)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => taskIds.Contains(tdm.TaskId))
-                               .Select(model => new TaskIdStatus(model.TaskId,
-                                                                 model.Status))
-                               .ToListAsync(cancellationToken)
-                               .ConfigureAwait(false);
   }
 }

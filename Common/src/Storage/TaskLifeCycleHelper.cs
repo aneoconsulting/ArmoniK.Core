@@ -218,8 +218,9 @@ public static class TaskLifeCycleHelper
     // Transfer ownership while dependencies are in preparation
     if (!parentTaskId.Equals(sessionId))
     {
-      var parentExpectedOutputKeys = (await taskTable.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                cancellationToken)
+      var parentExpectedOutputKeys = (await taskTable.ReadTaskAsync(parentTaskId,
+                                                                    data => data.ExpectedOutputIds,
+                                                                    cancellationToken)
                                                      .ConfigureAwait(false)).ToHashSet();
       var taskDataModels =
         taskRequests.Select(request => new IResultTable.ChangeResultOwnershipRequest(request.ExpectedOutputKeys.Where(id => parentExpectedOutputKeys.Contains(id)),

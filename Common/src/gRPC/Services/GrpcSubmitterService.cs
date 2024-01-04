@@ -553,13 +553,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
              {
                IdStatuses =
                {
-                 (await taskTable_.GetTaskStatus(request.TaskIds,
-                                                 context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(status => new GetTaskStatusReply.Types.IdStatus
-                                                                           {
-                                                                             Status = status.Status.ToGrpcStatus(),
-                                                                             TaskId = status.TaskId,
-                                                                           }),
+                 taskTable_.GetTaskStatus(request.TaskIds,
+                                          context.CancellationToken)
+                           .Select(status => new GetTaskStatusReply.Types.IdStatus
+                                             {
+                                               Status = status.Status.ToGrpcStatus(),
+                                               TaskId = status.TaskId,
+                                             })
+                           .ToEnumerable(),
                },
              };
     }

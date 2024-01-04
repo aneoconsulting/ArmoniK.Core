@@ -407,22 +407,14 @@ public class TaskTableTestBase
                                                 TaskStatus.Timeout,
                                                 CancellationToken.None)
                       .ConfigureAwait(false);
-      var resCreating = await TaskTable!.GetTaskStatus(new[]
-                                                       {
-                                                         "TaskCreatingId",
-                                                       },
+      var resCreating = await TaskTable!.GetTaskStatus("TaskCreatingId",
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
-      var resProcessing = await TaskTable!.GetTaskStatus(new[]
-                                                         {
-                                                           "TaskProcessingId",
-                                                         },
+      var resProcessing = await TaskTable!.GetTaskStatus("TaskProcessingId",
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.IsTrue(resCreating.Single()
-                               .Status == TaskStatus.Timeout && resProcessing.Single()
-                                                                             .Status == TaskStatus.Timeout);
+      Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
     }
   }
 
@@ -446,22 +438,14 @@ public class TaskTableTestBase
                                                 TaskStatus.Timeout,
                                                 CancellationToken.None)
                       .ConfigureAwait(false);
-      var resCreating = await TaskTable!.GetTaskStatus(new[]
-                                                       {
-                                                         "TaskCreatingId",
-                                                       },
+      var resCreating = await TaskTable!.GetTaskStatus("TaskCreatingId",
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
-      var resProcessing = await TaskTable!.GetTaskStatus(new[]
-                                                         {
-                                                           "TaskProcessingId",
-                                                         },
+      var resProcessing = await TaskTable!.GetTaskStatus("TaskProcessingId",
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.IsTrue(resCreating.Single()
-                               .Status == TaskStatus.Timeout && resProcessing.Single()
-                                                                             .Status == TaskStatus.Timeout);
+      Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
     }
   }
 
@@ -484,36 +468,24 @@ public class TaskTableTestBase
       await TaskTable!.CancelTasks(testFilter,
                                    CancellationToken.None)
                       .ConfigureAwait(false);
-      var resCreating = await TaskTable!.GetTaskStatus(new[]
-                                                       {
-                                                         "TaskCreatingId",
-                                                       },
+      var resCreating = await TaskTable!.GetTaskStatus("TaskCreatingId",
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
-      var resProcessing = await TaskTable.GetTaskStatus(new[]
-                                                        {
-                                                          "TaskProcessingId",
-                                                        },
+      var resProcessing = await TaskTable.GetTaskStatus("TaskProcessingId",
                                                         CancellationToken.None)
                                          .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Cancelling,
-                      resCreating.Single()
-                                 .Status);
+                      resCreating);
       Assert.AreEqual(TaskStatus.Cancelling,
-                      resProcessing.Single()
-                                   .Status);
+                      resProcessing);
 
-      var resAnotherProcessing = await TaskTable.GetTaskStatus(new[]
-                                                               {
-                                                                 "TaskAnotherProcessingId",
-                                                               },
+      var resAnotherProcessing = await TaskTable.GetTaskStatus("TaskAnotherProcessingId",
                                                                CancellationToken.None)
                                                 .ConfigureAwait(false);
 
       Assert.AreNotEqual(TaskStatus.Cancelling,
-                         resAnotherProcessing.Single()
-                                             .Status);
+                         resAnotherProcessing);
     }
   }
 
@@ -549,33 +521,6 @@ public class TaskTableTestBase
                                                                                        CancellationToken.None)
                                                              .ConfigureAwait(false);
                                            });
-    }
-  }
-
-  [Test]
-  public async Task IsTaskCanceledShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var result = await TaskTable!.IsTaskCancelledAsync("TaskCreatingId",
-                                                         CancellationToken.None)
-                                   .ConfigureAwait(false);
-
-      Assert.IsFalse(result);
-    }
-  }
-
-  [Test]
-  public void IsTaskCanceledShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.IsTaskCancelledAsync("TaskDoesNotExist",
-                                                                                        CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
     }
   }
 
@@ -701,16 +646,12 @@ public class TaskTableTestBase
                                            CancellationToken.None)
                       .ConfigureAwait(false);
 
-      var resStatus = await TaskTable!.GetTaskStatus(new[]
-                                                     {
-                                                       taskProcessingData_.TaskId,
-                                                     },
+      var resStatus = await TaskTable!.GetTaskStatus(taskProcessingData_.TaskId,
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Completed,
-                      resStatus.Single()
-                               .Status);
+                      resStatus);
 
       var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
                                                    CancellationToken.None)
@@ -739,16 +680,12 @@ public class TaskTableTestBase
                                          CancellationToken.None)
                       .ConfigureAwait(false);
 
-      var resStatus = await TaskTable!.GetTaskStatus(new[]
-                                                     {
-                                                       "TaskProcessingId",
-                                                     },
+      var resStatus = await TaskTable!.GetTaskStatus("TaskProcessingId",
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Error,
-                      resStatus.Single()
-                               .Status);
+                      resStatus);
 
       var output = await TaskTable.GetTaskOutput("TaskProcessingId",
                                                  CancellationToken.None)
@@ -774,16 +711,12 @@ public class TaskTableTestBase
                                             CancellationToken.None)
                       .ConfigureAwait(false);
 
-      var resStatus = await TaskTable!.GetTaskStatus(new[]
-                                                     {
-                                                       "TaskProcessingId",
-                                                     },
+      var resStatus = await TaskTable!.GetTaskStatus("TaskProcessingId",
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Cancelled,
-                      resStatus.Single()
-                               .Status);
+                      resStatus);
 
       var output = await TaskTable.GetTaskOutput("TaskProcessingId",
                                                  CancellationToken.None)
@@ -819,39 +752,6 @@ public class TaskTableTestBase
                                                 {
                                                   await TaskTable!.GetTaskOutput("NonExistingTaskId",
                                                                                  CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
-    }
-  }
-
-  [Test]
-  public async Task GetTaskExpectedOutputKeysShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var expectedOutput = new[]
-                           {
-                             "output1",
-                             "output2",
-                           };
-      var result = await TaskTable!.GetTaskExpectedOutputKeys("TaskCompletedId",
-                                                              CancellationToken.None)
-                                   .ConfigureAwait(false);
-
-      Assert.AreEqual(expectedOutput,
-                      result.ToArray());
-    }
-  }
-
-  [Test]
-  public void GetTaskExpectedOutputKeysShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.GetTaskExpectedOutputKeys("NonExistingTaskId",
-                                                                                             CancellationToken.None)
                                                                   .ConfigureAwait(false);
                                                 });
     }

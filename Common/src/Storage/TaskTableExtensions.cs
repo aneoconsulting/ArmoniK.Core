@@ -310,4 +310,89 @@ public static class TaskTableExtensions
                               task);
     return task;
   }
+
+
+  /// <summary>
+  ///   Retrieve a task's output
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskId">Id of the target task</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task's output
+  /// </returns>
+  public static Task<Output> GetTaskOutput(this ITaskTable   taskTable,
+                                           string            taskId,
+                                           CancellationToken cancellationToken = default)
+    => taskTable.ReadTaskAsync(taskId,
+                               data => data.Output,
+                               cancellationToken);
+
+  /// <summary>
+  ///   Get reply status metadata of a task given its id
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskIds">Ids of the target tasks</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Reply status metadata
+  /// </returns>
+  public static IAsyncEnumerable<TaskIdStatus> GetTaskStatus(this ITaskTable     taskTable,
+                                                             IEnumerable<string> taskIds,
+                                                             CancellationToken   cancellationToken = default)
+    => taskTable.FindTasksAsync(data => taskIds.Contains(data.TaskId),
+                                data => new TaskIdStatus(data.TaskId,
+                                                         data.Status),
+                                cancellationToken);
+
+  /// <summary>
+  ///   Get reply status metadata of a task given its id
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskId">Id of the target task</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Reply status metadata
+  /// </returns>
+  public static Task<TaskStatus> GetTaskStatus(this ITaskTable   taskTable,
+                                               string            taskId,
+                                               CancellationToken cancellationToken = default)
+    => taskTable.ReadTaskAsync(taskId,
+                               data => data.Status,
+                               cancellationToken);
+
+  /// <summary>
+  ///   Get expected output keys of tasks given their ids
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskIds">Collection of task ids</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The expected output keys
+  /// </returns>
+  public static IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(this ITaskTable     taskTable,
+                                                                                                                     IEnumerable<string> taskIds,
+                                                                                                                     CancellationToken   cancellationToken = default)
+    => taskTable.FindTasksAsync(data => taskIds.Contains(data.TaskId),
+                                data => ValueTuple.Create(data.TaskId,
+                                                          data.ExpectedOutputIds),
+                                cancellationToken)
+                .Select(tuple => (tuple.Item1, tuple.Item2.AsEnumerable()));
+
+  /// <summary>
+  ///   Get expected parent's ids of a task given its id
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskId">Id of the target task</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The parent's ids
+  /// </returns>
+  public static async Task<IEnumerable<string>> GetParentTaskIds(this ITaskTable   taskTable,
+                                                                 string            taskId,
+                                                                 CancellationToken cancellationToken = default)
+    => await taskTable.ReadTaskAsync(taskId,
+                                     data => data.ParentTaskIds,
+                                     cancellationToken)
+                      .ConfigureAwait(false);
 }

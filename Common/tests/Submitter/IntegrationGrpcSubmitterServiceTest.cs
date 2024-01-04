@@ -857,10 +857,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                             CancellationToken                 cancellationToken = default)
       => throw new T();
 
-    public Task<bool> IsTaskCancelledAsync(string            taskId,
-                                           CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task StartTask(TaskData          taskData,
                           CancellationToken cancellationToken = default)
       => throw new T();
@@ -917,28 +913,12 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                      CancellationToken   cancellationToken = default)
       => throw new T();
 
-    public Task<Output> GetTaskOutput(string            taskId,
-                                      CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task<TaskData> AcquireTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task<TaskData> ReleaseTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<IEnumerable<TaskIdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
-                                                         CancellationToken   cancellationToken = default)
-      => throw new T();
-
-    public IAsyncEnumerable<(string taskId, IEnumerable<string> expectedOutputKeys)> GetTasksExpectedOutputKeys(IEnumerable<string> taskIds,
-                                                                                                                CancellationToken   cancellationToken = default)
-      => throw new T();
-
-    public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                      CancellationToken cancellationToken = default)
       => throw new T();
 
     public Task<string> RetryTask(TaskData          taskData,
