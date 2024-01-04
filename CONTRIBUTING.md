@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Hi! We are very happy that you are interested in contributing to ArmoniK.Api. Before submitting your contribution, please make sure to take a moment and read through the following guide.
+Hi! We are very happy that you are interested in contributing to ArmoniK.Core project. Before submitting your contribution, please make sure to take a moment and read through the following guide.
 
 ## Pull Request Process
 
