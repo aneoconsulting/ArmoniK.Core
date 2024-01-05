@@ -1,8 +1,7 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base-linux
-RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
-USER armonikuser
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS base-linux
+USER $APP_UID
 ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows

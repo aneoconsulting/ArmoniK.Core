@@ -1,9 +1,7 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base-linux
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled as base-linux
 ARG TARGETARCH
 ADD --chmod=755 https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-${TARGETARCH} /tini
-RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
-RUN mkdir /cache /local_storage /comm && chown armonikuser: /cache /local_storage /comm
-USER armonikuser
+USER $APP_UID
 ENTRYPOINT [ "/tini", "-s", "-vv", "--", "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
@@ -13,6 +11,8 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION=1.0.0.0
 ARG TARGETARCH
 ARG TARGETOS
+
+RUN mkdir /cache /local_storage /comm
 
 WORKDIR /src
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"%\\\", \\\"\$D/\\\"]"
@@ -106,8 +106,10 @@ RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --
 
 
 FROM base-${TARGETOS} as polling_agent
-WORKDIR /adapters/queue/sqs
-COPY --from=build /app/publish/sqs .
+WORKDIR /
+COPY --from=build --chown=$APP_UID:$APP_UID /cache /cache
+COPY --from=build --chown=$APP_UID:$APP_UID /local_storage /local_storage
+COPY --from=build --chown=$APP_UID:$APP_UID /comm /comm
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -146,8 +148,8 @@ CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base-${TARGETOS} as submitter
-WORKDIR /adapters/queue/sqs
-COPY --from=build /app/publish/sqs .
+WORKDIR /
+COPY --from=build --chown=$APP_UID:$APP_UID /local_storage /local_storage
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
