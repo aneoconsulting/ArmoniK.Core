@@ -13,8 +13,9 @@ worker       := "htcmock"
 object       := "redis"
 replicas     := "3"
 partitions   := "2"
-builder      := "regular"
-platform     := "linux/arm64"
+platform     := ""
+push         := "false"
+load         := "true"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag        := tag
@@ -211,20 +212,21 @@ build imageTag dockerFile target="":
   if [ "{{target}}" != "" ]; then
     target_parameter="--target {{target}}"
   fi
+  platform_parameter=""
+  if [ "{{platform}}" != "" ]; then
+    platform_parameter="--platform {{platform}}"
+  fi
+  push_parameter=""
+  if [ "{{push}}" == "true" ]; then
+    push_parameter="--push"
+  fi
+  load_parameter=""
+  if [ "{{load}}" == "true" ]; then
+    load_parameter="--load"
+  fi
 
   set -x
-  case "{{builder}}" in
-    regular)
-      docker build --build-arg VERSION={{tag}} $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
-      ;;
-    buildx)
-      docker buildx build --push --progress=plain --platform {{platform}} --build-arg VERSION={{tag}} $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
-      ;;
-    *)
-      echo wrong builder
-      exit 1
-      ;;
-  esac
+  docker buildx build --progress=plain --build-arg VERSION={{tag}} $platform_parameter $load_parameter $push_parameter $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
 
 # Build Worker
 buildWorker: (build TF_VAR_worker_image TF_VAR_worker_docker_file_path + "Dockerfile")
