@@ -273,15 +273,4 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<TaskData> ReleaseTask(TaskData          taskData,
                              CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Retry a task identified by its meta data
-  /// </summary>
-  /// <param name="taskData">Task metadata of the task to retry</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The id of the freshly created task
-  /// </returns>
-  Task<string> RetryTask(TaskData          taskData,
-                         CancellationToken cancellationToken = default);
 }

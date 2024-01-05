@@ -920,10 +920,6 @@ internal class IntegrationGrpcSubmitterServiceTest
     public Task<TaskData> ReleaseTask(TaskData          taskData,
                                       CancellationToken cancellationToken = default)
       => throw new T();
-
-    public Task<string> RetryTask(TaskData          taskData,
-                                  CancellationToken cancellationToken = default)
-      => throw new T();
   }
 
   public static IEnumerable TestCasesTaskTable

@@ -784,11 +784,6 @@ public class TaskHandlerTest
                                       TimeSpan.FromSeconds(2),
                                       new Output(false,
                                                  "")));
-
-    public Task<string> RetryTask(TaskData          taskData,
-                                  CancellationToken cancellationToken)
-      => Task.FromResult(Guid.NewGuid()
-                             .ToString());
   }
 
   public class WaitSessionTable : ISessionTable

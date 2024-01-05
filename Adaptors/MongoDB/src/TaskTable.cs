@@ -465,51 +465,6 @@ public class TaskTable : ITaskTable
              .ConfigureAwait(false);
   }
 
-  public async Task<string> RetryTask(TaskData          taskData,
-                                      CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(RetryTask)}");
-
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
-
-    var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
-                            {
-                              taskData.TaskId,
-                            };
-    var newTaskData = new TaskData(taskData.SessionId,
-                                   newTaskId,
-                                   "",
-                                   "",
-                                   taskData.PayloadId,
-                                   taskData.ParentTaskIds,
-                                   taskData.DataDependencies,
-                                   taskData.RemainingDataDependencies,
-                                   taskData.ExpectedOutputIds,
-                                   taskData.InitialTaskId,
-                                   newTaskRetryOfIds,
-                                   TaskStatus.Creating,
-                                   "",
-                                   taskData.Options,
-                                   DateTime.UtcNow,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   new Output(false,
-                                              ""));
-
-    await taskCollection.InsertOneAsync(newTaskData,
-                                        cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-    return newTaskId;
-  }
-
   /// <inheritdoc />
   public ILogger Logger { get; }
 

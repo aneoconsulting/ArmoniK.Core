@@ -395,4 +395,58 @@ public static class TaskTableExtensions
                                      data => data.ParentTaskIds,
                                      cancellationToken)
                       .ConfigureAwait(false);
+
+  /// <summary>
+  ///   Retry a task identified by its meta data
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskData">Task metadata of the task to retry</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The id of the freshly created task
+  /// </returns>
+  public static async Task<string> RetryTask(this ITaskTable   taskTable,
+                                             TaskData          taskData,
+                                             CancellationToken cancellationToken = default)
+  {
+    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
+
+    var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
+                            {
+                              taskData.TaskId,
+                            };
+    var newTaskData = new TaskData(taskData.SessionId,
+                                   newTaskId,
+                                   "",
+                                   "",
+                                   taskData.PayloadId,
+                                   taskData.ParentTaskIds,
+                                   taskData.DataDependencies,
+                                   taskData.RemainingDataDependencies,
+                                   taskData.ExpectedOutputIds,
+                                   taskData.InitialTaskId,
+                                   newTaskRetryOfIds,
+                                   TaskStatus.Creating,
+                                   "",
+                                   taskData.Options,
+                                   DateTime.UtcNow,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
+                                   new Output(false,
+                                              ""));
+    await taskTable.CreateTasks(new[]
+                                {
+                                  newTaskData,
+                                },
+                                cancellationToken)
+                   .ConfigureAwait(false);
+
+    return newTaskId;
+  }
 }

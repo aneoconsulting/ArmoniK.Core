@@ -253,9 +253,4 @@ public class SimpleTaskTable : ITaskTable
                                     TaskOptions,
                                     new Output(true,
                                                "")));
-
-
-  public Task<string> RetryTask(TaskData          taskData,
-                                CancellationToken cancellationToken = default)
-    => Task.FromResult(TaskId);
 }
