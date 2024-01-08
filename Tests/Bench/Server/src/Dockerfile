@@ -10,11 +10,11 @@ ARG VERSION=1.0.0.0
 WORKDIR /src
 COPY ["Tests/Bench/Server/src/ArmoniK.Samples.Bench.Server.csproj", "Tests/Bench/Server/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
-RUN dotnet restore -a ${TARGETARCH} "Tests/Bench/Server/src/ArmoniK.Samples.Bench.Server.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Tests/Bench/Server/src/ArmoniK.Samples.Bench.Server.csproj"
 COPY ["Tests/Bench/Server/src", "Tests/Bench/Server/src"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/Bench/Server/src"
-RUN dotnet publish -a ${TARGETARCH} "ArmoniK.Samples.Bench.Server.csproj" -o /app/publish -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Samples.Bench.Server.csproj" -o /app/publish -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion="$VERSION" -p:Version="$VERSION"
 
 FROM base AS final
 WORKDIR /app
