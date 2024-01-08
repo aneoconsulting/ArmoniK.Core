@@ -419,15 +419,16 @@ public class PollsterTest
     public void Dispose()
       => GC.SuppressFinalize(this);
 
-    public Task<Output> StartTaskProcessing(TaskData          taskData,
-                                            string            token,
-                                            string            dataFolder,
-                                            CancellationToken cancellationToken)
+    public async Task<Output> StartTaskProcessing(TaskData          taskData,
+                                                  string            token,
+                                                  string            dataFolder,
+                                                  CancellationToken cancellationToken)
     {
-      Task.Delay(TimeSpan.FromMilliseconds(delay_),
-                 cancellationToken);
-      return Task.FromResult(new Output(true,
-                                        ""));
+      await Task.Delay(TimeSpan.FromMilliseconds(delay_),
+                       cancellationToken)
+                .ConfigureAwait(false);
+      return new Output(true,
+                        "");
     }
   }
 
@@ -470,7 +471,9 @@ public class PollsterTest
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(TaskStatus.Completed,
+    Assert.AreEqual(delay > 2000
+                      ? TaskStatus.Processing
+                      : TaskStatus.Completed,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                       CancellationToken.None)
                                              .ConfigureAwait(false));
