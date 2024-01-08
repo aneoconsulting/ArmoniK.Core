@@ -327,54 +327,6 @@ public class TaskTable : ITaskTable
                                                     }));
 
   /// <inheritdoc />
-  public Task<string> RetryTask(TaskData          taskData,
-                                CancellationToken cancellationToken = default)
-  {
-    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
-    var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
-                            {
-                              taskData.TaskId,
-                            };
-    var newTaskData = new TaskData(taskData.SessionId,
-                                   newTaskId,
-                                   "",
-                                   "",
-                                   taskData.PayloadId,
-                                   taskData.ParentTaskIds,
-                                   taskData.DataDependencies,
-                                   taskData.RemainingDataDependencies,
-                                   taskData.ExpectedOutputIds,
-                                   taskData.InitialTaskId,
-                                   newTaskRetryOfIds,
-                                   TaskStatus.Creating,
-                                   "",
-                                   taskData.Options,
-                                   DateTime.UtcNow,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   null,
-                                   new Output(false,
-                                              ""));
-
-    if (!taskId2TaskData_.TryAdd(newTaskId,
-                                 newTaskData))
-    {
-      throw new ArmoniKException($"Tasks '{newTaskId}' already exists");
-    }
-
-    var session = session2TaskIds_.GetOrAdd(newTaskData.SessionId,
-                                            new ConcurrentQueue<string>());
-    session.Enqueue(newTaskId);
-
-    return Task.FromResult(newTaskId);
-  }
-
-  /// <inheritdoc />
   public ILogger Logger { get; set; }
 
   /// <inheritdoc />
