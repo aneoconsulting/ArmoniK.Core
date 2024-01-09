@@ -22,6 +22,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -448,5 +450,172 @@ public static class TaskTableExtensions
                    .ConfigureAwait(false);
 
     return newTaskId;
+  }
+
+  /// <summary>
+  ///   Update one task with the given new values
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskId">Id of the tasks to be updated</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The task metadata before the update
+  /// </returns>
+  /// <exception cref="TaskNotFoundException">task not found</exception>
+  private static async Task<TaskData> UpdateOneTask(this ITaskTable                                                               taskTable,
+                                                    string                                                                        taskId,
+                                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                                    CancellationToken                                                             cancellationToken = default)
+    => await taskTable.UpdateOneTask(taskId,
+                                     null,
+                                     updates,
+                                     true,
+                                     cancellationToken)
+                      .ConfigureAwait(false) ?? throw new TaskNotFoundException($"Task not found {taskId}");
+
+
+  /// <summary>
+  ///   Acquire the task to process it on the current agent
+  /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
+  ///   acquire the task
+  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
+  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
+  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
+  /// </remarks>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskData">Metadata of the task to acquire</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Metadata of the task we try to acquire
+  /// </returns>
+  public static async Task<TaskData> AcquireTask(this ITaskTable   taskTable,
+                                                 TaskData          taskData,
+                                                 CancellationToken cancellationToken = default)
+  {
+    var res = await taskTable.UpdateOneTask(taskData.TaskId,
+                                            x => x.OwnerPodId == "" && x.Status == TaskStatus.Submitted,
+                                            new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                            {
+                                              (tdm => tdm.OwnerPodId, taskData.OwnerPodId),
+                                              (tdm => tdm.OwnerPodName, taskData.OwnerPodName),
+                                              (tdm => tdm.ReceptionDate, taskData.ReceptionDate),
+                                              (tdm => tdm.AcquisitionDate, taskData.AcquisitionDate),
+                                              (tdm => tdm.Status, TaskStatus.Dispatched),
+                                            },
+                                            cancellationToken: cancellationToken)
+                             .ConfigureAwait(false);
+
+    taskTable.Logger.LogInformation("Acquire task {task} on {podName}",
+                                    taskData.TaskId,
+                                    taskData.OwnerPodId);
+
+    return res ?? await taskTable.ReadTaskAsync(taskData.TaskId,
+                                                cancellationToken)
+                                 .ConfigureAwait(false);
+  }
+
+  /// <summary>
+  ///   Release the task from the current agent
+  /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
+  ///   acquire the task
+  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
+  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
+  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
+  /// </remarks>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskData">Metadata of the task to release</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Metadata of the task we try to release
+  /// </returns>
+  public static async Task<TaskData> ReleaseTask(this ITaskTable   taskTable,
+                                                 TaskData          taskData,
+                                                 CancellationToken cancellationToken = default)
+  {
+    var res = await taskTable.UpdateOneTask(taskData.TaskId,
+                                            data => data.OwnerPodId == taskData.OwnerPodId,
+                                            new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                            {
+                                              (data => data.OwnerPodId, ""),
+                                              (data => data.OwnerPodName, ""),
+                                              (data => data.ReceptionDate, null),
+                                              (data => data.AcquisitionDate, null),
+                                              (data => data.Status, TaskStatus.Submitted),
+                                            },
+                                            cancellationToken: cancellationToken)
+                             .ConfigureAwait(false);
+
+    taskTable.Logger.LogInformation("Released task {task} on {podName}",
+                                    taskData.TaskId,
+                                    taskData.OwnerPodId);
+
+    taskTable.Logger.LogDebug("Released task {taskData}",
+                              res);
+
+    if (taskTable.Logger.IsEnabled(LogLevel.Debug) && res is null)
+    {
+      taskTable.Logger.LogDebug("Released task (old) {taskData}",
+                                await taskTable.ReadTaskAsync(taskData.TaskId,
+                                                              cancellationToken)
+                                               .ConfigureAwait(false));
+    }
+
+    return res ?? await taskTable.ReadTaskAsync(taskData.TaskId,
+                                                cancellationToken)
+                                 .ConfigureAwait(false);
+  }
+
+  /// <summary>
+  ///   Update a task status to TaskStatus.Processing
+  /// </summary>
+  /// <remarks>
+  ///   Updates:
+  ///   - <see cref="TaskData.Status" />: New status of the task
+  ///   - <see cref="TaskData.StartDate" />: Date when the task starts
+  ///   - <see cref="TaskData.PodTtl" />: Date TTL on the pod
+  /// </remarks>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="taskData">Metadata of the task to start</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task StartTask(this ITaskTable   taskTable,
+                                     TaskData          taskData,
+                                     CancellationToken cancellationToken = default)
+  {
+    var res = await taskTable.UpdateOneTask(taskData.TaskId,
+                                            data => data.Status == TaskStatus.Dispatched,
+                                            new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
+                                            {
+                                              (data => data.PodTtl, taskData.PodTtl),
+                                              (data => data.StartDate, taskData.StartDate),
+                                              (tdm => tdm.Status, TaskStatus.Processing),
+                                            },
+                                            cancellationToken: cancellationToken)
+                             .ConfigureAwait(false);
+
+    taskTable.Logger.LogInformation("Start task {taskId} and update to status {status}",
+                                    taskData.TaskId,
+                                    TaskStatus.Processing);
+
+    if (res is null)
+    {
+      var taskStatus = await taskTable.ReadTaskAsync(taskData.TaskId,
+                                                     data => data.Status,
+                                                     cancellationToken)
+                                      .ConfigureAwait(false);
+
+      throw new ArmoniKException($"Fail to start task because task was not acquired - {taskStatus} to {TaskStatus.Processing}");
+    }
   }
 }

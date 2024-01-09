@@ -104,43 +104,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task StartTask(TaskData          taskData,
-                              CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(StartTask)}");
-    activity?.SetTag($"{nameof(StartTask)}_TaskId",
-                     taskData.TaskId);
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                       TaskStatus.Processing)
-                                                                  .Set(tdm => tdm.StartDate,
-                                                                       taskData.StartDate)
-                                                                  .Set(tdm => tdm.PodTtl,
-                                                                       taskData.PodTtl);
-    Logger.LogInformation("Trying to start task {taskId} and update to status {status}",
-                          taskData.TaskId,
-                          TaskStatus.Processing);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskData.TaskId && x.Status == TaskStatus.Dispatched,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
-
-    switch (res.MatchedCount)
-    {
-      case 0:
-        var taskStatus = await ReadTaskAsync(taskData.TaskId,
-                                             data => data.Status,
-                                             cancellationToken)
-                           .ConfigureAwait(false);
-
-        throw new ArmoniKException($"Fail to start task because task was not acquired - {taskStatus} to {TaskStatus.Processing}");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
-    }
-  }
-
-  /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                                   CancellationToken                cancellationToken = default)
   {
@@ -348,9 +311,11 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<TaskData> UpdateOneTask(string                                                                        taskId,
-                                            ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                            CancellationToken                                                             cancellationToken = default)
+  public async Task<TaskData?> UpdateOneTask(string                                                                        taskId,
+                                             Expression<Func<TaskData, bool>>?                                             filter,
+                                             ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                             bool                                                                          before,
+                                             CancellationToken                                                             cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
     var       taskCollection = taskCollectionProvider_.Get();
@@ -363,106 +328,31 @@ public class TaskTable : ITaskTable
                                               newValue);
     }
 
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId);
+    var where = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId);
 
-    var task = await taskCollection.FindOneAndUpdateAsync(filter,
+    if (filter is not null)
+    {
+      where = new FilterDefinitionBuilder<TaskData>().And(where,
+                                                          new FilterDefinitionBuilder<TaskData>().Where(filter));
+    }
+
+    var task = await taskCollection.FindOneAndUpdateAsync(where,
                                                           updateDefinition,
                                                           new FindOneAndUpdateOptions<TaskData>
                                                           {
-                                                            ReturnDocument = ReturnDocument.Before,
+                                                            ReturnDocument = before
+                                                                               ? ReturnDocument.Before
+                                                                               : ReturnDocument.After,
                                                           },
                                                           cancellationToken)
                                    .ConfigureAwait(false);
 
-    return task ?? throw new TaskNotFoundException($"Task not found {taskId}");
-  }
+    Logger.LogInformation("Update {task} with {condition} and {updates}",
+                          taskId,
+                          filter,
+                          updates);
 
-  /// <inheritdoc />
-  public async Task<TaskData> AcquireTask(TaskData          taskData,
-                                          CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(AcquireTask)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
-                                                                       taskData.OwnerPodId)
-                                                                  .Set(tdm => tdm.OwnerPodName,
-                                                                       taskData.OwnerPodName)
-                                                                  .Set(tdm => tdm.ReceptionDate,
-                                                                       taskData.ReceptionDate)
-                                                                  .Set(tdm => tdm.AcquisitionDate,
-                                                                       taskData.AcquisitionDate)
-                                                                  .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Dispatched);
-
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskData.TaskId && x.OwnerPodId == "" && x.Status == TaskStatus.Submitted);
-
-    Logger.LogDebug("Acquire task {task} on {podName}",
-                    taskData.TaskId,
-                    taskData.OwnerPodId);
-    var res = await taskCollection.FindOneAndUpdateAsync(filter,
-                                                         updateDefinition,
-                                                         new FindOneAndUpdateOptions<TaskData>
-                                                         {
-                                                           ReturnDocument = ReturnDocument.After,
-                                                         },
-                                                         cancellationToken)
-                                  .ConfigureAwait(false);
-
-    return res ?? await ReadTaskAsync(taskData.TaskId,
-                                      data => data,
-                                      cancellationToken)
-             .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<TaskData> ReleaseTask(TaskData          taskData,
-                                          CancellationToken cancellationToken = default)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(ReleaseTask)}");
-    var       taskCollection = taskCollectionProvider_.Get();
-
-    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
-                                                                       "")
-                                                                  .Set(tdm => tdm.OwnerPodName,
-                                                                       "")
-                                                                  .Set(tdm => tdm.AcquisitionDate,
-                                                                       null)
-                                                                  .Set(tdm => tdm.ReceptionDate,
-                                                                       null)
-                                                                  .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Submitted);
-
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskData.TaskId && x.OwnerPodId == taskData.OwnerPodId);
-
-    Logger.LogInformation("Release task {task} on {podName}",
-                          taskData.TaskId,
-                          taskData.OwnerPodId);
-    var res = await taskCollection.FindOneAndUpdateAsync(filter,
-                                                         updateDefinition,
-                                                         new FindOneAndUpdateOptions<TaskData>
-                                                         {
-                                                           ReturnDocument = ReturnDocument.After,
-                                                         },
-                                                         cancellationToken)
-                                  .ConfigureAwait(false);
-
-    Logger.LogDebug("Released task {taskData}",
-                    res);
-
-    if (Logger.IsEnabled(LogLevel.Debug) && res is null)
-    {
-      Logger.LogDebug("Released task (old) {taskData}",
-                      await ReadTaskAsync(taskData.TaskId,
-                                          data => data,
-                                          cancellationToken)
-                        .ConfigureAwait(false));
-    }
-
-    return res ?? await ReadTaskAsync(taskData.TaskId,
-                                      data => data,
-                                      cancellationToken)
-             .ConfigureAwait(false);
+    return task;
   }
 
   /// <inheritdoc />

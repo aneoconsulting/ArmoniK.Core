@@ -76,23 +76,6 @@ public interface ITaskTable : IInitializable
                            Expression<Func<TaskData, T>> selector,
                            CancellationToken             cancellationToken = default);
 
-  /// <summary>
-  ///   Update a task status to TaskStatus.Processing
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.StartDate" />: Date when the task starts
-  ///   - <see cref="TaskData.PodTtl" />: Date TTL on the pod
-  /// </remarks>
-  /// <param name="taskData">Metadata of the task to start</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task StartTask(TaskData          taskData,
-                 CancellationToken cancellationToken = default);
-
 
   /// <summary>
   ///   Count tasks matching a given filter
@@ -179,14 +162,18 @@ public interface ITaskTable : IInitializable
   ///   Update one task with the given new values
   /// </summary>
   /// <param name="taskId">Id of the tasks to be updated</param>
+  /// <param name="filter">Additional filter on the task</param>
   /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="before">Whether to return metadata before update</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   The task metadata before the update
+  ///   The task metadata before the update or null if task not found
   /// </returns>
-  Task<TaskData> UpdateOneTask(string                                                                        taskId,
-                               ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                               CancellationToken                                                             cancellationToken = default);
+  Task<TaskData?> UpdateOneTask(string                                                                        taskId,
+                                Expression<Func<TaskData, bool>>?                                             filter,
+                                ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                bool                                                                          before            = false,
+                                CancellationToken                                                             cancellationToken = default);
 
   /// <summary>
   ///   Update the tasks matching the filter with the given new values
@@ -233,44 +220,4 @@ public interface ITaskTable : IInitializable
   Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
                                             ICollection<string> dependenciesToRemove,
                                             CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   Acquire the task to process it on the current agent
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
-  ///   acquire the task
-  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
-  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
-  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
-  /// </remarks>
-  /// <param name="taskData">Metadata of the task to acquire</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Metadata of the task we try to acquire
-  /// </returns>
-  Task<TaskData> AcquireTask(TaskData          taskData,
-                             CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Release the task from the current agent
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.OwnerPodId" />: Identifier (Ip) that will be used to reach the pod if another pod tries to
-  ///   acquire the task
-  ///   - <see cref="TaskData.OwnerPodName" />: Hostname of the pollster
-  ///   - <see cref="TaskData.ReceptionDate" />: Date when the message from the queue storage is received
-  ///   - <see cref="TaskData.AcquisitionDate" />: Date when the task is acquired
-  /// </remarks>
-  /// <param name="taskData">Metadata of the task to release</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Metadata of the task we try to release
-  /// </returns>
-  Task<TaskData> ReleaseTask(TaskData          taskData,
-                             CancellationToken cancellationToken = default);
 }

@@ -850,6 +850,27 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task AcquireUnknownTaskShouldThrow()
+  {
+    if (RunTests)
+    {
+      var ownerpodid    = LocalIpFinder.LocalIpv4Address();
+      var ownerpodname  = Dns.GetHostName();
+      var receptionDate = DateTime.UtcNow.Date;
+
+      Assert.ThrowsAsync<TaskNotFoundException>(() => TaskTable!.AcquireTask(taskSubmittedData_ with
+                                                                             {
+                                                                               TaskId = "Unknown",
+                                                                               OwnerPodId = ownerpodid,
+                                                                               OwnerPodName = ownerpodname,
+                                                                               ReceptionDate = receptionDate,
+                                                                               AcquisitionDate = DateTime.UtcNow,
+                                                                             },
+                                                                             CancellationToken.None));
+    }
+  }
+
+  [Test]
   public async Task ReleaseTaskShouldSucceed()
   {
     if (RunTests)
