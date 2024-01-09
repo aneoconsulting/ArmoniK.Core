@@ -91,10 +91,6 @@ public class SimpleTaskTable : ITaskTable
                                                                ""))));
 
 
-  public Task StartTask(TaskData          taskData,
-                        CancellationToken cancellationToken = default)
-    => Task.CompletedTask;
-
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                             CancellationToken                cancellationToken = default)
     => Task.FromResult<IEnumerable<TaskStatusCount>>(new List<TaskStatusCount>
@@ -171,27 +167,6 @@ public class SimpleTaskTable : ITaskTable
         .Select(selector.Compile())
         .ToAsyncEnumerable();
 
-
-  public Task<TaskData> UpdateOneTask(string                                                                        taskId,
-                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                             cancellationToken = default)
-    => Task.FromResult(new TaskData(SessionId,
-                                    taskId,
-                                    OwnerPodId,
-                                    PodName,
-                                    PayloadId,
-                                    new List<string>(),
-                                    new List<string>(),
-                                    new List<string>
-                                    {
-                                      OutputId,
-                                    },
-                                    new List<string>(),
-                                    TaskStatus.Completed,
-                                    TaskOptions,
-                                    new Output(true,
-                                               "")));
-
   public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
                                     ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
                                     CancellationToken                                                             cancellationToken = default)
@@ -216,41 +191,25 @@ public class SimpleTaskTable : ITaskTable
                                                    CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<TaskData> AcquireTask(TaskData          taskData,
-                                    CancellationToken cancellationToken = default)
-    => Task.FromResult(new TaskData(SessionId,
-                                    taskData.TaskId,
-                                    taskData.OwnerPodId,
-                                    taskData.OwnerPodName,
-                                    PayloadId,
-                                    new List<string>(),
-                                    new List<string>(),
-                                    new List<string>
-                                    {
-                                      OutputId,
-                                    },
-                                    new List<string>(),
-                                    TaskStatus.Completed,
-                                    TaskOptions,
-                                    new Output(true,
-                                               "")));
-
-  public Task<TaskData> ReleaseTask(TaskData          taskData,
-                                    CancellationToken cancellationToken = default)
-    => Task.FromResult(new TaskData(SessionId,
-                                    taskData.TaskId,
-                                    taskData.OwnerPodId,
-                                    PodName,
-                                    PayloadId,
-                                    new List<string>(),
-                                    new List<string>(),
-                                    new List<string>
-                                    {
-                                      OutputId,
-                                    },
-                                    new List<string>(),
-                                    TaskStatus.Completed,
-                                    TaskOptions,
-                                    new Output(true,
-                                               "")));
+  public Task<TaskData?> UpdateOneTask(string                                                                        taskId,
+                                       Expression<Func<TaskData, bool>>?                                             filter,
+                                       ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                       bool                                                                          before,
+                                       CancellationToken                                                             cancellationToken = default)
+    => Task.FromResult<TaskData?>(new TaskData(SessionId,
+                                               taskId,
+                                               OwnerPodId,
+                                               PodName,
+                                               PayloadId,
+                                               new List<string>(),
+                                               new List<string>(),
+                                               new List<string>
+                                               {
+                                                 OutputId,
+                                               },
+                                               new List<string>(),
+                                               TaskStatus.Completed,
+                                               TaskOptions,
+                                               new Output(true,
+                                                          "")));
 }

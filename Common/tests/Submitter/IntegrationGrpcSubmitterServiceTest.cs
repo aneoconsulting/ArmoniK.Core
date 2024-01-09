@@ -857,10 +857,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                             CancellationToken                 cancellationToken = default)
       => throw new T();
 
-    public Task StartTask(TaskData          taskData,
-                          CancellationToken cancellationToken = default)
-      => throw new T();
-
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                               CancellationToken                cancellationToken = default)
       => throw new T();
@@ -890,9 +886,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                          CancellationToken                 cancellationToken = default)
       => throw new T();
 
-    public Task<TaskData> UpdateOneTask(string                                                                        taskId,
-                                        ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                        CancellationToken                                                             cancellationToken = default)
+    public Task<TaskData?> UpdateOneTask(string                                                                        taskId,
+                                         Expression<Func<TaskData, bool>>?                                             filter,
+                                         ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
+                                         bool                                                                          before,
+                                         CancellationToken                                                             cancellationToken = default)
       => throw new T();
 
     public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
@@ -911,14 +909,6 @@ internal class IntegrationGrpcSubmitterServiceTest
     public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
                                                      ICollection<string> dependenciesToRemove,
                                                      CancellationToken   cancellationToken = default)
-      => throw new T();
-
-    public Task<TaskData> AcquireTask(TaskData          taskData,
-                                      CancellationToken cancellationToken = default)
-      => throw new T();
-
-    public Task<TaskData> ReleaseTask(TaskData          taskData,
-                                      CancellationToken cancellationToken = default)
       => throw new T();
   }
 
