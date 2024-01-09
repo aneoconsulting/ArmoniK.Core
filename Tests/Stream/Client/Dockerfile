@@ -1,22 +1,26 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+WORKDIR /app
 
-FROM base AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG TARGETARCH
+ARG VERSION=1.0.0.0
+
 WORKDIR /src
 COPY ["Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj", "Tests/Stream/Client/"]
 COPY ["Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj", "Tests/Stream/Common/"]
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
-RUN dotnet restore "Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj"
 COPY ["Tests/Stream/Client", "Tests/Stream/Client"]
 COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
 COPY ["Utils/src/", "Utils/src/"]
 COPY ["Base/src/", "Base/src/"]
 COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/Stream/Client"
-RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
+RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -a "${TARGETARCH}" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 
 FROM base as final

@@ -62,91 +62,42 @@ jobs:
       run : git push origin -d ${{ github.ref_name }}
 
 
-  imagesCore:
+  images:
     runs-on: ubuntu-latest
     needs:
       - versionning
     env:
       VERSION: ${{ needs.versionning.outputs.release }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: Setup just
-      run: |
-          sudo snap install --edge --classic just
-
-    - name: login
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
-
-    - name: Create builder
-      run: |
-        docker buildx create --use
-
-    - name: Build
-      run: |
-        just tag=$VERSION builder=buildx platform="linux/arm64,linux/amd64" build-core
-
-
-  buildImages:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        include:
-        -  img : dockerhubaneo/armonik_core_stream_test_worker
-           path: ./Tests/Stream/Server/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_client
-           path: ./Tests/Stream/Client/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
-           path: ./Tests/HtcMock/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_client
-           path: ./Tests/HtcMock/Client/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_worker
-           path: ./Tests/Bench/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_client
-           path: ./Tests/Bench/Client/src/Dockerfile
+        type:
+          - build-core
+          - buildBenchClient
+          - worker=bench buildWorker
+          - buildStreamClient
+          - worker=stream buildWorker
+          - buildHtcmockClient
+          - worker=htcmock buildWorker
     steps:
     - name: Checkout
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       with:
         ref: ${{ github.ref }}
-        submodules: true
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
 
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
 
+    - name: Setup just
+      run: sudo snap install --edge --classic just
+
     - name: login
-      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_LOGIN }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
-    - name: platforms
-      run: echo ${{ steps.buildx.outputs.platforms }}
+    - name: Build
+      run: just tag=$VERSION platform=linux/arm64,linux/amd64 load=false push=true ${{ matrix.type }}
 
-    - name: Build and push
-      uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
-      with:
-        file: ${{ matrix.path }}
-        context: .
-        platforms: |
-          linux/arm64
-          linux/amd64
-        build-args: |
-          VERSION=${{ needs.versionning.outputs.release }}
-        push: true
-        tags: |
-            ${{ matrix.img }}:${{ needs.versionning.outputs.release }}
 
   publish-nuget:
     runs-on: ubuntu-latest
