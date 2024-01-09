@@ -510,6 +510,7 @@ public class Submitter : ISubmitter
                         EndDate = DateTime.UtcNow,
                         CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
                         ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
+                        ReceivedToEndDuration = DateTime.UtcNow   - taskData.ReceptionDate,
                       };
 
     if (output.Success)

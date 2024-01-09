@@ -94,6 +94,12 @@ public static class TaskDataHolderExt
                                      ? Duration.FromTimeSpan(taskData.ProcessingToEndDuration.Value)
                                      : null,
          InitialTaskId = taskData.InitialTaskId,
+         ReceivedToEndDuration = taskData.ReceivedToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskData.ReceivedToEndDuration.Value)
+                                   : null,
+         ProcessedAt = taskData.ProcessedDate is not null
+                         ? FromDateTime(taskData.ProcessedDate.Value)
+                         : null,
        };
 
 
@@ -149,5 +155,11 @@ public static class TaskDataHolderExt
          CountExpectedOutputIds = taskDataSummary.ExpectedOutputIdsCount,
          CountParentTaskIds     = taskDataSummary.ParentTaskIdsCount,
          CountRetryOfIds        = taskDataSummary.RetryOfIdsCount,
+         ReceivedToEndDuration = taskDataSummary.ReceivedToEndDuration is not null
+                                   ? Duration.FromTimeSpan(taskDataSummary.ReceivedToEndDuration.Value)
+                                   : null,
+         ProcessedAt = taskDataSummary.ProcessedDate is not null
+                         ? FromDateTime(taskDataSummary.ProcessedDate.Value)
+                         : null,
        };
 }
