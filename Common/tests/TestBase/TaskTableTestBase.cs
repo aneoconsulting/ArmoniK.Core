@@ -1812,6 +1812,9 @@ public class TaskTableTestBase
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.ProcessedAt,
+                                                                    FilterDateOperator.Equal,
+                                                                    null));
     yield return CaseTrue(new Api.gRPC.V1.Tasks.FilterField
                           {
                             Field = new TaskField
@@ -1882,6 +1885,10 @@ public class TaskTableTestBase
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterNumber(TaskOptionEnumField.MaxRetries,
                                                                        FilterNumberOperator.LessThan,
                                                                        5));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                        FilterDurationOperator.Equal,
+                                                                        null));
   }
 
   [TestCase(TaskStatus.Error)]

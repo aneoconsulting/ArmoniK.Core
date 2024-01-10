@@ -180,8 +180,10 @@ internal class BsonSerializerTest
                            DateTime.Today.ToUniversalTime(),
                            DateTime.Today.ToUniversalTime(),
                            DateTime.Today.ToUniversalTime(),
+                           DateTime.Today.ToUniversalTime(),
                            TimeSpan.FromSeconds(1),
                            TimeSpan.FromSeconds(2),
+                           TimeSpan.FromSeconds(3),
                            new Output(false,
                                       "Output Message"));
 

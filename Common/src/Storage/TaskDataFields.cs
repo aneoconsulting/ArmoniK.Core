@@ -91,11 +91,17 @@ public enum TaskDataFields
   /// <inheritdoc cref="TaskDataHolder.AcquisitionDate" />
   AcquisitionDate,
 
+  /// <inheritdoc cref="TaskDataHolder.ProcessedDate" />
+  ProcessedDate,
+
   /// <inheritdoc cref="TaskDataHolder.ProcessingToEndDuration" />
   ProcessingToEndDuration,
 
   /// <inheritdoc cref="TaskDataHolder.CreationToEndDuration" />
   CreationToEndDuration,
+
+  /// <inheritdoc cref="TaskDataHolder.ReceivedToEndDuration" />
+  ReceivedToEndDuration,
 
   /// <inheritdoc cref="TaskDataHolder.PodTtl" />
   PodTtl,

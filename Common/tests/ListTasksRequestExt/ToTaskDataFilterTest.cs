@@ -79,8 +79,10 @@ public class ToTaskDataFilterTest
                                             null,
                                             null,
                                             null,
+                                            null,
                                             TimeSpan.FromDays(1),
                                             TimeSpan.FromDays(2),
+                                            TimeSpan.FromDays(3),
                                             new Output(true,
                                                        ""));
 
@@ -89,6 +91,7 @@ public class ToTaskDataFilterTest
                                                                 15).ToUniversalTime();
 
   private static readonly TimeSpan TimeSpanToCompare = TimeSpan.FromDays(1.5);
+  private static readonly TimeSpan TimeSpan3Days     = TimeSpan.FromDays(3);
 
   private static readonly ListTasksRequest.Types.Sort Sort = new()
                                                              {
@@ -169,6 +172,9 @@ public class ToTaskDataFilterTest
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.StartedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.ProcessedAt,
+                                                                    FilterDateOperator.Equal,
+                                                                    null));
     yield return CaseTrue(new FilterField
                           {
                             Field = new TaskField
@@ -236,5 +242,23 @@ public class ToTaskDataFilterTest
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.CreationToEndDuration,
                                                                         FilterDurationOperator.LongerThan,
                                                                         TimeSpanToCompare));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                         FilterDurationOperator.ShorterThan,
+                                                                         TimeSpanToCompare));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                        FilterDurationOperator.LongerThanOrEqual,
+                                                                        TimeSpanToCompare));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                        FilterDurationOperator.Equal,
+                                                                        TimeSpan3Days));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                        FilterDurationOperator.LongerThanOrEqual,
+                                                                        TimeSpan3Days));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                        FilterDurationOperator.ShorterThanOrEqual,
+                                                                        TimeSpan3Days));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterDuration(TaskSummaryEnumField.ReceivedToEndDuration,
+                                                                         FilterDurationOperator.NotEqual,
+                                                                         TimeSpan3Days));
   }
 }

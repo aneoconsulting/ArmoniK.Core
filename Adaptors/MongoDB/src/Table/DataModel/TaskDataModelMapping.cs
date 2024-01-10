@@ -78,11 +78,15 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.AcquisitionDate))
                                                   .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.ProcessedDate))
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.PodTtl))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.ProcessingToEndDuration))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.CreationToEndDuration))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.ReceivedToEndDuration))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Output))
                                                   .SetIsRequired(true);
@@ -107,9 +111,11 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                     model.EndDate,
                                                                                     model.ReceptionDate,
                                                                                     model.AcquisitionDate,
+                                                                                    model.ProcessedDate,
                                                                                     model.PodTtl,
                                                                                     model.ProcessingToEndDuration,
                                                                                     model.CreationToEndDuration,
+                                                                                    model.ReceivedToEndDuration,
                                                                                     model.Output));
                                               });
     }

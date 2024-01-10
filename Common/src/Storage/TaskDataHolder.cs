@@ -105,8 +105,14 @@ public record TaskDataHolder
   /// <inheritdoc cref="TaskData.CreationToEndDuration" />
   public TimeSpan? CreationToEndDuration { get; set; } = null;
 
+  /// <inheritdoc cref="TaskData.ReceivedToEndDuration" />
+  public TimeSpan? ReceivedToEndDuration { get; set; } = null;
+
   /// <inheritdoc cref="TaskData.PodTtl" />
   public DateTime? PodTtl { get; set; } = null;
+
+  /// <inheritdoc cref="TaskData.ProcessedDate" />
+  public DateTime? ProcessedDate { get; set; } = null;
 
   /// <inheritdoc cref="TaskData.Output" />
   public Output? Output { get; set; } = null;
