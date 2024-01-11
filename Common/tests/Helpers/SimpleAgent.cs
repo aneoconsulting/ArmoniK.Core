@@ -28,12 +28,17 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleAgent : IAgent
 {
+  public string Token
+    => "token";
+
+  public string Folder
+    => "folder";
+
+  public string SessionId
+    => "session";
+
   public Task FinalizeTaskCreation(CancellationToken cancellationToken)
     => Task.CompletedTask;
-
-  public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                          CancellationToken                     cancellationToken)
-    => Task.FromResult(new CreateTaskReply());
 
   public Task<DataResponse> GetCommonData(DataRequest       request,
                                           CancellationToken cancellationToken)
@@ -69,4 +74,8 @@ public class SimpleAgent : IAgent
 
   public void Dispose()
     => GC.SuppressFinalize(this);
+
+  public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
+                                          CancellationToken                     cancellationToken)
+    => Task.FromResult(new CreateTaskReply());
 }

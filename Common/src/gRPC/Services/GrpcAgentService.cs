@@ -15,12 +15,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.StateMachines;
 
 using Grpc.Core;
+
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -41,19 +49,195 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     return Task.CompletedTask;
   }
 
+  private CreateTaskReply? CheckToken(CreateTaskRequest request,
+                                      string            token)
+  {
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      return new CreateTaskReply
+             {
+               CommunicationToken = request.CommunicationToken,
+               Error              = "Missing communication token",
+             };
+    }
+
+    if (request.CommunicationToken != token)
+    {
+      return new CreateTaskReply
+             {
+               CommunicationToken = request.CommunicationToken,
+               Error              = "Wrong communication token",
+             };
+    }
+
+    return null;
+  }
+
   public override async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                          ServerCallContext                     context)
   {
-    if (agent_ != null)
+    if (agent_ == null)
     {
-      return await agent_.CreateTask(requestStream,
-                                     context.CancellationToken)
+      return new CreateTaskReply
+             {
+               Error = "No task is accepting request",
+             };
+    }
+
+    var fsmCreate      = new ProcessReplyCreateLargeTaskStateMachine(NullLogger.Instance);
+    var createdTasks   = new List<SubmitTasksRequest.Types.TaskCreation>();
+    var createdResults = new List<string>();
+
+    await requestStream.MoveNext(context.CancellationToken)
+                       .ConfigureAwait(false);
+
+    fsmCreate.InitRequest();
+    var current = requestStream.Current;
+    var reply = CheckToken(current,
+                           agent_.Token);
+    var taskOptions = current.InitRequest.TaskOptions;
+    if (reply is not null)
+    {
+      return reply;
+    }
+
+    await requestStream.MoveNext(context.CancellationToken)
+                       .ConfigureAwait(false);
+
+    while (requestStream.Current.TypeCase == CreateTaskRequest.TypeOneofCase.InitTask && requestStream.Current.InitTask.TypeCase == InitTaskRequest.TypeOneofCase.Header)
+    {
+      fsmCreate.AddHeader();
+      var t = requestStream.Current.InitTask.Header;
+
+      await requestStream.MoveNext(context.CancellationToken)
+                         .ConfigureAwait(false);
+
+      var result = (await agent_.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                       {
+                                                         Results =
+                                                         {
+                                                           new CreateResultsMetaDataRequest.Types.ResultCreate(),
+                                                         },
+                                                         CommunicationToken = agent_.Token,
+                                                         SessionId          = agent_.SessionId,
+                                                       },
+                                                       context.CancellationToken)
+                                .ConfigureAwait(false)).Results.Single();
+
+      await using var fs = new FileStream(Path.Combine(agent_.Folder,
+                                                       result.ResultId),
+                                          FileMode.OpenOrCreate);
+      await using var r = new BinaryWriter(fs);
+
+      while (requestStream.Current.TypeCase == CreateTaskRequest.TypeOneofCase.TaskPayload && requestStream.Current.TaskPayload.TypeCase == DataChunk.TypeOneofCase.Data)
+      {
+        fsmCreate.AddDataChunk();
+        var data = requestStream.Current.TaskPayload.Data;
+        r.Write(data.Span);
+        await requestStream.MoveNext(context.CancellationToken)
+                           .ConfigureAwait(false);
+      }
+
+      if (requestStream.Current.TypeCase             == CreateTaskRequest.TypeOneofCase.TaskPayload &&
+          requestStream.Current.TaskPayload.TypeCase != DataChunk.TypeOneofCase.DataComplete)
+      {
+        throw new InvalidOperationException("Invalid request");
+      }
+
+      fsmCreate.CompleteData();
+
+      createdResults.Add(result.ResultId);
+      createdTasks.Add(new SubmitTasksRequest.Types.TaskCreation
+                       {
+                         DataDependencies =
+                         {
+                           t.DataDependencies,
+                         },
+                         ExpectedOutputKeys =
+                         {
+                           t.ExpectedOutputKeys,
+                         },
+                         PayloadId = result.ResultId,
+                       });
+
+      await requestStream.MoveNext(context.CancellationToken)
                          .ConfigureAwait(false);
     }
 
+    if (requestStream.Current.TypeCase != CreateTaskRequest.TypeOneofCase.InitTask || !requestStream.Current.InitTask.LastTask)
+    {
+      throw new InvalidOperationException("Invalid request");
+    }
+
+    fsmCreate.CompleteRequest();
+    if (!fsmCreate.IsComplete())
+    {
+      throw new InvalidOperationException("Invalid request");
+    }
+
+    await agent_.NotifyResultData(new NotifyResultDataRequest
+                                  {
+                                    CommunicationToken = agent_.Token,
+                                    Ids =
+                                    {
+                                      createdResults.Select(s => new NotifyResultDataRequest.Types.ResultIdentifier
+                                                                 {
+                                                                   ResultId  = s,
+                                                                   SessionId = agent_.SessionId,
+                                                                 }),
+                                    },
+                                  },
+                                  context.CancellationToken)
+                .ConfigureAwait(false);
+
+    var submittedTasks = await agent_.SubmitTasks(new SubmitTasksRequest
+                                                  {
+                                                    SessionId          = agent_.SessionId,
+                                                    CommunicationToken = agent_.Token,
+                                                    TaskOptions        = taskOptions,
+                                                    TaskCreations =
+                                                    {
+                                                      createdTasks.Select(creation => new SubmitTasksRequest.Types.TaskCreation
+                                                                                      {
+                                                                                        PayloadId = creation.PayloadId,
+                                                                                        DataDependencies =
+                                                                                        {
+                                                                                          creation.DataDependencies,
+                                                                                        },
+                                                                                        ExpectedOutputKeys =
+                                                                                        {
+                                                                                          creation.ExpectedOutputKeys,
+                                                                                        },
+                                                                                      }),
+                                                    },
+                                                  },
+                                                  context.CancellationToken)
+                                     .ConfigureAwait(false);
+
     return new CreateTaskReply
            {
-             Error = "No task is accepting request",
+             CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                  {
+                                    CreationStatuses =
+                                    {
+                                      submittedTasks.TaskInfos.Select(taskInfo => new CreateTaskReply.Types.CreationStatus
+                                                                                  {
+                                                                                    TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                               {
+                                                                                                 DataDependencies =
+                                                                                                 {
+                                                                                                   taskInfo.DataDependencies,
+                                                                                                 },
+                                                                                                 PayloadId = taskInfo.PayloadId,
+                                                                                                 ExpectedOutputKeys =
+                                                                                                 {
+                                                                                                   taskInfo.ExpectedOutputIds,
+                                                                                                 },
+                                                                                                 TaskId = taskInfo.TaskId,
+                                                                                               },
+                                                                                  }),
+                                    },
+                                  },
            };
   }
 

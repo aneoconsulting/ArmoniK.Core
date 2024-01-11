@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,7 +29,6 @@ using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
-using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -51,7 +49,6 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public sealed class Agent : IAgent
 {
   private readonly List<TaskCreationRequest> createdTasks_;
-  private readonly string                    folder_;
   private readonly ILogger                   logger_;
   private readonly IObjectStorage            objectStorage_;
   private readonly IPushQueueStorage         pushQueueStorage_;
@@ -61,7 +58,6 @@ public sealed class Agent : IAgent
   private readonly ISubmitter                submitter_;
   private readonly TaskData                  taskData_;
   private readonly ITaskTable                taskTable_;
-  private readonly string                    token_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -97,9 +93,16 @@ public sealed class Agent : IAgent
     sentResults_      = new Dictionary<string, long>();
     sessionData_      = sessionData;
     taskData_         = taskData;
-    folder_           = folder;
-    token_            = token;
+    Folder            = folder;
+    Token             = token;
   }
+
+  public string Token { get; }
+
+  public string Folder { get; }
+
+  public string SessionId
+    => sessionData_.SessionId;
 
   /// <inheritdoc />
   /// <exception cref="ArmoniKException"></exception>
@@ -134,174 +137,6 @@ public sealed class Agent : IAgent
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  [SuppressMessage("Usage",
-                   "CA2208:Instantiate argument exceptions correctly",
-                   Justification = "No correct value for ArgumentOutOfRange Exception in nested code")]
-  public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                                CancellationToken                     cancellationToken)
-  {
-    var                               fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
-    Task?                             completionTask      = null;
-    Channel<ReadOnlyMemory<byte>>?    payloadsChannel     = null;
-    var                               taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
-    ICollection<TaskCreationRequest>? currentTasks        = null;
-
-    using var _ = logger_.BeginNamedScope(nameof(CreateTask),
-                                          ("taskId", taskData_.TaskId),
-                                          ("sessionId", sessionData_.SessionId));
-    await foreach (var request in requestStream.ReadAllAsync(cancellationToken)
-                                               .ConfigureAwait(false))
-    {
-      // todo : check if using validator can do the job ?
-      if (string.IsNullOrEmpty(request.CommunicationToken))
-      {
-        return new CreateTaskReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Missing communication token",
-               };
-      }
-
-      if (request.CommunicationToken != token_)
-      {
-        return new CreateTaskReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Wrong communication token",
-               };
-      }
-
-      switch (request.TypeCase)
-      {
-        case CreateTaskRequest.TypeOneofCase.InitRequest:
-          fsmCreate.InitRequest();
-
-          completionTask = Task.Run(async () =>
-                                    {
-                                      currentTasks = await submitter_.CreateTasks(sessionData_.SessionId,
-                                                                                  taskData_.TaskId,
-                                                                                  request.InitRequest.TaskOptions.ToNullableTaskOptions(),
-                                                                                  taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                                  cancellationToken)
-                                                                     .ConfigureAwait(false);
-                                      createdTasks_.AddRange(currentTasks);
-                                    },
-                                    cancellationToken);
-
-          break;
-        case CreateTaskRequest.TypeOneofCase.InitTask:
-
-          switch (request.InitTask.TypeCase)
-          {
-            case InitTaskRequest.TypeOneofCase.Header:
-              fsmCreate.AddHeader();
-              payloadsChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
-                                                                              {
-                                                                                SingleWriter = true,
-                                                                                SingleReader = true,
-                                                                              });
-
-              await taskRequestsChannel.Writer.WriteAsync(new TaskRequest(request.InitTask.Header.ExpectedOutputKeys,
-                                                                          request.InitTask.Header.DataDependencies,
-                                                                          payloadsChannel.Reader.ReadAllAsync(cancellationToken)),
-                                                          cancellationToken)
-                                       .ConfigureAwait(false);
-
-              break;
-            case InitTaskRequest.TypeOneofCase.LastTask:
-              fsmCreate.CompleteRequest();
-              taskRequestsChannel.Writer.Complete();
-
-              try
-              {
-                await completionTask!.WaitAsync(cancellationToken)
-                                     .ConfigureAwait(false);
-
-                logger_.LogDebug("Send successful {reply}",
-                                 nameof(CreateTaskReply));
-
-                return new CreateTaskReply
-                       {
-                         CreationStatusList = new CreateTaskReply.Types.CreationStatusList
-                                              {
-                                                CreationStatuses =
-                                                {
-                                                  currentTasks!.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
-                                                                                      {
-                                                                                        TaskInfo = new CreateTaskReply.Types.TaskInfo
-                                                                                                   {
-                                                                                                     TaskId = taskRequest.TaskId,
-                                                                                                     DataDependencies =
-                                                                                                     {
-                                                                                                       taskRequest.DataDependencies,
-                                                                                                     },
-                                                                                                     ExpectedOutputKeys =
-                                                                                                     {
-                                                                                                       taskRequest.ExpectedOutputKeys,
-                                                                                                     },
-                                                                                                     PayloadId = taskRequest.PayloadId,
-                                                                                                   },
-                                                                                      }),
-                                                },
-                                              },
-                       };
-              }
-              catch (Exception e)
-              {
-                logger_.LogWarning(e,
-                                   "Error during task creation");
-                return new CreateTaskReply
-                       {
-                         CreationStatusList = new CreateTaskReply.Types.CreationStatusList
-                                              {
-                                                CreationStatuses =
-                                                {
-                                                  currentTasks!.Select(_ => new CreateTaskReply.Types.CreationStatus
-                                                                            {
-                                                                              Error = "An error occurred during task creation",
-                                                                            }),
-                                                },
-                                              },
-                       };
-              }
-
-            case InitTaskRequest.TypeOneofCase.None:
-            default:
-              throw new ArgumentOutOfRangeException(nameof(InitTaskRequest.TypeOneofCase.LastTask));
-          }
-
-          break;
-
-        case CreateTaskRequest.TypeOneofCase.TaskPayload:
-          switch (request.TaskPayload.TypeCase)
-          {
-            case DataChunk.TypeOneofCase.Data:
-              fsmCreate.AddDataChunk();
-              await payloadsChannel!.Writer.WriteAsync(request.TaskPayload.Data.Memory,
-                                                       cancellationToken)
-                                    .ConfigureAwait(false);
-              break;
-            case DataChunk.TypeOneofCase.DataComplete:
-              fsmCreate.CompleteData();
-              payloadsChannel!.Writer.Complete();
-              payloadsChannel = null;
-              break;
-            case DataChunk.TypeOneofCase.None:
-            default:
-              throw new ArgumentOutOfRangeException(nameof(request.TaskPayload.TypeCase));
-          }
-
-          break;
-        case CreateTaskRequest.TypeOneofCase.None:
-        default:
-          throw new ArgumentOutOfRangeException(nameof(CreateTaskRequest.TypeOneofCase.InitTask));
-      }
-    }
-
-    return new CreateTaskReply();
   }
 
   /// <inheritdoc />
@@ -373,7 +208,7 @@ public sealed class Agent : IAgent
 
     return new SubmitTasksResponse
            {
-             CommunicationToken = token_,
+             CommunicationToken = Token,
              TaskInfos =
              {
                createdTasks.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
@@ -435,7 +270,7 @@ public sealed class Agent : IAgent
 
     return new CreateResultsResponse
            {
-             CommunicationToken = token_,
+             CommunicationToken = Token,
              Results =
              {
                results.Select(r => new ResultMetaData
@@ -460,7 +295,7 @@ public sealed class Agent : IAgent
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != token_)
+    if (request.CommunicationToken != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),
@@ -469,7 +304,7 @@ public sealed class Agent : IAgent
 
     foreach (var result in request.Ids)
     {
-      await using var fs = new FileStream(Path.Combine(folder_,
+      await using var fs = new FileStream(Path.Combine(Folder,
                                                        result.ResultId),
                                           FileMode.OpenOrCreate);
       using var r       = new BinaryReader(fs);
@@ -533,7 +368,7 @@ public sealed class Agent : IAgent
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != token_)
+    if (request.CommunicationToken != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),
@@ -542,7 +377,7 @@ public sealed class Agent : IAgent
 
     try
     {
-      await using (var fs = new FileStream(Path.Combine(folder_,
+      await using (var fs = new FileStream(Path.Combine(Folder,
                                                         request.ResultId),
                                            FileMode.OpenOrCreate))
       {
@@ -584,7 +419,7 @@ public sealed class Agent : IAgent
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != token_)
+    if (request.CommunicationToken != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),
@@ -609,7 +444,7 @@ public sealed class Agent : IAgent
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != token_)
+    if (request.CommunicationToken != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),

@@ -21,8 +21,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Agent;
 
-using Grpc.Core;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <summary>
@@ -30,6 +28,12 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public interface IAgent : IDisposable
 {
+  string Token { get; }
+
+  string Folder { get; }
+
+  string SessionId { get; }
+
   /// <summary>
   ///   Finalize child task creation after the parent task succeeds
   /// </summary>
@@ -38,17 +42,6 @@ public interface IAgent : IDisposable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task FinalizeTaskCreation(CancellationToken cancellationToken);
-
-  /// <summary>
-  ///   Process requests for creating child tasks
-  /// </summary>
-  /// <param name="requestStream">Collection of requests that represents the child tasks</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Reply sent to the worker describing the status of the child task creation
-  /// </returns>
-  Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                   CancellationToken                     cancellationToken);
 
   /// <summary>
   ///   Get Common data from data storage as file in shared folder
