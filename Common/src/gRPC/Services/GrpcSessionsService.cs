@@ -213,4 +213,191 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                         "Unknown Exception, see Submitter logs"));
     }
   }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(PauseSession))]
+  public override async Task<PauseSessionResponse> PauseSession(PauseSessionRequest request,
+                                                                ServerCallContext   context)
+  {
+    try
+    {
+      return new PauseSessionResponse
+             {
+               Session = (await sessionTable_.PauseSessionAsync(request.SessionId,
+                                                                context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(PurgeSession))]
+  public override async Task<PurgeSessionResponse> PurgeSession(PurgeSessionRequest request,
+                                                                ServerCallContext   context)
+  {
+    try
+    {
+      return new PurgeSessionResponse
+             {
+               Session = (await sessionTable_.PurgeSessionAsync(request.SessionId,
+                                                                context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(DeleteSession))]
+  public override async Task<DeleteSessionResponse> DeleteSession(DeleteSessionRequest request,
+                                                                  ServerCallContext    context)
+  {
+    try
+    {
+      return new DeleteSessionResponse
+             {
+               Session = (await sessionTable_.DeleteSessionAsync(request.SessionId,
+                                                                 context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(ResumeSession))]
+  public override async Task<ResumeSessionResponse> ResumeSession(ResumeSessionRequest request,
+                                                                  ServerCallContext    context)
+  {
+    try
+    {
+      return new ResumeSessionResponse
+             {
+               Session = (await sessionTable_.ResumeSessionAsync(request.SessionId,
+                                                                 context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(StopSubmission))]
+  public override async Task<StopSubmissionResponse> StopSubmission(StopSubmissionRequest request,
+                                                                    ServerCallContext     context)
+  {
+    try
+    {
+      return new StopSubmissionResponse
+             {
+               Session = (await sessionTable_.StopSubmissionAsync(request.SessionId,
+                                                                  request.Client,
+                                                                  request.Worker,
+                                                                  context.CancellationToken)
+                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
 }

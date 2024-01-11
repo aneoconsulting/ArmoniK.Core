@@ -277,7 +277,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable!.DeleteSessionAsync(rootSessionId1_!,
+      var res = SessionTable!.RemoveSessionAsync(rootSessionId1_!,
                                                  CancellationToken.None);
       await res.ConfigureAwait(false);
 
@@ -292,7 +292,7 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable!.DeleteSessionAsync("BadSessionId",
+                                                     await SessionTable!.RemoveSessionAsync("BadSessionId",
                                                                                             CancellationToken.None)
                                                                         .ConfigureAwait(false);
                                                    });
@@ -469,6 +469,179 @@ public class SessionTableTestBase
 
       Assert.AreEqual(3,
                       res.Count);
+    }
+  }
+
+  [Test]
+  public async Task SessionLifeCycle()
+  {
+    if (RunTests)
+    {
+      var sessionId = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "partition",
+                                                              },
+                                                              Options)
+                                         .ConfigureAwait(false);
+
+      var session = await SessionTable.PauseSessionAsync(sessionId)
+                                      .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Paused);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Paused);
+
+      session = await SessionTable.ResumeSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Running);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Running);
+
+      session = await SessionTable.PurgeSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Purged);
+      Assert.NotNull(session.PurgeDate);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Purged);
+      Assert.NotNull(session.PurgeDate);
+
+
+      session = await SessionTable.DeleteSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Deleted);
+      Assert.NotNull(session.DeletionDate);
+      Assert.NotNull(session.DeletionTtl);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Deleted);
+      Assert.NotNull(session.DeletionDate);
+      Assert.NotNull(session.DeletionTtl);
+
+      // A session cannot be deleted twice
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                   {
+                                                     await SessionTable.DeleteSessionAsync(sessionId,
+                                                                                           CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
+      // A deleted session cannot be purged
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                   {
+                                                     await SessionTable.PurgeSessionAsync(sessionId,
+                                                                                          CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
+    }
+  }
+
+
+  [Test]
+  public async Task StopSubmissionShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var sessionId = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "partition",
+                                                              },
+                                                              Options)
+                                         .ConfigureAwait(false);
+
+      var session = await SessionTable.GetSessionAsync(sessionId)
+                                      .ConfigureAwait(false);
+
+      Assert.IsTrue(session.WorkerSubmission);
+      Assert.IsTrue(session.ClientSubmission);
+
+      session = await SessionTable.StopSubmissionAsync(sessionId,
+                                                       true,
+                                                       false)
+                                  .ConfigureAwait(false);
+
+      Assert.IsTrue(session.WorkerSubmission);
+      Assert.IsFalse(session.ClientSubmission);
+
+      session = await SessionTable.StopSubmissionAsync(sessionId,
+                                                       false,
+                                                       true)
+                                  .ConfigureAwait(false);
+      Assert.IsFalse(session.WorkerSubmission);
+      Assert.IsFalse(session.ClientSubmission);
+    }
+  }
+
+
+  [Test]
+  public async Task StopBothSubmissionShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var sessionId = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "partition",
+                                                              },
+                                                              Options)
+                                         .ConfigureAwait(false);
+
+      var session = await SessionTable.GetSessionAsync(sessionId)
+                                      .ConfigureAwait(false);
+
+      Assert.IsTrue(session.WorkerSubmission);
+      Assert.IsTrue(session.ClientSubmission);
+
+      session = await SessionTable.StopSubmissionAsync(sessionId,
+                                                       false,
+                                                       false)
+                                  .ConfigureAwait(false);
+      // stopping with bath false should not modify submission properties
+      Assert.IsTrue(session.WorkerSubmission);
+      Assert.IsTrue(session.ClientSubmission);
+
+      session = await SessionTable.StopSubmissionAsync(sessionId,
+                                                       true,
+                                                       true)
+                                  .ConfigureAwait(false);
+
+      Assert.IsFalse(session.WorkerSubmission);
+      Assert.IsFalse(session.ClientSubmission);
+
+      session = await SessionTable.StopSubmissionAsync(sessionId,
+                                                       true,
+                                                       true)
+                                  .ConfigureAwait(false);
+      // stopping submission a second time should work
+      Assert.IsFalse(session.WorkerSubmission);
+      Assert.IsFalse(session.ClientSubmission);
+
+      session = await SessionTable.StopSubmissionAsync(sessionId,
+                                                       false,
+                                                       false)
+                                  .ConfigureAwait(false);
+      // stopping with bath false should not modify submission properties
+      Assert.IsFalse(session.WorkerSubmission);
+      Assert.IsFalse(session.ClientSubmission);
     }
   }
 }
