@@ -258,7 +258,8 @@ public static class TaskLifeCycleHelper
                                                                               ILogger                          logger,
                                                                               CancellationToken                cancellationToken)
   {
-    var allDependencies = new HashSet<string>();
+    var allDependencies       = new HashSet<string>();
+    var completedDependencies = new List<string>();
 
     // Get all the results that are a dependency of at least one task
     foreach (var request in taskRequests)
@@ -274,6 +275,7 @@ public static class TaskLifeCycleHelper
                                               .ConfigureAwait(false))
     {
       allDependencies.Remove(resultId);
+      completedDependencies.Add(resultId);
     }
 
     // Build the mapping between tasks and their dependencies
@@ -323,12 +325,14 @@ public static class TaskLifeCycleHelper
                      .ConfigureAwait(false);
 
     // Check all the remaining dependencies
-    var completedDependencies = await resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
-                                                             result => result.ResultId,
-                                                             cancellationToken)
-                                                 .ToListAsync(cancellationToken)
-                                                 .ConfigureAwait(false);
-    allDependencies.ExceptWith(completedDependencies);
+    await foreach (var completedResult in resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                                 result => result.ResultId,
+                                                                 cancellationToken)
+                                                     .ConfigureAwait(false))
+    {
+      allDependencies.Remove(completedResult);
+      completedDependencies.Add(completedResult);
+    }
 
     // Remove all the dependencies that are already completed from the task.
     // If an Agent has completed one of the dependencies between the GetResults and this remove,

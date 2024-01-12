@@ -133,7 +133,11 @@ public record TaskData(string        SessionId,
            payloadId,
            parentTaskIds,
            dataDependencies,
-           dataDependencies.ToDictionary(EscapeKey,
+           dataDependencies.Concat(new[]
+                                   {
+                                     payloadId,
+                                   })
+                           .ToDictionary(EscapeKey,
                                          _ => true),
            expectedOutputIds,
            taskId,

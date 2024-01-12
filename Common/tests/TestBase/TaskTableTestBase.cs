@@ -2047,6 +2047,7 @@ public class TaskTableTestBase
                                                            {
                                                              dd1,
                                                              dd2,
+                                                             "PayloadId",
                                                            },
                                                            CancellationToken.None)
                      .ConfigureAwait(false);
@@ -2099,6 +2100,7 @@ public class TaskTableTestBase
                                                            },
                                                            new[]
                                                            {
+                                                             "PayloadId",
                                                              dd1,
                                                            },
                                                            CancellationToken.None)
