@@ -143,6 +143,20 @@ public sealed class Agent : IAgent
   public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                          CancellationToken            cancellationToken)
   {
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != Token)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
     var results = request.Results.Select(rc => new Result(request.SessionId,
                                                           Guid.NewGuid()
                                                               .ToString(),
@@ -179,6 +193,28 @@ public sealed class Agent : IAgent
   public async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
                                                      CancellationToken  cancellationToken)
   {
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != Token)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
+    if (request.TaskCreations.Count == 0)
+    {
+      return new SubmitTasksResponse
+             {
+               CommunicationToken = Token,
+             };
+    }
+
     var options = TaskLifeCycleHelper.ValidateSession(sessionData_,
                                                       request.TaskOptions.ToNullableTaskOptions(),
                                                       taskData_.TaskId,
@@ -232,6 +268,20 @@ public sealed class Agent : IAgent
   public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                          CancellationToken    cancellationToken)
   {
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (request.CommunicationToken != Token)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
     var results = await request.Results.Select(async rc =>
                                                {
                                                  var resultId = Guid.NewGuid()
