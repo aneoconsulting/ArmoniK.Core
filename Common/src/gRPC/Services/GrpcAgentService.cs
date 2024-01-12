@@ -24,7 +24,10 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.StateMachines;
+using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -190,27 +193,14 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                                   context.CancellationToken)
                 .ConfigureAwait(false);
 
-    var submittedTasks = await agent_.SubmitTasks(new SubmitTasksRequest
-                                                  {
-                                                    SessionId          = agent_.SessionId,
-                                                    CommunicationToken = agent_.Token,
-                                                    TaskOptions        = taskOptions,
-                                                    TaskCreations =
-                                                    {
-                                                      createdTasks.Select(creation => new SubmitTasksRequest.Types.TaskCreation
-                                                                                      {
-                                                                                        PayloadId = creation.PayloadId,
-                                                                                        DataDependencies =
-                                                                                        {
-                                                                                          creation.DataDependencies,
-                                                                                        },
-                                                                                        ExpectedOutputKeys =
-                                                                                        {
-                                                                                          creation.ExpectedOutputKeys,
-                                                                                        },
-                                                                                      }),
-                                                    },
-                                                  },
+    var submittedTasks = await agent_.SubmitTasks(createdTasks.Select(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                            creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                            creation.ExpectedOutputKeys,
+                                                                                                            creation.DataDependencies))
+                                                              .AsICollection(),
+                                                  taskOptions.ToNullableTaskOptions(),
+                                                  agent_.SessionId,
+                                                  agent_.Token,
                                                   context.CancellationToken)
                                      .ConfigureAwait(false);
 
@@ -220,22 +210,22 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                                   {
                                     CreationStatuses =
                                     {
-                                      submittedTasks.TaskInfos.Select(taskInfo => new CreateTaskReply.Types.CreationStatus
-                                                                                  {
-                                                                                    TaskInfo = new CreateTaskReply.Types.TaskInfo
-                                                                                               {
-                                                                                                 DataDependencies =
-                                                                                                 {
-                                                                                                   taskInfo.DataDependencies,
-                                                                                                 },
-                                                                                                 PayloadId = taskInfo.PayloadId,
-                                                                                                 ExpectedOutputKeys =
-                                                                                                 {
-                                                                                                   taskInfo.ExpectedOutputIds,
-                                                                                                 },
-                                                                                                 TaskId = taskInfo.TaskId,
-                                                                                               },
-                                                                                  }),
+                                      submittedTasks.Select(creationRequest => new CreateTaskReply.Types.CreationStatus
+                                                                               {
+                                                                                 TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                            {
+                                                                                              DataDependencies =
+                                                                                              {
+                                                                                                creationRequest.DataDependencies,
+                                                                                              },
+                                                                                              PayloadId = creationRequest.PayloadId,
+                                                                                              ExpectedOutputKeys =
+                                                                                              {
+                                                                                                creationRequest.ExpectedOutputKeys,
+                                                                                              },
+                                                                                              TaskId = creationRequest.TaskId,
+                                                                                            },
+                                                                               }),
                                     },
                                   },
            };
@@ -246,9 +236,13 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.GetCommonData(request,
-                                        context.CancellationToken)
-                         .ConfigureAwait(false);
+      return new DataResponse
+             {
+               ResultId = await agent_.GetCommonData(request.ResultId,
+                                                     request.CommunicationToken,
+                                                     context.CancellationToken)
+                                      .ConfigureAwait(false),
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,
@@ -261,9 +255,13 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.GetResourceData(request,
-                                          context.CancellationToken)
-                         .ConfigureAwait(false);
+      return new DataResponse
+             {
+               ResultId = await agent_.GetResourceData(request.ResultId,
+                                                       request.CommunicationToken,
+                                                       context.CancellationToken)
+                                      .ConfigureAwait(false),
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,
@@ -276,9 +274,13 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.GetDirectData(request,
-                                        context.CancellationToken)
-                         .ConfigureAwait(false);
+      return new DataResponse
+             {
+               ResultId = await agent_.GetDirectData(request.ResultId,
+                                                     request.CommunicationToken,
+                                                     context.CancellationToken)
+                                      .ConfigureAwait(false),
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,
@@ -321,9 +323,37 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.SubmitTasks(request,
-                                      context.CancellationToken)
-                         .ConfigureAwait(false);
+      var createdTasks = await agent_.SubmitTasks(request.TaskCreations.Select(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                                     creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                                     creation.ExpectedOutputKeys.ToList(),
+                                                                                                                     creation.DataDependencies.ToList()))
+                                                         .AsICollection(),
+                                                  request.TaskOptions.ToNullableTaskOptions(),
+                                                  request.SessionId,
+                                                  request.CommunicationToken,
+                                                  context.CancellationToken)
+                                     .ConfigureAwait(false);
+
+      return new SubmitTasksResponse
+             {
+               CommunicationToken = agent_.Token,
+               TaskInfos =
+               {
+                 createdTasks.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
+                                                        {
+                                                          DataDependencies =
+                                                          {
+                                                            creationRequest.DataDependencies,
+                                                          },
+                                                          ExpectedOutputIds =
+                                                          {
+                                                            creationRequest.ExpectedOutputKeys,
+                                                          },
+                                                          PayloadId = creationRequest.PayloadId,
+                                                          TaskId    = creationRequest.TaskId,
+                                                        }),
+               },
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,

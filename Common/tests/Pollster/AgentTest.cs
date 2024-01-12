@@ -320,10 +320,10 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.SubmitTasks(new SubmitTasksRequest
-                                                                    {
-                                                                      CommunicationToken = token,
-                                                                    },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>(),
+                                                                    Options.ToNullableTaskOptions(),
+                                                                    "",
+                                                                    token,
                                                                     CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
@@ -344,22 +344,16 @@ public class AgentTest
                                                                          },
                                                                          CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(new DataRequest
-                                                                      {
-                                                                        CommunicationToken = token,
-                                                                      },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData("",
+                                                                      token,
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData(new DataRequest
-                                                                      {
-                                                                        CommunicationToken = token,
-                                                                      },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData("",
+                                                                      token,
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(new DataRequest
-                                                                        {
-                                                                          CommunicationToken = token,
-                                                                        },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData("",
+                                                                        token,
                                                                         CancellationToken.None));
   }
 
@@ -369,16 +363,12 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData(new DataRequest
-                                                                                 {
-                                                                                   CommunicationToken = holder.Token,
-                                                                                 },
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData("",
+                                                                                 holder.Token,
                                                                                  CancellationToken.None));
 
-    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData(new DataRequest
-                                                                                 {
-                                                                                   CommunicationToken = holder.Token,
-                                                                                 },
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData("",
+                                                                                 holder.Token,
                                                                                  CancellationToken.None));
   }
 
@@ -387,11 +377,8 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(new DataRequest
-                                                                        {
-                                                                          CommunicationToken = holder.Token,
-                                                                          ResultId           = "DataNotExisting",
-                                                                        },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData("DataNotExisting",
+                                                                        holder.Token,
                                                                         CancellationToken.None));
   }
 
@@ -490,9 +477,9 @@ public class AgentTest
                     taskData2.Status);
   }
 
-  private static async Task<SubmitTasksResponse> CreatePayloadAndSubmit(IAgent              agent,
-                                                                        TaskOptions?        options,
-                                                                        ICollection<string> results)
+  private static async Task<ICollection<TaskCreationRequest>> CreatePayloadAndSubmit(IAgent              agent,
+                                                                                     TaskOptions?        options,
+                                                                                     ICollection<string> results)
   {
     var res = await agent.CreateResults(new CreateResultsRequest
                                         {
@@ -512,27 +499,20 @@ public class AgentTest
 
     var z = res.Results.Zip(results);
 
-    return await agent.SubmitTasks(new SubmitTasksRequest
-                                   {
-                                     CommunicationToken = agent.Token,
-                                     SessionId          = agent.SessionId,
-                                     TaskCreations =
-                                     {
-                                       z.Select(tuple => new SubmitTasksRequest.Types.TaskCreation
-                                                         {
-                                                           PayloadId = tuple.First.ResultId,
-                                                           DataDependencies =
-                                                           {
-                                                             DataDependency1,
-                                                           },
-                                                           ExpectedOutputKeys =
-                                                           {
-                                                             tuple.Second,
-                                                           },
-                                                         }),
-                                     },
-                                     TaskOptions = options,
-                                   },
+    return await agent.SubmitTasks(z.Select(tuple => new TaskSubmissionRequest(tuple.First.ResultId,
+                                                                               null,
+                                                                               new List<string>
+                                                                               {
+                                                                                 tuple.Second,
+                                                                               },
+                                                                               new List<string>
+                                                                               {
+                                                                                 DataDependency1,
+                                                                               }))
+                                    .AsICollection(),
+                                   options.ToNullableTaskOptions(),
+                                   agent.SessionId,
+                                   agent.Token,
                                    CancellationToken.None)
                       .ConfigureAwait(false);
   }
@@ -568,7 +548,7 @@ public class AgentTest
                    .ConfigureAwait(false);
 
     Assert.AreEqual(2,
-                    submit.TaskInfos.Count);
+                    submit.Count);
 
 
     var results2 = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
@@ -593,9 +573,9 @@ public class AgentTest
                     .ConfigureAwait(false);
 
     Assert.AreEqual(1,
-                    submit2.TaskInfos.Count);
+                    submit2.Count);
 
-    var taskId3 = submit2.TaskInfos.Single()
+    var taskId3 = submit2.Single()
                          .TaskId;
     var taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
                                                          CancellationToken.None)
@@ -654,7 +634,7 @@ public class AgentTest
                    .ConfigureAwait(false);
 
     Assert.AreEqual(200,
-                    submit.TaskInfos.Count);
+                    submit.Count);
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
@@ -675,11 +655,8 @@ public class AgentTest
                                                 CancellationToken.None)
                 .ConfigureAwait(false);
 
-    await holder.Agent.GetResourceData(new DataRequest
-                                       {
-                                         CommunicationToken = holder.Token,
-                                         ResultId           = "ResourceData",
-                                       },
+    await holder.Agent.GetResourceData("ResourceData",
+                                       holder.Token,
                                        CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -807,50 +784,43 @@ public class AgentTest
                                                        CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var reply = await holder.Agent.SubmitTasks(new SubmitTasksRequest
+    var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
                                                {
-                                                 CommunicationToken = holder.Token,
-                                                 SessionId          = holder.Session,
-                                                 TaskCreations =
-                                                 {
-                                                   new SubmitTasksRequest.Types.TaskCreation
-                                                   {
-                                                     ExpectedOutputKeys =
-                                                     {
-                                                       eok.Results.Select(r => r.ResultId),
-                                                     },
-                                                     PayloadId = payload.Results.Single()
-                                                                        .ResultId,
-                                                     TaskOptions = optionsNull
-                                                                     ? null
-                                                                     : Options,
-                                                   },
-                                                 },
-                                                 TaskOptions = optionsNull
-                                                                 ? null
-                                                                 : Options,
+                                                 new(payload.Results.Single()
+                                                            .ResultId,
+                                                     optionsNull
+                                                       ? null
+                                                       : Options.ToNullableTaskOptions(),
+                                                     eok.Results.Select(r => r.ResultId)
+                                                        .AsICollection(),
+                                                     new List<string>()),
                                                },
+                                               optionsNull
+                                                 ? null
+                                                 : Options.ToNullableTaskOptions(),
+                                               holder.Session,
+                                               holder.Token,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
     Assert.AreEqual(1,
-                    reply.TaskInfos.Count);
+                    reply.Count);
     Assert.AreEqual(payload.Results.Single()
                            .ResultId,
-                    reply.TaskInfos.Single()
+                    reply.Single()
                          .PayloadId);
     foreach (var eokResult in eok.Results)
     {
       Assert.Contains(eokResult.ResultId,
-                      reply.TaskInfos.Single()
-                           .ExpectedOutputIds);
+                      reply.Single()
+                           .ExpectedOutputKeys.ToList());
     }
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
 
-    var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                              .TaskId,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
@@ -890,30 +860,23 @@ public class AgentTest
                                                        CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var reply = await holder.Agent.SubmitTasks(new SubmitTasksRequest
+    var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
                                                {
-                                                 CommunicationToken = holder.Token,
-                                                 SessionId          = holder.Session,
-                                                 TaskCreations =
-                                                 {
-                                                   new SubmitTasksRequest.Types.TaskCreation
-                                                   {
-                                                     ExpectedOutputKeys =
-                                                     {
-                                                       eok.Results.Select(r => r.ResultId)
-                                                          .SkipLast(1),
-                                                     },
-                                                     PayloadId = eok.Results.Last()
-                                                                    .ResultId,
-                                                     TaskOptions = optionsNull
-                                                                     ? null
-                                                                     : Options,
-                                                   },
-                                                 },
-                                                 TaskOptions = optionsNull
-                                                                 ? null
-                                                                 : Options,
+                                                 new(eok.Results.Last()
+                                                        .ResultId,
+                                                     optionsNull
+                                                       ? null
+                                                       : Options.ToNullableTaskOptions(),
+                                                     eok.Results.Select(r => r.ResultId)
+                                                        .SkipLast(1)
+                                                        .AsICollection(),
+                                                     new List<string>()),
                                                },
+                                               optionsNull
+                                                 ? null
+                                                 : Options.ToNullableTaskOptions(),
+                                               holder.Session,
+                                               holder.Token,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
@@ -941,17 +904,17 @@ public class AgentTest
                 .ConfigureAwait(false);
 
     Assert.AreEqual(1,
-                    reply.TaskInfos.Count);
+                    reply.Count);
     Assert.AreEqual(eok.Results.Last()
                        .ResultId,
-                    reply.TaskInfos.Single()
+                    reply.Single()
                          .PayloadId);
 
     foreach (var eokResult in eok.Results.SkipLast(1))
     {
       Assert.Contains(eokResult.ResultId,
-                      reply.TaskInfos.Single()
-                           .ExpectedOutputIds);
+                      reply.Single()
+                           .ExpectedOutputKeys.ToList());
     }
 
     var uploadedResultData = await holder.ResultTable.GetResult(eok.Results.Last()
@@ -961,7 +924,7 @@ public class AgentTest
     Assert.AreEqual(ResultStatus.Created,
                     uploadedResultData.Status);
 
-    var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                              .TaskId,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
@@ -981,7 +944,7 @@ public class AgentTest
     Assert.AreEqual(10,
                     uploadedResultData.Size);
 
-    taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+    taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                          .TaskId,
                                                     CancellationToken.None)
                            .ConfigureAwait(false);

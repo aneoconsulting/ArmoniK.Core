@@ -190,81 +190,6 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
-                                                     CancellationToken  cancellationToken)
-  {
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (request.CommunicationToken != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
-
-    if (request.TaskCreations.Count == 0)
-    {
-      return new SubmitTasksResponse
-             {
-               CommunicationToken = Token,
-             };
-    }
-
-    var options = TaskLifeCycleHelper.ValidateSession(sessionData_,
-                                                      request.TaskOptions.ToNullableTaskOptions(),
-                                                      taskData_.TaskId,
-                                                      pushQueueStorage_.MaxPriority,
-                                                      logger_,
-                                                      cancellationToken);
-
-    var createdTasks = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
-                                                                                            .ToString(),
-                                                                                        creation.PayloadId,
-                                                                                        TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                          options),
-                                                                                        creation.ExpectedOutputKeys.ToList(),
-                                                                                        creation.DataDependencies.ToList()))
-                              .ToList();
-
-    await TaskLifeCycleHelper.CreateTasks(taskTable_,
-                                          resultTable_,
-                                          request.SessionId,
-                                          taskData_.TaskId,
-                                          createdTasks,
-                                          logger_,
-                                          cancellationToken)
-                             .ConfigureAwait(false);
-
-    createdTasks_.AddRange(createdTasks);
-
-    return new SubmitTasksResponse
-           {
-             CommunicationToken = Token,
-             TaskInfos =
-             {
-               createdTasks.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
-                                                      {
-                                                        DataDependencies =
-                                                        {
-                                                          creationRequest.DataDependencies,
-                                                        },
-                                                        ExpectedOutputIds =
-                                                        {
-                                                          creationRequest.ExpectedOutputKeys,
-                                                        },
-                                                        PayloadId = creationRequest.PayloadId,
-                                                        TaskId    = creationRequest.TaskId,
-                                                      }),
-             },
-           };
-  }
-
-  /// <inheritdoc />
   public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                          CancellationToken    cancellationToken)
   {
@@ -404,21 +329,22 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<DataResponse> GetResourceData(DataRequest       request,
-                                                  CancellationToken cancellationToken)
+  public async Task<string> GetResourceData(string            resultId,
+                                            string            token,
+                                            CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    if (string.IsNullOrEmpty(request.CommunicationToken))
+    if (string.IsNullOrEmpty(token))
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Missing communication token"),
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != Token)
+    if (token != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),
@@ -428,11 +354,11 @@ public sealed class Agent : IAgent
     try
     {
       await using (var fs = new FileStream(Path.Combine(Folder,
-                                                        request.ResultId),
+                                                        resultId),
                                            FileMode.OpenOrCreate))
       {
         await using var w = new BinaryWriter(fs);
-        await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+        await foreach (var chunk in objectStorage_.GetValuesAsync(resultId,
                                                                   cancellationToken)
                                                   .ConfigureAwait(false))
         {
@@ -441,10 +367,7 @@ public sealed class Agent : IAgent
       }
 
 
-      return new DataResponse
-             {
-               ResultId = request.ResultId,
-             };
+      return resultId;
     }
     catch (ObjectDataNotFoundException)
     {
@@ -455,21 +378,22 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public Task<DataResponse> GetCommonData(DataRequest       request,
-                                          CancellationToken cancellationToken)
+  public Task<string> GetCommonData(string            resultId,
+                                    string            token,
+                                    CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    if (string.IsNullOrEmpty(request.CommunicationToken))
+    if (string.IsNullOrEmpty(token))
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Missing communication token"),
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != Token)
+    if (token != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),
@@ -480,21 +404,22 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public Task<DataResponse> GetDirectData(DataRequest       request,
-                                          CancellationToken cancellationToken)
+  public Task<string> GetDirectData(string            resultId,
+                                    string            token,
+                                    CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    if (string.IsNullOrEmpty(request.CommunicationToken))
+    if (string.IsNullOrEmpty(token))
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Missing communication token"),
                              "Missing communication token");
     }
 
-    if (request.CommunicationToken != Token)
+    if (token != Token)
     {
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         "Wrong communication token"),
@@ -517,5 +442,61 @@ public sealed class Agent : IAgent
 
     logger_.LogDebug("Cancel {n} child tasks created by this task",
                      createdTasks_.Count);
+  }
+
+  /// <inheritdoc />
+  public async Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
+                                                                  TaskOptions?                       taskOptions,
+                                                                  string                             sessionId,
+                                                                  string                             token,
+                                                                  CancellationToken                  cancellationToken)
+  {
+    if (string.IsNullOrEmpty(token))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (token != Token)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
+
+    if (requests.Count == 0)
+    {
+      return new List<TaskCreationRequest>();
+    }
+
+    var options = TaskLifeCycleHelper.ValidateSession(sessionData_,
+                                                      taskOptions,
+                                                      taskData_.TaskId,
+                                                      pushQueueStorage_.MaxPriority,
+                                                      logger_,
+                                                      cancellationToken);
+
+    var createdTasks = requests.Select(creation => new TaskCreationRequest(Guid.NewGuid()
+                                                                               .ToString(),
+                                                                           creation.PayloadId,
+                                                                           TaskOptions.Merge(creation.Options,
+                                                                                             options),
+                                                                           creation.ExpectedOutputKeys.ToList(),
+                                                                           creation.DataDependencies.ToList()))
+                               .ToList();
+
+    await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                          resultTable_,
+                                          sessionId,
+                                          taskData_.TaskId,
+                                          createdTasks,
+                                          logger_,
+                                          cancellationToken)
+                             .ConfigureAwait(false);
+
+    createdTasks_.AddRange(createdTasks);
+
+    return createdTasks;
   }
 }
