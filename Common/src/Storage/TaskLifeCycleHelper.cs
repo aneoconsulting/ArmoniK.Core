@@ -330,8 +330,8 @@ public static class TaskLifeCycleHelper
                                                                  cancellationToken)
                                                      .ConfigureAwait(false))
     {
-      completedDependencies.Add(completedResult);
       allDependencies.Remove(completedResult);
+      completedDependencies.Add(completedResult);
     }
 
     // Remove all the dependencies that are already completed from the task.
