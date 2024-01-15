@@ -126,8 +126,8 @@ public static class SessionTableExtensions
                                                            string             sessionId,
                                                            CancellationToken  cancellationToken = default)
     => await sessionTable.UpdateOneSessionAsync(sessionId,
-                                                data => data.Status == SessionStatus.Running || data.Status == SessionStatus.Paused ||
-                                                        data.Status != SessionStatus.Cancelled,
+                                                data => data.Status != SessionStatus.Cancelled && data.Status != SessionStatus.Purged &&
+                                                        data.Status != SessionStatus.Deleted,
                                                 new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
                                                 {
                                                   (model => model.WorkerSubmission, false),
