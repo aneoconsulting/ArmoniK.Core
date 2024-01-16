@@ -773,7 +773,7 @@ public class TaskHandlerTest
       }
     }
 
-    public Task RemoveSessionAsync(string            sessionId,
+    public Task DeleteSessionAsync(string            sessionId,
                                    CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 

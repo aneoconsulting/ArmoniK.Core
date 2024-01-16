@@ -238,33 +238,6 @@ public static class SessionTableExtensions
                          .ConfigureAwait(false) ?? throw new SessionNotFoundException($"No open session with {sessionId} found.");
 
   /// <summary>
-  ///   Delete a session
-  /// </summary>
-  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
-  /// <param name="sessionId">Id of the session to delete</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The metadata of the deleted session
-  /// </returns>
-  /// <remarks>
-  ///   A session cannot be deleted twice
-  /// </remarks>
-  public static async Task<SessionData> DeleteSessionAsync(this ISessionTable sessionTable,
-                                                           string             sessionId,
-                                                           CancellationToken  cancellationToken = default)
-    => await sessionTable.UpdateOneSessionAsync(sessionId,
-                                                data => data.Status != SessionStatus.Deleted,
-                                                new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                                {
-                                                  (model => model.Status, SessionStatus.Deleted),
-                                                  (model => model.DeletionDate, DateTime.UtcNow),
-                                                  (model => model.DeletionTtl, DateTime.UtcNow),
-                                                },
-                                                false,
-                                                cancellationToken)
-                         .ConfigureAwait(false) ?? throw new SessionNotFoundException($"No open session with {sessionId} found.");
-
-  /// <summary>
   ///   Stops submission for client and/or worker
   /// </summary>
   /// <param name="sessionTable">Interface to manage sessions lifecycle</param>

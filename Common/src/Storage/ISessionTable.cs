@@ -72,7 +72,7 @@ public interface ISessionTable : IInitializable
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task RemoveSessionAsync(string            sessionId,
+  Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
 

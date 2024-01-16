@@ -302,11 +302,23 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
+      var session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                        context.CancellationToken)
+                                       .ConfigureAwait(false);
+
+      await sessionTable_.DeleteSessionAsync(request.SessionId,
+                                             context.CancellationToken)
+                         .ConfigureAwait(false);
+
+      session = session with
+                {
+                  Status = SessionStatus.Deleted,
+                  DeletionDate = DateTime.UtcNow,
+                };
+
       return new DeleteSessionResponse
              {
-               Session = (await sessionTable_.DeleteSessionAsync(request.SessionId,
-                                                                 context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = session.ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)

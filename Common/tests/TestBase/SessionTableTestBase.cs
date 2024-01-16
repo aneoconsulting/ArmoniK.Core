@@ -277,7 +277,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable!.RemoveSessionAsync(rootSessionId1_!,
+      var res = SessionTable!.DeleteSessionAsync(rootSessionId1_!,
                                                  CancellationToken.None);
       await res.ConfigureAwait(false);
 
@@ -292,7 +292,7 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable!.RemoveSessionAsync("BadSessionId",
+                                                     await SessionTable!.DeleteSessionAsync("BadSessionId",
                                                                                             CancellationToken.None)
                                                                         .ConfigureAwait(false);
                                                    });
@@ -523,21 +523,8 @@ public class SessionTableTestBase
       Assert.NotNull(session.PurgeDate);
 
 
-      session = await SessionTable.DeleteSessionAsync(sessionId)
-                                  .ConfigureAwait(false);
-
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Deleted);
-      Assert.NotNull(session.DeletionDate);
-      Assert.NotNull(session.DeletionTtl);
-
-      session = await SessionTable.GetSessionAsync(sessionId)
-                                  .ConfigureAwait(false);
-
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Deleted);
-      Assert.NotNull(session.DeletionDate);
-      Assert.NotNull(session.DeletionTtl);
+      await SessionTable.DeleteSessionAsync(sessionId)
+                        .ConfigureAwait(false);
 
       // A session cannot be deleted twice
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
@@ -692,18 +679,12 @@ public class SessionTableTestBase
                                             CancellationToken.None)
                         .ConfigureAwait(false);
 
-      var session = await SessionTable.GetSessionAsync(sessionId)
-                                      .ConfigureAwait(false);
-
-      Assert.AreEqual(SessionStatus.Deleted,
-                      session.Status);
-
-      Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
-                                                            {
-                                                              await SessionTable.CancelSessionAsync(sessionId,
-                                                                                                    CancellationToken.None)
-                                                                                .ConfigureAwait(false);
-                                                            });
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                   {
+                                                     await SessionTable.CancelSessionAsync(sessionId,
+                                                                                           CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
     }
   }
 }

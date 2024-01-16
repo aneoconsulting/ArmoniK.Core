@@ -99,22 +99,28 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task RemoveSessionAsync(string            sessionId,
+  public async Task DeleteSessionAsync(string            sessionId,
                                        CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(RemoveSessionAsync)}");
-    activity?.SetTag($"{nameof(RemoveSessionAsync)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(DeleteSessionAsync)}");
+    activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
                      sessionId);
 
-    var sessionCollection = sessionCollectionProvider_.Get();
+    var session = await UpdateOneSessionAsync(sessionId,
+                                              data => data.Status != SessionStatus.Deleted,
+                                              new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                              {
+                                                (model => model.Status, SessionStatus.Deleted),
+                                                (model => model.DeletionDate, DateTime.UtcNow),
+                                                (model => model.DeletionTtl, DateTime.UtcNow),
+                                              },
+                                              false,
+                                              cancellationToken)
+                    .ConfigureAwait(false);
 
-    var res = await sessionCollection.DeleteManyAsync(model => model.SessionId == sessionId,
-                                                      cancellationToken)
-                                     .ConfigureAwait(false);
-
-    if (res.DeletedCount == 0)
+    if (session is null)
     {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"No open session with {sessionId} found.");
     }
   }
 

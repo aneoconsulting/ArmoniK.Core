@@ -85,7 +85,7 @@ public class SessionTable : ISessionTable
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task RemoveSessionAsync(string            sessionId,
+  public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))

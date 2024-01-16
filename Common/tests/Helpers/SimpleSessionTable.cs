@@ -88,7 +88,7 @@ public class SimpleSessionTable : ISessionTable
        }.Select(selector.Compile())
         .ToAsyncEnumerable();
 
-  public Task RemoveSessionAsync(string            sessionId,
+  public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
