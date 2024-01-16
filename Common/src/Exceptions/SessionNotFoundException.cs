@@ -26,15 +26,20 @@ public class SessionNotFoundException : ArmoniKException
   {
   }
 
-  public SessionNotFoundException(string message)
+  public SessionNotFoundException(bool deleted)
+    => Deleted = deleted;
+
+  public SessionNotFoundException(string message,
+                                  bool   deleted = false)
     : base(message)
-  {
-  }
+    => Deleted = deleted;
 
   public SessionNotFoundException(string    message,
-                                  Exception innerException)
+                                  Exception innerException,
+                                  bool      deleted = false)
     : base(message,
            innerException)
-  {
-  }
+    => Deleted = deleted;
+
+  public bool Deleted { get; }
 }
