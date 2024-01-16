@@ -74,6 +74,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while cancelling session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be cancelled"));
+    }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,

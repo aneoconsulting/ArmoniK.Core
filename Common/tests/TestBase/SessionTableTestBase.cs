@@ -262,12 +262,12 @@ public class SessionTableTestBase
                                              CancellationToken.None)
                          .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await SessionTable.CancelSessionAsync(rootSessionId1_!,
-                                                                                           CancellationToken.None)
-                                                                       .ConfigureAwait(false);
-                                                   });
+      Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
+                                                            {
+                                                              await SessionTable!.CancelSessionAsync(rootSessionId1_!,
+                                                                                                     CancellationToken.None)
+                                                                                 .ConfigureAwait(false);
+                                                            });
     }
   }
 
@@ -667,12 +667,12 @@ public class SessionTableTestBase
       Assert.AreEqual(SessionStatus.Purged,
                       session.Status);
 
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await SessionTable.CancelSessionAsync(sessionId,
-                                                                                           CancellationToken.None)
-                                                                       .ConfigureAwait(false);
-                                                   });
+      Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
+                                                            {
+                                                              await SessionTable.CancelSessionAsync(sessionId,
+                                                                                                    CancellationToken.None)
+                                                                                .ConfigureAwait(false);
+                                                            });
     }
   }
 
@@ -698,12 +698,12 @@ public class SessionTableTestBase
       Assert.AreEqual(SessionStatus.Deleted,
                       session.Status);
 
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await SessionTable.CancelSessionAsync(sessionId,
-                                                                                           CancellationToken.None)
-                                                                       .ConfigureAwait(false);
-                                                   });
+      Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
+                                                            {
+                                                              await SessionTable.CancelSessionAsync(sessionId,
+                                                                                                    CancellationToken.None)
+                                                                                .ConfigureAwait(false);
+                                                            });
     }
   }
 }

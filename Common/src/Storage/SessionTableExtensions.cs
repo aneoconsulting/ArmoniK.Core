@@ -38,6 +38,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   Data of the session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
   public static async Task<SessionData> GetSessionAsync(this ISessionTable sessionTable,
                                                         string             sessionId,
                                                         CancellationToken  cancellationToken = default)
@@ -66,6 +67,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   Boolean representing the cancellation status of the session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
   public static async Task<bool> IsSessionCancelledAsync(this ISessionTable sessionTable,
                                                          string             sessionId,
                                                          CancellationToken  cancellationToken = default)
@@ -94,6 +96,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   Default task metadata of this session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
   public static async Task<TaskOptions> GetDefaultTaskOptionAsync(this ISessionTable sessionTable,
                                                                   string             sessionId,
                                                                   CancellationToken  cancellationToken = default)
@@ -122,22 +125,47 @@ public static class SessionTableExtensions
   /// <returns>
   ///   The metadata of the cancelled session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
   public static async Task<SessionData> CancelSessionAsync(this ISessionTable sessionTable,
                                                            string             sessionId,
                                                            CancellationToken  cancellationToken = default)
-    => await sessionTable.UpdateOneSessionAsync(sessionId,
-                                                data => data.Status != SessionStatus.Cancelled && data.Status != SessionStatus.Purged &&
-                                                        data.Status != SessionStatus.Deleted,
-                                                new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                                {
-                                                  (model => model.WorkerSubmission, false),
-                                                  (model => model.ClientSubmission, false),
-                                                  (model => model.Status, SessionStatus.Cancelled),
-                                                  (model => model.CancellationDate, DateTime.UtcNow),
-                                                },
-                                                false,
-                                                cancellationToken)
-                         .ConfigureAwait(false) ?? throw new SessionNotFoundException($"No open session with {sessionId} found.");
+  {
+    var session = await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                           data => data.Status != SessionStatus.Cancelled && data.Status != SessionStatus.Purged &&
+                                                                   data.Status != SessionStatus.Deleted,
+                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                                           {
+                                                             (model => model.WorkerSubmission, false),
+                                                             (model => model.ClientSubmission, false),
+                                                             (model => model.Status, SessionStatus.Cancelled),
+                                                             (model => model.CancellationDate, DateTime.UtcNow),
+                                                           },
+                                                           false,
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+    if (session is not null)
+    {
+      return session;
+    }
+
+    session = await sessionTable.GetSessionAsync(sessionId,
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    switch (session.Status)
+    {
+      case SessionStatus.Unspecified:
+      case SessionStatus.Running:
+      case SessionStatus.Paused:
+        throw new InvalidOperationException($"Session status should be {SessionStatus.Cancelled} but is {session.Status}");
+      case SessionStatus.Purged:
+      case SessionStatus.Cancelled:
+      case SessionStatus.Deleted:
+        throw new InvalidSessionTransitionException($"Cannot cancel a session with status {session.Status}");
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+  }
 
   /// <summary>
   ///   Pause a session
