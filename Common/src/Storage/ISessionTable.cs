@@ -65,7 +65,7 @@ public interface ISessionTable : IInitializable
                                            CancellationToken                   cancellationToken = default);
 
   /// <summary>
-  ///   Remove a session
+  ///   Delete a session
   /// </summary>
   /// <param name="sessionId">Id of the session to delete</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>

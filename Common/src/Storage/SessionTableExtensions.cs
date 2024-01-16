@@ -126,7 +126,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   The metadata of the cancelled session
   /// </returns>
-  /// <exception cref="SessionNotFoundException">if session was not found</exception>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
   /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
   public static async Task<SessionData> CancelSessionAsync(this ISessionTable sessionTable,
                                                            string             sessionId,
@@ -179,6 +179,8 @@ public static class SessionTableExtensions
   /// <returns>
   ///   The metadata of the paused session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
   public static async Task<SessionData> PauseSessionAsync(this ISessionTable sessionTable,
                                                           string             sessionId,
                                                           CancellationToken  cancellationToken = default)
@@ -227,6 +229,8 @@ public static class SessionTableExtensions
   /// <returns>
   ///   The metadata of the resumed session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
   public static async Task<SessionData> ResumeSessionAsync(this ISessionTable sessionTable,
                                                            string             sessionId,
                                                            CancellationToken  cancellationToken = default)
@@ -275,6 +279,8 @@ public static class SessionTableExtensions
   /// <returns>
   ///   The metadata of the purged session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
   public static async Task<SessionData> PurgeSessionAsync(this ISessionTable sessionTable,
                                                           string             sessionId,
                                                           CancellationToken  cancellationToken = default)
