@@ -241,8 +241,6 @@ public sealed class TaskHandler : IAsyncDisposable
           return false;
         case TaskStatus.Submitted:
           break;
-        case TaskStatus.Dispatched:
-          break;
         case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
@@ -264,6 +262,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
           return false;
+        case TaskStatus.Dispatched:
         case TaskStatus.Processing:
 
           // If OwnerPodId is empty, it means that task was partially started or released
@@ -426,13 +425,8 @@ public sealed class TaskHandler : IAsyncDisposable
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                  taskData_.Status);
 
-          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate < DateTime.UtcNow + delayBeforeAcquisition_)
-
-          {
-            messageHandler_.Status = QueueMessageStatus.Postponed;
-            logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
-            return false;
-          }
+          // todo: We could be smarter here by executing a dispatched task by 'acquiring it here' or by waiting some time
+          // before taking a decision because the task may be executed by its owner (not this agent)
 
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
