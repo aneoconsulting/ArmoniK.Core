@@ -31,6 +31,7 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
   private const    int                                  Retries = 5;
   private readonly IHttpClientFactory                   httpClientFactory_;
   private readonly ILogger<TaskProcessingCheckerClient> logger_;
+  private readonly TimeSpan                             requestTimeout_ = TimeSpan.FromSeconds(10);
 
   public TaskProcessingCheckerClient(IHttpClientFactory                   httpClientFactory,
                                      ILogger<TaskProcessingCheckerClient> logger)
@@ -45,6 +46,7 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
   {
     logger_.LogTrace("Check if task is processing");
     var client = httpClientFactory_.CreateClient();
+    client.Timeout = requestTimeout_;
 
     for (var i = 0; i < Retries; i++)
     {
@@ -62,6 +64,13 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
       {
         logger_.LogWarning(ex,
                            "Cannot communicate with other pod");
+        return false;
+      }
+      catch (OperationCanceledException ex)
+      {
+        logger_.LogWarning(ex,
+                           "Cannot communicate with other pod due to timeout of {time}",
+                           requestTimeout_);
         return false;
       }
       catch (HttpRequestException ex) when (ex.InnerException is SocketException
