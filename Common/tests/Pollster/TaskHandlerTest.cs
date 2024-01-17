@@ -742,7 +742,12 @@ public class TaskHandlerTest
       sessionData_ = new SessionData(Guid.NewGuid()
                                          .ToString(),
                                      SessionStatus.Running,
+                                     true,
+                                     true,
                                      DateTime.Now,
+                                     null,
+                                     null,
+                                     null,
                                      null,
                                      partitionIds.ToList(),
                                      defaultOptions);
@@ -768,10 +773,6 @@ public class TaskHandlerTest
       }
     }
 
-    public Task<SessionData> CancelSessionAsync(string            sessionId,
-                                                CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public Task DeleteSessionAsync(string            sessionId,
                                    CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
@@ -782,6 +783,17 @@ public class TaskHandlerTest
                                                                                         int                                    page,
                                                                                         int                                    pageSize,
                                                                                         CancellationToken                      cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
+                                                    Expression<Func<SessionData, bool>>?                                             filter,
+                                                    ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
+                                                    bool                                                                             before            = false,
+                                                    CancellationToken                                                                cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<SessionData> CancelSessionAsync(string            sessionId,
+                                                CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
   }
 

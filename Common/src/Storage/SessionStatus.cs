@@ -30,4 +30,13 @@ public enum SessionStatus
 
   /// <summary>Session is cancelled. No more tasks can be submitted and no more tasks will be executed.</summary>
   Cancelled,
+
+  /// <summary>Session is paused. No more tasks will be executed.</summary>
+  Paused,
+
+  /// <summary>Session is purged. Data will be deleted.</summary>
+  Purged,
+
+  /// <summary>Session is purged. Metadata for sessions, tasks and results will be deleted.</summary>
+  Deleted,
 }

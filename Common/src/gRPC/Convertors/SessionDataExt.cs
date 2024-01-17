@@ -43,7 +43,15 @@ public static class SessionDataExt
          {
            sessionData.PartitionIds,
          },
-         SessionId = sessionData.SessionId,
-         Status    = sessionData.Status.ToGrpcStatus(),
+         SessionId        = sessionData.SessionId,
+         Status           = sessionData.Status.ToGrpcStatus(),
+         WorkerSubmission = sessionData.WorkerSubmission,
+         ClientSubmission = sessionData.ClientSubmission,
+         DeletedAt = sessionData.DeletionDate is not null
+                       ? Timestamp.FromDateTime(sessionData.DeletionDate.Value)
+                       : null,
+         PurgedAt = sessionData.PurgeDate is not null
+                      ? Timestamp.FromDateTime(sessionData.PurgeDate.Value)
+                      : null,
        };
 }

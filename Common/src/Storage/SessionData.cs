@@ -17,15 +17,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 using ArmoniK.Core.Base.DataStructures;
+
+using FluentValidation.Internal;
 
 namespace ArmoniK.Core.Common.Storage;
 
 public record SessionData(string        SessionId,
                           SessionStatus Status,
+                          bool          ClientSubmission,
+                          bool          WorkerSubmission,
                           DateTime      CreationDate,
                           DateTime?     CancellationDate,
+                          DateTime?     PurgeDate,
+                          DateTime?     DeletionDate,
+                          DateTime?     DeletionTtl,
                           IList<string> PartitionIds,
                           TaskOptions   Options)
 {
@@ -35,10 +43,34 @@ public record SessionData(string        SessionId,
                      TaskOptions   options)
     : this(sessionId,
            status,
+           true,
+           true,
            DateTime.UtcNow,
+           null,
+           null,
+           null,
            null,
            partitionIds,
            options)
   {
+  }
+
+
+  /// <summary>
+  ///   Creates a copy of a <see cref="SessionData" /> and modify it according to given updates
+  /// </summary>
+  /// <param name="original">The object that will be copied</param>
+  /// <param name="updates">A collection of field selector and their new values</param>
+  public SessionData(SessionData                                                                      original,
+                     IEnumerable<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates)
+    : this(original)
+  {
+    foreach (var (selector, newValue) in updates)
+    {
+      GetType()
+        .GetProperty(selector.GetMember()
+                             .Name)!.SetValue(this,
+                                              newValue);
+    }
   }
 }

@@ -46,11 +46,26 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.CancellationDate))
                                                      .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.PurgeDate))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.DeletionDate))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.DeletionTtl))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.ClientSubmission))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.WorkerSubmission))
+                                                     .SetIsRequired(true);
                                                    cm.SetIgnoreExtraElements(true);
                                                    cm.MapCreator(model => new SessionData(model.SessionId,
                                                                                           model.Status,
+                                                                                          model.ClientSubmission,
+                                                                                          model.WorkerSubmission,
                                                                                           model.CreationDate,
                                                                                           model.CancellationDate,
+                                                                                          model.PurgeDate,
+                                                                                          model.DeletionDate,
+                                                                                          model.DeletionTtl,
                                                                                           model.PartitionIds,
                                                                                           model.Options));
                                                  });

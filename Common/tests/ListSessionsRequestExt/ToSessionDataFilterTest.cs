@@ -51,6 +51,11 @@ public class ToSessionDataFilterTest
 
   private readonly SessionData sessionData_ = new("SessionId",
                                                   SessionStatus.Running,
+                                                  true,
+                                                  true,
+                                                  DateTime.UtcNow,
+                                                  DateTime.UtcNow,
+                                                  DateTime.UtcNow,
                                                   DateTime.UtcNow,
                                                   DateTime.UtcNow,
                                                   new List<string>(),

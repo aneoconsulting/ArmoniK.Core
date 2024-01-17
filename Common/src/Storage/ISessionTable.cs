@@ -65,17 +65,6 @@ public interface ISessionTable : IInitializable
                                            CancellationToken                   cancellationToken = default);
 
   /// <summary>
-  ///   Cancel a session
-  /// </summary>
-  /// <param name="sessionId">Id of the session to cancel</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The metadata of the cancelled session
-  /// </returns>
-  Task<SessionData> CancelSessionAsync(string            sessionId,
-                                       CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Delete a session
   /// </summary>
   /// <param name="sessionId">Id of the session to delete</param>
@@ -109,4 +98,22 @@ public interface ISessionTable : IInitializable
                                                                                int                                    page,
                                                                                int                                    pageSize,
                                                                                CancellationToken                      cancellationToken = default);
+
+
+  /// <summary>
+  ///   Update one session with the given new values
+  /// </summary>
+  /// <param name="sessionId">Id of the sessions to be updated</param>
+  /// <param name="filter">Additional filter on the session</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="before">Whether to return metadata before update</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The session metadata before the update or null if task not found
+  /// </returns>
+  Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
+                                           Expression<Func<SessionData, bool>>?                                             filter,
+                                           ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
+                                           bool                                                                             before            = false,
+                                           CancellationToken                                                                cancellationToken = default);
 }
