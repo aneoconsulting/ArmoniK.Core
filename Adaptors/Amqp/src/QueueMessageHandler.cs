@@ -23,25 +23,29 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly Message       message_;
-  private readonly IReceiverLink receiver_;
-  private readonly ISenderLink   sender_;
+  private readonly string              linkName_;
+  private readonly Message             message_;
+  private readonly string              partitionName_;
+  private readonly ObjectPool<Session> sessionPool_;
 
-  public QueueMessageHandler(Message           message,
-                             ISenderLink       sender,
-                             IReceiverLink     receiver,
-                             string            taskId,
-                             CancellationToken cancellationToken)
+  public QueueMessageHandler(Message             message,
+                             ObjectPool<Session> sessionPool,
+                             string              partitionName,
+                             string              linkName,
+                             string              taskId,
+                             CancellationToken   cancellationToken)
   {
-    message_          = message;
-    sender_           = sender;
-    receiver_         = receiver;
     TaskId            = taskId;
+    message_          = message;
+    sessionPool_      = sessionPool;
+    partitionName_    = partitionName;
+    linkName_         = linkName;
     CancellationToken = cancellationToken;
     ReceptionDateTime = DateTime.UtcNow;
   }
@@ -68,28 +72,65 @@ public class QueueMessageHandler : IQueueMessageHandler
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        await sender_.SendAsync(new Message(message_.Body)
-                                {
-                                  Header = new Header
-                                           {
-                                             Priority = message_.Header.Priority,
-                                           },
-                                  Properties = new Properties(),
-                                })
-                     .ConfigureAwait(false);
-        receiver_.Accept(message_);
+        await sessionPool_.WithInstanceAsync(async session =>
+                                             {
+                                               var sl = new SenderLink(session,
+                                                                       linkName_,
+                                                                       partitionName_);
+                                               await sl.SendAsync(new Message(message_.Body)
+                                                                  {
+                                                                    Header = new Header
+                                                                             {
+                                                                               Priority = message_.Header.Priority,
+                                                                             },
+                                                                    Properties = new Properties(),
+                                                                  })
+                                                       .ConfigureAwait(false);
+                                             });
+
+
+        sessionPool_.WithInstance(session =>
+                                  {
+                                    var rl = new ReceiverLink(session,
+                                                              linkName_,
+                                                              partitionName_);
+
+                                    rl.Accept(message_);
+                                  });
+
         break;
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Waiting:
-        receiver_.Release(message_);
+        sessionPool_.WithInstance(session =>
+                                  {
+                                    var rl = new ReceiverLink(session,
+                                                              linkName_,
+                                                              partitionName_);
+
+                                    rl.Release(message_);
+                                  });
         break;
       case QueueMessageStatus.Processed:
       case QueueMessageStatus.Cancelled:
-        receiver_.Accept(message_);
+        sessionPool_.WithInstance(session =>
+                                  {
+                                    var rl = new ReceiverLink(session,
+                                                              linkName_,
+                                                              partitionName_);
+
+                                    rl.Accept(message_);
+                                  });
         break;
       case QueueMessageStatus.Poisonous:
-        receiver_.Reject(message_);
+        sessionPool_.WithInstance(session =>
+                                  {
+                                    var rl = new ReceiverLink(session,
+                                                              linkName_,
+                                                              partitionName_);
+
+                                    rl.Reject(message_);
+                                  });
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(Status),
