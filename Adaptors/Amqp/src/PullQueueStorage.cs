@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -37,9 +36,8 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
   private readonly ILogger<PullQueueStorage> logger_;
+  private readonly ObjectPool<Session>       sessionPool_;
 
-  private AsyncLazy<IReceiverLink>[] receivers_;
-  private AsyncLazy<ISenderLink>[]   senders_;
 
   public PullQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -53,58 +51,14 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                             $"{nameof(QueueCommon.Amqp.PartitionId)} is not defined.");
     }
 
-    logger_    = logger;
-    receivers_ = Array.Empty<AsyncLazy<IReceiverLink>>();
-    senders_   = Array.Empty<AsyncLazy<ISenderLink>>();
+    logger_ = logger;
+    sessionPool_ = new ObjectPool<Session>(200,
+                                           () => new Session(connectionAmqp.Connection),
+                                           session => !session.IsClosed);
   }
 
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
     => ConnectionAmqp.Check(tag);
-
-  public override async Task Init(CancellationToken cancellationToken)
-  {
-    if (!IsInitialized)
-    {
-      await ConnectionAmqp.Init(cancellationToken)
-                          .ConfigureAwait(false);
-
-      var session = new Session(ConnectionAmqp.Connection);
-
-      receivers_ = Enumerable.Range(0,
-                                    NbLinks)
-                             .Select(i => new AsyncLazy<IReceiverLink>(() =>
-                                                                       {
-                                                                         var rl = new ReceiverLink(session,
-                                                                                                   $"{Options.PartitionId}###ReceiverLink{i}",
-                                                                                                   $"{Options.PartitionId}###q{i}");
-
-                                                                         /* linkCredit_: the maximum number of messages the
-                                                                          * remote peer can send to the receiver.
-                                                                          * With the goal of minimizing/deactivating
-                                                                          * prefetching, a value of 1 gave us the desired
-                                                                          * behavior. We pick a default value of 2 to have "some cache". */
-                                                                         rl.SetCredit(Options.LinkCredit);
-                                                                         return rl;
-                                                                       }))
-                             .ToArray();
-
-      senders_ = Enumerable.Range(0,
-                                  NbLinks)
-                           .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(session,
-                                                                                        $"{Options.PartitionId}###SenderLink{i}",
-                                                                                        $"{Options.PartitionId}###q{i}")))
-                           .ToArray();
-
-      var senders = senders_.Select(lazy => lazy.Value)
-                            .WhenAll();
-      var receivers = receivers_.Select(lazy => lazy.Value)
-                                .WhenAll();
-      await Task.WhenAll(senders,
-                         receivers)
-                .ConfigureAwait(false);
-      IsInitialized = true;
-    }
-  }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
@@ -120,28 +74,31 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;
-      for (var i = receivers_.Length - 1; i >= 0; --i)
+      for (var i = NbLinks - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        var receiver = await receivers_[i];
-        var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
-                                    .ConfigureAwait(false);
-        if (message is null)
+
+        var linkName      = $"{Options.PartitionId}###ReceiverLink{Guid.NewGuid()}";
+        var partitionName = $"{Options.PartitionId}###q{i}";
+
+        var session = await sessionPool_.GetAsync(cancellationToken)
+                                        .ConfigureAwait(false);
+
+        var messageHandler = await BuildHandler(session,
+                                                linkName,
+                                                partitionName,
+                                                cancellationToken)
+                               .ConfigureAwait(false);
+
+        if (messageHandler is null)
         {
-          logger_.LogTrace("Message is null for receiver {receiver}",
-                           i);
           continue;
         }
 
         nbPulledMessage++;
 
-        var sender = await senders_[i];
 
-        yield return new QueueMessageHandler(message,
-                                             sender,
-                                             receiver,
-                                             Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
-                                             cancellationToken);
+        yield return messageHandler;
 
         break;
       }
@@ -150,6 +107,46 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       {
         break;
       }
+    }
+  }
+
+
+  private async Task<QueueMessageHandler?> BuildHandler(ObjectPool<Session>.Guard session,
+                                                        string                    linkName,
+                                                        string                    partitionName,
+                                                        CancellationToken         cancellationToken)
+  {
+    try
+    {
+      var rl = new ReceiverLink(session,
+                                linkName,
+                                partitionName);
+      var sl = new SenderLink(session,
+                              linkName,
+                              partitionName);
+      rl.SetCredit(Options.LinkCredit);
+
+      var message = await rl.ReceiveAsync(TimeSpan.FromMilliseconds(100))
+                            .ConfigureAwait(false);
+
+      if (message is not null)
+      {
+        return new QueueMessageHandler(message,
+                                       session,
+                                       rl,
+                                       sl,
+                                       Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
+                                       cancellationToken);
+      }
+
+      logger_.LogTrace("Message is null");
+      return null;
+    }
+    catch (Exception)
+    {
+      await session.DisposeAsync()
+                   .ConfigureAwait(false);
+      throw;
     }
   }
 }

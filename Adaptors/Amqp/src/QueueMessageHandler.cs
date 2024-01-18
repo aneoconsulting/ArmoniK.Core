@@ -23,25 +23,29 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly Message       message_;
-  private readonly IReceiverLink receiver_;
-  private readonly ISenderLink   sender_;
+  private readonly Message                   message_;
+  private readonly ReceiverLink              receiverLink_;
+  private readonly SenderLink                senderLink_;
+  private readonly ObjectPool<Session>.Guard session_;
 
-  public QueueMessageHandler(Message           message,
-                             ISenderLink       sender,
-                             IReceiverLink     receiver,
-                             string            taskId,
-                             CancellationToken cancellationToken)
+  public QueueMessageHandler(Message                   message,
+                             ObjectPool<Session>.Guard session,
+                             ReceiverLink              receiverLink,
+                             SenderLink                senderLink,
+                             string                    taskId,
+                             CancellationToken         cancellationToken)
   {
-    message_          = message;
-    sender_           = sender;
-    receiver_         = receiver;
     TaskId            = taskId;
+    message_          = message;
+    session_          = session;
+    receiverLink_     = receiverLink;
+    senderLink_       = senderLink;
     CancellationToken = cancellationToken;
     ReceptionDateTime = DateTime.UtcNow;
   }
@@ -68,28 +72,28 @@ public class QueueMessageHandler : IQueueMessageHandler
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        await sender_.SendAsync(new Message(message_.Body)
-                                {
-                                  Header = new Header
-                                           {
-                                             Priority = message_.Header.Priority,
-                                           },
-                                  Properties = new Properties(),
-                                })
-                     .ConfigureAwait(false);
-        receiver_.Accept(message_);
+        await senderLink_.SendAsync(new Message(message_.Body)
+                                    {
+                                      Header = new Header
+                                               {
+                                                 Priority = message_.Header.Priority,
+                                               },
+                                      Properties = new Properties(),
+                                    })
+                         .ConfigureAwait(false);
+        receiverLink_.Accept(message_);
         break;
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Waiting:
-        receiver_.Release(message_);
+        receiverLink_.Release(message_);
         break;
       case QueueMessageStatus.Processed:
       case QueueMessageStatus.Cancelled:
-        receiver_.Accept(message_);
+        receiverLink_.Accept(message_);
         break;
       case QueueMessageStatus.Poisonous:
-        receiver_.Reject(message_);
+        receiverLink_.Reject(message_);
         break;
       default:
         throw new ArgumentOutOfRangeException(nameof(Status),
@@ -97,6 +101,8 @@ public class QueueMessageHandler : IQueueMessageHandler
                                               null);
     }
 
+    await session_.DisposeAsync()
+                  .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }
