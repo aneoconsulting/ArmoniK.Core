@@ -174,10 +174,11 @@ public sealed class TaskHandler : IAsyncDisposable
   ///   Acquisition of the task in the message given to the constructor
   /// </summary>
   /// <returns>
-  ///   Bool representing whether the task has been acquired
+  ///   Integer representing whether the task has been acquired
+  ///   Acquired when return is 0
   /// </returns>
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
-  public async Task<bool> AcquireTask()
+  public async Task<int> AcquireTask()
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
     using var _ = logger_.BeginNamedScope("Acquiring task",
@@ -197,7 +198,7 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Task data read but execution cancellation requested");
-        return false;
+        return 1;
       }
 
       /*
@@ -230,15 +231,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
 
-          return false;
+          return 2;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
           messageHandler_.Status = QueueMessageStatus.Processed;
-          return false;
+          return 3;
         case TaskStatus.Creating:
           logger_.LogInformation("Task is still creating");
           messageHandler_.Status = QueueMessageStatus.Postponed;
-          return false;
+          return 4;
         case TaskStatus.Submitted:
           break;
         case TaskStatus.Dispatched:
@@ -251,7 +252,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           messageHandler_.TaskId,
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
-          return false;
+          return 5;
         case TaskStatus.Timeout:
           logger_.LogInformation("Task was timeout elsewhere ; taking over here");
           break;
@@ -263,7 +264,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           messageHandler_.TaskId,
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
-          return false;
+          return 6;
         case TaskStatus.Processing:
 
           // If OwnerPodId is empty, it means that task was partially started or released
@@ -279,7 +280,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
-            return false;
+            return 7;
           }
 
           // we check if the task was acquired by this pod
@@ -316,23 +317,23 @@ public sealed class TaskHandler : IAsyncDisposable
                                                    CancellationToken.None)
                                 .ConfigureAwait(false);
                 messageHandler_.Status = QueueMessageStatus.Processed;
-                return false;
+                return 8;
               }
             }
             // task is processing elsewhere so message is duplicated
             else
             {
               messageHandler_.Status = QueueMessageStatus.Processed;
-              return false;
+              return 9;
             }
           }
 
           logger_.LogWarning("Task already in processing on this pod. This scenario should be managed earlier. Message likely duplicated. Removing it from queue");
           messageHandler_.Status = QueueMessageStatus.Processed;
-          return false;
+          return 10;
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
-          return false;
+          return 11;
         case TaskStatus.Unspecified:
         default:
           logger_.LogCritical("Task was in an unknown state {state}",
@@ -365,14 +366,14 @@ public sealed class TaskHandler : IAsyncDisposable
                                                         CancellationToken.None)
                                    .ConfigureAwait(false);
 
-        return false;
+        return 12;
       }
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Session running but execution cancellation requested");
-        return false;
+        return 13;
       }
 
       taskData_ = taskData_ with
@@ -393,14 +394,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
-        return false;
+        return 14;
       }
 
       // empty OwnerPodId means that the task was not acquired because not ready
       if (taskData_.OwnerPodId == "")
       {
+        logger_.LogDebug("Task acquired but not ready (empty owner pod id)");
         messageHandler_.Status = QueueMessageStatus.Postponed;
-        return false;
+        return 15;
       }
 
       // we check if the task was acquired by this pod
@@ -426,12 +428,12 @@ public sealed class TaskHandler : IAsyncDisposable
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                  taskData_.Status);
 
-          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate < DateTime.UtcNow + delayBeforeAcquisition_)
+          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)
 
           {
             messageHandler_.Status = QueueMessageStatus.Postponed;
             logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
-            return false;
+            return 16;
           }
 
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
@@ -463,21 +465,21 @@ public sealed class TaskHandler : IAsyncDisposable
                                                             messageHandler_.TaskId,
                                                             CancellationToken.None)
                                        .ConfigureAwait(false);
-            return false;
+            return 17;
           }
         }
 
         // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
         // and do not acquire the task
         messageHandler_.Status = QueueMessageStatus.Processed;
-        return false;
+        return 18;
       }
 
       if (taskData_.OwnerPodId == ownerPodId_ && taskData_.Status != TaskStatus.Dispatched)
       {
         logger_.LogInformation("Task is already managed by this agent; message likely to be duplicated");
         messageHandler_.Status = QueueMessageStatus.Processed;
-        return false;
+        return 19;
       }
 
       if (cancellationTokenSource_.IsCancellationRequested)
@@ -487,18 +489,18 @@ public sealed class TaskHandler : IAsyncDisposable
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
-        return false;
+        return 20;
       }
 
       logger_.LogDebug("Task preconditions are OK");
-      return true;
+      return 0;
     }
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
                          "TaskId coming from message queue was not found, delete message from queue");
       messageHandler_.Status = QueueMessageStatus.Processed;
-      return false;
+      return 21;
     }
   }
 

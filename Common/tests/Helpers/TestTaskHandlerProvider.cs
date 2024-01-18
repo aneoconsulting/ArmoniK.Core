@@ -66,8 +66,9 @@ public class TestTaskHandlerProvider : IDisposable
                                  IAgentHandler           agentHandler,
                                  IQueueMessageHandler    queueStorage,
                                  CancellationTokenSource cancellationTokenSource,
-                                 ITaskTable?             inputTaskTable    = null,
-                                 ISessionTable?          inputSessionTable = null)
+                                 ITaskTable?             inputTaskTable        = null,
+                                 ISessionTable?          inputSessionTable     = null,
+                                 ITaskProcessingChecker? taskProcessingChecker = null)
   {
     var logger = NullLogger.Instance;
 
@@ -165,8 +166,16 @@ public class TestTaskHandlerProvider : IDisposable
                                                      {
                                                      },
                                                      cancellationTokenSource))
-           .AddSingleton<DataPrefetcher>()
-           .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>();
+           .AddSingleton<DataPrefetcher>();
+
+    if (taskProcessingChecker is not null)
+    {
+      builder.Services.AddSingleton(taskProcessingChecker);
+    }
+    else
+    {
+      builder.Services.AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>();
+    }
 
     if (inputTaskTable is not null)
     {

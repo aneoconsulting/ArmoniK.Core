@@ -520,9 +520,10 @@ public static class TaskTableExtensions
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
-    taskTable.Logger.LogInformation("Acquire task {task} on {podName}",
+    taskTable.Logger.LogInformation("Acquire task {task} on {podName} with {success}",
                                     taskData.TaskId,
-                                    taskData.OwnerPodId);
+                                    taskData.OwnerPodId,
+                                    res is not null);
 
     return res ?? await taskTable.ReadTaskAsync(taskData.TaskId,
                                                 cancellationToken)

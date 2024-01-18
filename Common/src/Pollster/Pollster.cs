@@ -356,7 +356,7 @@ public class Pollster : IInitializable
               var precondition = await taskHandler.AcquireTask()
                                                   .ConfigureAwait(false);
 
-              if (precondition)
+              if (precondition == 0)
               {
                 try
                 {
