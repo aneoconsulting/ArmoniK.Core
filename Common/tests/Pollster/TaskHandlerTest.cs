@@ -89,8 +89,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreNotEqual(0,
-                       acquired);
+    Assert.AreEqual(21,
+                    acquired);
   }
 
   private static async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string taskRetriedId, string sessionId)> InitProviderRunnableTask(
@@ -340,8 +340,43 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreNotEqual(0,
-                       acquired);
+    Assert.AreEqual(2,
+                    acquired);
+    Assert.AreEqual(taskId,
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
+  }
+
+  [Test]
+  public async Task AcquireTaskWithCancelledTokenInHandlerShouldFail()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+    var cts               = new CancellationTokenSource();
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh,
+                                                                cts);
+
+    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                         .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+    cts.Cancel();
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(1,
+                    acquired);
     Assert.AreEqual(taskId,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
                                        .TaskId);
@@ -387,24 +422,12 @@ public class TaskHandlerTest
                                   new Output(false,
                                              ""));
 
-
-      yield return new TestCaseData(taskData,
-                                    true).Returns(4)
-                                         .SetArgDisplayNames("Creating task");
-
       yield return new TestCaseData(taskData with
                                     {
-                                      Status = TaskStatus.Cancelled,
+                                      Status = TaskStatus.Dispatched,
                                     },
-                                    true).Returns(6)
-                                         .SetArgDisplayNames("Cancelled task");
-
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Completed,
-                                    },
-                                    true).Returns(3)
-                                         .SetArgDisplayNames("Completed task");
+                                    true).Returns(0)
+                                         .SetArgDisplayNames("Dispatched same owner"); // not sure this case should return true
 
       yield return new TestCaseData(taskData with
                                     {
@@ -413,21 +436,19 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(0)
                                          .SetArgDisplayNames("Submitted task");
+      // 1 is tested
+      // 2 is tested
 
       yield return new TestCaseData(taskData with
                                     {
-                                      Status = TaskStatus.Submitted,
+                                      Status = TaskStatus.Completed,
                                     },
-                                    true).Returns(19)
-                                         .SetArgDisplayNames("Submitted task with same owner");
+                                    true).Returns(3)
+                                         .SetArgDisplayNames("Completed task");
 
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Submitted,
-                                      OwnerPodId = "anotherownerpodid",
-                                    },
-                                    true).Returns(18)
-                                         .SetArgDisplayNames("Submitted task with another owner");
+      yield return new TestCaseData(taskData,
+                                    true).Returns(4)
+                                         .SetArgDisplayNames("Creating task");
 
       yield return new TestCaseData(taskData with
                                     {
@@ -438,10 +459,50 @@ public class TaskHandlerTest
 
       yield return new TestCaseData(taskData with
                                     {
+                                      Status = TaskStatus.Cancelled,
+                                    },
+                                    true).Returns(6)
+                                         .SetArgDisplayNames("Cancelled task");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Processing,
+                                      OwnerPodId = "",
+                                    },
+                                    true).Returns(7)
+                                         .SetArgDisplayNames("Processing task");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Processing,
+                                      OwnerPodId = "another",
+                                    },
+                                    false).Returns(8)
+                                          .SetArgDisplayNames("Processing task on another agent check false");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Processing,
+                                      OwnerPodId = "another",
+                                    },
+                                    true).Returns(9)
+                                         .SetArgDisplayNames("Processing task on another agent check true");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Processing,
+                                    },
+                                    true).Returns(10)
+                                         .SetArgDisplayNames("Processing task same agent");
+
+      yield return new TestCaseData(taskData with
+                                    {
                                       Status = TaskStatus.Retried,
                                     },
                                     true).Returns(11)
                                          .SetArgDisplayNames("Retried task");
+
+      // 12 is already tested
 
       yield return new TestCaseData(taskData with
                                     {
@@ -454,9 +515,19 @@ public class TaskHandlerTest
       yield return new TestCaseData(taskData with
                                     {
                                       Status = TaskStatus.Dispatched,
+                                      OwnerPodId = "anotherowner",
+                                      AcquisitionDate = DateTime.UtcNow + TimeSpan.FromDays(1),
                                     },
-                                    true).Returns(0)
-                                         .SetArgDisplayNames("Dispatched same owner"); // not sure this case should return true
+                                    false).Returns(16)
+                                          .SetArgDisplayNames("Dispatched different owner false check date later");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Submitted,
+                                      OwnerPodId = "anotherownerpodid",
+                                    },
+                                    true).Returns(18)
+                                         .SetArgDisplayNames("Submitted task with another owner");
 
       yield return new TestCaseData(taskData with
                                     {
@@ -478,19 +549,17 @@ public class TaskHandlerTest
                                     {
                                       Status = TaskStatus.Dispatched,
                                       OwnerPodId = "anotherowner",
-                                      AcquisitionDate = DateTime.UtcNow + TimeSpan.FromDays(1),
-                                    },
-                                    false).Returns(16)
-                                          .SetArgDisplayNames("Dispatched different owner false check date later");
-
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Dispatched,
-                                      OwnerPodId = "anotherowner",
                                       AcquisitionDate = DateTime.UtcNow - TimeSpan.FromSeconds(20),
                                     },
                                     false).Returns(18)
                                           .SetArgDisplayNames("Dispatched different owner false check date before");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Submitted,
+                                    },
+                                    true).Returns(19)
+                                         .SetArgDisplayNames("Submitted task with same owner");
     }
   }
 
@@ -870,8 +939,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreNotEqual(0,
-                       acquired);
+    Assert.AreEqual(12,
+                    acquired);
     Assert.AreEqual(taskId,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
                                        .TaskId);
@@ -903,8 +972,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreNotEqual(0,
-                       acquired);
+    Assert.AreEqual(4,
+                    acquired);
   }
 
   public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
