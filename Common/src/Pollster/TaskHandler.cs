@@ -625,12 +625,21 @@ public sealed class TaskHandler : IAsyncDisposable
                                                                workerConnectionCts_.Token)
                                           .ConfigureAwait(false);
 
+      taskData_ = taskData_ with
+                  {
+                    ProcessedDate = DateTime.UtcNow,
+                  };
+
       logger_.LogDebug("Stop agent server");
       await agentHandler_.Stop(workerConnectionCts_.Token)
                          .ConfigureAwait(false);
     }
     catch (Exception e)
     {
+      taskData_ = taskData_ with
+                  {
+                    ProcessedDate = DateTime.UtcNow,
+                  };
       await HandleErrorTaskExecutionAsync(e,
                                           taskData_,
                                           cancellationTokenSource_.Token)

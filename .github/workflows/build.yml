@@ -207,44 +207,8 @@ jobs:
     - name: Push the package
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
-  imagesCore:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - buildProjects
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
 
-    - name: Setup just
-      run: |
-          sudo snap install --edge --classic just
-
-    - name: login
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
-
-    - name: Build
-      run: |
-        just tag=$VERSION build-core
-
-    - name: push
-      run: |
-        while IFS= read -r IMG
-        do
-          docker push $IMG:${VERSION}
-        done <<-EOF
-        dockerhubaneo/armonik_control
-        dockerhubaneo/armonik_control_partition_metrics
-        dockerhubaneo/armonik_control_metrics
-        dockerhubaneo/armonik_pollingagent
-        EOF
-
-  imagesRe:
+  images:
     runs-on: ubuntu-latest
     needs:
       - versionning
@@ -254,149 +218,40 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        include:
-        -  img : dockerhubaneo/armonik_core_stream_test_worker
-           path: ./Tests/Stream/Server/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_client
-           path: ./Tests/Stream/Client/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
-           path: ./Tests/HtcMock/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_client
-           path: ./Tests/HtcMock/Client/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_worker
-           path: ./Tests/Bench/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_client
-           path: ./Tests/Bench/Client/src/Dockerfile
+        type:
+          - build-core
+          - buildBenchClient
+          - worker=bench buildWorker
+          - buildStreamClient
+          - worker=stream buildWorker
+          - buildHtcmockClient
+          - worker=htcmock buildWorker
     steps:
     - name: Checkout
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       with:
         ref: ${{ github.ref }}
-        submodules: true
 
-    - name: login
-      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
-
-    - name: Build
-      run: docker build --build-arg VERSION=$VERSION -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
-
-    - name: push
-      run: docker push ${{ matrix.img }}:$VERSION
-
-  imagesCoreC:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - imagesCore
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3  
 
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
-
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
-
     - name: login
-      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_LOGIN }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Build
-      run: just tag=${VERSION}-arm builder=buildx build-core
-
-    - name: Rename
       run: |
-        while IFS= read -r IMG
-        do
-          docker buildx imagetools create $IMG:${VERSION} --tag $IMG:${VERSION} --append $IMG:${VERSION}-arm
-        done <<-EOF
-        dockerhubaneo/armonik_control
-        dockerhubaneo/armonik_control_partition_metrics
-        dockerhubaneo/armonik_control_metrics
-        dockerhubaneo/armonik_pollingagent
-        EOF
+        just tag=$VERSION platform=linux/arm64,linux/amd64 load=false push=true ${{ matrix.type }}
 
-  imagesReC:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - imagesRe
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        -  img : dockerhubaneo/armonik_core_stream_test_worker
-           path: ./Tests/Stream/Server/Dockerfile
-        -  img : dockerhubaneo/armonik_core_stream_test_client
-           path: ./Tests/Stream/Client/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
-           path: ./Tests/HtcMock/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_htcmock_test_client
-           path: ./Tests/HtcMock/Client/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_worker
-           path: ./Tests/Bench/Server/src/Dockerfile
-        -  img : dockerhubaneo/armonik_core_bench_test_client
-           path: ./Tests/Bench/Client/src/Dockerfile
-    steps:
-    - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3
-
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
-
-    - name: login
-      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_LOGIN }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-    - name: platforms
-      run: echo ${{ steps.buildx.outputs.platforms }}
-
-    - name: Build and push
-      uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
-      with:
-        file: ${{ matrix.path }}
-        context: .
-        platforms: linux/arm64
-        build-args: |
-          VERSION=${{ needs.versionning.outputs.version }}
-        push: true
-        tags: |
-            ${{ matrix.img }}:${{ needs.versionning.outputs.version }}-arm
-
-    - name: Create multi-arch manifest
-      run: docker buildx imagetools create ${{ matrix.img }}:${VERSION} --tag ${{ matrix.img }}:${VERSION} --append ${{ matrix.img }}:${VERSION}-arm
 
   testStreamDC:
     needs:
       - versionning
-      - imagesCore
-      - imagesRe
+      - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -481,8 +336,7 @@ jobs:
   testHtcMockDC:
     needs:
       - versionning
-      - imagesCore
-      - imagesRe
+      - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -655,8 +509,7 @@ jobs:
   testConnectivity:
     needs:
       - versionning
-      - imagesCore
-      - imagesRe
+      - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -739,8 +592,7 @@ jobs:
   runBench:
     needs:
       - versionning
-      - imagesCore
-      - imagesRe
+      - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -848,8 +700,7 @@ jobs:
   defaultPartitionMock:
     needs:
       - versionning
-      - imagesCore
-      - imagesRe
+      - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -921,8 +772,7 @@ jobs:
   healthCheckTest:
     needs:
       - versionning
-      - imagesCore
-      - imagesRe
+      - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
@@ -1068,8 +918,7 @@ jobs:
       - testHtcMockDC
       - defaultPartitionMock
       - testStreamDC
-      - imagesCore
-      - imagesRe
+      - images
       - runBench
       - healthCheckTest
       - testConnectivity

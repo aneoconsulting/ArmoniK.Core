@@ -20,26 +20,21 @@ using System;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class SessionNotFoundException : ArmoniKException
+public class InvalidSessionTransitionException : ArmoniKException
 {
-  public SessionNotFoundException()
+  public InvalidSessionTransitionException()
   {
   }
 
-  public SessionNotFoundException(bool deleted)
-    => Deleted = deleted;
-
-  public SessionNotFoundException(string message,
-                                  bool   deleted = false)
+  public InvalidSessionTransitionException(string message)
     : base(message)
-    => Deleted = deleted;
+  {
+  }
 
-  public SessionNotFoundException(string    message,
-                                  Exception innerException,
-                                  bool      deleted = false)
+  public InvalidSessionTransitionException(string    message,
+                                           Exception innerException)
     : base(message,
            innerException)
-    => Deleted = deleted;
-
-  public bool Deleted { get; }
+  {
+  }
 }

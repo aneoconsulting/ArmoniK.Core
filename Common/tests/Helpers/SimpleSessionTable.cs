@@ -73,7 +73,12 @@ public class SimpleSessionTable : ISessionTable
        {
          new(SessionId,
              SessionStatus.Running,
+             true,
+             true,
              DateTime.Today.ToUniversalTime(),
+             null,
+             null,
+             null,
              null,
              new List<string>
              {
@@ -82,19 +87,6 @@ public class SimpleSessionTable : ISessionTable
              TaskOptions),
        }.Select(selector.Compile())
         .ToAsyncEnumerable();
-
-
-  public Task<SessionData> CancelSessionAsync(string            sessionId,
-                                              CancellationToken cancellationToken = default)
-    => Task.FromResult(new SessionData(SessionId,
-                                       SessionStatus.Cancelled,
-                                       DateTime.Today.ToUniversalTime(),
-                                       DateTime.Now.ToUniversalTime(),
-                                       new List<string>
-                                       {
-                                         PartitionId,
-                                       },
-                                       TaskOptions));
 
   public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
@@ -110,7 +102,12 @@ public class SimpleSessionTable : ISessionTable
                                                                               {
                                                                                 new(SessionId,
                                                                                     SessionStatus.Running,
+                                                                                    true,
+                                                                                    true,
                                                                                     DateTime.Today.ToUniversalTime(),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
                                                                                     null,
                                                                                     new List<string>
                                                                                     {
@@ -118,4 +115,24 @@ public class SimpleSessionTable : ISessionTable
                                                                                     },
                                                                                     TaskOptions),
                                                                               }.AsEnumerable(), 1));
+
+  public Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
+                                                  Expression<Func<SessionData, bool>>?                                             filter,
+                                                  ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
+                                                  bool                                                                             before            = false,
+                                                  CancellationToken                                                                cancellationToken = default)
+    => Task.FromResult<SessionData?>(new SessionData(SessionId,
+                                                     SessionStatus.Running,
+                                                     true,
+                                                     true,
+                                                     DateTime.Today.ToUniversalTime(),
+                                                     DateTime.Now.ToUniversalTime(),
+                                                     DateTime.Now.ToUniversalTime(),
+                                                     DateTime.Now.ToUniversalTime(),
+                                                     DateTime.Now.ToUniversalTime(),
+                                                     new List<string>
+                                                     {
+                                                       PartitionId,
+                                                     },
+                                                     TaskOptions));
 }

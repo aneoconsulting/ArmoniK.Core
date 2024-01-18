@@ -53,11 +53,13 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="CreationDate">Date when the task is created</param>
 /// <param name="SubmittedDate">Date when the task is submitted</param>
 /// <param name="StartDate">Date when the task execution begins</param>
+/// <param name="ProcessedDate">Date when the task execution ends</param>
 /// <param name="EndDate">Date when the task ends</param>
 /// <param name="ReceptionDate">Date when the task is received by the polling agent</param>
 /// <param name="AcquisitionDate">Date when the task is acquired by the pollster</param>
 /// <param name="ProcessingToEndDuration">Duration between the start of processing and the end of the task</param>
 /// <param name="CreationToEndDuration">Duration between the creation and the end of the task</param>
+/// <param name="ReceivedToEndDuration">Duration between the reception and the end of the task</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
 public record TaskData(string        SessionId,
@@ -84,9 +86,11 @@ public record TaskData(string        SessionId,
                        DateTime?                 EndDate,
                        DateTime?                 ReceptionDate,
                        DateTime?                 AcquisitionDate,
+                       DateTime?                 ProcessedDate,
                        DateTime?                 PodTtl,
                        TimeSpan?                 ProcessingToEndDuration,
                        TimeSpan?                 CreationToEndDuration,
+                       TimeSpan?                 ReceivedToEndDuration,
                        Output                    Output)
 {
   /// <summary>
@@ -129,7 +133,11 @@ public record TaskData(string        SessionId,
            payloadId,
            parentTaskIds,
            dataDependencies,
-           dataDependencies.ToDictionary(EscapeKey,
+           dataDependencies.Concat(new[]
+                                   {
+                                     payloadId,
+                                   })
+                           .ToDictionary(EscapeKey,
                                          _ => true),
            expectedOutputIds,
            taskId,
@@ -138,6 +146,8 @@ public record TaskData(string        SessionId,
            "",
            options,
            DateTime.UtcNow,
+           null,
+           null,
            null,
            null,
            null,

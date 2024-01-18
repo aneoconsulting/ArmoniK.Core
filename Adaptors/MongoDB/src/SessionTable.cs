@@ -99,41 +99,6 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task<SessionData> CancelSessionAsync(string            sessionId,
-                                                    CancellationToken cancellationToken = default)
-  {
-    using var _        = Logger.LogFunction(sessionId);
-    using var activity = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
-    activity?.SetTag($"{nameof(CancelSessionAsync)}_sessionId",
-                     sessionId);
-
-    var sessionCollection = sessionCollectionProvider_.Get();
-
-    var filterDefinition = new FilterDefinitionBuilder<SessionData>().Where(model => model.SessionId == sessionId && model.Status == SessionStatus.Running);
-
-    var resSession = await sessionCollection.FindOneAndUpdateAsync(filterDefinition,
-                                                                   Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                                    SessionStatus.Cancelled)
-                                                                                        .Set(model => model.CancellationDate,
-                                                                                             DateTime.UtcNow),
-                                                                   new FindOneAndUpdateOptions<SessionData>
-                                                                   {
-                                                                     ReturnDocument = ReturnDocument.After,
-                                                                   },
-                                                                   cancellationToken)
-                                            .ConfigureAwait(false);
-
-#pragma warning disable IDE0270 // null check can be simplified with a less readable approach
-    if (resSession is null)
-#pragma warning restore IDE0270
-    {
-      throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
-    }
-
-    return resSession;
-  }
-
-  /// <inheritdoc />
   public async Task DeleteSessionAsync(string            sessionId,
                                        CancellationToken cancellationToken = default)
   {
@@ -141,18 +106,25 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
                      sessionId);
 
-    var sessionCollection = sessionCollectionProvider_.Get();
+    var session = await UpdateOneSessionAsync(sessionId,
+                                              data => data.Status != SessionStatus.Deleted,
+                                              new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                              {
+                                                (model => model.Status, SessionStatus.Deleted),
+                                                (model => model.DeletionDate, DateTime.UtcNow),
+                                                (model => model.DeletionTtl, DateTime.UtcNow),
+                                              },
+                                              false,
+                                              cancellationToken)
+                    .ConfigureAwait(false);
 
-    var res = await sessionCollection.DeleteManyAsync(model => model.SessionId == sessionId,
-                                                      cancellationToken)
-                                     .ConfigureAwait(false);
-
-    if (res.DeletedCount == 0)
+    if (session is null)
     {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"No open session with {sessionId} found.");
     }
   }
 
+  /// <inheritdoc />
   public async Task<(IEnumerable<SessionData> sessions, long totalCount)> ListSessionsAsync(Expression<Func<SessionData, bool>>    filter,
                                                                                             Expression<Func<SessionData, object?>> orderField,
                                                                                             bool                                   ascOrder,
@@ -213,4 +185,48 @@ public class SessionTable : ISessionTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
+
+  /// <inheritdoc />
+  public async Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
+                                                        Expression<Func<SessionData, bool>>?                                             filter,
+                                                        ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
+                                                        bool                                                                             before            = false,
+                                                        CancellationToken                                                                cancellationToken = default)
+  {
+    using var activity          = activitySource_.StartActivity($"{nameof(UpdateOneSessionAsync)}");
+    var       sessionCollection = sessionCollectionProvider_.Get();
+
+    var updateDefinition = new UpdateDefinitionBuilder<SessionData>().Combine();
+
+    foreach (var (selector, newValue) in updates)
+    {
+      updateDefinition = updateDefinition.Set(selector,
+                                              newValue);
+    }
+
+    var where = new FilterDefinitionBuilder<SessionData>().Where(x => x.SessionId == sessionId);
+
+    if (filter is not null)
+    {
+      where = new FilterDefinitionBuilder<SessionData>().And(where,
+                                                             new FilterDefinitionBuilder<SessionData>().Where(filter));
+    }
+
+    var sessionData = await sessionCollection.FindOneAndUpdateAsync(where,
+                                                                    updateDefinition,
+                                                                    new FindOneAndUpdateOptions<SessionData>
+                                                                    {
+                                                                      ReturnDocument = before
+                                                                                         ? ReturnDocument.Before
+                                                                                         : ReturnDocument.After,
+                                                                    },
+                                                                    cancellationToken)
+                                             .ConfigureAwait(false);
+
+    Logger.LogInformation("Update {session} with {updates}",
+                          sessionId,
+                          updates);
+
+    return sessionData;
+  }
 }

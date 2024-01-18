@@ -16,7 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +39,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   Data of the session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
   public static async Task<SessionData> GetSessionAsync(this ISessionTable sessionTable,
                                                         string             sessionId,
                                                         CancellationToken  cancellationToken = default)
@@ -64,6 +68,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   Boolean representing the cancellation status of the session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
   public static async Task<bool> IsSessionCancelledAsync(this ISessionTable sessionTable,
                                                          string             sessionId,
                                                          CancellationToken  cancellationToken = default)
@@ -92,6 +97,7 @@ public static class SessionTableExtensions
   /// <returns>
   ///   Default task metadata of this session
   /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found</exception>
   public static async Task<TaskOptions> GetDefaultTaskOptionAsync(this ISessionTable sessionTable,
                                                                   string             sessionId,
                                                                   CancellationToken  cancellationToken = default)
@@ -109,5 +115,257 @@ public static class SessionTableExtensions
       throw new SessionNotFoundException($"Session {sessionId} not found.",
                                          e);
     }
+  }
+
+  /// <summary>
+  ///   Cancel a session
+  /// </summary>
+  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
+  /// <param name="sessionId">Id of the session to cancel</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The metadata of the cancelled session
+  /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
+  public static async Task<SessionData> CancelSessionAsync(this ISessionTable sessionTable,
+                                                           string             sessionId,
+                                                           CancellationToken  cancellationToken = default)
+  {
+    var session = await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                           data => data.Status != SessionStatus.Cancelled && data.Status != SessionStatus.Purged &&
+                                                                   data.Status != SessionStatus.Deleted,
+                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                                           {
+                                                             (model => model.WorkerSubmission, false),
+                                                             (model => model.ClientSubmission, false),
+                                                             (model => model.Status, SessionStatus.Cancelled),
+                                                             (model => model.CancellationDate, DateTime.UtcNow),
+                                                           },
+                                                           false,
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+    if (session is not null)
+    {
+      return session;
+    }
+
+    session = await sessionTable.GetSessionAsync(sessionId,
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    switch (session.Status)
+    {
+      case SessionStatus.Running:
+      case SessionStatus.Paused:
+        throw new UnreachableException($"Session status should be {SessionStatus.Cancelled} but is {session.Status}");
+      case SessionStatus.Purged:
+      case SessionStatus.Cancelled:
+        throw new InvalidSessionTransitionException($"Cannot cancel a session with status {session.Status}");
+      case SessionStatus.Deleted:
+        throw new SessionNotFoundException($"Session {sessionId} was found but is deleted.",
+                                           true);
+      case SessionStatus.Unspecified:
+      default:
+        throw new InvalidOperationException($"Unknown session status {session.Status}");
+    }
+  }
+
+  /// <summary>
+  ///   Pause a session
+  /// </summary>
+  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
+  /// <param name="sessionId">Id of the session to pause</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The metadata of the paused session
+  /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
+  public static async Task<SessionData> PauseSessionAsync(this ISessionTable sessionTable,
+                                                          string             sessionId,
+                                                          CancellationToken  cancellationToken = default)
+  {
+    var session = await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                           data => data.Status == SessionStatus.Running,
+                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                                           {
+                                                             (model => model.Status, SessionStatus.Paused),
+                                                           },
+                                                           false,
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+
+    if (session is not null)
+    {
+      return session;
+    }
+
+    session = await sessionTable.GetSessionAsync(sessionId,
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    switch (session.Status)
+    {
+      case SessionStatus.Running:
+        throw new UnreachableException($"Session status should be {SessionStatus.Paused} but is {session.Status}");
+      case SessionStatus.Paused:
+      case SessionStatus.Purged:
+      case SessionStatus.Cancelled:
+        throw new InvalidSessionTransitionException($"Cannot pause a session with status {session.Status}");
+      case SessionStatus.Deleted:
+        throw new SessionNotFoundException($"Session {sessionId} was found but is deleted.",
+                                           true);
+      case SessionStatus.Unspecified:
+      default:
+        throw new InvalidOperationException($"Unknown session status {session.Status}");
+    }
+  }
+
+  /// <summary>
+  ///   Resume a session
+  /// </summary>
+  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
+  /// <param name="sessionId">Id of the session to resume</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The metadata of the resumed session
+  /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
+  public static async Task<SessionData> ResumeSessionAsync(this ISessionTable sessionTable,
+                                                           string             sessionId,
+                                                           CancellationToken  cancellationToken = default)
+  {
+    var session = await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                           data => data.Status == SessionStatus.Paused,
+                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                                           {
+                                                             (model => model.Status, SessionStatus.Running),
+                                                           },
+                                                           false,
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+
+    if (session is not null)
+    {
+      return session;
+    }
+
+    session = await sessionTable.GetSessionAsync(sessionId,
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    switch (session.Status)
+    {
+      case SessionStatus.Paused:
+        throw new UnreachableException($"Session status should be {SessionStatus.Running} but is {session.Status}");
+      case SessionStatus.Running:
+      case SessionStatus.Purged:
+      case SessionStatus.Cancelled:
+        throw new InvalidSessionTransitionException($"Cannot resume a session with status {session.Status}");
+      case SessionStatus.Deleted:
+        throw new SessionNotFoundException($"Session {sessionId} was found but is deleted.",
+                                           true);
+      case SessionStatus.Unspecified:
+      default:
+        throw new InvalidOperationException($"Unknown session status {session.Status}");
+    }
+  }
+
+  /// <summary>
+  ///   Purge a session
+  /// </summary>
+  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
+  /// <param name="sessionId">Id of the session to purge</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The metadata of the purged session
+  /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
+  public static async Task<SessionData> PurgeSessionAsync(this ISessionTable sessionTable,
+                                                          string             sessionId,
+                                                          CancellationToken  cancellationToken = default)
+  {
+    var session = await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                           data => data.Status == SessionStatus.Running || data.Status == SessionStatus.Paused ||
+                                                                   data.Status == SessionStatus.Cancelled,
+                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
+                                                           {
+                                                             (model => model.Status, SessionStatus.Purged),
+                                                             (model => model.PurgeDate, DateTime.UtcNow),
+                                                             (model => model.WorkerSubmission, false),
+                                                             (model => model.ClientSubmission, false),
+                                                           },
+                                                           false,
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+
+    if (session is not null)
+    {
+      return session;
+    }
+
+    session = await sessionTable.GetSessionAsync(sessionId,
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    switch (session.Status)
+    {
+      case SessionStatus.Running:
+      case SessionStatus.Paused:
+      case SessionStatus.Cancelled:
+        throw new UnreachableException($"Session status should be {SessionStatus.Purged} but is {session.Status}");
+      case SessionStatus.Purged:
+        throw new InvalidSessionTransitionException($"Cannot purge a session with status {session.Status}");
+      case SessionStatus.Deleted:
+        throw new SessionNotFoundException($"Session {sessionId} was found but is deleted.",
+                                           true);
+      case SessionStatus.Unspecified:
+      default:
+        throw new InvalidOperationException($"Unknown session status {session.Status}");
+    }
+  }
+
+  /// <summary>
+  ///   Stops submission for client and/or worker
+  /// </summary>
+  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
+  /// <param name="client">Whether to stop submission for clients</param>
+  /// <param name="worker">Whether to stop submission for worker</param>
+  /// <param name="sessionId">Id of the session to cancel</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The metadata of the session
+  /// </returns>
+  /// <exception cref="SessionNotFoundException">if session is not found</exception>
+  public static async Task<SessionData> StopSubmissionAsync(this ISessionTable sessionTable,
+                                                            string             sessionId,
+                                                            bool               client,
+                                                            bool               worker,
+                                                            CancellationToken  cancellationToken = default)
+  {
+    var updates = new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>();
+
+    if (client)
+    {
+      updates.Add((data => data.ClientSubmission, false));
+    }
+
+    if (worker)
+    {
+      updates.Add((data => data.WorkerSubmission, false));
+    }
+
+    if (updates.Count > 0)
+    {
+      return await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                      null,
+                                                      updates,
+                                                      false,
+                                                      cancellationToken)
+                               .ConfigureAwait(false) ?? throw new SessionNotFoundException($"Session {sessionId} not found");
+    }
+
+    return await sessionTable.GetSessionAsync(sessionId,
+                                              cancellationToken)
+                             .ConfigureAwait(false);
   }
 }

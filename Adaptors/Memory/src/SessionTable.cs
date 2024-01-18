@@ -85,27 +85,6 @@ public class SessionTable : ISessionTable
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task<SessionData> CancelSessionAsync(string            sessionId,
-                                              CancellationToken cancellationToken = default)
-    => Task.FromResult(storage_.AddOrUpdate(sessionId,
-                                            _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
-                                            (_,
-                                             data) =>
-                                            {
-                                              if (data.Status == SessionStatus.Cancelled)
-                                              {
-                                                throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
-                                              }
-
-                                              return data with
-                                                     {
-                                                       Status = SessionStatus.Cancelled,
-                                                       CancellationDate = DateTime.UtcNow,
-                                                     };
-                                            }));
-
-
-  /// <inheritdoc />
   public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
   {
@@ -137,6 +116,35 @@ public class SessionTable : ISessionTable
 
     return Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((ordered.Skip(page * pageSize)
                                                                                          .Take(pageSize), ordered.Count()));
+  }
+
+  /// <inheritdoc />
+  public Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
+                                                  Expression<Func<SessionData, bool>>?                                             filter,
+                                                  ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
+                                                  bool                                                                             before            = false,
+                                                  CancellationToken                                                                cancellationToken = default)
+  {
+    if (!storage_.TryGetValue(sessionId,
+                              out var sessionData))
+    {
+      return Task.FromResult<SessionData?>(null);
+    }
+
+    if (filter is not null)
+    {
+      if (!filter.Compile()
+                 .Invoke(sessionData))
+      {
+        return Task.FromResult<SessionData?>(null);
+      }
+    }
+
+    var newSessionData = storage_[sessionId] = new SessionData(sessionData,
+                                                               updates);
+    return Task.FromResult<SessionData?>(before
+                                           ? sessionData
+                                           : newSessionData);
   }
 
   /// <inheritdoc />

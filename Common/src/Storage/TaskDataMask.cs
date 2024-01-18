@@ -127,6 +127,10 @@ public class TaskDataMask
         return data => data.PodTtl;
       case TaskDataFields.Output:
         return data => data.Output;
+      case TaskDataFields.ProcessedDate:
+        return data => data.ProcessedDate;
+      case TaskDataFields.ReceivedToEndDuration:
+        return data => data.ReceivedToEndDuration;
       default:
         throw new ArgumentOutOfRangeException(nameof(field),
                                               field,
@@ -201,6 +205,10 @@ public class TaskDataMask
         return data => data.PodTtl;
       case TaskDataFields.Output:
         return data => data.Output;
+      case TaskDataFields.ProcessedDate:
+        return data => data.ProcessedDate;
+      case TaskDataFields.ReceivedToEndDuration:
+        return data => data.ReceivedToEndDuration;
       default:
         throw new ArgumentOutOfRangeException(nameof(field),
                                               field,

@@ -122,6 +122,10 @@ public class ToTaskDataFieldTest
                              TaskData.ReceptionDate);
     yield return CaseSummary(TaskSummaryEnumField.AcquiredAt,
                              TaskData.AcquisitionDate);
+    yield return CaseSummary(TaskSummaryEnumField.ProcessedAt,
+                             TaskData.ProcessedDate);
+    yield return CaseSummary(TaskSummaryEnumField.ReceivedToEndDuration,
+                             TaskData.ReceivedToEndDuration);
 
     TestCaseData CaseOption(TaskOptionEnumField field,
                             object?             expected)
