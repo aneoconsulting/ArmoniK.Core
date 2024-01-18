@@ -29,6 +29,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -309,38 +310,6 @@ public class TaskHandlerTest
   }
 
   [Test]
-  public async Task AcquireTaskShouldSucceed()
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler  = new Mock<IAgentHandler>();
-    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
-                                                                mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
-
-    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
-
-    sqmh.TaskId = taskId;
-
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
-
-    Assert.IsTrue(acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
-  }
-
-  [Test]
   public async Task AcquireCancelingTaskShouldFail()
   {
     var sqmh = new SimpleQueueMessageHandler
@@ -376,47 +345,157 @@ public class TaskHandlerTest
                                        .TaskId);
   }
 
-  [Test]
-  public async Task AcquireErrorTaskShouldFail()
+  public static IEnumerable TestCaseAcquireTask
   {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
+    get
+    {
+      var taskData = new TaskData("session",
+                                  Guid.NewGuid()
+                                      .ToString(),
+                                  "ownerpodid",
+                                  "ownerpodname",
+                                  "payload",
+                                  new List<string>(),
+                                  new List<string>(),
+                                  new Dictionary<string, bool>(),
+                                  new List<string>(),
+                                  "init",
+                                  new List<string>(),
+                                  TaskStatus.Creating,
+                                  "",
+                                  new TaskOptions(new Dictionary<string, string>(),
+                                                  TimeSpan.FromMinutes(4),
+                                                  2,
+                                                  1,
+                                                  "part1",
+                                                  "",
+                                                  "",
+                                                  "",
+                                                  "",
+                                                  ""),
+                                  DateTime.Now,
+                                  null,
+                                  null,
+                                  null,
+                                  null,
+                                  null,
+                                  null,
+                                  null,
+                                  null,
+                                  new Output(false,
+                                             ""));
 
-    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler  = new Mock<IAgentHandler>();
-    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
-                                                                mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
 
-    var (_, _, taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
+      yield return new TestCaseData(taskData,
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Creating task");
 
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Cancelled,
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Cancelled task");
 
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
-                                            .ConfigureAwait(false);
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Completed,
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Completed task");
 
-    Assert.AreEqual(TaskStatus.Error,
-                    taskData.Status);
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Submitted,
+                                      OwnerPodId = "",
+                                    },
+                                    true).Returns(true)
+                                         .SetArgDisplayNames("Submitted task");
 
-    sqmh.TaskId = taskId;
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Submitted,
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Submitted task with same owner");
 
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Submitted,
+                                      OwnerPodId = "anotherownerpodid",
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Submitted task with another owner");
 
-    Assert.IsFalse(acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Error,
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Error task");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Retried,
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Retried task");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                      OwnerPodId = "",
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Dispatched empty owner");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                    },
+                                    true).Returns(true)
+                                         .SetArgDisplayNames("Dispatched same owner"); // not sure this case should return true
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                      OwnerPodId = "anotherowner",
+                                    },
+                                    true).Returns(false)
+                                         .SetArgDisplayNames("Dispatched different owner");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                      OwnerPodId = "anotherowner",
+                                    },
+                                    false).Returns(false)
+                                          .SetArgDisplayNames("Dispatched different owner false check");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                      OwnerPodId = "anotherowner",
+                                      AcquisitionDate = DateTime.UtcNow,
+                                    },
+                                    false).Returns(false)
+                                          .SetArgDisplayNames("Dispatched different owner false check date now");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                      OwnerPodId = "anotherowner",
+                                      AcquisitionDate = DateTime.UtcNow - TimeSpan.FromSeconds(20),
+                                    },
+                                    false).Returns(false)
+                                          .SetArgDisplayNames("Dispatched different owner false check date before");
+    }
   }
 
   [Test]
-  public async Task AcquireRetriedTaskShouldFail()
+  [TestCaseSource(nameof(TestCaseAcquireTask))]
+  public async Task<bool> AcquireStatusShouldFail(TaskData taskData,
+                                                  bool     check)
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -426,93 +505,26 @@ public class TaskHandlerTest
                                  .ToString(),
                };
 
-    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler  = new Mock<IAgentHandler>();
+    var mockStreamHandler         = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler          = new Mock<IAgentHandler>();
+    var mockTaskProcessingChecker = new Mock<ITaskProcessingChecker>();
+    mockTaskProcessingChecker.Setup(checker => checker.Check(It.IsAny<string>(),
+                                                             It.IsAny<string>(),
+                                                             It.IsAny<CancellationToken>()))
+                             .Returns(Task.FromResult(check));
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 sqmh,
-                                                                new CancellationTokenSource());
-
-    var (_, _, _, taskId, _) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
-
-
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
-                                            .ConfigureAwait(false);
-
-    Assert.AreEqual(TaskStatus.Retried,
-                    taskData.Status);
-
-    sqmh.TaskId = taskId;
-
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
-
-    Assert.IsFalse(acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
-  }
-
-  [Test]
-  [TestCase(TaskStatus.Creating)]
-  [TestCase(TaskStatus.Completed)]
-  [TestCase(TaskStatus.Cancelled)]
-  public async Task AcquireStatusShouldFail(TaskStatus status)
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler  = new Mock<IAgentHandler>();
-    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
-                                                                mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                new CancellationTokenSource(),
+                                                                taskProcessingChecker: mockTaskProcessingChecker.Object);
 
     var (_, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
                                     .ConfigureAwait(false);
 
-    var taskData = new TaskData(sessionId,
-                                Guid.NewGuid()
-                                    .ToString(),
-                                "ownerpodid",
-                                "ownerpodname",
-                                "payload",
-                                new List<string>(),
-                                new List<string>(),
-                                new Dictionary<string, bool>(),
-                                new List<string>(),
-                                "init",
-                                new List<string>(),
-                                status,
-                                "",
-                                new TaskOptions(new Dictionary<string, string>(),
-                                                TimeSpan.FromMinutes(4),
-                                                2,
-                                                1,
-                                                "part1",
-                                                "",
-                                                "",
-                                                "",
-                                                "",
-                                                ""),
-                                DateTime.Now,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                new Output(false,
-                                           ""));
+    taskData = taskData with
+               {
+                 SessionId = sessionId,
+               };
 
     await testServiceProvider.TaskTable.CreateTasks(new[]
                                                     {
@@ -526,10 +538,11 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.IsFalse(acquired);
     Assert.AreEqual(taskData.TaskId,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
                                        .TaskId);
+
+    return acquired;
   }
 
   public class WaitTaskTable : ITaskTable

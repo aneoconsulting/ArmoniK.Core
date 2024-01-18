@@ -399,6 +399,7 @@ public sealed class TaskHandler : IAsyncDisposable
       // empty OwnerPodId means that the task was not acquired because not ready
       if (taskData_.OwnerPodId == "")
       {
+        logger_.LogDebug("Task acquired but not ready (empty owner pod id)");
         messageHandler_.Status = QueueMessageStatus.Postponed;
         return false;
       }
@@ -426,7 +427,7 @@ public sealed class TaskHandler : IAsyncDisposable
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                  taskData_.Status);
 
-          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate < DateTime.UtcNow + delayBeforeAcquisition_)
+          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)
 
           {
             messageHandler_.Status = QueueMessageStatus.Postponed;
