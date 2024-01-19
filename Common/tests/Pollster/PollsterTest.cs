@@ -434,12 +434,10 @@ public class PollsterTest
 
 
   [Test]
-  [TestCase(100)]
-  [TestCase(5000)] // task should be longer than the grace delay
-  public async Task ExecuteTaskShouldSucceed(double delay)
+  public async Task ExecuteTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
-    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(delay);
+    var waitWorkerStreamHandler = new SimpleWorkerStreamHandler();
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
@@ -471,9 +469,55 @@ public class PollsterTest
     Assert.False(testServiceProvider.Pollster.Failed);
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(delay > 2000
-                      ? TaskStatus.Processing
-                      : TaskStatus.Completed,
+    Assert.AreEqual(TaskStatus.Completed,
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                      CancellationToken.None)
+                                             .ConfigureAwait(false));
+  }
+
+  [Test]
+  public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit()
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(1000000);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage,
+                                                             TimeSpan.FromMilliseconds(100));
+
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
+    Assert.False(testServiceProvider.Pollster.Failed);
+    Assert.True(source.Token.IsCancellationRequested);
+
+    // wait to exceed grace delay and see that task is properly resubmitted
+    await Task.Delay(TimeSpan.FromMilliseconds(200),
+                     CancellationToken.None)
+              .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Submitted,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                       CancellationToken.None)
                                              .ConfigureAwait(false));
