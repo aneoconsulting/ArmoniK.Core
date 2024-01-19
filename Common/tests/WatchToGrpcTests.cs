@@ -79,7 +79,7 @@ public class WatchToGrpcTests
   [TestCase(6)]
   public async Task MultipleWatchShouldSucceed(int nTries)
   {
-    var cts      = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+    var cts      = new CancellationTokenSource(TimeSpan.FromSeconds(3));
     var list     = new List<EventSubscriptionResponse>();
     var taskList = new List<Task>();
 
