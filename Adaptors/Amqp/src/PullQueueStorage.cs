@@ -78,7 +78,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var linkName      = $"{Options.PartitionId}###ReceiverLink{Guid.NewGuid()}";
+        var linkName      = $"{Options.PartitionId}###{Guid.NewGuid()}";
         var partitionName = $"{Options.PartitionId}###q{i}";
 
         var session = await sessionPool_.GetAsync(cancellationToken)
@@ -119,10 +119,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     try
     {
       var rl = new ReceiverLink(session,
-                                linkName,
+                                linkName + "r",
                                 partitionName);
       var sl = new SenderLink(session,
-                              linkName,
+                              linkName + "s",
                               partitionName);
       rl.SetCredit(Options.LinkCredit);
 
