@@ -78,7 +78,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var linkName      = $"{Options.PartitionId}###ReceiverLink{Guid.NewGuid()}";
+        var linkName      = $"{Options.PartitionId}###{Guid.NewGuid()}";
         var partitionName = $"{Options.PartitionId}###q{i}";
         var message = await sessionPool_.WithInstanceAsync(async session =>
                                                            {

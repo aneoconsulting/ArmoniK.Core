@@ -75,7 +75,7 @@ public class QueueMessageHandler : IQueueMessageHandler
         await sessionPool_.WithInstanceAsync(async session =>
                                              {
                                                var sl = new SenderLink(session,
-                                                                       linkName_,
+                                                                       "sender" + linkName_,
                                                                        partitionName_);
                                                await sl.SendAsync(new Message(message_.Body)
                                                                   {
