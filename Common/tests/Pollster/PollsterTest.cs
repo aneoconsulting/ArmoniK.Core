@@ -463,7 +463,7 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
     Assert.False(testServiceProvider.Pollster.Failed);
