@@ -52,6 +52,7 @@ public class TestPollsterProvider : IDisposable
   private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   private readonly        WebApplication           app_;
   private readonly        IMongoClient             client_;
+  private readonly        TimeSpan?                graceDelay_;
   private readonly        IObjectStorage           objectStorage_;
   public readonly         IPartitionTable          PartitionTable;
   public readonly         Common.Pollster.Pollster Pollster;
@@ -64,8 +65,10 @@ public class TestPollsterProvider : IDisposable
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
                               IAgentHandler        agentHandler,
-                              IPullQueueStorage    pullQueueStorage)
+                              IPullQueueStorage    pullQueueStorage,
+                              TimeSpan?            graceDelay = null)
   {
+    graceDelay_ = graceDelay;
     var logger = NullLogger.Instance;
     var options = new MongoRunnerOptions
                   {
@@ -108,7 +111,12 @@ public class TestPollsterProvider : IDisposable
                                                     "DefaultPartition"
                                                   },
                                                   {
-                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", graceDelay is null
+                                                                                                                                                      ? TimeSpan
+                                                                                                                                                        .FromSeconds(2)
+                                                                                                                                                        .ToString()
+                                                                                                                                                      : graceDelay
+                                                                                                                                                        .ToString()
                                                   },
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.SharedCacheFolder)}",
