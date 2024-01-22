@@ -16,12 +16,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Agent;
-
-using Grpc.Core;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -30,6 +31,21 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public interface IAgent : IDisposable
 {
+  /// <summary>
+  ///   Unique token to identify agent and requests it should process
+  /// </summary>
+  string Token { get; }
+
+  /// <summary>
+  ///   Folder in which data are sent between agent and worker
+  /// </summary>
+  string Folder { get; }
+
+  /// <summary>
+  ///   Id of the session from the task associated to the agent
+  /// </summary>
+  string SessionId { get; }
+
   /// <summary>
   ///   Finalize child task creation after the parent task succeeds
   /// </summary>
@@ -40,48 +56,43 @@ public interface IAgent : IDisposable
   Task FinalizeTaskCreation(CancellationToken cancellationToken);
 
   /// <summary>
-  ///   Process requests for creating child tasks
-  /// </summary>
-  /// <param name="requestStream">Collection of requests that represents the child tasks</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Reply sent to the worker describing the status of the child task creation
-  /// </returns>
-  Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                   CancellationToken                     cancellationToken);
-
-  /// <summary>
   ///   Get Common data from data storage as file in shared folder
   /// </summary>
-  /// <param name="request">Request specifying the data to retrieve</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Response to send to the worker
+  ///   Id of the result sent to the worker
   /// </returns>
-  Task<DataResponse> GetCommonData(DataRequest       request,
-                                   CancellationToken cancellationToken);
+  Task<string> GetCommonData(string            token,
+                             string            resultId,
+                             CancellationToken cancellationToken);
 
   /// <summary>
   ///   Get Direct data from user as file in shared folder
   /// </summary>
-  /// <param name="request">Request specifying the data to retrieve</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Response to send to the worker
+  ///   Id of the result sent to the worker
   /// </returns>
-  Task<DataResponse> GetDirectData(DataRequest       request,
-                                   CancellationToken cancellationToken);
+  Task<string> GetDirectData(string            token,
+                             string            resultId,
+                             CancellationToken cancellationToken);
 
   /// <summary>
   ///   Get Resource data from data storage as file in shared folder
   /// </summary>
-  /// <param name="request">Request specifying the data to retrieve</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Response to send to the worker
+  ///   Id of the result sent to the worker
   /// </returns>
-  Task<DataResponse> GetResourceData(DataRequest       request,
-                                     CancellationToken cancellationToken);
+  Task<string> GetResourceData(string            token,
+                               string            resultId,
+                               CancellationToken cancellationToken);
 
   /// <summary>
   ///   Create results metadata
@@ -97,13 +108,16 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Submit tasks with payload already existing
   /// </summary>
-  /// <param name="request">Requests containing the tasks to submit</param>
+  /// <param name="requests">Requests containing the tasks to submit</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Reply sent to the worker with the submitted tasks
+  ///   Submitted tasks to send to the worker
   /// </returns>
-  Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
-                                        CancellationToken  cancellationToken);
+  Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
+                                                     TaskOptions?                       taskOptions,
+                                                     string                             sessionId,
+                                                     string                             token,
+                                                     CancellationToken                  cancellationToken);
 
   /// <summary>
   ///   Create a result (with data and metadata)

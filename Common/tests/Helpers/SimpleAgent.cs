@@ -16,11 +16,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -28,33 +32,43 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleAgent : IAgent
 {
+  public string Token
+    => "token";
+
+  public string Folder
+    => "folder";
+
+  public string SessionId
+    => "session";
+
   public Task FinalizeTaskCreation(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                          CancellationToken                     cancellationToken)
-    => Task.FromResult(new CreateTaskReply());
-
-  public Task<DataResponse> GetCommonData(DataRequest       request,
-                                          CancellationToken cancellationToken)
+  public Task<string> GetCommonData(string            token,
+                                    string            resultId,
+                                    CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<DataResponse> GetDirectData(DataRequest       request,
-                                          CancellationToken cancellationToken)
+  public Task<string> GetDirectData(string            token,
+                                    string            resultId,
+                                    CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<DataResponse> GetResourceData(DataRequest       request,
-                                            CancellationToken cancellationToken)
+  public Task<string> GetResourceData(string            token,
+                                      string            resultId,
+                                      CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
   public Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                    CancellationToken            cancellationToken)
     => Task.FromResult(new CreateResultsMetaDataResponse());
 
-  public Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
-                                               CancellationToken  cancellationToken)
-    => Task.FromResult(new SubmitTasksResponse());
-
+  public Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
+                                                            TaskOptions?                       taskOptions,
+                                                            string                             sessionId,
+                                                            string                             token,
+                                                            CancellationToken                  cancellationToken)
+    => Task.FromResult(new List<TaskCreationRequest>().AsICollection());
 
   public Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                    CancellationToken    cancellationToken)
@@ -69,4 +83,8 @@ public class SimpleAgent : IAgent
 
   public void Dispose()
     => GC.SuppressFinalize(this);
+
+  public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
+                                          CancellationToken                     cancellationToken)
+    => Task.FromResult(new CreateTaskReply());
 }

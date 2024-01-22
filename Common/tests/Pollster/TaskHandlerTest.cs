@@ -24,7 +24,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -1411,19 +1410,10 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.ExecuteTask()
                              .ConfigureAwait(false);
 
-
-    var taskStreamReader = new TestHelperAsyncStreamReader<CreateTaskRequest>(new[]
-                                                                              {
-                                                                                new CreateTaskRequest(),
-                                                                              });
     if (agentHandler.Agent == null)
     {
       throw new NullReferenceException(nameof(agentHandler.Agent));
     }
-
-    await agentHandler.Agent.CreateTask(taskStreamReader,
-                                        CancellationToken.None)
-                      .ConfigureAwait(false);
 
     await testServiceProvider.TaskHandler.PostProcessing()
                              .ConfigureAwait(false);

@@ -24,7 +24,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
@@ -46,9 +45,7 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 using Agent = ArmoniK.Core.Common.gRPC.Services.Agent;
-using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
@@ -131,7 +128,7 @@ public class AgentTest
 
   private class AgentHolder : IDisposable
   {
-    public readonly  Agent                Agent;
+    public readonly  IAgent               Agent;
     public readonly  string               Folder;
     public readonly  IObjectStorage       ObjectStorage;
     private readonly TestDatabaseProvider prov_;
@@ -319,23 +316,27 @@ public class AgentTest
   [Test]
   [TestCase("")]
   [TestCase("WrongToken")]
-  public async Task WrongTokens(string token)
+  public void WrongTokens(string token)
   {
     using var holder = new AgentHolder();
 
-    var createTaskReply = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(new[]
-                                                                                                           {
-                                                                                                             new CreateTaskRequest
-                                                                                                             {
-                                                                                                               CommunicationToken = token,
-                                                                                                             },
-                                                                                                           }),
-                                                        CancellationToken.None)
-                                      .ConfigureAwait(false);
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>(),
+                                                                    Options.ToNullableTaskOptions(),
+                                                                    "",
+                                                                    token,
+                                                                    CancellationToken.None));
 
-    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.Error,
-                    createTaskReply.ResponseCase);
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                                              {
+                                                                                CommunicationToken = token,
+                                                                              },
+                                                                              CancellationToken.None));
 
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResults(new CreateResultsRequest
+                                                                      {
+                                                                        CommunicationToken = token,
+                                                                      },
+                                                                      CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.NotifyResultData(new NotifyResultDataRequest
                                                                          {
@@ -343,22 +344,16 @@ public class AgentTest
                                                                          },
                                                                          CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(new DataRequest
-                                                                      {
-                                                                        CommunicationToken = token,
-                                                                      },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(token,
+                                                                      "",
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData(new DataRequest
-                                                                      {
-                                                                        CommunicationToken = token,
-                                                                      },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData(token,
+                                                                      "",
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(new DataRequest
-                                                                        {
-                                                                          CommunicationToken = token,
-                                                                        },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(token,
+                                                                        "",
                                                                         CancellationToken.None));
   }
 
@@ -368,16 +363,12 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData(new DataRequest
-                                                                                 {
-                                                                                   CommunicationToken = holder.Token,
-                                                                                 },
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData(holder.Token,
+                                                                                 "",
                                                                                  CancellationToken.None));
 
-    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData(new DataRequest
-                                                                                 {
-                                                                                   CommunicationToken = holder.Token,
-                                                                                 },
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData(holder.Token,
+                                                                                 "",
                                                                                  CancellationToken.None));
   }
 
@@ -386,11 +377,8 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(new DataRequest
-                                                                        {
-                                                                          CommunicationToken = holder.Token,
-                                                                          ResultId           = "DataNotExisting",
-                                                                        },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(holder.Token,
+                                                                        "DataNotExisting",
                                                                         CancellationToken.None));
   }
 
@@ -489,81 +477,44 @@ public class AgentTest
                     taskData2.Status);
   }
 
-  /// <summary>
-  ///   Create one task per result
-  /// </summary>
-  /// <param name="token">Communication token</param>
-  /// <param name="options">Task options</param>
-  /// <param name="results">Results to build task creation requests</param>
-  /// <param name="payloadChunksPerTask"></param>
-  /// <returns></returns>
-  private static IEnumerable<CreateTaskRequest> GenerateCreateTaskRequest(string              token,
-                                                                          TaskOptions?        options,
-                                                                          IEnumerable<string> results,
-                                                                          int                 payloadChunksPerTask)
+  private static async Task<ICollection<TaskCreationRequest>> CreatePayloadAndSubmit(IAgent              agent,
+                                                                                     TaskOptions?        options,
+                                                                                     ICollection<string> results)
   {
-    yield return new CreateTaskRequest
-                 {
-                   CommunicationToken = token,
-                   InitRequest = new CreateTaskRequest.Types.InitRequest
-                                 {
-                                   TaskOptions = options,
-                                 },
-                 };
+    var res = await agent.CreateResults(new CreateResultsRequest
+                                        {
+                                          SessionId          = agent.SessionId,
+                                          CommunicationToken = agent.Token,
+                                          Results =
+                                          {
+                                            results.Select(s => new CreateResultsRequest.Types.ResultCreate
+                                                                {
+                                                                  Data = ByteString.CopyFromUtf8($"Payload with name {s}"),
+                                                                  Name = s,
+                                                                }),
+                                          },
+                                        },
+                                        CancellationToken.None)
+                         .ConfigureAwait(false);
 
+    var z = res.Results.Zip(results);
 
-    foreach (var result in results)
-    {
-      yield return new CreateTaskRequest
-                   {
-                     CommunicationToken = token,
-                     InitTask = new InitTaskRequest
-                                {
-                                  Header = new TaskRequestHeader
-                                           {
-                                             DataDependencies =
-                                             {
-                                               DataDependency1,
-                                             },
-                                             ExpectedOutputKeys =
-                                             {
-                                               result,
-                                             },
-                                           },
-                                },
-                   };
-
-
-      for (var j = 0; j < payloadChunksPerTask; j++)
-      {
-        yield return new CreateTaskRequest
-                     {
-                       CommunicationToken = token,
-                       TaskPayload = new DataChunk
-                                     {
-                                       Data = ByteString.CopyFromUtf8($"Task1Data{j}"),
-                                     },
-                     };
-      }
-
-      yield return new CreateTaskRequest
-                   {
-                     CommunicationToken = token,
-                     TaskPayload = new DataChunk
-                                   {
-                                     DataComplete = true,
-                                   },
-                   };
-    }
-
-    yield return new CreateTaskRequest
-                 {
-                   CommunicationToken = token,
-                   InitTask = new InitTaskRequest
-                              {
-                                LastTask = true,
-                              },
-                 };
+    return await agent.SubmitTasks(z.Select(tuple => new TaskSubmissionRequest(tuple.First.ResultId,
+                                                                               null,
+                                                                               new List<string>
+                                                                               {
+                                                                                 tuple.Second,
+                                                                               },
+                                                                               new List<string>
+                                                                               {
+                                                                                 DataDependency1,
+                                                                               }))
+                                    .AsICollection(),
+                                   options.ToNullableTaskOptions(),
+                                   agent.SessionId,
+                                   agent.Token,
+                                   CancellationToken.None)
+                      .ConfigureAwait(false);
   }
 
   [Test]
@@ -590,23 +541,14 @@ public class AgentTest
                                                            CancellationToken.None)
                               .ConfigureAwait(false);
 
-    var createTaskReply = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(GenerateCreateTaskRequest(holder.Token,
-                                                                                                                                     Options,
-                                                                                                                                     results.Results
-                                                                                                                                            .Select(r => r.ResultId),
-                                                                                                                                     2)),
-                                                        CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-
-    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
-                    createTaskReply.ResponseCase);
-
-    Assert.AreEqual(0,
-                    createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error));
+    var submit = await CreatePayloadAndSubmit(holder.Agent,
+                                              Options,
+                                              results.Results.Select(r => r.ResultId)
+                                                     .AsICollection())
+                   .ConfigureAwait(false);
 
     Assert.AreEqual(2,
-                    createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo));
+                    submit.Count);
 
 
     var results2 = await holder.Agent.CreateResultsMetaData(new CreateResultsMetaDataRequest
@@ -624,27 +566,17 @@ public class AgentTest
                                                             CancellationToken.None)
                                .ConfigureAwait(false);
 
-
-    var createTaskReply2 = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(GenerateCreateTaskRequest(holder.Token,
-                                                                                                                                      Options,
-                                                                                                                                      results2.Results
-                                                                                                                                              .Select(r => r.ResultId),
-                                                                                                                                      2)),
-                                                         CancellationToken.None)
-                                       .ConfigureAwait(false);
-
-    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
-                    createTaskReply2.ResponseCase);
-
-    Assert.AreEqual(0,
-                    createTaskReply2.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error));
+    var submit2 = await CreatePayloadAndSubmit(holder.Agent,
+                                               Options,
+                                               results2.Results.Select(r => r.ResultId)
+                                                       .AsICollection())
+                    .ConfigureAwait(false);
 
     Assert.AreEqual(1,
-                    createTaskReply2.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo));
+                    submit2.Count);
 
-    var taskId3 = createTaskReply2.CreationStatusList.CreationStatuses.Single()
-                                  .TaskInfo.TaskId;
-
+    var taskId3 = submit2.Single()
+                         .TaskId;
     var taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
@@ -692,25 +624,17 @@ public class AgentTest
                                                            CancellationToken.None)
                               .ConfigureAwait(false);
 
-    var createTaskReply = await holder.Agent.CreateTask(new TestHelperAsyncStreamReader<CreateTaskRequest>(GenerateCreateTaskRequest(holder.Token,
-                                                                                                                                     optionsNull
-                                                                                                                                       ? null
-                                                                                                                                       : Options,
-                                                                                                                                     results.Results
-                                                                                                                                            .Select(r => r.ResultId),
-                                                                                                                                     2)),
-                                                        CancellationToken.None)
-                                      .ConfigureAwait(false);
 
-
-    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
-                    createTaskReply.ResponseCase);
-
-    Assert.AreEqual(0,
-                    createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error));
+    var submit = await CreatePayloadAndSubmit(holder.Agent,
+                                              optionsNull
+                                                ? null
+                                                : Options,
+                                              results.Results.Select(r => r.ResultId)
+                                                     .AsICollection())
+                   .ConfigureAwait(false);
 
     Assert.AreEqual(200,
-                    createTaskReply.CreationStatusList.CreationStatuses.Count(cs => cs.StatusCase == CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo));
+                    submit.Count);
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
@@ -731,11 +655,8 @@ public class AgentTest
                                                 CancellationToken.None)
                 .ConfigureAwait(false);
 
-    await holder.Agent.GetResourceData(new DataRequest
-                                       {
-                                         CommunicationToken = holder.Token,
-                                         ResultId           = "ResourceData",
-                                       },
+    await holder.Agent.GetResourceData(holder.Token,
+                                       "ResourceData",
                                        CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -863,50 +784,43 @@ public class AgentTest
                                                        CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var reply = await holder.Agent.SubmitTasks(new SubmitTasksRequest
+    var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
                                                {
-                                                 CommunicationToken = holder.Token,
-                                                 SessionId          = holder.Session,
-                                                 TaskCreations =
-                                                 {
-                                                   new SubmitTasksRequest.Types.TaskCreation
-                                                   {
-                                                     ExpectedOutputKeys =
-                                                     {
-                                                       eok.Results.Select(r => r.ResultId),
-                                                     },
-                                                     PayloadId = payload.Results.Single()
-                                                                        .ResultId,
-                                                     TaskOptions = optionsNull
-                                                                     ? null
-                                                                     : Options,
-                                                   },
-                                                 },
-                                                 TaskOptions = optionsNull
-                                                                 ? null
-                                                                 : Options,
+                                                 new(payload.Results.Single()
+                                                            .ResultId,
+                                                     optionsNull
+                                                       ? null
+                                                       : Options.ToNullableTaskOptions(),
+                                                     eok.Results.Select(r => r.ResultId)
+                                                        .AsICollection(),
+                                                     new List<string>()),
                                                },
+                                               optionsNull
+                                                 ? null
+                                                 : Options.ToNullableTaskOptions(),
+                                               holder.Session,
+                                               holder.Token,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
     Assert.AreEqual(1,
-                    reply.TaskInfos.Count);
+                    reply.Count);
     Assert.AreEqual(payload.Results.Single()
                            .ResultId,
-                    reply.TaskInfos.Single()
+                    reply.Single()
                          .PayloadId);
     foreach (var eokResult in eok.Results)
     {
       Assert.Contains(eokResult.ResultId,
-                      reply.TaskInfos.Single()
-                           .ExpectedOutputIds);
+                      reply.Single()
+                           .ExpectedOutputKeys.ToList());
     }
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
 
-    var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                              .TaskId,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
@@ -946,30 +860,23 @@ public class AgentTest
                                                        CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var reply = await holder.Agent.SubmitTasks(new SubmitTasksRequest
+    var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
                                                {
-                                                 CommunicationToken = holder.Token,
-                                                 SessionId          = holder.Session,
-                                                 TaskCreations =
-                                                 {
-                                                   new SubmitTasksRequest.Types.TaskCreation
-                                                   {
-                                                     ExpectedOutputKeys =
-                                                     {
-                                                       eok.Results.Select(r => r.ResultId)
-                                                          .SkipLast(1),
-                                                     },
-                                                     PayloadId = eok.Results.Last()
-                                                                    .ResultId,
-                                                     TaskOptions = optionsNull
-                                                                     ? null
-                                                                     : Options,
-                                                   },
-                                                 },
-                                                 TaskOptions = optionsNull
-                                                                 ? null
-                                                                 : Options,
+                                                 new(eok.Results.Last()
+                                                        .ResultId,
+                                                     optionsNull
+                                                       ? null
+                                                       : Options.ToNullableTaskOptions(),
+                                                     eok.Results.Select(r => r.ResultId)
+                                                        .SkipLast(1)
+                                                        .AsICollection(),
+                                                     new List<string>()),
                                                },
+                                               optionsNull
+                                                 ? null
+                                                 : Options.ToNullableTaskOptions(),
+                                               holder.Session,
+                                               holder.Token,
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
@@ -997,17 +904,17 @@ public class AgentTest
                 .ConfigureAwait(false);
 
     Assert.AreEqual(1,
-                    reply.TaskInfos.Count);
+                    reply.Count);
     Assert.AreEqual(eok.Results.Last()
                        .ResultId,
-                    reply.TaskInfos.Single()
+                    reply.Single()
                          .PayloadId);
 
     foreach (var eokResult in eok.Results.SkipLast(1))
     {
       Assert.Contains(eokResult.ResultId,
-                      reply.TaskInfos.Single()
-                           .ExpectedOutputIds);
+                      reply.Single()
+                           .ExpectedOutputKeys.ToList());
     }
 
     var uploadedResultData = await holder.ResultTable.GetResult(eok.Results.Last()
@@ -1017,7 +924,7 @@ public class AgentTest
     Assert.AreEqual(ResultStatus.Created,
                     uploadedResultData.Status);
 
-    var taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                              .TaskId,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
@@ -1037,7 +944,7 @@ public class AgentTest
     Assert.AreEqual(10,
                     uploadedResultData.Size);
 
-    taskData = await holder.TaskTable.ReadTaskAsync(reply.TaskInfos.Single()
+    taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                          .TaskId,
                                                     CancellationToken.None)
                            .ConfigureAwait(false);
