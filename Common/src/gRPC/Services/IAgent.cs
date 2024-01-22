@@ -31,10 +31,19 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public interface IAgent : IDisposable
 {
+  /// <summary>
+  ///   Unique token to identify agent and requests it should process
+  /// </summary>
   string Token { get; }
 
+  /// <summary>
+  ///   Folder in which data are sent between agent and worker
+  /// </summary>
   string Folder { get; }
 
+  /// <summary>
+  ///   Id of the session from the task associated to the agent
+  /// </summary>
   string SessionId { get; }
 
   /// <summary>

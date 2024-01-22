@@ -97,10 +97,13 @@ public sealed class Agent : IAgent
     Token             = token;
   }
 
+  /// <inheritdoc />
   public string Token { get; }
 
+  /// <inheritdoc />
   public string Folder { get; }
 
+  /// <inheritdoc />
   public string SessionId
     => sessionData_.SessionId;
 
