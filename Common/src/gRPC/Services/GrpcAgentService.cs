@@ -52,30 +52,6 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     return Task.CompletedTask;
   }
 
-  private CreateTaskReply? CheckToken(CreateTaskRequest request,
-                                      string            token)
-  {
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      return new CreateTaskReply
-             {
-               CommunicationToken = request.CommunicationToken,
-               Error              = "Missing communication token",
-             };
-    }
-
-    if (request.CommunicationToken != token)
-    {
-      return new CreateTaskReply
-             {
-               CommunicationToken = request.CommunicationToken,
-               Error              = "Wrong communication token",
-             };
-    }
-
-    return null;
-  }
-
   public override async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                          ServerCallContext                     context)
   {
@@ -96,14 +72,26 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 
     fsmCreate.InitRequest();
     var current = requestStream.Current;
-    var reply = CheckToken(current,
-                           agent_.Token);
-    var taskOptions = current.InitRequest.TaskOptions;
-    if (reply is not null)
+
+    if (string.IsNullOrEmpty(current.CommunicationToken))
     {
-      return reply;
+      return new CreateTaskReply
+             {
+               CommunicationToken = current.CommunicationToken,
+               Error              = "Missing communication token",
+             };
     }
 
+    if (current.CommunicationToken != agent_.Token)
+    {
+      return new CreateTaskReply
+             {
+               CommunicationToken = current.CommunicationToken,
+               Error              = "Wrong communication token",
+             };
+    }
+
+    var taskOptions = current.InitRequest.TaskOptions;
     await requestStream.MoveNext(context.CancellationToken)
                        .ConfigureAwait(false);
 
