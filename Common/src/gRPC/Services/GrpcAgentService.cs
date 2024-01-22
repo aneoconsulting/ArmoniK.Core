@@ -67,8 +67,14 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     var createdTasks   = new List<SubmitTasksRequest.Types.TaskCreation>();
     var createdResults = new List<string>();
 
-    await requestStream.MoveNext(context.CancellationToken)
-                       .ConfigureAwait(false);
+    if (!await requestStream.MoveNext(context.CancellationToken)
+                            .ConfigureAwait(false))
+    {
+      return new CreateTaskReply
+             {
+               Error = "Empty request",
+             };
+    }
 
     fsmCreate.InitRequest();
     var current = requestStream.Current;
@@ -92,16 +98,30 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     }
 
     var taskOptions = current.InitRequest.TaskOptions;
-    await requestStream.MoveNext(context.CancellationToken)
-                       .ConfigureAwait(false);
+    if (!await requestStream.MoveNext(context.CancellationToken)
+                            .ConfigureAwait(false))
+    {
+      return new CreateTaskReply
+             {
+               CommunicationToken = current.CommunicationToken,
+               Error              = "Missing message in request",
+             };
+    }
 
     while (requestStream.Current.TypeCase == CreateTaskRequest.TypeOneofCase.InitTask && requestStream.Current.InitTask.TypeCase == InitTaskRequest.TypeOneofCase.Header)
     {
       fsmCreate.AddHeader();
       var header = requestStream.Current.InitTask.Header;
 
-      await requestStream.MoveNext(context.CancellationToken)
-                         .ConfigureAwait(false);
+      if (!await requestStream.MoveNext(context.CancellationToken)
+                              .ConfigureAwait(false))
+      {
+        return new CreateTaskReply
+               {
+                 CommunicationToken = current.CommunicationToken,
+                 Error              = "Missing message in request",
+               };
+      }
 
       var result = (await agent_.CreateResultsMetaData(new CreateResultsMetaDataRequest
                                                        {
@@ -125,8 +145,15 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
         fsmCreate.AddDataChunk();
         var data = requestStream.Current.TaskPayload.Data;
         r.Write(data.Span);
-        await requestStream.MoveNext(context.CancellationToken)
-                           .ConfigureAwait(false);
+        if (!await requestStream.MoveNext(context.CancellationToken)
+                                .ConfigureAwait(false))
+        {
+          return new CreateTaskReply
+                 {
+                   CommunicationToken = current.CommunicationToken,
+                   Error              = "Missing message in request",
+                 };
+        }
       }
 
       if (requestStream.Current.TypeCase             == CreateTaskRequest.TypeOneofCase.TaskPayload &&
@@ -151,8 +178,15 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                          PayloadId = result.ResultId,
                        });
 
-      await requestStream.MoveNext(context.CancellationToken)
-                         .ConfigureAwait(false);
+      if (!await requestStream.MoveNext(context.CancellationToken)
+                              .ConfigureAwait(false))
+      {
+        return new CreateTaskReply
+               {
+                 CommunicationToken = current.CommunicationToken,
+                 Error              = "Missing message in request",
+               };
+      }
     }
 
     if (requestStream.Current.TypeCase != CreateTaskRequest.TypeOneofCase.InitTask || !requestStream.Current.InitTask.LastTask)
