@@ -44,18 +44,18 @@ public class SimpleAgent : IAgent
   public Task FinalizeTaskCreation(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<string> GetCommonData(string            resultId,
-                                    string            token,
+  public Task<string> GetCommonData(string            token,
+                                    string            resultId,
                                     CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<string> GetDirectData(string            resultId,
-                                    string            token,
+  public Task<string> GetDirectData(string            token,
+                                    string            resultId,
                                     CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<string> GetResourceData(string            resultId,
-                                      string            token,
+  public Task<string> GetResourceData(string            token,
+                                      string            resultId,
                                       CancellationToken cancellationToken)
     => throw new NotImplementedException();
 

@@ -225,8 +225,8 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     {
       return new DataResponse
              {
-               ResultId = await agent_.GetCommonData(request.ResultId,
-                                                     request.CommunicationToken,
+               ResultId = await agent_.GetCommonData(request.CommunicationToken,
+                                                     request.ResultId,
                                                      context.CancellationToken)
                                       .ConfigureAwait(false),
              };
@@ -244,8 +244,8 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     {
       return new DataResponse
              {
-               ResultId = await agent_.GetResourceData(request.ResultId,
-                                                       request.CommunicationToken,
+               ResultId = await agent_.GetResourceData(request.CommunicationToken,
+                                                       request.ResultId,
                                                        context.CancellationToken)
                                       .ConfigureAwait(false),
              };
@@ -263,8 +263,8 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     {
       return new DataResponse
              {
-               ResultId = await agent_.GetDirectData(request.ResultId,
-                                                     request.CommunicationToken,
+               ResultId = await agent_.GetDirectData(request.CommunicationToken,
+                                                     request.ResultId,
                                                      context.CancellationToken)
                                       .ConfigureAwait(false),
              };

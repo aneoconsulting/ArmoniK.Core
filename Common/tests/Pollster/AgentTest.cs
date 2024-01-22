@@ -344,16 +344,16 @@ public class AgentTest
                                                                          },
                                                                          CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData("",
-                                                                      token,
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(token,
+                                                                      "",
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData("",
-                                                                      token,
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetDirectData(token,
+                                                                      "",
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData("",
-                                                                        token,
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(token,
+                                                                        "",
                                                                         CancellationToken.None));
   }
 
@@ -363,12 +363,12 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData("",
-                                                                                 holder.Token,
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetCommonData(holder.Token,
+                                                                                 "",
                                                                                  CancellationToken.None));
 
-    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData("",
-                                                                                 holder.Token,
+    Assert.ThrowsAsync<NotImplementedException>(() => holder.Agent.GetDirectData(holder.Token,
+                                                                                 "",
                                                                                  CancellationToken.None));
   }
 
@@ -377,8 +377,8 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData("DataNotExisting",
-                                                                        holder.Token,
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetResourceData(holder.Token,
+                                                                        "DataNotExisting",
                                                                         CancellationToken.None));
   }
 
@@ -655,8 +655,8 @@ public class AgentTest
                                                 CancellationToken.None)
                 .ConfigureAwait(false);
 
-    await holder.Agent.GetResourceData("ResourceData",
-                                       holder.Token,
+    await holder.Agent.GetResourceData(holder.Token,
+                                       "ResourceData",
                                        CancellationToken.None)
                 .ConfigureAwait(false);
 

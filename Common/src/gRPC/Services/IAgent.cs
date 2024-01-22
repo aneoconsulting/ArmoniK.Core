@@ -58,40 +58,40 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Get Common data from data storage as file in shared folder
   /// </summary>
-  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Id of the result sent to the worker
   /// </returns>
-  Task<string> GetCommonData(string            resultId,
-                             string            token,
+  Task<string> GetCommonData(string            token,
+                             string            resultId,
                              CancellationToken cancellationToken);
 
   /// <summary>
   ///   Get Direct data from user as file in shared folder
   /// </summary>
-  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Id of the result sent to the worker
   /// </returns>
-  Task<string> GetDirectData(string            resultId,
-                             string            token,
+  Task<string> GetDirectData(string            token,
+                             string            resultId,
                              CancellationToken cancellationToken);
 
   /// <summary>
   ///   Get Resource data from data storage as file in shared folder
   /// </summary>
-  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultId">Result id to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Id of the result sent to the worker
   /// </returns>
-  Task<string> GetResourceData(string            resultId,
-                               string            token,
+  Task<string> GetResourceData(string            token,
+                               string            resultId,
                                CancellationToken cancellationToken);
 
   /// <summary>

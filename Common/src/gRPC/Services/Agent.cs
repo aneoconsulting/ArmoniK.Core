@@ -332,8 +332,8 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<string> GetResourceData(string            resultId,
-                                            string            token,
+  public async Task<string> GetResourceData(string            token,
+                                            string            resultId,
                                             CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
@@ -381,8 +381,8 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public Task<string> GetCommonData(string            resultId,
-                                    string            token,
+  public Task<string> GetCommonData(string            token,
+                                    string            resultId,
                                     CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
@@ -407,8 +407,8 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public Task<string> GetDirectData(string            resultId,
-                                    string            token,
+  public Task<string> GetDirectData(string            token,
+                                    string            resultId,
                                     CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
