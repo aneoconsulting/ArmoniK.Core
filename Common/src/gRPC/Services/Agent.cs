@@ -143,44 +143,6 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                                         CancellationToken            cancellationToken)
-  {
-    ThrowIfInvalidToken(request.CommunicationToken);
-
-    var results = request.Results.Select(rc => new Result(request.SessionId,
-                                                          Guid.NewGuid()
-                                                              .ToString(),
-                                                          rc.Name,
-                                                          "",
-                                                          ResultStatus.Created,
-                                                          new List<string>(),
-                                                          DateTime.UtcNow,
-                                                          0,
-                                                          Array.Empty<byte>()))
-                         .ToList();
-
-    await resultTable_.Create(results,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    return new CreateResultsMetaDataResponse
-           {
-             Results =
-             {
-               results.Select(result => new ResultMetaData
-                                        {
-                                          CreatedAt = FromDateTime(result.CreationDate),
-                                          Name      = result.Name,
-                                          SessionId = result.SessionId,
-                                          Status    = result.Status.ToGrpcStatus(),
-                                          ResultId  = result.ResultId,
-                                        }),
-             },
-           };
-  }
-
-  /// <inheritdoc />
   public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                          CancellationToken    cancellationToken)
   {
@@ -413,6 +375,31 @@ public sealed class Agent : IAgent
     }
 
     return resultIds;
+  }
+
+  /// <inheritdoc />
+  public async Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                               ICollection<ResultCreationRequest> requests,
+                                                               CancellationToken                  cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+
+    var results = requests.ViewSelect(rc => new Result(rc.SessionId,
+                                                       Guid.NewGuid()
+                                                           .ToString(),
+                                                       rc.Name,
+                                                       "",
+                                                       ResultStatus.Created,
+                                                       new List<string>(),
+                                                       DateTime.UtcNow,
+                                                       0,
+                                                       Array.Empty<byte>()));
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    return results;
   }
 
   private void ThrowIfInvalidToken(string token)

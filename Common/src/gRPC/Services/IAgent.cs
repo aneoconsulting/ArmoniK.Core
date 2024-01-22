@@ -97,13 +97,15 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Create results metadata
   /// </summary>
-  /// <param name="request">Requests containing the results to create</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="requests">Requests containing the results to create</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Reply sent to the worker with the created results
   /// </returns>
-  Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                            CancellationToken            cancellationToken);
+  Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                  ICollection<ResultCreationRequest> requests,
+                                                  CancellationToken                  cancellationToken);
 
   /// <summary>
   ///   Submit tasks with payload already existing

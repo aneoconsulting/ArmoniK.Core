@@ -57,9 +57,10 @@ public class SimpleAgent : IAgent
                                       CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                                   CancellationToken            cancellationToken)
-    => Task.FromResult(new CreateResultsMetaDataResponse());
+  public Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                         ICollection<ResultCreationRequest> requests,
+                                                         CancellationToken                  cancellationToken)
+    => Task.FromResult(new List<Result>().AsICollection());
 
   public Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
                                                             TaskOptions?                       taskOptions,
