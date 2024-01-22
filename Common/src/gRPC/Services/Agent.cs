@@ -146,19 +146,7 @@ public sealed class Agent : IAgent
   public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                          CancellationToken            cancellationToken)
   {
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (request.CommunicationToken != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(request.CommunicationToken);
 
     var results = request.Results.Select(rc => new Result(request.SessionId,
                                                           Guid.NewGuid()
@@ -196,19 +184,7 @@ public sealed class Agent : IAgent
   public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                          CancellationToken    cancellationToken)
   {
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (request.CommunicationToken != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(request.CommunicationToken);
 
     var results = await request.Results.Select(async rc =>
                                                {
@@ -266,19 +242,7 @@ public sealed class Agent : IAgent
   public async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
                                                                CancellationToken       cancellationToken)
   {
-    if (string.IsNullOrEmpty(request.CommunicationToken))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (request.CommunicationToken != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(request.CommunicationToken);
 
     foreach (var result in request.Ids)
     {
@@ -340,19 +304,7 @@ public sealed class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    if (string.IsNullOrEmpty(token))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (token != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(token);
 
     try
     {
@@ -389,19 +341,7 @@ public sealed class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    if (string.IsNullOrEmpty(token))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (token != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(token);
 
     throw new NotImplementedException("Common data are not implemented yet");
   }
@@ -415,19 +355,7 @@ public sealed class Agent : IAgent
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    if (string.IsNullOrEmpty(token))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (token != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(token);
 
     throw new NotImplementedException("Direct data are not implemented yet");
   }
@@ -454,19 +382,7 @@ public sealed class Agent : IAgent
                                                                   string                             token,
                                                                   CancellationToken                  cancellationToken)
   {
-    if (string.IsNullOrEmpty(token))
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Missing communication token"),
-                             "Missing communication token");
-    }
-
-    if (token != Token)
-    {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Wrong communication token"),
-                             "Wrong communication token");
-    }
+    ThrowIfInvalidToken(token);
 
     var options = TaskLifeCycleHelper.ValidateSession(sessionData_,
                                                       taskOptions,
@@ -501,5 +417,22 @@ public sealed class Agent : IAgent
     createdTasks_.AddRange(createdTasks);
 
     return createdTasks;
+  }
+
+  private void ThrowIfInvalidToken(string token)
+  {
+    if (string.IsNullOrEmpty(token))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Missing communication token"),
+                             "Missing communication token");
+    }
+
+    if (token != Token)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Wrong communication token"),
+                             "Wrong communication token");
+    }
   }
 }
