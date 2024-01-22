@@ -344,11 +344,10 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      var createdTasks = await agent_.SubmitTasks(request.TaskCreations.Select(creation => new TaskSubmissionRequest(creation.PayloadId,
-                                                                                                                     creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                     creation.ExpectedOutputKeys.AsICollection(),
-                                                                                                                     creation.DataDependencies.AsICollection()))
-                                                         .AsICollection(),
+      var createdTasks = await agent_.SubmitTasks(request.TaskCreations.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                                         creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                                         creation.ExpectedOutputKeys.AsICollection(),
+                                                                                                                         creation.DataDependencies.AsICollection())),
                                                   request.TaskOptions.ToNullableTaskOptions(),
                                                   request.SessionId,
                                                   request.CommunicationToken,
