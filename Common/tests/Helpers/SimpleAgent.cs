@@ -26,8 +26,6 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
-using Grpc.Core;
-
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleAgent : IAgent
@@ -74,17 +72,15 @@ public class SimpleAgent : IAgent
                                                    CancellationToken    cancellationToken)
     => Task.FromResult(new CreateResultsResponse());
 
-  public Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
-                                                         CancellationToken       cancellationToken)
-    => Task.FromResult(new NotifyResultDataResponse());
+  public Task<ICollection<string>> NotifyResultData(string              token,
+                                                    ICollection<string> resultIds,
+                                                    CancellationToken   cancellationToken)
+    => Task.FromResult(Array.Empty<string>()
+                            .AsICollection());
 
   public Task CancelChildTasks(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
   public void Dispose()
     => GC.SuppressFinalize(this);
-
-  public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                          CancellationToken                     cancellationToken)
-    => Task.FromResult(new CreateTaskReply());
 }

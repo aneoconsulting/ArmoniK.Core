@@ -200,18 +200,8 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
       throw new InvalidOperationException("Invalid request");
     }
 
-    await agent_.NotifyResultData(new NotifyResultDataRequest
-                                  {
-                                    CommunicationToken = agent_.Token,
-                                    Ids =
-                                    {
-                                      createdResults.Select(s => new NotifyResultDataRequest.Types.ResultIdentifier
-                                                                 {
-                                                                   ResultId  = s,
-                                                                   SessionId = agent_.SessionId,
-                                                                 }),
-                                    },
-                                  },
+    await agent_.NotifyResultData(agent_.Token,
+                                  createdResults,
                                   context.CancellationToken)
                 .ConfigureAwait(false);
 
@@ -314,9 +304,18 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.NotifyResultData(request,
-                                           context.CancellationToken)
-                         .ConfigureAwait(false);
+      var results = await agent_.NotifyResultData(request.CommunicationToken,
+                                                  request.Ids.ViewSelect(identifier => identifier.ResultId),
+                                                  context.CancellationToken)
+                                .ConfigureAwait(false);
+
+      return new NotifyResultDataResponse
+             {
+               ResultIds =
+               {
+                 results,
+               },
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,

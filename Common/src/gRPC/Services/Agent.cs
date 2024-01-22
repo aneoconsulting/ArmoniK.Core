@@ -239,57 +239,6 @@ public sealed class Agent : IAgent
            };
   }
 
-  public async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
-                                                               CancellationToken       cancellationToken)
-  {
-    ThrowIfInvalidToken(request.CommunicationToken);
-
-    foreach (var result in request.Ids)
-    {
-      await using var fs = new FileStream(Path.Combine(Folder,
-                                                       result.ResultId),
-                                          FileMode.OpenOrCreate);
-      using var r       = new BinaryReader(fs);
-      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
-
-      var add = objectStorage_.AddOrUpdateAsync(result.ResultId,
-                                                channel.Reader.ReadAllAsync(cancellationToken),
-                                                cancellationToken);
-
-      long size = 0;
-      int  read;
-      do
-      {
-        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
-        read = r.Read(buffer,
-                      0,
-                      PayloadConfiguration.MaxChunkSize);
-        size += read;
-        if (read > 0)
-        {
-          await channel.Writer.WriteAsync(buffer.AsMemory(0,
-                                                          read),
-                                          cancellationToken)
-                       .ConfigureAwait(false);
-        }
-      } while (read != 0);
-
-      channel.Writer.Complete();
-
-      await add.ConfigureAwait(false);
-      sentResults_.Add(result.ResultId,
-                       size);
-    }
-
-    return new NotifyResultDataResponse
-           {
-             ResultIds =
-             {
-               request.Ids.Select(identifier => identifier.ResultId),
-             },
-           };
-  }
-
   /// <inheritdoc />
   public void Dispose()
   {
@@ -417,6 +366,53 @@ public sealed class Agent : IAgent
     createdTasks_.AddRange(createdTasks);
 
     return createdTasks;
+  }
+
+  /// <inheritdoc />
+  public async Task<ICollection<string>> NotifyResultData(string              token,
+                                                          ICollection<string> resultIds,
+                                                          CancellationToken   cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+
+    foreach (var result in resultIds)
+    {
+      await using var fs = new FileStream(Path.Combine(Folder,
+                                                       result),
+                                          FileMode.OpenOrCreate);
+      using var r       = new BinaryReader(fs);
+      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
+
+      var add = objectStorage_.AddOrUpdateAsync(result,
+                                                channel.Reader.ReadAllAsync(cancellationToken),
+                                                cancellationToken);
+
+      long size = 0;
+      int  read;
+      do
+      {
+        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
+        read = r.Read(buffer,
+                      0,
+                      PayloadConfiguration.MaxChunkSize);
+        size += read;
+        if (read > 0)
+        {
+          await channel.Writer.WriteAsync(buffer.AsMemory(0,
+                                                          read),
+                                          cancellationToken)
+                       .ConfigureAwait(false);
+        }
+      } while (read != 0);
+
+      channel.Writer.Complete();
+
+      await add.ConfigureAwait(false);
+      sentResults_.Add(result,
+                       size);
+    }
+
+    return resultIds;
   }
 
   private void ThrowIfInvalidToken(string token)

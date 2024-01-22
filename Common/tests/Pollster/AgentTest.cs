@@ -338,10 +338,8 @@ public class AgentTest
                                                                       },
                                                                       CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.NotifyResultData(new NotifyResultDataRequest
-                                                                         {
-                                                                           CommunicationToken = token,
-                                                                         },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.NotifyResultData(token,
+                                                                         new List<string>(),
                                                                          CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(token,
@@ -397,17 +395,10 @@ public class AgentTest
                                   Encoding.ASCII.GetBytes(data))
               .ConfigureAwait(false);
 
-    await holder.Agent.NotifyResultData(new NotifyResultDataRequest
+    await holder.Agent.NotifyResultData(holder.Token,
+                                        new List<string>
                                         {
-                                          CommunicationToken = holder.Token,
-                                          Ids =
-                                          {
-                                            new NotifyResultDataRequest.Types.ResultIdentifier
-                                            {
-                                              ResultId  = ExpectedOutput1,
-                                              SessionId = holder.Session,
-                                            },
-                                          },
+                                          ExpectedOutput1,
                                         },
                                         CancellationToken.None)
                 .ConfigureAwait(false);
@@ -887,18 +878,11 @@ public class AgentTest
                                   Encoding.ASCII.GetBytes("Data1Data2"))
               .ConfigureAwait(false);
 
-    await holder.Agent.NotifyResultData(new NotifyResultDataRequest
+    await holder.Agent.NotifyResultData(holder.Token,
+                                        new List<string>
                                         {
-                                          CommunicationToken = holder.Token,
-                                          Ids =
-                                          {
-                                            new NotifyResultDataRequest.Types.ResultIdentifier
-                                            {
-                                              ResultId = eok.Results.Last()
-                                                            .ResultId,
-                                              SessionId = holder.Session,
-                                            },
-                                          },
+                                          eok.Results.Last()
+                                             .ResultId,
                                         },
                                         CancellationToken.None)
                 .ConfigureAwait(false);

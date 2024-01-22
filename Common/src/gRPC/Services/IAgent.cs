@@ -133,13 +133,15 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Put the results created as a file in the task into object storage
   /// </summary>
-  /// <param name="request">Requests containing the results</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultIds">Results to put in the object storage</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Reply sent to the worker describing the status of the execution of the received requests
+  ///   Results which notification is successful
   /// </returns>
-  Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
-                                                  CancellationToken       cancellationToken);
+  Task<ICollection<string>> NotifyResultData(string              token,
+                                             ICollection<string> resultIds,
+                                             CancellationToken   cancellationToken);
 
   /// <summary>
   ///   Cancel child tasks created by the current task in processing
