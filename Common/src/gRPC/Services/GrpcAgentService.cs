@@ -98,7 +98,7 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     while (requestStream.Current.TypeCase == CreateTaskRequest.TypeOneofCase.InitTask && requestStream.Current.InitTask.TypeCase == InitTaskRequest.TypeOneofCase.Header)
     {
       fsmCreate.AddHeader();
-      var t = requestStream.Current.InitTask.Header;
+      var header = requestStream.Current.InitTask.Header;
 
       await requestStream.MoveNext(context.CancellationToken)
                          .ConfigureAwait(false);
@@ -142,11 +142,11 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                        {
                          DataDependencies =
                          {
-                           t.DataDependencies,
+                           header.DataDependencies,
                          },
                          ExpectedOutputKeys =
                          {
-                           t.ExpectedOutputKeys,
+                           header.ExpectedOutputKeys,
                          },
                          PayloadId = result.ResultId,
                        });
