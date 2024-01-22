@@ -468,17 +468,17 @@ public sealed class Agent : IAgent
                              "Wrong communication token");
     }
 
-    if (requests.Count == 0)
-    {
-      return new List<TaskCreationRequest>();
-    }
-
     var options = TaskLifeCycleHelper.ValidateSession(sessionData_,
                                                       taskOptions,
                                                       taskData_.TaskId,
                                                       pushQueueStorage_.MaxPriority,
                                                       logger_,
                                                       cancellationToken);
+
+    if (requests.Count == 0)
+    {
+      return new List<TaskCreationRequest>();
+    }
 
     var createdTasks = requests.Select(creation => new TaskCreationRequest(Guid.NewGuid()
                                                                                .ToString(),
