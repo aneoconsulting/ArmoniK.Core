@@ -193,11 +193,10 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                                   context.CancellationToken)
                 .ConfigureAwait(false);
 
-    var submittedTasks = await agent_.SubmitTasks(createdTasks.Select(creation => new TaskSubmissionRequest(creation.PayloadId,
-                                                                                                            creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                            creation.ExpectedOutputKeys,
-                                                                                                            creation.DataDependencies))
-                                                              .AsICollection(),
+    var submittedTasks = await agent_.SubmitTasks(createdTasks.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                                creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                                creation.ExpectedOutputKeys,
+                                                                                                                creation.DataDependencies)),
                                                   taskOptions.ToNullableTaskOptions(),
                                                   agent_.SessionId,
                                                   agent_.Token,
@@ -325,8 +324,8 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
     {
       var createdTasks = await agent_.SubmitTasks(request.TaskCreations.Select(creation => new TaskSubmissionRequest(creation.PayloadId,
                                                                                                                      creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                     creation.ExpectedOutputKeys.ToList(),
-                                                                                                                     creation.DataDependencies.ToList()))
+                                                                                                                     creation.ExpectedOutputKeys.AsICollection(),
+                                                                                                                     creation.DataDependencies.AsICollection()))
                                                          .AsICollection(),
                                                   request.TaskOptions.ToNullableTaskOptions(),
                                                   request.SessionId,
