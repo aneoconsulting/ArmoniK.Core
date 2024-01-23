@@ -367,16 +367,17 @@ public sealed class Agent : IAgent
   {
     ThrowIfInvalidToken(token);
 
-    var results = requests.ViewSelect(rc => new Result(rc.SessionId,
-                                                       Guid.NewGuid()
-                                                           .ToString(),
-                                                       rc.Name,
-                                                       "",
-                                                       ResultStatus.Created,
-                                                       new List<string>(),
-                                                       DateTime.UtcNow,
-                                                       0,
-                                                       Array.Empty<byte>()));
+    var results = requests.Select(rc => new Result(rc.SessionId,
+                                                   Guid.NewGuid()
+                                                       .ToString(),
+                                                   rc.Name,
+                                                   "",
+                                                   ResultStatus.Created,
+                                                   new List<string>(),
+                                                   DateTime.UtcNow,
+                                                   0,
+                                                   Array.Empty<byte>()))
+                          .AsICollection();
 
     await resultTable_.Create(results,
                               cancellationToken)
