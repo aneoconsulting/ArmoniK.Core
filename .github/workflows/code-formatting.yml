@@ -66,3 +66,30 @@ jobs:
 
       - name: Check Format
         run: terraform fmt -check -recursive -diff
+
+
+  mode-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Set files mode to 644
+      run: git grep -l "" | grep -v -E "\.sh$" | xargs chmod 644
+
+    - name: Check Diff
+      id: check-diff
+      run: |
+        DIFF="$(git diff --name-only)"
+
+        if [ -z "$DIFF" ]; then
+          echo "OK: Files mode is clean"
+        else
+          echo "Error: Files mode was not clean"
+          echo "List of files:"
+          echo "$DIFF"
+          git diff
+          exit 1
+        fi
