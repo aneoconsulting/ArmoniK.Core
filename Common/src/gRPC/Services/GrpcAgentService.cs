@@ -126,7 +126,7 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
       }
 
       var result = (await agent_.CreateResultsMetaData(agent_.Token,
-                                                       new List<ResultCreationRequest>
+                                                       new ResultCreationRequest[]
                                                        {
                                                          new(agent_.SessionId,
                                                              ""),

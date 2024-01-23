@@ -390,7 +390,7 @@ public class AgentTest
               .ConfigureAwait(false);
 
     await holder.Agent.NotifyResultData(holder.Token,
-                                        new List<string>
+                                        new[]
                                         {
                                           ExpectedOutput1,
                                         },
@@ -499,7 +499,7 @@ public class AgentTest
     using var holder = new AgentHolder();
 
     var results = await holder.Agent.CreateResultsMetaData(holder.Token,
-                                                           new List<ResultCreationRequest>
+                                                           new ResultCreationRequest[]
                                                            {
                                                              new(holder.Session,
                                                                  "Task1EOK"),
@@ -519,7 +519,7 @@ public class AgentTest
 
 
     var results2 = await holder.Agent.CreateResultsMetaData(holder.Token,
-                                                            new List<ResultCreationRequest>
+                                                            new ResultCreationRequest[]
                                                             {
                                                               new(holder.Session,
                                                                   "Task3EOK"),
@@ -624,7 +624,7 @@ public class AgentTest
     using var holder = new AgentHolder();
 
     var results = await holder.Agent.CreateResults(holder.Token,
-                                                   new List<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>
+                                                   new (ResultCreationRequest request, ReadOnlyMemory<byte> data)[]
                                                    {
                                                      (new ResultCreationRequest(holder.Session,
                                                                                 "Result1"), new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("Result1"))),
@@ -685,7 +685,7 @@ public class AgentTest
     using var holder = new AgentHolder();
 
     var payload = await holder.Agent.CreateResults(holder.Token,
-                                                   new List<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>
+                                                   new (ResultCreationRequest request, ReadOnlyMemory<byte> data)[]
                                                    {
                                                      (new ResultCreationRequest(holder.Session,
                                                                                 "Payload"), new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("Payload"))),
@@ -694,7 +694,7 @@ public class AgentTest
                               .ConfigureAwait(false);
 
     var eok = await holder.Agent.CreateResultsMetaData(holder.Token,
-                                                       new List<ResultCreationRequest>
+                                                       new ResultCreationRequest[]
                                                        {
                                                          new(holder.Session,
                                                              "EOK1"),
@@ -704,7 +704,7 @@ public class AgentTest
                                                        CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
+    var reply = await holder.Agent.SubmitTasks(new TaskSubmissionRequest[]
                                                {
                                                  new(payload.Single()
                                                             .ResultId,
@@ -758,7 +758,7 @@ public class AgentTest
     using var holder = new AgentHolder();
 
     var eok = await holder.Agent.CreateResultsMetaData(holder.Token,
-                                                       new List<ResultCreationRequest>
+                                                       new ResultCreationRequest[]
                                                        {
                                                          new(holder.Session,
                                                              "EOK1"),
@@ -770,7 +770,7 @@ public class AgentTest
                                                        CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
+    var reply = await holder.Agent.SubmitTasks(new TaskSubmissionRequest[]
                                                {
                                                  new(eok.Last()
                                                         .ResultId,
@@ -798,7 +798,7 @@ public class AgentTest
               .ConfigureAwait(false);
 
     await holder.Agent.NotifyResultData(holder.Token,
-                                        new List<string>
+                                        new[]
                                         {
                                           eok.Last()
                                              .ResultId,
