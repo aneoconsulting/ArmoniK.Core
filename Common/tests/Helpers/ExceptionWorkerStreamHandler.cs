@@ -30,10 +30,15 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
   where T : Exception, new()
 {
-  private readonly int delay_;
+  private readonly bool acceptCancellation_;
+  private readonly int  delay_;
 
-  public ExceptionWorkerStreamHandler(int delay)
-    => delay_ = delay;
+  public ExceptionWorkerStreamHandler(int  delay,
+                                      bool acceptCancellation = true)
+  {
+    delay_              = delay;
+    acceptCancellation_ = acceptCancellation;
+  }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
@@ -51,9 +56,10 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
                                                 CancellationToken cancellationToken)
   {
     await Task.Delay(TimeSpan.FromMilliseconds(delay_),
-                     cancellationToken)
+                     acceptCancellation_
+                       ? cancellationToken
+                       : CancellationToken.None)
               .ConfigureAwait(false);
-    cancellationToken.ThrowIfCancellationRequested();
     throw new T();
   }
 }
