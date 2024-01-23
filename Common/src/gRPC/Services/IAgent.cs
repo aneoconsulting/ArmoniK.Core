@@ -103,7 +103,7 @@ public interface IAgent : IDisposable
   ///   Reply sent to the worker with the created results
   /// </returns>
   Task<ICollection<Result>> CreateResultsMetaData(string                             token,
-                                                  ICollection<ResultCreationRequest> requests,
+                                                  IEnumerable<ResultCreationRequest> requests,
                                                   CancellationToken                  cancellationToken);
 
   /// <summary>
@@ -130,7 +130,7 @@ public interface IAgent : IDisposable
   ///   Reply sent to the worker with the id of the created result
   /// </returns>
   Task<ICollection<Result>> CreateResults(string                                                                  token,
-                                          ICollection<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                          IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
                                           CancellationToken                                                       cancellationToken);
 
   /// <summary>

@@ -57,7 +57,7 @@ public class SimpleAgent : IAgent
     => throw new NotImplementedException();
 
   public Task<ICollection<Result>> CreateResultsMetaData(string                             token,
-                                                         ICollection<ResultCreationRequest> requests,
+                                                         IEnumerable<ResultCreationRequest> requests,
                                                          CancellationToken                  cancellationToken)
     => Task.FromResult(new List<Result>().AsICollection());
 
@@ -69,7 +69,7 @@ public class SimpleAgent : IAgent
     => Task.FromResult(new List<TaskCreationRequest>().AsICollection());
 
   public Task<ICollection<Result>> CreateResults(string                                                                  token,
-                                                 ICollection<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                                 IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
                                                  CancellationToken                                                       cancellationToken)
     => Task.FromResult(Array.Empty<Result>()
                             .AsICollection());

@@ -139,52 +139,6 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<ICollection<Result>> CreateResults(string                                                                  token,
-                                                       ICollection<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
-                                                       CancellationToken                                                       cancellationToken)
-  {
-    ThrowIfInvalidToken(token);
-
-    var results = await requests.Select(async rc =>
-                                        {
-                                          var resultId = Guid.NewGuid()
-                                                             .ToString();
-
-                                          var size = await objectStorage_.AddOrUpdateAsync(resultId,
-                                                                                           new List<ReadOnlyMemory<byte>>
-                                                                                           {
-                                                                                             rc.data,
-                                                                                           }.ToAsyncEnumerable(),
-                                                                                           cancellationToken)
-                                                                         .ConfigureAwait(false);
-
-                                          return new Result(rc.request.SessionId,
-                                                            resultId,
-                                                            rc.request.Name,
-                                                            "",
-                                                            ResultStatus.Created,
-                                                            new List<string>(),
-                                                            DateTime.UtcNow,
-                                                            size,
-                                                            Array.Empty<byte>());
-                                        })
-                                .WhenAll()
-                                .ConfigureAwait(false);
-
-    await resultTable_.Create(results,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    foreach (var result in results)
-    {
-      sentResults_.Add(result.ResultId,
-                       result.Size);
-    }
-
-    return results;
-  }
-
-  /// <inheritdoc />
   public void Dispose()
   {
   }
@@ -314,6 +268,52 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
+  public async Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                                       IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                                       CancellationToken                                                       cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+
+    var results = await requests.Select(async rc =>
+                                        {
+                                          var resultId = Guid.NewGuid()
+                                                             .ToString();
+
+                                          var size = await objectStorage_.AddOrUpdateAsync(resultId,
+                                                                                           new List<ReadOnlyMemory<byte>>
+                                                                                           {
+                                                                                             rc.data,
+                                                                                           }.ToAsyncEnumerable(),
+                                                                                           cancellationToken)
+                                                                         .ConfigureAwait(false);
+
+                                          return new Result(rc.request.SessionId,
+                                                            resultId,
+                                                            rc.request.Name,
+                                                            "",
+                                                            ResultStatus.Created,
+                                                            new List<string>(),
+                                                            DateTime.UtcNow,
+                                                            size,
+                                                            Array.Empty<byte>());
+                                        })
+                                .WhenAll()
+                                .ConfigureAwait(false);
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    foreach (var result in results)
+    {
+      sentResults_.Add(result.ResultId,
+                       result.Size);
+    }
+
+    return results;
+  }
+
+  /// <inheritdoc />
   public async Task<ICollection<string>> NotifyResultData(string              token,
                                                           ICollection<string> resultIds,
                                                           CancellationToken   cancellationToken)
@@ -362,7 +362,7 @@ public sealed class Agent : IAgent
 
   /// <inheritdoc />
   public async Task<ICollection<Result>> CreateResultsMetaData(string                             token,
-                                                               ICollection<ResultCreationRequest> requests,
+                                                               IEnumerable<ResultCreationRequest> requests,
                                                                CancellationToken                  cancellationToken)
   {
     ThrowIfInvalidToken(token);
