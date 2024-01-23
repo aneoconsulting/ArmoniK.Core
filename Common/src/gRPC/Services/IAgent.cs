@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
@@ -124,13 +123,15 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Create a result (with data and metadata)
   /// </summary>
-  /// <param name="request">Requests containing the result to create and the data</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="requests">Requests containing the result to create and their data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Reply sent to the worker with the id of the created result
   /// </returns>
-  Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
-                                            CancellationToken    cancellationToken);
+  Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                          ICollection<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                          CancellationToken                                                       cancellationToken);
 
   /// <summary>
   ///   Put the results created as a file in the task into object storage

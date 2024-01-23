@@ -401,9 +401,26 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.CreateResults(request,
-                                        context.CancellationToken)
-                         .ConfigureAwait(false);
+      var results = await agent_.CreateResults(request.CommunicationToken,
+                                               request.Results.ViewSelect(create => (new ResultCreationRequest(request.SessionId,
+                                                                                                               create.Name), create.Data.Memory)),
+                                               context.CancellationToken)
+                                .ConfigureAwait(false);
+
+      return new CreateResultsResponse
+             {
+               Results =
+               {
+                 results.Select(result => new ResultMetaData
+                                          {
+                                            CreatedAt = FromDateTime(result.CreationDate),
+                                            Name      = result.Name,
+                                            SessionId = result.SessionId,
+                                            Status    = result.Status.ToGrpcStatus(),
+                                            ResultId  = result.ResultId,
+                                          }),
+               },
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,

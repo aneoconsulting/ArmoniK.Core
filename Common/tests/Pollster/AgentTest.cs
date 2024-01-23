@@ -24,7 +24,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Convertors;
@@ -44,7 +43,6 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
-using Agent = ArmoniK.Core.Common.gRPC.Services.Agent;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
@@ -330,10 +328,8 @@ public class AgentTest
                                                                               new List<ResultCreationRequest>(),
                                                                               CancellationToken.None));
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResults(new CreateResultsRequest
-                                                                      {
-                                                                        CommunicationToken = token,
-                                                                      },
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResults(token,
+                                                                      new List<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>(),
                                                                       CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.NotifyResultData(token,
@@ -470,23 +466,14 @@ public class AgentTest
                                                                                      TaskOptions?        options,
                                                                                      ICollection<string> results)
   {
-    var res = await agent.CreateResults(new CreateResultsRequest
-                                        {
-                                          SessionId          = agent.SessionId,
-                                          CommunicationToken = agent.Token,
-                                          Results =
-                                          {
-                                            results.Select(s => new CreateResultsRequest.Types.ResultCreate
-                                                                {
-                                                                  Data = ByteString.CopyFromUtf8($"Payload with name {s}"),
-                                                                  Name = s,
-                                                                }),
-                                          },
-                                        },
+    var res = await agent.CreateResults(agent.Token,
+                                        results.ViewSelect(s => (new ResultCreationRequest(agent.SessionId,
+                                                                                           s),
+                                                                 new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes($"Payload with name {s}")))),
                                         CancellationToken.None)
                          .ConfigureAwait(false);
 
-    var z = res.Results.Zip(results);
+    var z = res.Zip(results);
 
     return await agent.SubmitTasks(z.Select(tuple => new TaskSubmissionRequest(tuple.First.ResultId,
                                                                                null,
@@ -636,31 +623,18 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    var results = await holder.Agent.CreateResults(new CreateResultsRequest
+    var results = await holder.Agent.CreateResults(holder.Token,
+                                                   new List<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>
                                                    {
-                                                     SessionId          = holder.Session,
-                                                     CommunicationToken = holder.Token,
-                                                     Results =
-                                                     {
-                                                       new List<CreateResultsRequest.Types.ResultCreate>
-                                                       {
-                                                         new()
-                                                         {
-                                                           Name = "Result1",
-                                                           Data = ByteString.CopyFromUtf8("Result1"),
-                                                         },
-                                                         new()
-                                                         {
-                                                           Name = "Result2",
-                                                           Data = ByteString.CopyFromUtf8("Result2"),
-                                                         },
-                                                       },
-                                                     },
+                                                     (new ResultCreationRequest(holder.Session,
+                                                                                "Result1"), new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("Result1"))),
+                                                     (new ResultCreationRequest(holder.Session,
+                                                                                "Result2"), new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("Result2"))),
                                                    },
                                                    CancellationToken.None)
                               .ConfigureAwait(false);
 
-    foreach (var result in results.Results)
+    foreach (var result in results)
     {
       Console.WriteLine(result);
 
@@ -685,7 +659,7 @@ public class AgentTest
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
-    foreach (var result in results.Results)
+    foreach (var result in results)
     {
       Console.WriteLine(result);
 
@@ -710,21 +684,11 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    var payload = await holder.Agent.CreateResults(new CreateResultsRequest
+    var payload = await holder.Agent.CreateResults(holder.Token,
+                                                   new List<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>
                                                    {
-                                                     SessionId          = holder.Session,
-                                                     CommunicationToken = holder.Token,
-                                                     Results =
-                                                     {
-                                                       new List<CreateResultsRequest.Types.ResultCreate>
-                                                       {
-                                                         new()
-                                                         {
-                                                           Name = "Payload",
-                                                           Data = ByteString.CopyFromUtf8("Payload"),
-                                                         },
-                                                       },
-                                                     },
+                                                     (new ResultCreationRequest(holder.Session,
+                                                                                "Payload"), new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("Payload"))),
                                                    },
                                                    CancellationToken.None)
                               .ConfigureAwait(false);
@@ -742,7 +706,7 @@ public class AgentTest
 
     var reply = await holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>
                                                {
-                                                 new(payload.Results.Single()
+                                                 new(payload.Single()
                                                             .ResultId,
                                                      optionsNull
                                                        ? null
@@ -761,7 +725,7 @@ public class AgentTest
 
     Assert.AreEqual(1,
                     reply.Count);
-    Assert.AreEqual(payload.Results.Single()
+    Assert.AreEqual(payload.Single()
                            .ResultId,
                     reply.Single()
                          .PayloadId);

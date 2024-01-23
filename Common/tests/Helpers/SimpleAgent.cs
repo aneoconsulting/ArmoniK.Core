@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -69,9 +68,11 @@ public class SimpleAgent : IAgent
                                                             CancellationToken                  cancellationToken)
     => Task.FromResult(new List<TaskCreationRequest>().AsICollection());
 
-  public Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
-                                                   CancellationToken    cancellationToken)
-    => Task.FromResult(new CreateResultsResponse());
+  public Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                                 ICollection<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                                 CancellationToken                                                       cancellationToken)
+    => Task.FromResult(Array.Empty<Result>()
+                            .AsICollection());
 
   public Task<ICollection<string>> NotifyResultData(string              token,
                                                     ICollection<string> resultIds,
