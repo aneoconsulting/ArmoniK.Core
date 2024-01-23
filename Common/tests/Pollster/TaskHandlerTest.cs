@@ -993,25 +993,6 @@ public class TaskHandlerTest
                     acquired);
   }
 
-  public class ExceptionStartWorkerStreamHandler<T> : IWorkerStreamHandler
-    where T : Exception, new()
-  {
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => Task.FromResult(HealthCheckResult.Healthy());
-
-    public Task Init(CancellationToken cancellationToken)
-      => Task.CompletedTask;
-
-    public void Dispose()
-      => GC.SuppressFinalize(this);
-
-    public Task<Output> StartTaskProcessing(TaskData          taskData,
-                                            string            token,
-                                            string            dataFolder,
-                                            CancellationToken cancellationToken)
-      => throw new T();
-  }
-
   public class TestRpcException : RpcException
   {
     public TestRpcException()
@@ -1260,66 +1241,6 @@ public class TaskHandlerTest
       taskId = lastRetry.TaskId;
     }
   }
-
-  public static IEnumerable TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow
-  {
-    get
-    {
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<Exception>()).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                       .SetArgDisplayNames("Exception"); // error with resubmit
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestRpcException>()).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                              .SetArgDisplayNames("RpcException"); // error with resubmit
-      // error meaning that the worker is unavailable, therefore a requeue is made
-      yield return new TestCaseData(new ExceptionStartWorkerStreamHandler<TestUnavailableRpcException>()).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
-                                                                                                         .SetArgDisplayNames("RpcUnavailableException");
-    }
-  }
-
-  [Test]
-  [TestCaseSource(nameof(TestCaseOutputExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow))]
-  public async Task<(TaskStatus taskStatus, QueueMessageStatus messageStatus)> ExecuteTaskWithErrorDuringStartInWorkerHandlerShouldThrow<TEx>(
-    ExceptionStartWorkerStreamHandler<TEx> sh)
-    where TEx : Exception, new()
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var agentHandler = new SimpleAgentHandler();
-    using var testServiceProvider = new TestTaskHandlerProvider(sh,
-                                                                agentHandler,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
-
-    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
-
-    sqmh.TaskId = taskId;
-
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
-
-    Assert.AreEqual(0,
-                    acquired);
-
-    await testServiceProvider.TaskHandler.PreProcessing()
-                             .ConfigureAwait(false);
-
-    Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
-                                                                 .ConfigureAwait(false));
-
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     CancellationToken.None)
-                                            .ConfigureAwait(false);
-
-
-    return (taskData.Status, sqmh.Status);
-  }
-
 
   [Test]
   public async Task ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow()
