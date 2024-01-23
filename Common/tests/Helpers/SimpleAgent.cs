@@ -59,14 +59,16 @@ public class SimpleAgent : IAgent
   public Task<ICollection<Result>> CreateResultsMetaData(string                             token,
                                                          IEnumerable<ResultCreationRequest> requests,
                                                          CancellationToken                  cancellationToken)
-    => Task.FromResult(new List<Result>().AsICollection());
+    => Task.FromResult(Array.Empty<Result>()
+                            .AsICollection());
 
   public Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
                                                             TaskOptions?                       taskOptions,
                                                             string                             sessionId,
                                                             string                             token,
                                                             CancellationToken                  cancellationToken)
-    => Task.FromResult(new List<TaskCreationRequest>().AsICollection());
+    => Task.FromResult(Array.Empty<TaskCreationRequest>()
+                            .AsICollection());
 
   public Task<ICollection<Result>> CreateResults(string                                                                  token,
                                                  IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,

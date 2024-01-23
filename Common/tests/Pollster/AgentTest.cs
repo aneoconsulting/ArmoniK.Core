@@ -318,22 +318,22 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<RpcException>(() => holder.Agent.SubmitTasks(new List<TaskSubmissionRequest>(),
+    Assert.ThrowsAsync<RpcException>(() => holder.Agent.SubmitTasks(Array.Empty<TaskSubmissionRequest>(),
                                                                     Options.ToNullableTaskOptions(),
                                                                     "",
                                                                     token,
                                                                     CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResultsMetaData(token,
-                                                                              new List<ResultCreationRequest>(),
+                                                                              Array.Empty<ResultCreationRequest>(),
                                                                               CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.CreateResults(token,
-                                                                      new List<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>(),
+                                                                      Array.Empty<(ResultCreationRequest request, ReadOnlyMemory<byte> data)>(),
                                                                       CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.NotifyResultData(token,
-                                                                         new List<string>(),
+                                                                         Array.Empty<string>(),
                                                                          CancellationToken.None));
 
     Assert.ThrowsAsync<RpcException>(() => holder.Agent.GetCommonData(token,
