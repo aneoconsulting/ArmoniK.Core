@@ -68,7 +68,8 @@ public class TestTaskHandlerProvider : IDisposable
                                  CancellationTokenSource cancellationTokenSource,
                                  ITaskTable?             inputTaskTable        = null,
                                  ISessionTable?          inputSessionTable     = null,
-                                 ITaskProcessingChecker? taskProcessingChecker = null)
+                                 ITaskProcessingChecker? taskProcessingChecker = null,
+                                 TimeSpan?               graceDelay            = null)
   {
     var logger = NullLogger.Instance;
 
@@ -113,7 +114,10 @@ public class TestTaskHandlerProvider : IDisposable
                                                     "DefaultPartition"
                                                   },
                                                   {
-                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", graceDelay is null
+                                                                                                                                                      ? "00:00:02"
+                                                                                                                                                      : graceDelay
+                                                                                                                                                        .ToString()
                                                   },
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.SharedCacheFolder)}",
