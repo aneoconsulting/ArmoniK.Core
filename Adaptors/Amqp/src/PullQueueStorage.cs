@@ -72,20 +72,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
       receivers_ = Enumerable.Range(0,
                                     NbLinks)
-                             .Select(i => new AsyncLazy<IReceiverLink>(() =>
-                                                                       {
-                                                                         var rl = new ReceiverLink(session,
-                                                                                                   $"{Options.PartitionId}###ReceiverLink{i}",
-                                                                                                   $"{Options.PartitionId}###q{i}");
-
-                                                                         /* linkCredit_: the maximum number of messages the
-                                                                          * remote peer can send to the receiver.
-                                                                          * With the goal of minimizing/deactivating
-                                                                          * prefetching, a value of 1 gave us the desired
-                                                                          * behavior. We pick a default value of 2 to have "some cache". */
-                                                                         rl.SetCredit(Options.LinkCredit);
-                                                                         return rl;
-                                                                       }))
+                             .Select(i => CreateReceiver(session,
+                                                         i))
                              .ToArray();
 
       senders_ = Enumerable.Range(0,
@@ -123,9 +111,38 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       for (var i = receivers_.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        var receiver = await receivers_[i];
-        var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
+        Message? message  = null;
+        var      receiver = await receivers_[i];
+
+        for (var retry = 0; retry < Options.MaxRetries; i++)
+        {
+          try
+          {
+            message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
+            break;
+          }
+          catch (Exception e)
+          {
+            if (retry < Options.MaxRetries - 1)
+            {
+              var session = new Session(ConnectionAmqp.Connection);
+              receivers_[i] = CreateReceiver(session,
+                                             i);
+              receiver = await receivers_[i];
+              logger_.LogDebug(e,
+                               "Exception while receiving message; receiver replaced");
+            }
+            else
+            {
+              logger_.LogError(e,
+                               "Exception while receiving message");
+              throw;
+            }
+          }
+        }
+
+
         if (message is null)
         {
           logger_.LogTrace("Message is null for receiver {receiver}",
@@ -152,4 +169,21 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       }
     }
   }
+
+  private AsyncLazy<IReceiverLink> CreateReceiver(Session session,
+                                                  int     link)
+    => new(() =>
+           {
+             var rl = new ReceiverLink(session,
+                                       $"{Options.PartitionId}###ReceiverLink{link}",
+                                       $"{Options.PartitionId}###q{link}");
+
+             /* linkCredit_: the maximum number of messages the
+                                       * remote peer can send to the receiver.
+                                       * With the goal of minimizing/deactivating
+                                       * prefetching, a value of 1 gave us the desired
+                                       * behavior. We pick a default value of 2 to have "some cache". */
+             rl.SetCredit(Options.LinkCredit);
+             return rl;
+           });
 }
