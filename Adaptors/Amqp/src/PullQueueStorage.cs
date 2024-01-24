@@ -36,6 +36,7 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
+  private readonly TimeSpan                  baseDelay_ = TimeSpan.FromMilliseconds(100);
   private readonly ILogger<PullQueueStorage> logger_;
 
   private AsyncLazy<IReceiverLink>[] receivers_;
@@ -126,6 +127,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
           {
             if (retry < Options.MaxRetries - 1)
             {
+              await Task.Delay(retry * retry * baseDelay_,
+                               cancellationToken)
+                        .ConfigureAwait(false);
+
               var session = new Session(ConnectionAmqp.Connection);
               receivers_[i] = CreateReceiver(session,
                                              i);
