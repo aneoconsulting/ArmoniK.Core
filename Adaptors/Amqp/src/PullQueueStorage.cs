@@ -69,17 +69,15 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       await ConnectionAmqp.Init(cancellationToken)
                           .ConfigureAwait(false);
 
-      var session = new Session(ConnectionAmqp.Connection);
-
       receivers_ = Enumerable.Range(0,
                                     NbLinks)
-                             .Select(i => CreateReceiver(session,
+                             .Select(i => CreateReceiver(ConnectionAmqp,
                                                          i))
                              .ToArray();
 
       senders_ = Enumerable.Range(0,
                                   NbLinks)
-                           .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(session,
+                           .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(new Session(ConnectionAmqp.Connection),
                                                                                         $"{Options.PartitionId}###SenderLink{i}",
                                                                                         $"{Options.PartitionId}###q{i}")))
                            .ToArray();
@@ -112,13 +110,14 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       for (var i = receivers_.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        Message? message  = null;
-        var      receiver = await receivers_[i];
+        Message?       message  = null;
+        IReceiverLink? receiver = null;
 
         for (var retry = 0; retry < Options.MaxRetries; i++)
         {
           try
           {
+            receiver = await receivers_[i];
             message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
             break;
@@ -127,31 +126,14 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
           {
             if (retry < Options.MaxRetries - 1)
             {
-              try
-              {
-                await Task.Delay(retry * retry * baseDelay_,
-                                 cancellationToken)
-                          .ConfigureAwait(false);
+              await Task.Delay(retry * retry * baseDelay_,
+                               cancellationToken)
+                        .ConfigureAwait(false);
 
-                var session = new Session(ConnectionAmqp.Connection);
-                receivers_[i] = CreateReceiver(session,
-                                               i);
-                receiver = await receivers_[i];
-                logger_.LogDebug(e,
-                                 "Exception while receiving message; receiver replaced");
-              }
-              catch (Exception)
-              {
-                if (retry < Options.MaxRetries - 1)
-                {
-                  logger_.LogDebug(e,
-                                   "Exception while creating new receiver");
-                }
-                else
-                {
-                  throw;
-                }
-              }
+              receivers_[i] = CreateReceiver(ConnectionAmqp,
+                                             i);
+              logger_.LogDebug(e,
+                               "Exception while receiving message; receiver replaced");
             }
             else
             {
@@ -176,7 +158,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
         yield return new QueueMessageHandler(message,
                                              sender,
-                                             receiver,
+                                             receiver!,
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
                                              cancellationToken);
 
@@ -190,11 +172,11 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     }
   }
 
-  private AsyncLazy<IReceiverLink> CreateReceiver(Session session,
-                                                  int     link)
+  private AsyncLazy<IReceiverLink> CreateReceiver(IConnectionAmqp connection,
+                                                  int             link)
     => new(() =>
            {
-             var rl = new ReceiverLink(session,
+             var rl = new ReceiverLink(new Session(connection.Connection),
                                        $"{Options.PartitionId}###ReceiverLink{link}",
                                        $"{Options.PartitionId}###q{link}");
 
