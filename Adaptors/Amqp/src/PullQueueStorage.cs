@@ -113,7 +113,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
         Message?       message  = null;
         IReceiverLink? receiver = null;
 
-        for (var retry = 0; retry < Options.MaxRetries; i++)
+        for (var retry = 0; retry < Options.MaxRetries; retry++)
         {
           try
           {
