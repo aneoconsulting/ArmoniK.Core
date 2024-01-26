@@ -33,6 +33,8 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [IgnoreAuthentication]
@@ -123,17 +125,14 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                };
       }
 
-      var result = (await agent_.CreateResultsMetaData(new CreateResultsMetaDataRequest
+      var result = (await agent_.CreateResultsMetaData(agent_.Token,
+                                                       new ResultCreationRequest[]
                                                        {
-                                                         Results =
-                                                         {
-                                                           new CreateResultsMetaDataRequest.Types.ResultCreate(),
-                                                         },
-                                                         CommunicationToken = agent_.Token,
-                                                         SessionId          = agent_.SessionId,
+                                                         new(agent_.SessionId,
+                                                             ""),
                                                        },
                                                        context.CancellationToken)
-                                .ConfigureAwait(false)).Results.Single();
+                                .ConfigureAwait(false)).Single();
 
       await using var fs = new FileStream(Path.Combine(agent_.Folder,
                                                        result.ResultId),
@@ -200,18 +199,8 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
       throw new InvalidOperationException("Invalid request");
     }
 
-    await agent_.NotifyResultData(new NotifyResultDataRequest
-                                  {
-                                    CommunicationToken = agent_.Token,
-                                    Ids =
-                                    {
-                                      createdResults.Select(s => new NotifyResultDataRequest.Types.ResultIdentifier
-                                                                 {
-                                                                   ResultId  = s,
-                                                                   SessionId = agent_.SessionId,
-                                                                 }),
-                                    },
-                                  },
+    await agent_.NotifyResultData(agent_.Token,
+                                  createdResults,
                                   context.CancellationToken)
                 .ConfigureAwait(false);
 
@@ -314,9 +303,18 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.NotifyResultData(request,
-                                           context.CancellationToken)
-                         .ConfigureAwait(false);
+      var results = await agent_.NotifyResultData(request.CommunicationToken,
+                                                  request.Ids.ViewSelect(identifier => identifier.ResultId),
+                                                  context.CancellationToken)
+                                .ConfigureAwait(false);
+
+      return new NotifyResultDataResponse
+             {
+               ResultIds =
+               {
+                 results,
+               },
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,
@@ -329,9 +327,26 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.CreateResultsMetaData(request,
-                                                context.CancellationToken)
-                         .ConfigureAwait(false);
+      var results = await agent_.CreateResultsMetaData(request.CommunicationToken,
+                                                       request.Results.ViewSelect(create => new ResultCreationRequest(request.SessionId,
+                                                                                                                      create.Name)),
+                                                       context.CancellationToken)
+                                .ConfigureAwait(false);
+
+      return new CreateResultsMetaDataResponse
+             {
+               Results =
+               {
+                 results.Select(result => new ResultMetaData
+                                          {
+                                            CreatedAt = FromDateTime(result.CreationDate),
+                                            Name      = result.Name,
+                                            SessionId = result.SessionId,
+                                            Status    = result.Status.ToGrpcStatus(),
+                                            ResultId  = result.ResultId,
+                                          }),
+               },
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,
@@ -386,9 +401,26 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
   {
     if (agent_ != null)
     {
-      return await agent_.CreateResults(request,
-                                        context.CancellationToken)
-                         .ConfigureAwait(false);
+      var results = await agent_.CreateResults(request.CommunicationToken,
+                                               request.Results.ViewSelect(create => (new ResultCreationRequest(request.SessionId,
+                                                                                                               create.Name), create.Data.Memory)),
+                                               context.CancellationToken)
+                                .ConfigureAwait(false);
+
+      return new CreateResultsResponse
+             {
+               Results =
+               {
+                 results.Select(result => new ResultMetaData
+                                          {
+                                            CreatedAt = FromDateTime(result.CreationDate),
+                                            Name      = result.Name,
+                                            SessionId = result.SessionId,
+                                            Status    = result.Status.ToGrpcStatus(),
+                                            ResultId  = result.ResultId,
+                                          }),
+               },
+             };
     }
 
     throw new RpcException(new Status(StatusCode.Unavailable,

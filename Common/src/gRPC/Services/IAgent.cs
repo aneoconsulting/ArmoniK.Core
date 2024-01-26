@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
@@ -97,13 +96,15 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Create results metadata
   /// </summary>
-  /// <param name="request">Requests containing the results to create</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="requests">Requests containing the results to create</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Reply sent to the worker with the created results
   /// </returns>
-  Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                            CancellationToken            cancellationToken);
+  Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                  IEnumerable<ResultCreationRequest> requests,
+                                                  CancellationToken                  cancellationToken);
 
   /// <summary>
   ///   Submit tasks with payload already existing
@@ -122,24 +123,28 @@ public interface IAgent : IDisposable
   /// <summary>
   ///   Create a result (with data and metadata)
   /// </summary>
-  /// <param name="request">Requests containing the result to create and the data</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="requests">Requests containing the result to create and their data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Reply sent to the worker with the id of the created result
   /// </returns>
-  Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
-                                            CancellationToken    cancellationToken);
+  Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                          IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                          CancellationToken                                                       cancellationToken);
 
   /// <summary>
   ///   Put the results created as a file in the task into object storage
   /// </summary>
-  /// <param name="request">Requests containing the results</param>
+  /// <param name="token">Worker token for request validation</param>
+  /// <param name="resultIds">Results to put in the object storage</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Reply sent to the worker describing the status of the execution of the received requests
+  ///   Results which notification is successful
   /// </returns>
-  Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
-                                                  CancellationToken       cancellationToken);
+  Task<ICollection<string>> NotifyResultData(string              token,
+                                             ICollection<string> resultIds,
+                                             CancellationToken   cancellationToken);
 
   /// <summary>
   ///   Cancel child tasks created by the current task in processing

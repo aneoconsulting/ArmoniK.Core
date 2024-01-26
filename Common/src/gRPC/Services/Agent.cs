@@ -25,18 +25,14 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
-
-using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
@@ -140,154 +136,6 @@ public sealed class Agent : IAgent
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                                         CancellationToken            cancellationToken)
-  {
-    ThrowIfInvalidToken(request.CommunicationToken);
-
-    var results = request.Results.Select(rc => new Result(request.SessionId,
-                                                          Guid.NewGuid()
-                                                              .ToString(),
-                                                          rc.Name,
-                                                          "",
-                                                          ResultStatus.Created,
-                                                          new List<string>(),
-                                                          DateTime.UtcNow,
-                                                          0,
-                                                          Array.Empty<byte>()))
-                         .ToList();
-
-    await resultTable_.Create(results,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    return new CreateResultsMetaDataResponse
-           {
-             Results =
-             {
-               results.Select(result => new ResultMetaData
-                                        {
-                                          CreatedAt = FromDateTime(result.CreationDate),
-                                          Name      = result.Name,
-                                          SessionId = result.SessionId,
-                                          Status    = result.Status.ToGrpcStatus(),
-                                          ResultId  = result.ResultId,
-                                        }),
-             },
-           };
-  }
-
-  /// <inheritdoc />
-  public async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
-                                                         CancellationToken    cancellationToken)
-  {
-    ThrowIfInvalidToken(request.CommunicationToken);
-
-    var results = await request.Results.Select(async rc =>
-                                               {
-                                                 var resultId = Guid.NewGuid()
-                                                                    .ToString();
-
-                                                 var size = await objectStorage_.AddOrUpdateAsync(resultId,
-                                                                                                  new List<ReadOnlyMemory<byte>>
-                                                                                                  {
-                                                                                                    rc.Data.Memory,
-                                                                                                  }.ToAsyncEnumerable(),
-                                                                                                  cancellationToken)
-                                                                                .ConfigureAwait(false);
-
-                                                 return new Result(request.SessionId,
-                                                                   resultId,
-                                                                   rc.Name,
-                                                                   "",
-                                                                   ResultStatus.Created,
-                                                                   new List<string>(),
-                                                                   DateTime.UtcNow,
-                                                                   size,
-                                                                   Array.Empty<byte>());
-                                               })
-                               .WhenAll()
-                               .ConfigureAwait(false);
-
-    await resultTable_.Create(results,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    foreach (var result in results)
-    {
-      sentResults_.Add(result.ResultId,
-                       result.Size);
-    }
-
-    return new CreateResultsResponse
-           {
-             CommunicationToken = Token,
-             Results =
-             {
-               results.Select(r => new ResultMetaData
-                                   {
-                                     Status    = r.Status.ToGrpcStatus(),
-                                     CreatedAt = FromDateTime(r.CreationDate),
-                                     Name      = r.Name,
-                                     ResultId  = r.ResultId,
-                                     SessionId = r.SessionId,
-                                   }),
-             },
-           };
-  }
-
-  public async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
-                                                               CancellationToken       cancellationToken)
-  {
-    ThrowIfInvalidToken(request.CommunicationToken);
-
-    foreach (var result in request.Ids)
-    {
-      await using var fs = new FileStream(Path.Combine(Folder,
-                                                       result.ResultId),
-                                          FileMode.OpenOrCreate);
-      using var r       = new BinaryReader(fs);
-      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
-
-      var add = objectStorage_.AddOrUpdateAsync(result.ResultId,
-                                                channel.Reader.ReadAllAsync(cancellationToken),
-                                                cancellationToken);
-
-      long size = 0;
-      int  read;
-      do
-      {
-        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
-        read = r.Read(buffer,
-                      0,
-                      PayloadConfiguration.MaxChunkSize);
-        size += read;
-        if (read > 0)
-        {
-          await channel.Writer.WriteAsync(buffer.AsMemory(0,
-                                                          read),
-                                          cancellationToken)
-                       .ConfigureAwait(false);
-        }
-      } while (read != 0);
-
-      channel.Writer.Complete();
-
-      await add.ConfigureAwait(false);
-      sentResults_.Add(result.ResultId,
-                       size);
-    }
-
-    return new NotifyResultDataResponse
-           {
-             ResultIds =
-             {
-               request.Ids.Select(identifier => identifier.ResultId),
-             },
-           };
   }
 
   /// <inheritdoc />
@@ -417,6 +265,125 @@ public sealed class Agent : IAgent
     createdTasks_.AddRange(createdTasks);
 
     return createdTasks;
+  }
+
+  /// <inheritdoc />
+  public async Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                                       IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                                       CancellationToken                                                       cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+
+    var results = await requests.Select(async rc =>
+                                        {
+                                          var resultId = Guid.NewGuid()
+                                                             .ToString();
+
+                                          var size = await objectStorage_.AddOrUpdateAsync(resultId,
+                                                                                           new List<ReadOnlyMemory<byte>>
+                                                                                           {
+                                                                                             rc.data,
+                                                                                           }.ToAsyncEnumerable(),
+                                                                                           cancellationToken)
+                                                                         .ConfigureAwait(false);
+
+                                          return new Result(rc.request.SessionId,
+                                                            resultId,
+                                                            rc.request.Name,
+                                                            "",
+                                                            ResultStatus.Created,
+                                                            new List<string>(),
+                                                            DateTime.UtcNow,
+                                                            size,
+                                                            Array.Empty<byte>());
+                                        })
+                                .WhenAll()
+                                .ConfigureAwait(false);
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    foreach (var result in results)
+    {
+      sentResults_.Add(result.ResultId,
+                       result.Size);
+    }
+
+    return results;
+  }
+
+  /// <inheritdoc />
+  public async Task<ICollection<string>> NotifyResultData(string              token,
+                                                          ICollection<string> resultIds,
+                                                          CancellationToken   cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+
+    foreach (var result in resultIds)
+    {
+      await using var fs = new FileStream(Path.Combine(Folder,
+                                                       result),
+                                          FileMode.OpenOrCreate);
+      using var r       = new BinaryReader(fs);
+      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
+
+      var add = objectStorage_.AddOrUpdateAsync(result,
+                                                channel.Reader.ReadAllAsync(cancellationToken),
+                                                cancellationToken);
+
+      long size = 0;
+      int  read;
+      do
+      {
+        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
+        read = r.Read(buffer,
+                      0,
+                      PayloadConfiguration.MaxChunkSize);
+        size += read;
+        if (read > 0)
+        {
+          await channel.Writer.WriteAsync(buffer.AsMemory(0,
+                                                          read),
+                                          cancellationToken)
+                       .ConfigureAwait(false);
+        }
+      } while (read != 0);
+
+      channel.Writer.Complete();
+
+      await add.ConfigureAwait(false);
+      sentResults_.Add(result,
+                       size);
+    }
+
+    return resultIds;
+  }
+
+  /// <inheritdoc />
+  public async Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                               IEnumerable<ResultCreationRequest> requests,
+                                                               CancellationToken                  cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+
+    var results = requests.Select(rc => new Result(rc.SessionId,
+                                                   Guid.NewGuid()
+                                                       .ToString(),
+                                                   rc.Name,
+                                                   "",
+                                                   ResultStatus.Created,
+                                                   new List<string>(),
+                                                   DateTime.UtcNow,
+                                                   0,
+                                                   Array.Empty<byte>()))
+                          .AsICollection();
+
+    await resultTable_.Create(results,
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    return results;
   }
 
   private void ThrowIfInvalidToken(string token)

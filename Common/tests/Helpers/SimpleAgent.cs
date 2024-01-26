@@ -20,13 +20,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
-
-using Grpc.Core;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -59,32 +56,35 @@ public class SimpleAgent : IAgent
                                       CancellationToken cancellationToken)
     => throw new NotImplementedException();
 
-  public Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
-                                                                   CancellationToken            cancellationToken)
-    => Task.FromResult(new CreateResultsMetaDataResponse());
+  public Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                         IEnumerable<ResultCreationRequest> requests,
+                                                         CancellationToken                  cancellationToken)
+    => Task.FromResult(Array.Empty<Result>()
+                            .AsICollection());
 
   public Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
                                                             TaskOptions?                       taskOptions,
                                                             string                             sessionId,
                                                             string                             token,
                                                             CancellationToken                  cancellationToken)
-    => Task.FromResult(new List<TaskCreationRequest>().AsICollection());
+    => Task.FromResult(Array.Empty<TaskCreationRequest>()
+                            .AsICollection());
 
-  public Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
-                                                   CancellationToken    cancellationToken)
-    => Task.FromResult(new CreateResultsResponse());
+  public Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                                 IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                                 CancellationToken                                                       cancellationToken)
+    => Task.FromResult(Array.Empty<Result>()
+                            .AsICollection());
 
-  public Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
-                                                         CancellationToken       cancellationToken)
-    => Task.FromResult(new NotifyResultDataResponse());
+  public Task<ICollection<string>> NotifyResultData(string              token,
+                                                    ICollection<string> resultIds,
+                                                    CancellationToken   cancellationToken)
+    => Task.FromResult(Array.Empty<string>()
+                            .AsICollection());
 
   public Task CancelChildTasks(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
   public void Dispose()
     => GC.SuppressFinalize(this);
-
-  public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                          CancellationToken                     cancellationToken)
-    => Task.FromResult(new CreateTaskReply());
 }
