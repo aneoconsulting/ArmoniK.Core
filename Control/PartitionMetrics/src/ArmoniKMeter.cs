@@ -128,7 +128,7 @@ public class ArmoniKMeter : Meter, IHostedService, IDisposable
     {
       var metricValue = (metrics[$"armonik_{partition.PartitionId}_tasks_queued"] as Metric)?.MetricValue;
 
-      if (metricValue != null)
+      if (metricValue is not null)
       {
         var numberOfTasks = (long)metricValue.Value;
         measurements[partition.PartitionId] = Math.Min(numberOfTasks,

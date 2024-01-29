@@ -77,10 +77,10 @@ public static class TaskTableExt
                                                           TaskStatus        status,
                                                           CancellationToken cancellationToken = default)
   {
-    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed.ToGrpcStatus()) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Cancelled.ToGrpcStatus()) ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Error.ToGrpcStatus())     ||
-                                    filter.Included.Statuses.Contains(TaskStatus.Retried.ToGrpcStatus())))
+    if (filter.Included is not null && (filter.Included.Statuses.Contains(TaskStatus.Completed.ToGrpcStatus()) ||
+                                        filter.Included.Statuses.Contains(TaskStatus.Cancelled.ToGrpcStatus()) ||
+                                        filter.Included.Statuses.Contains(TaskStatus.Error.ToGrpcStatus())     ||
+                                        filter.Included.Statuses.Contains(TaskStatus.Retried.ToGrpcStatus())))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }

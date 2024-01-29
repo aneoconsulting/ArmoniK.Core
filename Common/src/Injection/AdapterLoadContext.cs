@@ -39,7 +39,7 @@ public class AdapterLoadContext : AssemblyLoadContext
   protected override Assembly? Load(AssemblyName assemblyName)
   {
     var assemblyPath = resolver_.ResolveAssemblyToPath(assemblyName);
-    return assemblyPath != null
+    return assemblyPath is not null
              ? LoadFromAssemblyPath(assemblyPath)
              : null;
   }
@@ -48,7 +48,7 @@ public class AdapterLoadContext : AssemblyLoadContext
   protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
   {
     var libraryPath = resolver_.ResolveUnmanagedDllToPath(unmanagedDllName);
-    return libraryPath != null
+    return libraryPath is not null
              ? LoadUnmanagedDllFromPath(libraryPath)
              : IntPtr.Zero;
   }

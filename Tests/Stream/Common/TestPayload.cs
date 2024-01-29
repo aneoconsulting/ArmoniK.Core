@@ -51,7 +51,7 @@ public class TestPayload
 
   public static TestPayload? Deserialize(byte[]? payload)
   {
-    if (payload == null || payload.Length == 0)
+    if (payload is null || payload.Length == 0)
     {
       return new TestPayload
              {

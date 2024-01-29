@@ -98,7 +98,7 @@ public class AuthenticationCacheTest
                                                         fingerprint,
                                                         impersonationId,
                                                         impersonationUsername));
-    Assert.IsTrue(result == null || BaseIdentity != result);
+    Assert.IsTrue(result is null || BaseIdentity != result);
   }
 
   [Test]

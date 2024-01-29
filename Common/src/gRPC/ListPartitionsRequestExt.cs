@@ -61,7 +61,7 @@ public static class ListPartitionsRequestExt
   {
     Expression<Func<PartitionData, bool>> expr = data => false;
 
-    if (filters.Or == null || !filters.Or.Any())
+    if (filters.Or is null || !filters.Or.Any())
     {
       return data => true;
     }

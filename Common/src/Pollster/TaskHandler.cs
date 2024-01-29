@@ -521,7 +521,7 @@ public sealed class TaskHandler : IAsyncDisposable
   ///   The metadata of the task
   /// </returns>
   public TaskInfo GetAcquiredTaskInfo()
-    => taskData_ != null
+    => taskData_ is not null
          ? new TaskInfo(taskData_.SessionId,
                         taskData_.TaskId,
                         messageHandler_.MessageId)
@@ -537,7 +537,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   public async Task PreProcessing()
   {
-    if (taskData_ == null)
+    if (taskData_ is null)
     {
       throw new NullReferenceException();
     }
@@ -574,7 +574,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
   public async Task ExecuteTask()
   {
-    if (taskData_ == null || sessionData_ == null)
+    if (taskData_ is null || sessionData_ is null)
     {
       throw new NullReferenceException();
     }

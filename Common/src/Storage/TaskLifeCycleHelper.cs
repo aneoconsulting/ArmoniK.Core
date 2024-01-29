@@ -55,7 +55,7 @@ public static class TaskLifeCycleHelper
                                             ILogger           logger,
                                             CancellationToken cancellationToken)
   {
-    var localOptions = submissionOptions != null
+    var localOptions = submissionOptions is not null
                          ? TaskOptions.Merge(submissionOptions,
                                              sessionData.Options)
                          : sessionData.Options;

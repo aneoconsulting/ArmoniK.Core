@@ -72,7 +72,7 @@ public class TestServerCallContext : ServerCallContext
 
   protected override Task WriteResponseHeadersAsyncCore(Metadata? responseHeaders)
   {
-    if (ResponseHeaders != null)
+    if (ResponseHeaders is not null)
     {
       throw new InvalidOperationException("Response headers have already been written.");
     }

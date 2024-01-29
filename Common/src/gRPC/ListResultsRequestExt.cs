@@ -66,7 +66,7 @@ public static class ListResultsRequestExt
   {
     Expression<Func<Result, bool>> expr = data => false;
 
-    if (filters.Or == null || !filters.Or.Any())
+    if (filters.Or is null || !filters.Or.Any())
     {
       return data => true;
     }

@@ -1335,7 +1335,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.ExecuteTask()
                              .ConfigureAwait(false);
 
-    if (agentHandler.Agent == null)
+    if (agentHandler.Agent is null)
     {
       throw new NullReferenceException(nameof(agentHandler.Agent));
     }

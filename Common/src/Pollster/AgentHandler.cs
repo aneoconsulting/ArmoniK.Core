@@ -84,7 +84,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
 
     try
     {
-      if (computePlaneOptions.AgentChannel?.Address == null)
+      if (computePlaneOptions.AgentChannel?.Address is null)
       {
         throw new ArgumentNullException(nameof(computePlaneOptions),
                                         $"{nameof(computePlaneOptions.AgentChannel)} is null");

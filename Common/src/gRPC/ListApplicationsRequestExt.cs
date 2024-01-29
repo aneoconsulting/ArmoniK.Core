@@ -75,7 +75,7 @@ public static class ListApplicationsRequestExt
     Expression<Func<TaskData, bool>> expr = data => false;
 
 
-    if (filters.Or == null || !filters.Or.Any())
+    if (filters.Or is null || !filters.Or.Any())
     {
       return data => true;
     }

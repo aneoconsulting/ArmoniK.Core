@@ -32,7 +32,7 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
   /// <inheritdoc />
   public override ValidationResult Validate(ValidationContext<EventSubscriptionRequest> context)
   {
-    if (context.InstanceToValidate.ResultsFilters != null)
+    if (context.InstanceToValidate.ResultsFilters is not null)
     {
       foreach (var filtersAnd in context.InstanceToValidate.ResultsFilters.Or)
       {
@@ -74,7 +74,7 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
     }
 
     // ReSharper disable once InvertIf
-    if (context.InstanceToValidate.TasksFilters != null)
+    if (context.InstanceToValidate.TasksFilters is not null)
     {
       foreach (var filtersAnd in context.InstanceToValidate.TasksFilters.Or)
       {

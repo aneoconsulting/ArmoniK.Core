@@ -144,7 +144,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
   {
     using (channelMutex_)
     {
-      if (handler_ == null)
+      if (handler_ is null)
       {
         await StartServer()
           .ConfigureAwait(false);

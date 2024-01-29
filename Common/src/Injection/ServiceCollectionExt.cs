@@ -63,7 +63,7 @@ public static class ServiceCollectionExt
 
     var computePlanOptions = computePlanComponent.Get<ComputePlane>();
 
-    if (computePlanOptions == null)
+    if (computePlanOptions is null)
     {
       return services;
     }

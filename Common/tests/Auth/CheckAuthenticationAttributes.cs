@@ -49,7 +49,7 @@ public class CheckAuthenticationAttributes
                                   .Where(t => t.BaseType?.Namespace?.ToUpperInvariant()
                                                .StartsWith("ArmoniK.Api.gRPC".ToUpperInvariant()) == true)
                                   // Keep only the non-nested types
-                                  .Where(t => t.DeclaringType == null)
+                                  .Where(t => t.DeclaringType is null)
                                   .Select(t => new TestCaseData(t).SetName("{m}" + $"({t.Name})")));
 
   /// <summary>

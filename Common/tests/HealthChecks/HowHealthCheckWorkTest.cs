@@ -104,7 +104,7 @@ public class HowHealthCheckWorkTest
     server_?.Dispose();
     server_ = null;
 
-    if (app_ != null)
+    if (app_ is not null)
     {
       await app_.DisposeAsync()
                 .ConfigureAwait(false);
