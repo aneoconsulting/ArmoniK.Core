@@ -139,7 +139,8 @@ public sealed class TaskHandler : IAsyncDisposable
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while disposing message handler");
+                         "Error while disposing message handler {MessageHandler}. It will appear duplicated",
+                         messageHandler_.MessageId);
     }
 
     reg1_.Unregister();
