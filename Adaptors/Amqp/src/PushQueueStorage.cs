@@ -108,7 +108,11 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                                           {
                                                                             Priority = (byte)internalPriority,
                                                                           },
-                                                                 Properties = new Properties(),
+                                                                 Properties = new Properties
+                                                                              {
+                                                                                MessageId = Guid.NewGuid()
+                                                                                                .ToString(),
+                                                                              },
                                                                }))
                   .ConfigureAwait(false);
 
