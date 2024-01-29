@@ -69,7 +69,7 @@ public class WorkerService : WorkerStreamWrapper
     try
     {
       var payload = TestPayload.Deserialize(taskHandler.Payload);
-      if (payload != null)
+      if (payload is not null)
       {
         switch (payload.Type)
         {

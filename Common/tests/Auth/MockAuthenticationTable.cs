@@ -49,7 +49,7 @@ public class MockAuthenticationTable : IAuthenticationTable
   public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
                                                                   string?           username,
                                                                   CancellationToken cancellationToken)
-    => Task.FromResult(identities_.Find(i => id             != null
+    => Task.FromResult(identities_.Find(i => id is not null
                                                ? i.UserId   == id
                                                : i.UserName == username)
                                   ?.ToUserAuthenticationResult());

@@ -100,7 +100,7 @@ public class AuthenticationIntegrationTest
   [OneTimeTearDown]
   public async Task TearDown()
   {
-    if (helper_ != null)
+    if (helper_ is not null)
     {
       await helper_.StopServer()
                    .ConfigureAwait(false);

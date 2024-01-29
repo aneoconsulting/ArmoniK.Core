@@ -183,11 +183,11 @@ public class AuthenticationTable : IAuthenticationTable
     var                              sessionHandle  = sessionProvider_.Get();
     Expression<Func<UserData, bool>> expression;
     // Id matching has priority
-    if (id != null)
+    if (id is not null)
     {
       expression = data => data.UserId == id;
     }
-    else if (username != null)
+    else if (username is not null)
     {
       expression = data => data.Username == username;
     }
@@ -280,7 +280,7 @@ public class AuthenticationTable : IAuthenticationTable
   /// <returns>The user to identity pipeline</returns>
   private PipelineDefinition<UserData, MongoAuthResult> GetUserToIdentityPipeline()
   {
-    if (userToIdentityPipeline_ != null)
+    if (userToIdentityPipeline_ is not null)
     {
       return userToIdentityPipeline_;
     }
@@ -396,7 +396,7 @@ public class AuthenticationTable : IAuthenticationTable
   /// <returns>Pipeline to obtain the identity from the certificate</returns>
   private PipelineDefinition<AuthData, MongoAuthResult> GetAuthToIdentityPipeline()
   {
-    if (authToIdentityPipeline_ != null)
+    if (authToIdentityPipeline_ is not null)
     {
       return authToIdentityPipeline_;
     }

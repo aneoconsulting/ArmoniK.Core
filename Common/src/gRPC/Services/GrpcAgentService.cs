@@ -60,7 +60,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                          ServerCallContext                     context)
   {
-    if (agent_ == null)
+    if (agent_ is null)
     {
       return new CreateTaskReply
              {
@@ -247,7 +247,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<DataResponse> GetCommonData(DataRequest       request,
                                                          ServerCallContext context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       return new DataResponse
              {
@@ -266,7 +266,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<DataResponse> GetResourceData(DataRequest       request,
                                                            ServerCallContext context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       return new DataResponse
              {
@@ -285,7 +285,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<DataResponse> GetDirectData(DataRequest       request,
                                                          ServerCallContext context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       return new DataResponse
              {
@@ -304,7 +304,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
                                                                         ServerCallContext       context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       var results = await agent_.NotifyResultData(request.CommunicationToken,
                                                   request.Ids.ViewSelect(identifier => identifier.ResultId),
@@ -328,7 +328,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                                   ServerCallContext            context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       var results = await agent_.CreateResultsMetaData(request.CommunicationToken,
                                                        request.Results.ViewSelect(create => new ResultCreationRequest(request.SessionId,
@@ -360,7 +360,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
                                                               ServerCallContext  context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       var createdTasks = await agent_.SubmitTasks(request.TaskCreations.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
                                                                                                                          creation.TaskOptions.ToNullableTaskOptions(),
@@ -402,7 +402,7 @@ public class GrpcAgentService : Agent.AgentBase
   public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                                   ServerCallContext    context)
   {
-    if (agent_ != null)
+    if (agent_ is not null)
     {
       var results = await agent_.CreateResults(request.CommunicationToken,
                                                request.Results.ViewSelect(create => (new ResultCreationRequest(request.SessionId,

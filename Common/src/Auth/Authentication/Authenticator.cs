@@ -225,7 +225,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                    .ConfigureAwait(false);
 
 
-      if (identity == null)
+      if (identity is null)
       {
         return AuthenticateResult.Fail("Unrecognized user certificate");
       }
@@ -236,7 +236,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     }
 
     // Try to impersonate only if at least one of the impersonation headers is set
-    if (impersonationId != null || impersonationUsername != null)
+    if (impersonationId is not null || impersonationUsername is not null)
     {
       // Only users with the impersonate permission can impersonate
       if (identity.HasClaim(c => c.Type == GeneralService.Impersonate.Claim.Type))
@@ -296,7 +296,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                                   cancellationToken)
                                  .ConfigureAwait(false);
 
-    if (result == null)
+    if (result is null)
     {
       return null;
     }
@@ -324,7 +324,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                                   CancellationToken cancellationToken = default)
   {
     UserAuthenticationResult? result;
-    if (impersonationId != null || impersonationUsername != null)
+    if (impersonationId is not null || impersonationUsername is not null)
     {
       result = await authTable_.GetIdentityFromUserAsync(impersonationId,
                                                          impersonationUsername,
@@ -336,7 +336,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       throw new AuthenticationException("Impersonation headers are missing");
     }
 
-    if (result == null)
+    if (result is null)
     {
       throw new AuthenticationException("User being impersonated does not exist");
     }

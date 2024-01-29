@@ -138,7 +138,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
                                                 string            dataFolder,
                                                 CancellationToken cancellationToken)
   {
-    if (workerClient_ == null)
+    if (workerClient_ is null)
     {
       throw new ArmoniKException("Worker client should be initialized");
     }

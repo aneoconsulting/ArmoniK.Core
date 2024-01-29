@@ -69,7 +69,7 @@ internal class ExceptionInterceptorTests
   [TearDown]
   public async Task TearDown()
   {
-    if (helper_ != null)
+    if (helper_ is not null)
     {
       await helper_.StopServer()
                    .ConfigureAwait(false);

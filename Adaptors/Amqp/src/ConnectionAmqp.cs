@@ -133,7 +133,7 @@ public class ConnectionAmqp : IConnectionAmqp
   private static void OnCloseConnection(Error?  error,
                                         ILogger logger)
   {
-    if (error == null)
+    if (error is null)
     {
       logger.LogInformation("AMQP Connection closed with no error");
     }
