@@ -131,8 +131,17 @@ public sealed class TaskHandler : IAsyncDisposable
     onDispose_.Invoke();
     logger_.LogDebug("MessageHandler status is {status}",
                      messageHandler_.Status);
-    await messageHandler_.DisposeAsync()
-                         .ConfigureAwait(false);
+    try
+    {
+      await messageHandler_.DisposeAsync()
+                           .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while disposing message handler");
+    }
+
     reg1_.Unregister();
     await reg1_.DisposeAsync()
                .ConfigureAwait(false);
