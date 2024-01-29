@@ -25,6 +25,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -35,10 +36,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
+using Agent = ArmoniK.Api.gRPC.V1.Agent.Agent;
+
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [IgnoreAuthentication]
-public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
+public class GrpcAgentService : Agent.AgentBase
 {
   private IAgent? agent_;
 

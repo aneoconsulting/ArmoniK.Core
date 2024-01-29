@@ -21,7 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 

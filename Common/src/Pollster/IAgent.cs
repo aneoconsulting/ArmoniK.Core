@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Common.gRPC.Services;
+namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
 ///   Interface for implementing methods for the agent gRPC service that receives requests from the worker

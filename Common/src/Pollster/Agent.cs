@@ -27,6 +27,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -37,7 +38,7 @@ using Microsoft.Extensions.Logging;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
-namespace ArmoniK.Core.Common.gRPC.Services;
+namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
 ///   Represents the internal processing requests received by the agent. Provides methods to process those requests
