@@ -51,28 +51,13 @@ public class ConnectionAmqp : IConnectionAmqp
     connectionTask_ = new AsyncLazy(() => InitTask());
   }
 
-  public Connection Connection
-  {
-    get
-    {
-      if (connection_ is null || connection_.IsClosed)
-      {
-        connection_ = CreateConnection(options_,
-                                       logger_)
-          .Result;
-      }
-
-      return connection_;
-    }
-  }
-
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
        {
          HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
                                                                                  ? HealthCheckResult.Healthy()
                                                                                  : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} is not yet initialized.")),
-         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.ConnectionState == ConnectionState.Opened
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && connection_ is not null && connection_.ConnectionState == ConnectionState.Opened
                                                       ? HealthCheckResult.Healthy()
                                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} not initialized or connection dropped.")),
          _ => throw new ArgumentOutOfRangeException(nameof(tag),
@@ -82,6 +67,19 @@ public class ConnectionAmqp : IConnectionAmqp
 
   public async Task Init(CancellationToken cancellationToken = default)
     => await connectionTask_;
+
+  public async Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
+  {
+    if (connection_ is null || connection_.IsClosed)
+    {
+      connection_ = await CreateConnection(options_,
+                                           logger_,
+                                           cancellationToken)
+                      .ConfigureAwait(false);
+    }
+
+    return connection_;
+  }
 
   private async Task InitTask(CancellationToken cancellationToken = default)
   {
