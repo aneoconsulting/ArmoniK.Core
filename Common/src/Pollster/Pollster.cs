@@ -341,54 +341,47 @@ public class Pollster : IInitializable
                                               () => taskProcessingDict_.TryRemove(message.TaskId,
                                                                                   out var _),
                                               cts);
+            // Automatically dispose the taskHandler in case of error.
+            // Once the taskHandler has been successfully sent,
+            // the responsibility of the dispose is transferred.
+            await using var taskHandlerDispose = new Deferrer(taskHandler);
 
             if (!taskProcessingDict_.TryAdd(message.TaskId,
                                             taskHandler))
             {
               message.Status = QueueMessageStatus.Processed;
-              await taskHandler.DisposeAsync()
-                               .ConfigureAwait(false);
+              // TaskHandler is disposed automatically by `taskHandlerDispose`
               continue;
             }
 
-
             try
             {
-              var precondition = await taskHandler.AcquireTask()
-                                                  .ConfigureAwait(false);
-
-              if (precondition == 0)
+              if (await taskHandler.AcquireTask()
+                                   .ConfigureAwait(false) != 0)
               {
-                try
-                {
-                  await taskHandler.PreProcessing()
-                                   .ConfigureAwait(false);
-                }
-                catch
-                {
-                  await taskHandler.DisposeAsync()
-                                   .ConfigureAwait(false);
-                  throw;
-                }
-
-                await runningTaskQueue_.WriteAsync(taskHandler,
-                                                   cancellationToken)
-                                       .ConfigureAwait(false);
-
-                await runningTaskQueue_.WaitForNextWriteAsync(pollsterOptions_.TimeoutBeforeNextAcquisition,
-                                                              cancellationToken)
-                                       .ConfigureAwait(false);
-
-                // If the task was successful, we can remove a failure
-                if (recordedErrors.Count > 0)
-                {
-                  recordedErrors.Dequeue();
-                }
+                // TaskHandler is disposed automatically by `taskHandlerDispose`
+                continue;
               }
-              else
+
+              await taskHandler.PreProcessing()
+                               .ConfigureAwait(false);
+
+              await runningTaskQueue_.WriteAsync(taskHandler,
+                                                 cancellationToken)
+                                     .ConfigureAwait(false);
+
+              // TaskHandler has been successfully sent to the next stage of the pipeline
+              // So remove the automatic dispose of the TaskHandler
+              taskHandlerDispose.Reset();
+
+              await runningTaskQueue_.WaitForNextWriteAsync(pollsterOptions_.TimeoutBeforeNextAcquisition,
+                                                            cancellationToken)
+                                     .ConfigureAwait(false);
+
+              // If the task was successful, we can remove a failure
+              if (recordedErrors.Count > 0)
               {
-                await taskHandler.DisposeAsync()
-                                 .ConfigureAwait(false);
+                recordedErrors.Dequeue();
               }
             }
             catch (RpcException e) when (TaskHandler.IsStatusFatal(e.StatusCode))
