@@ -20,7 +20,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
-using Amqp.Framing;
 
 using ArmoniK.Core.Base;
 
@@ -68,17 +67,6 @@ public class QueueMessageHandler : IQueueMessageHandler
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        await sender_.SendAsync(new Message(message_.Body)
-                                {
-                                  Header = new Header
-                                           {
-                                             Priority = message_.Header.Priority,
-                                           },
-                                  Properties = new Properties(),
-                                })
-                     .ConfigureAwait(false);
-        receiver_.Accept(message_);
-        break;
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Waiting:
