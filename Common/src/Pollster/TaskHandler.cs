@@ -48,7 +48,6 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly string                        folder_;
   private readonly ILogger                       logger_;
   private readonly IQueueMessageHandler          messageHandler_;
-  private readonly Action                        onDispose_;
   private readonly string                        ownerPodId_;
   private readonly string                        ownerPodName_;
   private readonly CancellationTokenRegistration reg1_;
@@ -61,6 +60,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly CancellationTokenSource       workerConnectionCts_;
   private readonly IWorkerStreamHandler          workerStreamHandler_;
   private          IAgent?                       agent_;
+  private          Action?                       onDispose_;
   private          Output?                       output_;
   private          SessionData?                  sessionData_;
   private          TaskData?                     taskData_;
@@ -128,20 +128,8 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
 
-    onDispose_.Invoke();
-    logger_.LogDebug("MessageHandler status is {status}",
-                     messageHandler_.Status);
-    try
-    {
-      await messageHandler_.DisposeAsync()
-                           .ConfigureAwait(false);
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while disposing message handler {MessageHandler}. It will appear duplicated",
-                         messageHandler_.MessageId);
-    }
+    await ReleaseTaskHandler()
+      .ConfigureAwait(false);
 
     reg1_.Unregister();
     await reg1_.DisposeAsync()
@@ -156,6 +144,31 @@ public sealed class TaskHandler : IAsyncDisposable
     }
     catch (DirectoryNotFoundException)
     {
+    }
+  }
+
+  /// <summary>
+  ///   Release the TaskHandler from the Pollster.
+  ///   Call onDispose and dispose the messageHandler.
+  /// </summary>
+  private async ValueTask ReleaseTaskHandler()
+  {
+    var onDispose = Interlocked.Exchange(ref onDispose_,
+                                         null);
+    onDispose?.Invoke();
+
+    logger_.LogDebug("MessageHandler status is {status}",
+                     messageHandler_.Status);
+    try
+    {
+      await messageHandler_.DisposeAsync()
+                           .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while disposing message handler {MessageHandler}. It will appear duplicated",
+                         messageHandler_.MessageId);
     }
   }
 
@@ -175,7 +188,14 @@ public sealed class TaskHandler : IAsyncDisposable
       if (taskData_.Status is TaskStatus.Cancelling)
       {
         logger_.LogWarning("Task has been cancelled, trigger cancellation from exterior.");
-        cancellationTokenSource_.Cancel();
+        await cancellationTokenSource_.CancelAsync()
+                                      .ConfigureAwait(false);
+
+        // Upon cancellation, dispose the messageHandler to remove the message from the queue, and call onDispose
+        // Calling the TaskHandler dispose is not possible here as the cancellationTokenSource is still in use
+        messageHandler_.Status = QueueMessageStatus.Cancelled;
+        await ReleaseTaskHandler()
+          .ConfigureAwait(false);
       }
     }
   }
