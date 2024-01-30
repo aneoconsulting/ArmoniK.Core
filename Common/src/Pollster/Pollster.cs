@@ -220,7 +220,7 @@ public class Pollster : IInitializable
     var cts = new CancellationTokenSource();
     cancellationToken.Register(() =>
                                {
-                                 logger_.LogTrace("Global cancellation has been triggered.");
+                                 logger_.LogTrace("Global cancellation has been triggered");
                                  cts.Cancel();
                                });
     var recordedErrors = new Queue<Exception>();
@@ -253,8 +253,9 @@ public class Pollster : IInitializable
       {
         if (healthCheckFailedResult_ is not null)
         {
-          logger_.LogWarning("Health Check failed thus no more tasks will be executed.");
-          cts.Cancel();
+          logger_.LogWarning("Health Check failed thus no more tasks will be executed");
+          await cts.CancelAsync()
+                   .ConfigureAwait(false);
           return;
         }
 
@@ -406,7 +407,8 @@ public class Pollster : IInitializable
           // This exception should stop pollster
           healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Worker unavailable",
                                                                  e);
-          cts.Cancel();
+          await cts.CancelAsync()
+                   .ConfigureAwait(false);
           throw;
         }
         catch (TooManyException)
