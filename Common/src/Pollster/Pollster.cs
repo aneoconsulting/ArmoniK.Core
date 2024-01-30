@@ -227,6 +227,12 @@ public class Pollster : IInitializable
 
     void RecordError(Exception e)
     {
+      // This exception should stop pollster
+      if (e is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
+      {
+        e.RethrowWithStacktrace();
+      }
+
       if (pollsterOptions_.MaxErrorAllowed < 0)
       {
         return;
@@ -269,6 +275,22 @@ public class Pollster : IInitializable
                                                                          cancellationToken)
                                                       .GetAsyncEnumerator(cancellationToken);
 
+          await using var messagesDispose = new Deferrer(async () =>
+                                                         {
+                                                           // This catch is used to properly dispose every message when the pollster should stop due to
+                                                           // too many errors or fatal error (broken worker, for instance)
+                                                           // Messages may not be all disposed in case the DisposeAsync method throws an exception
+                                                           // whereas it should not (good practices encourage to avoid this behavior)
+                                                           logger_.LogDebug("Start of queue messages disposition");
+
+                                                           while (await messages.MoveNextAsync()
+                                                                                .ConfigureAwait(false))
+                                                           {
+                                                             await messages.Current.DisposeAsync()
+                                                                           .ConfigureAwait(false);
+                                                           }
+                                                         });
+
           while (await messages.MoveNextAsync()
                                .ConfigureAwait(false))
           {
@@ -288,40 +310,10 @@ public class Pollster : IInitializable
 
             taskHandlerLogger.LogDebug("Start a new Task to process the messageHandler");
 
-            try
+            // Propagate back the errors from the runningTaskProcessor
+            while (runningTaskQueue_.RemoveException(out var exception))
             {
-              while (runningTaskQueue_.RemoveException(out var exception))
-              {
-                if (exception is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
-                {
-                  // This exception should stop pollster
-                  exception.RethrowWithStacktrace();
-                }
-
-                RecordError(exception);
-              }
-            }
-            catch
-            {
-              // This catch is used to properly dispose every message when the pollster should stop due to
-              // too many errors or fatal error (broken worker, for instance)
-              // Messages may not be all disposed in case the DisposeAsync method throws an exception
-              // whereas it should not (good practices encourage to avoid this behavior)
-              logger_.LogDebug("Start of queue messages disposition");
-
-              await message.DisposeAsync()
-                           .ConfigureAwait(false);
-
-              while (await messages.MoveNextAsync()
-                                   .ConfigureAwait(false))
-              {
-                await messages.Current.DisposeAsync()
-                              .ConfigureAwait(false);
-              }
-
-              logger_.LogDebug("End of queue messages disposition");
-
-              throw;
+              RecordError(exception);
             }
 
             var taskHandler = new TaskHandler(sessionTable_,
@@ -384,11 +376,6 @@ public class Pollster : IInitializable
                 recordedErrors.Dequeue();
               }
             }
-            catch (RpcException e) when (TaskHandler.IsStatusFatal(e.StatusCode))
-            {
-              // This exception should stop pollster
-              throw;
-            }
             catch (Exception e)
             {
               RecordError(e);
@@ -430,11 +417,5 @@ public class Pollster : IInitializable
     }
   }
 
-  private sealed class TooManyException : AggregateException
-  {
-    public TooManyException(Exception[] inner)
-      : base(inner)
-    {
-    }
-  }
+  private sealed class TooManyException(Exception[] inner) : AggregateException(inner);
 }
