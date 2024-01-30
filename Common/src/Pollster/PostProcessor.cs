@@ -73,5 +73,7 @@ public class PostProcessor : BackgroundService
         CurrentTask = string.Empty;
       }
     }
+
+    logger_.LogWarning("End of task post processor; no more tasks will be finalized");
   }
 }

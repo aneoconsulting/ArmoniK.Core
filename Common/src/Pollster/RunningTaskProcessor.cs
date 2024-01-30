@@ -92,5 +92,7 @@ public class RunningTaskProcessor : BackgroundService
         CurrentTask = string.Empty;
       }
     }
+
+    logger_.LogWarning("End of running task processor; no more tasks will be executed");
   }
 }
