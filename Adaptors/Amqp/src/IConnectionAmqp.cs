@@ -23,5 +23,5 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public interface IConnectionAmqp : IInitializable
 {
-  public Connection? Connection { get; }
+  public Connection Connection { get; }
 }
