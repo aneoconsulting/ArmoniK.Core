@@ -48,7 +48,7 @@ public class ConnectionAmqp : IConnectionAmqp
   {
     options_        = options;
     logger_         = logger;
-    connectionTask_ = new AsyncLazy(() => InitTask());
+    connectionTask_ = new AsyncLazy(InitTask);
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -81,13 +81,12 @@ public class ConnectionAmqp : IConnectionAmqp
     return connection_;
   }
 
-  private async Task InitTask(CancellationToken cancellationToken = default)
+  private async Task InitTask()
   {
     logger_.LogInformation("Get address for session");
 
     connection_ = await CreateConnection(options_,
-                                         logger_,
-                                         cancellationToken)
+                                         logger_)
                     .ConfigureAwait(false);
 
     isInitialized_ = true;
