@@ -137,8 +137,8 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                             cancellationToken)
                                                      .ConfigureAwait(false);
 
-                                           logger_.LogDebug(e,
-                                                            "Exception while receiving message; receiver replaced");
+                                           logger_.LogError(e,
+                                                            "Exception while receiving message; sender replaced");
                                          }
                                          else
                                          {
