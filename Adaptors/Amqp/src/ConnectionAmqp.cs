@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Adapters.Amqp;
 [UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly ExecutionSingleizer<Connection> connectionSingleizer_;
+  private readonly ExecutionSingleizer<Connection> connectionSingleizer_ = new();
   private readonly ILogger<ConnectionAmqp>         logger_;
   private readonly QueueCommon.Amqp                options_;
   private          Connection?                     connection_;
@@ -45,9 +45,8 @@ public class ConnectionAmqp : IConnectionAmqp
   public ConnectionAmqp(QueueCommon.Amqp        options,
                         ILogger<ConnectionAmqp> logger)
   {
-    options_              = options;
-    logger_               = logger;
-    connectionSingleizer_ = new ExecutionSingleizer<Connection>();
+    options_ = options;
+    logger_  = logger;
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
