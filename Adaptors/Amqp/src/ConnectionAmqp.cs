@@ -64,12 +64,8 @@ public class ConnectionAmqp : IConnectionAmqp
                                                     null),
        };
 
-  public async Task Init(CancellationToken cancellationToken = default)
-    => connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
-                                                                                logger_,
-                                                                                token),
-                                                      cancellationToken)
-                                                .ConfigureAwait(false);
+  public Task Init(CancellationToken cancellationToken = default)
+    => GetConnectionAsync(cancellationToken);
 
   public async Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
   {
