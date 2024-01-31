@@ -38,7 +38,6 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public class ConnectionAmqp : IConnectionAmqp
 {
   private readonly ExecutionSingleizer<Connection> connectionSingleizer_;
-  private readonly AsyncLazy                       connectionTask_;
   private readonly ILogger<ConnectionAmqp>         logger_;
   private readonly QueueCommon.Amqp                options_;
   private          Connection?                     connection_;
@@ -49,7 +48,6 @@ public class ConnectionAmqp : IConnectionAmqp
   {
     options_              = options;
     logger_               = logger;
-    connectionTask_       = new AsyncLazy(InitTask);
     connectionSingleizer_ = new ExecutionSingleizer<Connection>();
   }
 
@@ -68,7 +66,15 @@ public class ConnectionAmqp : IConnectionAmqp
        };
 
   public async Task Init(CancellationToken cancellationToken = default)
-    => await connectionTask_;
+  {
+    connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
+                                                                             logger_,
+                                                                             token),
+                                                   cancellationToken)
+                                             .ConfigureAwait(false);
+
+    isInitialized_ = true;
+  }
 
   public async Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
   {
@@ -82,18 +88,6 @@ public class ConnectionAmqp : IConnectionAmqp
     }
 
     return connection_;
-  }
-
-  private async Task InitTask()
-  {
-    logger_.LogInformation("Get address for session");
-
-    connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
-                                                                             logger_,
-                                                                             token))
-                                             .ConfigureAwait(false);
-
-    isInitialized_ = true;
   }
 
   private static async Task<Connection> CreateConnection(QueueCommon.Amqp  options,
