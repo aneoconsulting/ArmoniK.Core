@@ -19,6 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -276,7 +277,10 @@ public class Pollster : IInitializable
                                                                          cancellationToken)
                                                       .GetAsyncEnumerator(cancellationToken);
 
-          await using var messagesDispose = new Deferrer(async () =>
+          // `messagesDispose` is guaranteed to be disposed *before* `messages` because it is defined _after_
+          await using var messagesDispose = new Deferrer([SuppressMessage("ReSharper",
+                                                                          "AccessToDisposedClosure")]
+                                                         async () =>
                                                          {
                                                            // This catch is used to properly dispose every message when the pollster should stop due to
                                                            // too many errors or fatal error (broken worker, for instance)
@@ -287,7 +291,7 @@ public class Pollster : IInitializable
                                                            while (await messages.MoveNextAsync()
                                                                                 .ConfigureAwait(false))
                                                            {
-                                                             await messages.Current.DisposeAsync()
+                                                             await messages.Current.DisposeIgnoreErrorAsync(logger_)
                                                                            .ConfigureAwait(false);
                                                            }
                                                          });
@@ -295,7 +299,9 @@ public class Pollster : IInitializable
           while (await messages.MoveNextAsync()
                                .ConfigureAwait(false))
           {
-            var message           = messages.Current;
+            var             message        = messages.Current;
+            await using var messageDispose = new Deferrer(() => message.DisposeIgnoreErrorAsync(logger_));
+
             var taskHandlerLogger = loggerFactory_.CreateLogger<TaskHandler>();
             using var _ = taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
                                                             ("messageHandler", message.MessageId),
@@ -334,6 +340,9 @@ public class Pollster : IInitializable
                                               () => taskProcessingDict_.TryRemove(message.TaskId,
                                                                                   out var _),
                                               cts);
+            // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
+            messageDispose.Reset();
+
             // Automatically dispose the taskHandler in case of error.
             // Once the taskHandler has been successfully sent,
             // the responsibility of the dispose is transferred.

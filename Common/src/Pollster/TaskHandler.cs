@@ -157,19 +157,10 @@ public sealed class TaskHandler : IAsyncDisposable
                                          null);
     onDispose?.Invoke();
 
-    logger_.LogDebug("MessageHandler status is {status}",
+    logger_.LogDebug("MessageHandler status is {Status}",
                      messageHandler_.Status);
-    try
-    {
-      await messageHandler_.DisposeAsync()
-                           .ConfigureAwait(false);
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while disposing message handler {MessageHandler}. It will appear duplicated",
-                         messageHandler_.MessageId);
-    }
+    await messageHandler_.DisposeIgnoreErrorAsync(logger_)
+                         .ConfigureAwait(false);
   }
 
   /// <summary>
