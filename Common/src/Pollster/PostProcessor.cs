@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,6 @@ public class PostProcessor : BackgroundService
 {
   private readonly ILogger<PostProcessor>  logger_;
   private readonly PostProcessingTaskQueue postProcessingTaskQueue_;
-  public           string                  CurrentTask = string.Empty;
 
   public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue,
                        ILogger<PostProcessor>  logger)
@@ -46,13 +46,13 @@ public class PostProcessor : BackgroundService
     {
       var taskHandler = await postProcessingTaskQueue_.ReadAsync(stoppingToken)
                                                       .ConfigureAwait(false);
+      await using var taskHandlerDispose = new Deferrer(taskHandler);
 
       var taskInfo = taskHandler.GetAcquiredTaskInfo();
 
       using var _ = logger_.BeginPropertyScope(("messageHandler", taskInfo.MessageId),
                                                ("taskId", taskInfo.TaskId),
                                                ("sessionId", taskInfo.SessionId));
-      CurrentTask = taskInfo.TaskId;
 
       try
       {
@@ -65,12 +65,6 @@ public class PostProcessor : BackgroundService
                          "Error during task post processing");
         postProcessingTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
                                                                    .SourceException);
-      }
-      finally
-      {
-        await taskHandler.DisposeAsync()
-                         .ConfigureAwait(false);
-        CurrentTask = string.Empty;
       }
     }
 
