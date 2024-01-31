@@ -37,18 +37,20 @@ namespace ArmoniK.Core.Adapters.Amqp;
 [UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly AsyncLazy               connectionTask_;
-  private readonly ILogger<ConnectionAmqp> logger_;
-  private readonly QueueCommon.Amqp        options_;
-  private          Connection?             connection_;
-  private          bool                    isInitialized_;
+  private readonly ExecutionSingleizer<Connection> connectionSingleizer_;
+  private readonly AsyncLazy                       connectionTask_;
+  private readonly ILogger<ConnectionAmqp>         logger_;
+  private readonly QueueCommon.Amqp                options_;
+  private          Connection?                     connection_;
+  private          bool                            isInitialized_;
 
   public ConnectionAmqp(QueueCommon.Amqp        options,
                         ILogger<ConnectionAmqp> logger)
   {
-    options_        = options;
-    logger_         = logger;
-    connectionTask_ = new AsyncLazy(InitTask);
+    options_              = options;
+    logger_               = logger;
+    connectionTask_       = new AsyncLazy(InitTask);
+    connectionSingleizer_ = new ExecutionSingleizer<Connection>();
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -72,10 +74,11 @@ public class ConnectionAmqp : IConnectionAmqp
   {
     if (connection_ is null || connection_.IsClosed)
     {
-      connection_ = await CreateConnection(options_,
-                                           logger_,
-                                           cancellationToken)
-                      .ConfigureAwait(false);
+      connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
+                                                                               logger_,
+                                                                               token),
+                                                     cancellationToken)
+                                               .ConfigureAwait(false);
     }
 
     return connection_;
@@ -85,9 +88,10 @@ public class ConnectionAmqp : IConnectionAmqp
   {
     logger_.LogInformation("Get address for session");
 
-    connection_ = await CreateConnection(options_,
-                                         logger_)
-                    .ConfigureAwait(false);
+    connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
+                                                                             logger_,
+                                                                             token))
+                                             .ConfigureAwait(false);
 
     isInitialized_ = true;
   }
