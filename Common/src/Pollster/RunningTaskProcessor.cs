@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,6 @@ public class RunningTaskProcessor : BackgroundService
   private readonly ILogger<RunningTaskProcessor> logger_;
   private readonly PostProcessingTaskQueue       postProcessingTaskQueue_;
   private readonly RunningTaskQueue              runningTaskQueue_;
-  public           string                        CurrentTask = string.Empty;
 
   public RunningTaskProcessor(RunningTaskQueue              runningTaskQueue,
                               PostProcessingTaskQueue       postProcessingTaskQueue,
@@ -57,39 +57,27 @@ public class RunningTaskProcessor : BackgroundService
 
         var taskHandler = await runningTaskQueue_.ReadAsync(stoppingToken)
                                                  .ConfigureAwait(false);
+        await using var taskHandlerDispose = new Deferrer(taskHandler);
 
         var taskInfo = taskHandler.GetAcquiredTaskInfo();
 
         using var _ = logger_.BeginPropertyScope(("messageHandler", taskInfo.MessageId),
                                                  ("taskId", taskInfo.TaskId),
                                                  ("sessionId", taskInfo.SessionId));
-        CurrentTask = taskInfo.TaskId;
-        try
-        {
-          await taskHandler.ExecuteTask()
-                           .ConfigureAwait(false);
-          await postProcessingTaskQueue_.WriteAsync(taskHandler,
-                                                    stoppingToken)
-                                        .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-          logger_.LogError(e,
-                           "Error while executing task");
+        await taskHandler.ExecuteTask()
+                         .ConfigureAwait(false);
+        await postProcessingTaskQueue_.WriteAsync(taskHandler,
+                                                  stoppingToken)
+                                      .ConfigureAwait(false);
 
-          await taskHandler.DisposeAsync()
-                           .ConfigureAwait(false);
-          throw;
-        }
+        taskHandlerDispose.Reset();
       }
       catch (Exception e)
       {
+        logger_.LogError(e,
+                         "Error while executing task");
         runningTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
                                                             .SourceException);
-      }
-      finally
-      {
-        CurrentTask = string.Empty;
       }
     }
 
