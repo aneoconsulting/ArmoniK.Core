@@ -35,11 +35,10 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
-
+  private const    int                       MaxInternalQueuePriority = 10;
+  private readonly TimeSpan                  baseDelay_               = TimeSpan.FromMilliseconds(100);
   private readonly ILogger<PushQueueStorage> logger_;
   private readonly ObjectPool<Session>       sessionPool_;
-
 
   public PushQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -96,29 +95,60 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                      whichQueue,
                      internalPriority);
 
-    await using var session = await sessionPool_.GetAsync(cancellationToken)
-                                                .ConfigureAwait(false);
-
-    var sender = new SenderLink(session,
-                                $"{partitionId}###SenderLink{whichQueue}",
-                                $"{partitionId}###q{whichQueue}");
 
     await messages.ParallelForEach(new ParallelTaskOptions(cancellationToken),
-                                   msgData => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
-                                                               {
-                                                                 Header = new Header
-                                                                          {
-                                                                            Priority = (byte)internalPriority,
-                                                                          },
-                                                                 Properties = new Properties
-                                                                              {
-                                                                                MessageId = Guid.NewGuid()
-                                                                                                .ToString(),
-                                                                              },
-                                                               }))
-                  .ConfigureAwait(false);
+                                   async msgData =>
+                                   {
+                                     for (var retry = 0; retry < Options.MaxRetries; retry++)
+                                     {
+                                       try
+                                       {
+                                         await using var session = await sessionPool_.GetAsync(cancellationToken)
+                                                                                     .ConfigureAwait(false);
 
-    await sender.CloseAsync()
-                .ConfigureAwait(false);
+                                         var sender = new SenderLink(session,
+                                                                     Guid.NewGuid()
+                                                                         .ToString(),
+                                                                     $"{partitionId}###q{whichQueue}");
+
+                                         await sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
+                                                                {
+                                                                  Header = new Header
+                                                                           {
+                                                                             Priority = (byte)internalPriority,
+                                                                           },
+                                                                  Properties = new Properties
+                                                                               {
+                                                                                 MessageId = Guid.NewGuid()
+                                                                                                 .ToString(),
+                                                                               },
+                                                                })
+                                                     .ConfigureAwait(false);
+
+                                         await sender.CloseAsync()
+                                                     .ConfigureAwait(false);
+                                         break;
+                                       }
+                                       catch (Exception e)
+                                       {
+                                         if (retry < Options.MaxRetries - 1)
+                                         {
+                                           await Task.Delay(retry * retry * baseDelay_,
+                                                            cancellationToken)
+                                                     .ConfigureAwait(false);
+
+                                           logger_.LogDebug(e,
+                                                            "Exception while receiving message; receiver replaced");
+                                         }
+                                         else
+                                         {
+                                           logger_.LogError(e,
+                                                            "Exception while receiving message");
+                                           throw;
+                                         }
+                                       }
+                                     }
+                                   })
+                  .ConfigureAwait(false);
   }
 }
