@@ -41,7 +41,6 @@ public class ConnectionAmqp : IConnectionAmqp
   private readonly ILogger<ConnectionAmqp>         logger_;
   private readonly QueueCommon.Amqp                options_;
   private          Connection?                     connection_;
-  private          bool                            isInitialized_;
 
   public ConnectionAmqp(QueueCommon.Amqp        options,
                         ILogger<ConnectionAmqp> logger)
@@ -54,10 +53,10 @@ public class ConnectionAmqp : IConnectionAmqp
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
        {
-         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(connection_ is not null
                                                                                  ? HealthCheckResult.Healthy()
                                                                                  : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} is not yet initialized.")),
-         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && connection_ is not null && connection_.ConnectionState == ConnectionState.Opened
+         HealthCheckTag.Liveness => Task.FromResult(connection_ is not null && connection_.ConnectionState == ConnectionState.Opened
                                                       ? HealthCheckResult.Healthy()
                                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} not initialized or connection dropped.")),
          _ => throw new ArgumentOutOfRangeException(nameof(tag),
@@ -66,15 +65,11 @@ public class ConnectionAmqp : IConnectionAmqp
        };
 
   public async Task Init(CancellationToken cancellationToken = default)
-  {
-    connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
-                                                                             logger_,
-                                                                             token),
-                                                   cancellationToken)
-                                             .ConfigureAwait(false);
-
-    isInitialized_ = true;
-  }
+    => connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
+                                                                                logger_,
+                                                                                token),
+                                                      cancellationToken)
+                                                .ConfigureAwait(false);
 
   public async Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
   {
