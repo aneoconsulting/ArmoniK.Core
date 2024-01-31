@@ -69,16 +69,28 @@ public class ConnectionAmqp : IConnectionAmqp
 
   public async Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
   {
-    if (connection_ is null || connection_.IsClosed)
+    if (connection_ is not null && !connection_.IsClosed)
     {
-      connection_ = await connectionSingleizer_.Call(token => CreateConnection(options_,
-                                                                               logger_,
-                                                                               token),
-                                                     cancellationToken)
-                                               .ConfigureAwait(false);
+      return connection_;
     }
 
-    return connection_;
+    return await connectionSingleizer_.Call(async token =>
+                                            {
+                                              // this is needed to resolve TOCTOU problem
+                                              if (connection_ is not null && !connection_.IsClosed)
+                                              {
+                                                return connection_;
+                                              }
+
+                                              var conn = await CreateConnection(options_,
+                                                                                logger_,
+                                                                                token)
+                                                           .ConfigureAwait(false);
+                                              connection_ = conn;
+                                              return conn;
+                                            },
+                                            cancellationToken)
+                                      .ConfigureAwait(false);
   }
 
   private static async Task<Connection> CreateConnection(QueueCommon.Amqp  options,
