@@ -34,7 +34,9 @@ public class SimpleAmqpClient : IConnectionAmqp, IAsyncDisposable
   private readonly Address           address_;
   private readonly ConnectionFactory connectionFactory_;
   private readonly ILoggerFactory    loggerFactory_;
-  private          bool              isInitialized_;
+
+  private Connection? connection_;
+  private bool        isInitialized_;
 
   public SimpleAmqpClient()
   {
@@ -48,24 +50,25 @@ public class SimpleAmqpClient : IConnectionAmqp, IAsyncDisposable
 
   public async ValueTask DisposeAsync()
   {
-    if (Connection is not null && Connection.ConnectionState == ConnectionState.Opened)
+    if (connection_ is not null && connection_.ConnectionState == ConnectionState.Opened)
     {
-      await Connection.CloseAsync()
-                      .ConfigureAwait(false);
+      await connection_.CloseAsync()
+                       .ConfigureAwait(false);
     }
 
     loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
   }
 
-  public Connection? Connection { get; private set; }
-
   public async Task Init(CancellationToken cancellation)
   {
-    Connection = await connectionFactory_.CreateAsync(address_)
-                                         .ConfigureAwait(false);
+    connection_ = await connectionFactory_.CreateAsync(address_)
+                                          .ConfigureAwait(false);
     isInitialized_ = true;
   }
+
+  public Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
+    => Task.FromResult(connection_!);
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(isInitialized_

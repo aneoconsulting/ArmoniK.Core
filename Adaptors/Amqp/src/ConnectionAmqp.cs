@@ -37,28 +37,25 @@ namespace ArmoniK.Core.Adapters.Amqp;
 [UsedImplicitly]
 public class ConnectionAmqp : IConnectionAmqp
 {
-  private readonly AsyncLazy               connectionTask_;
-  private readonly ILogger<ConnectionAmqp> logger_;
-  private readonly QueueCommon.Amqp        options_;
-  private          bool                    isInitialized_;
+  private readonly ExecutionSingleizer<Connection> connectionSingleizer_ = new();
+  private readonly ILogger<ConnectionAmqp>         logger_;
+  private readonly QueueCommon.Amqp                options_;
+  private          Connection?                     connection_;
 
   public ConnectionAmqp(QueueCommon.Amqp        options,
                         ILogger<ConnectionAmqp> logger)
   {
-    options_        = options;
-    logger_         = logger;
-    connectionTask_ = new AsyncLazy(() => InitTask(this));
+    options_ = options;
+    logger_  = logger;
   }
-
-  public Connection? Connection { get; private set; }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
        {
-         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(connection_ is not null
                                                                                  ? HealthCheckResult.Healthy()
                                                                                  : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} is not yet initialized.")),
-         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.ConnectionState == ConnectionState.Opened
+         HealthCheckTag.Liveness => Task.FromResult(connection_ is not null && connection_.ConnectionState == ConnectionState.Opened
                                                       ? HealthCheckResult.Healthy()
                                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionAmqp)} not initialized or connection dropped.")),
          _ => throw new ArgumentOutOfRangeException(nameof(tag),
@@ -66,21 +63,47 @@ public class ConnectionAmqp : IConnectionAmqp
                                                     null),
        };
 
-  public async Task Init(CancellationToken cancellationToken = default)
-    => await connectionTask_;
+  public Task Init(CancellationToken cancellationToken = default)
+    => GetConnectionAsync(cancellationToken);
 
-  private static async Task InitTask(ConnectionAmqp    conn,
-                                     CancellationToken cancellationToken = default)
+  public async Task<Connection> GetConnectionAsync(CancellationToken cancellationToken = default)
   {
-    conn.logger_.LogInformation("Get address for session");
-    var address = new Address(conn.options_.Host,
-                              conn.options_.Port,
-                              conn.options_.User,
-                              conn.options_.Password,
-                              scheme: conn.options_.Scheme);
+    if (connection_ is not null && !connection_.IsClosed)
+    {
+      return connection_;
+    }
+
+    return await connectionSingleizer_.Call(async token =>
+                                            {
+                                              // this is needed to resolve TOCTOU problem
+                                              if (connection_ is not null && !connection_.IsClosed)
+                                              {
+                                                return connection_;
+                                              }
+
+                                              var conn = await CreateConnection(options_,
+                                                                                logger_,
+                                                                                token)
+                                                           .ConfigureAwait(false);
+                                              connection_ = conn;
+                                              return conn;
+                                            },
+                                            cancellationToken)
+                                      .ConfigureAwait(false);
+  }
+
+  private static async Task<Connection> CreateConnection(QueueCommon.Amqp  options,
+                                                         ILogger           logger,
+                                                         CancellationToken cancellationToken = default)
+  {
+    var address = new Address(options.Host,
+                              options.Port,
+                              options.User,
+                              options.Password,
+                              scheme: options.Scheme);
 
     var connectionFactory = new ConnectionFactory();
-    if (conn.options_.Scheme.Equals("AMQPS"))
+    if (options.Scheme.Equals("AMQPS"))
     {
       connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object           _,
                                                                            X509Certificate? _,
@@ -89,45 +112,41 @@ public class ConnectionAmqp : IConnectionAmqp
                                                                   {
                                                                     switch (errors)
                                                                     {
-                                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when conn.options_.AllowHostMismatch:
+                                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
                                                                       case SslPolicyErrors.None:
                                                                         return true;
                                                                       default:
-                                                                        conn.logger_.LogError("SSL error : {error}",
-                                                                                              errors);
+                                                                        logger.LogError("SSL error : {error}",
+                                                                                        errors);
                                                                         return false;
                                                                     }
                                                                   };
     }
 
     var retry = 0;
-    for (; retry < conn.options_.MaxRetries; retry++)
+    for (; retry < options.MaxRetries; retry++)
     {
       try
       {
-        conn.Connection = await connectionFactory.CreateAsync(address)
-                                                 .ConfigureAwait(false);
-        conn.Connection.AddClosedCallback((_,
-                                           e) => OnCloseConnection(e,
-                                                                   conn.logger_));
-        break;
+        var connection = await connectionFactory.CreateAsync(address)
+                                                .ConfigureAwait(false);
+        connection.AddClosedCallback((_,
+                                      e) => OnCloseConnection(e,
+                                                              logger));
+
+        return connection;
       }
       catch (Exception ex)
       {
-        conn.logger_.LogInformation(ex,
-                                    "Retrying to create connection");
+        logger.LogInformation(ex,
+                              "Retrying to create connection");
         await Task.Delay(1000 * retry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
     }
 
-    if (retry == conn.options_.MaxRetries)
-    {
-      throw new TimeoutException($"{nameof(conn.options_.MaxRetries)} reached");
-    }
-
-    conn.isInitialized_ = true;
+    throw new TimeoutException($"{nameof(options.MaxRetries)} reached");
   }
 
   private static void OnCloseConnection(Error?  error,

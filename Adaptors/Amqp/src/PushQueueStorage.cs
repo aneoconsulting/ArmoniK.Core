@@ -49,8 +49,10 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   {
     logger_ = logger;
     sessionPool_ = new ObjectPool<Session>(200,
-                                           () => new Session(connectionAmqp.Connection),
-                                           session => !session.IsClosed);
+                                           async token => new Session(await connectionAmqp.GetConnectionAsync(token)
+                                                                                          .ConfigureAwait(false)),
+                                           (session,
+                                            _) => new ValueTask<bool>(!session.IsClosed));
   }
 
   /// <inheritdoc />

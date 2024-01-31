@@ -77,9 +77,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
       senders_ = Enumerable.Range(0,
                                   NbLinks)
-                           .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(new Session(ConnectionAmqp.Connection),
-                                                                                        $"{Options.PartitionId}###SenderLink{i}",
-                                                                                        $"{Options.PartitionId}###q{i}")))
+                           .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(new Session(await ConnectionAmqp.GetConnectionAsync()
+                                                                                                                              .ConfigureAwait(false)),
+                                                                                              $"{Options.PartitionId}###SenderLink{i}",
+                                                                                              $"{Options.PartitionId}###q{i}")))
                            .ToArray();
 
       var senders = senders_.Select(lazy => lazy.Value)
@@ -174,9 +175,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
   private AsyncLazy<IReceiverLink> CreateReceiver(IConnectionAmqp connection,
                                                   int             link)
-    => new(() =>
+    => new(async () =>
            {
-             var rl = new ReceiverLink(new Session(connection.Connection),
+             var rl = new ReceiverLink(new Session(await connection.GetConnectionAsync()
+                                                                   .ConfigureAwait(false)),
                                        $"{Options.PartitionId}###ReceiverLink{link}",
                                        $"{Options.PartitionId}###q{link}");
 
