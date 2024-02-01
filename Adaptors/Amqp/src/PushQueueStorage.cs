@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,10 +36,11 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
-  private const    int                       MaxInternalQueuePriority = 10;
-  private readonly TimeSpan                  baseDelay_               = TimeSpan.FromMilliseconds(100);
-  private readonly ILogger<PushQueueStorage> logger_;
-  private readonly ObjectPool<Session>       sessionPool_;
+  private const    int                                      MaxInternalQueuePriority = 10;
+  private readonly TimeSpan                                 baseDelay_               = TimeSpan.FromMilliseconds(100);
+  private readonly ILogger<PushQueueStorage>                logger_;
+  private readonly ConcurrentDictionary<string, SenderLink> senders_ = new();
+  private readonly ObjectPool<Session>                      sessionPool_;
 
   public PushQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -103,13 +105,22 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                      {
                                        try
                                        {
-                                         await using var session = await sessionPool_.GetAsync(cancellationToken)
-                                                                                     .ConfigureAwait(false);
+                                         var address = $"{partitionId}###q{whichQueue}";
 
-                                         var sender = new SenderLink(session,
-                                                                     Guid.NewGuid()
-                                                                         .ToString(),
-                                                                     $"{partitionId}###q{whichQueue}");
+                                         SenderLink sender;
+                                         while ((sender = senders_.GetOrAdd(address,
+                                                                            s => new SenderLink(sessionPool_.Get(),
+                                                                                                Guid.NewGuid()
+                                                                                                    .ToString(),
+                                                                                                s))).Session.IsClosed)
+                                         {
+                                           if (senders_.TryRemove(address,
+                                                                  out sender!))
+                                           {
+                                             await sender.CloseAsync()
+                                                         .ConfigureAwait(false);
+                                           }
+                                         }
 
                                          await sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
                                                                 {
@@ -123,9 +134,6 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                                                                  .ToString(),
                                                                                },
                                                                 })
-                                                     .ConfigureAwait(false);
-
-                                         await sender.CloseAsync()
                                                      .ConfigureAwait(false);
                                          break;
                                        }
