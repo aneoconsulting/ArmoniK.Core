@@ -45,5 +45,5 @@ set +x
 
 AVG=$(grep -h "Throughput for session" "logs/$SHA/$DATE/mock"* | jq -r .sessionThroughput | awk 'BEGIN {sum=0; i=0} {i+=1 ; sum+=$1}; END {printf "%.1f", sum/i}')
 
-echo "| $SHA | $TAG | $AVG | |"
+echo "| $SHA | $TAG | $AVG |"
 
