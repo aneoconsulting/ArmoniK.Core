@@ -81,7 +81,7 @@ public static class Program
                                    .Get<Pollster>() ?? new Pollster();
 
       builder.Host.UseSerilog(logger.GetSerilogConf())
-             .ConfigureHostOptions(options => options.ShutdownTimeout = pollsterOptions.ShutdownTimeout);
+             .ConfigureHostOptions(options => options.ShutdownTimeout = 2 * pollsterOptions.GraceDelay);
 
       builder.Services.AddLogging(logger.Configure)
              .AddArmoniKWorkerConnection(builder.Configuration)

@@ -67,6 +67,8 @@ resource "docker_container" "polling_agent" {
     source = docker_volume.socket_vol.name
   }
 
+  restart = "on-failure"
+
   dynamic "mounts" {
     for_each = var.volumes
     content {
