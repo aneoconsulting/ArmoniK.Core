@@ -142,12 +142,12 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                      .ConfigureAwait(false);
 
                                            logger_.LogError(e,
-                                                            "Exception while receiving message; sender replaced");
+                                                            "Exception while sending message; sender replaced");
                                          }
                                          else
                                          {
                                            logger_.LogError(e,
-                                                            "Exception while receiving message");
+                                                            "Exception while sending message");
                                            throw;
                                          }
                                        }
