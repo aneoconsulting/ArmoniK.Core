@@ -225,5 +225,6 @@ public interface IResultTable : IInitializable
   /// </summary>
   /// <param name="Keys">Ids of the results that will change owner</param>
   /// <param name="NewTaskId">Task id of the new owner</param>
-  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys, string NewTaskId);
+  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
+                                             string              NewTaskId);
 }

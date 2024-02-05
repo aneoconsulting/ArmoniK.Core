@@ -31,16 +31,15 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Size">Size of the result.</param>
 /// <param name="Data">Data for the current <paramref name="Name" /></param>
-public record Result(
-  string       SessionId,
-  string       ResultId,
-  string       Name,
-  string       OwnerTaskId,
-  ResultStatus Status,
-  List<string> DependentTasks,
-  DateTime     CreationDate,
-  long         Size,
-  byte[]       Data)
+public record Result(string       SessionId,
+                     string       ResultId,
+                     string       Name,
+                     string       OwnerTaskId,
+                     ResultStatus Status,
+                     List<string> DependentTasks,
+                     DateTime     CreationDate,
+                     long         Size,
+                     byte[]       Data)
 {
   /// <summary>
   ///   Creates a copy of a <see cref="Result" /> and modify it according to given updates

@@ -59,37 +59,36 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="ReceivedToEndDuration">Duration between the reception and the end of the task</param>
 /// <param name="PodTtl">Task Time To Live on the current pod</param>
 /// <param name="Output">Output of the task after its successful completion</param>
-public record TaskData(
-  string        SessionId,
-  string        TaskId,
-  string        OwnerPodId,
-  string        OwnerPodName,
-  string        PayloadId,
-  IList<string> ParentTaskIds,
-  IList<string> DataDependencies,
-  // FIXME: RemainingDataDependencies should be a HashSet, but there is no HashSet in MongoDB.
-  // List would also work but would make dependency management *much* slower when there is many dependencies on a single task.
-  // (Removing elements from a list is linear time, but removing from an object in constant time)
-  // Ideal solution would most likely be to put HashSet here, and have a custom Serializer/Deserializer in MongoDB "schema".
-  IDictionary<string, bool> RemainingDataDependencies,
-  IList<string>             ExpectedOutputIds,
-  string                    InitialTaskId,
-  IList<string>             RetryOfIds,
-  TaskStatus                Status,
-  string                    StatusMessage,
-  TaskOptions               Options,
-  DateTime                  CreationDate,
-  DateTime?                 SubmittedDate,
-  DateTime?                 StartDate,
-  DateTime?                 EndDate,
-  DateTime?                 ReceptionDate,
-  DateTime?                 AcquisitionDate,
-  DateTime?                 ProcessedDate,
-  DateTime?                 PodTtl,
-  TimeSpan?                 ProcessingToEndDuration,
-  TimeSpan?                 CreationToEndDuration,
-  TimeSpan?                 ReceivedToEndDuration,
-  Output                    Output)
+public record TaskData(string        SessionId,
+                       string        TaskId,
+                       string        OwnerPodId,
+                       string        OwnerPodName,
+                       string        PayloadId,
+                       IList<string> ParentTaskIds,
+                       IList<string> DataDependencies,
+                       // FIXME: RemainingDataDependencies should be a HashSet, but there is no HashSet in MongoDB.
+                       // List would also work but would make dependency management *much* slower when there is many dependencies on a single task.
+                       // (Removing elements from a list is linear time, but removing from an object in constant time)
+                       // Ideal solution would most likely be to put HashSet here, and have a custom Serializer/Deserializer in MongoDB "schema".
+                       IDictionary<string, bool> RemainingDataDependencies,
+                       IList<string>             ExpectedOutputIds,
+                       string                    InitialTaskId,
+                       IList<string>             RetryOfIds,
+                       TaskStatus                Status,
+                       string                    StatusMessage,
+                       TaskOptions               Options,
+                       DateTime                  CreationDate,
+                       DateTime?                 SubmittedDate,
+                       DateTime?                 StartDate,
+                       DateTime?                 EndDate,
+                       DateTime?                 ReceptionDate,
+                       DateTime?                 AcquisitionDate,
+                       DateTime?                 ProcessedDate,
+                       DateTime?                 PodTtl,
+                       TimeSpan?                 ProcessingToEndDuration,
+                       TimeSpan?                 CreationToEndDuration,
+                       TimeSpan?                 ReceivedToEndDuration,
+                       Output                    Output)
 {
   /// <summary>
   ///   Initializes task metadata with specified fields

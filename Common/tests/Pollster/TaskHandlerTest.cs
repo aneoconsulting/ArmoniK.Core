@@ -845,10 +845,10 @@ public class TaskHandlerTest
                        cancellationToken)
                 .ConfigureAwait(false);
       var enumerable = new[]
-        {
-          sessionData_!,
-        }.Select(selector.Compile())
-         .ToAsyncEnumerable();
+                       {
+                         sessionData_!,
+                       }.Select(selector.Compile())
+                        .ToAsyncEnumerable();
 
       await foreach (var d in enumerable.ConfigureAwait(false))
       {

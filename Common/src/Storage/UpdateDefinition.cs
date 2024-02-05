@@ -81,7 +81,8 @@ public class UpdateDefinition<T>
   /// </summary>
   /// <param name="Property">Property definition</param>
   /// <param name="Value">New value</param>
-  public record PropertySet(Expression<Func<T, object?>> Property, object? Value)
+  public record PropertySet(Expression<Func<T, object?>> Property,
+                            object?                      Value)
   {
     /// <summary>
     ///   Set the property from the object <paramref name="x" /> to the specified value
