@@ -101,9 +101,9 @@ public class SimpleResultTable : IResultTable
                                CancellationToken                             cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<Result> UpdateOneResult(string                                                                      resultId,
-                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                           cancellationToken = default)
+  public Task<Result> UpdateOneResult(string                   resultId,
+                                      UpdateDefinition<Result> updates,
+                                      CancellationToken        cancellationToken = default)
     => Task.FromResult(new Result(SessionId,
                                   OutputId,
                                   "",
@@ -117,9 +117,9 @@ public class SimpleResultTable : IResultTable
                                     42,
                                   }));
 
-  public Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
-                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                           cancellationToken = default)
+  public Task<long> UpdateManyResults(Expression<Func<Result, bool>> filter,
+                                      UpdateDefinition<Result>       updates,
+                                      CancellationToken              cancellationToken = default)
     => Task.FromResult(0L);
 
   public Task ChangeResultOwnership(string                                                 oldTaskId,

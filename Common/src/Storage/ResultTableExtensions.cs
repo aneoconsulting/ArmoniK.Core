@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,10 +45,8 @@ public static class ResultTableExtensions
                                             CancellationToken cancellationToken = default)
   {
     await resultTable.UpdateManyResults(result => result.OwnerTaskId == ownerTaskId,
-                                        new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                        {
-                                          (data => data.Status, ResultStatus.Aborted),
-                                        },
+                                        new UpdateDefinition<Result>().Set(data => data.Status,
+                                                                           ResultStatus.Aborted),
                                         cancellationToken)
                      .ConfigureAwait(false);
 
@@ -76,11 +73,10 @@ public static class ResultTableExtensions
                                                   CancellationToken cancellationToken = default)
   {
     var result = await resultTable.UpdateOneResult(resultId,
-                                                   new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                                   {
-                                                     (data => data.Status, ResultStatus.Completed),
-                                                     (data => data.Size, size),
-                                                   },
+                                                   new UpdateDefinition<Result>().Set(data => data.Status,
+                                                                                      ResultStatus.Completed)
+                                                                                 .Set(data => data.Size,
+                                                                                      size),
                                                    cancellationToken)
                                   .ConfigureAwait(false);
 
@@ -115,12 +111,12 @@ public static class ResultTableExtensions
                                      CancellationToken cancellationToken = default)
   {
     var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
-                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                                    {
-                                                      (result => result.Status, ResultStatus.Completed),
-                                                      (data => data.Size, (long)smallPayload.Length),
-                                                      (result => result.Data, smallPayload),
-                                                    },
+                                                    new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                       ResultStatus.Completed)
+                                                                                  .Set(data => data.Size,
+                                                                                       smallPayload.Length)
+                                                                                  .Set(result => result.Data,
+                                                                                       smallPayload),
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 
@@ -155,11 +151,10 @@ public static class ResultTableExtensions
                                      CancellationToken cancellationToken = default)
   {
     var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
-                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                                    {
-                                                      (result => result.Status, ResultStatus.Completed),
-                                                      (result => result.Size, size),
-                                                    },
+                                                    new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                       ResultStatus.Completed)
+                                                                                  .Set(result => result.Size,
+                                                                                       size),
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 

@@ -178,9 +178,9 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   The result metadata before the update
   /// </returns>
-  Task<Result> UpdateOneResult(string                                                                      resultId,
-                               ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                               CancellationToken                                                           cancellationToken = default);
+  Task<Result> UpdateOneResult(string                   resultId,
+                               UpdateDefinition<Result> updates,
+                               CancellationToken        cancellationToken = default);
 
 
   /// <summary>
@@ -192,15 +192,14 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   The number of results matched
   /// </returns>
-  Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
-                               ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                               CancellationToken                                                           cancellationToken = default);
+  Task<long> UpdateManyResults(Expression<Func<Result, bool>> filter,
+                               UpdateDefinition<Result>       updates,
+                               CancellationToken              cancellationToken = default);
 
   /// <summary>
   ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
   /// </summary>
   /// <param name="Keys">Ids of the results that will change owner</param>
   /// <param name="NewTaskId">Task id of the new owner</param>
-  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
-                                             string              NewTaskId);
+  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys, string NewTaskId);
 }

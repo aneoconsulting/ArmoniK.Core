@@ -99,6 +99,7 @@ public class ResultTable : IResultTable
                                                                                   .Take(pageSize), ordered.Count()));
   }
 
+  /// <inheritdoc />
   public Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                CancellationToken                             cancellationToken = default)
   {
@@ -138,9 +139,9 @@ public class ResultTable : IResultTable
                          : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
-                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                           cancellationToken = default)
+  public Task<long> UpdateManyResults(Expression<Func<Result, bool>> filter,
+                                      UpdateDefinition<Result>       updates,
+                                      CancellationToken              cancellationToken = default)
   {
     long i = 0;
     foreach (var id in results_.Values.AsQueryable()
@@ -159,9 +160,9 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<Result> UpdateOneResult(string                                                                      resultId,
-                                      ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                           cancellationToken = default)
+  public Task<Result> UpdateOneResult(string                   resultId,
+                                      UpdateDefinition<Result> updates,
+                                      CancellationToken        cancellationToken = default)
   {
     if (!results_.TryGetValue(resultId,
                               out var result))
