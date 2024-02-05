@@ -168,11 +168,11 @@ public class TaskTable : ITaskTable
                        .ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task<TaskData?> UpdateOneTask(string                                                                        taskId,
-                                       Expression<Func<TaskData, bool>>?                                             filter,
-                                       ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                       bool                                                                          before,
-                                       CancellationToken                                                             cancellationToken = default)
+  public Task<TaskData?> UpdateOneTask(string                            taskId,
+                                       Expression<Func<TaskData, bool>>? filter,
+                                       UpdateDefinition<TaskData>        updates,
+                                       bool                              before,
+                                       CancellationToken                 cancellationToken = default)
   {
     if (!taskId2TaskData_.TryGetValue(taskId,
                                       out var taskData))
@@ -196,9 +196,10 @@ public class TaskTable : ITaskTable
                                         : newTaskData);
   }
 
-  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
-                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                    CancellationToken                                                             cancellationToken = default)
+  /// <inheritdoc />
+  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
+                                    UpdateDefinition<TaskData>       updates,
+                                    CancellationToken                cancellationToken = default)
   {
     long i = 0;
     foreach (var id in taskId2TaskData_.Values.AsQueryable()

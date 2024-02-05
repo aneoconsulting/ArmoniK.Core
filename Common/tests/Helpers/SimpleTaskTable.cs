@@ -146,30 +146,30 @@ public class SimpleTaskTable : ITaskTable
                                                Expression<Func<TaskData, T>>    selector,
                                                CancellationToken                cancellationToken = default)
     => new List<TaskData>
-       {
-         new(SessionId,
-             TaskId,
-             OwnerPodId,
-             PodName,
-             PayloadId,
-             new List<string>(),
-             new List<string>(),
-             new List<string>
-             {
-               OutputId,
-             },
-             new List<string>(),
-             TaskStatus.Completed,
-             TaskOptions,
-             new Output(true,
-                        "")),
-       }.Where(filter.Compile())
-        .Select(selector.Compile())
-        .ToAsyncEnumerable();
+      {
+        new(SessionId,
+            TaskId,
+            OwnerPodId,
+            PodName,
+            PayloadId,
+            new List<string>(),
+            new List<string>(),
+            new List<string>
+            {
+              OutputId,
+            },
+            new List<string>(),
+            TaskStatus.Completed,
+            TaskOptions,
+            new Output(true,
+                       "")),
+      }.Where(filter.Compile())
+       .Select(selector.Compile())
+       .ToAsyncEnumerable();
 
-  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
-                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                    CancellationToken                                                             cancellationToken = default)
+  public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
+                                    UpdateDefinition<TaskData>       updates,
+                                    CancellationToken                cancellationToken = default)
     => Task.FromResult<long>(1);
 
   public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
@@ -191,11 +191,11 @@ public class SimpleTaskTable : ITaskTable
                                                    CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<TaskData?> UpdateOneTask(string                                                                        taskId,
-                                       Expression<Func<TaskData, bool>>?                                             filter,
-                                       ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                       bool                                                                          before,
-                                       CancellationToken                                                             cancellationToken = default)
+  public Task<TaskData?> UpdateOneTask(string                            taskId,
+                                       Expression<Func<TaskData, bool>>? filter,
+                                       UpdateDefinition<TaskData>        updates,
+                                       bool                              before,
+                                       CancellationToken                 cancellationToken = default)
     => Task.FromResult<TaskData?>(new TaskData(SessionId,
                                                taskId,
                                                OwnerPodId,

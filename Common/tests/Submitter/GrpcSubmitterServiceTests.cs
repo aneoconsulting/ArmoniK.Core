@@ -665,7 +665,7 @@ public class GrpcSubmitterServiceTests
   {
     var mock = new Mock<ITaskTable>();
     mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
-                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<UpdateDefinition<TaskData>>(),
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult<long>(1));
 
@@ -697,7 +697,7 @@ public class GrpcSubmitterServiceTests
   {
     var mock = new Mock<ITaskTable>();
     mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
-                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<UpdateDefinition<TaskData>>(),
                                                       It.IsAny<CancellationToken>()))
         .Throws<ArmoniKException>();
 
@@ -736,7 +736,7 @@ public class GrpcSubmitterServiceTests
   {
     var mock = new Mock<ITaskTable>();
     mock.Setup(taskTable => taskTable.UpdateManyTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
-                                                      It.IsAny<ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)>>(),
+                                                      It.IsAny<UpdateDefinition<TaskData>>(),
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => throw new InvalidAsynchronousStateException());
 

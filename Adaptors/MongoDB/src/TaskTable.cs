@@ -224,16 +224,16 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
-                                          ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                          CancellationToken                                                             cancellationToken = default)
+  public async Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>               filter,
+                                          Core.Common.Storage.UpdateDefinition<TaskData> updates,
+                                          CancellationToken                              cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
 
-    foreach (var (selector, newValue) in updates)
+    foreach (var (selector, newValue) in updates.Setters)
     {
       updateDefinition = updateDefinition.Set(selector,
                                               newValue);
@@ -311,18 +311,18 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<TaskData?> UpdateOneTask(string                                                                        taskId,
-                                             Expression<Func<TaskData, bool>>?                                             filter,
-                                             ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                             bool                                                                          before,
-                                             CancellationToken                                                             cancellationToken = default)
+  public async Task<TaskData?> UpdateOneTask(string                                         taskId,
+                                             Expression<Func<TaskData, bool>>?              filter,
+                                             Core.Common.Storage.UpdateDefinition<TaskData> updates,
+                                             bool                                           before,
+                                             CancellationToken                              cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
 
-    foreach (var (selector, newValue) in updates)
+    foreach (var (selector, newValue) in updates.Setters)
     {
       updateDefinition = updateDefinition.Set(selector,
                                               newValue);
