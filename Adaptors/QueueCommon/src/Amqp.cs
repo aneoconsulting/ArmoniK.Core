@@ -36,4 +36,5 @@ public class Amqp
   public bool   AllowHostMismatch { get; set; }
   public int    MaxRetries        { get; set; }
   public int    LinkCredit        { get; set; }
+  public int    ParallelismLimit  { get; set; }
 }

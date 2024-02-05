@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,10 +36,11 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
-  private const    int                       MaxInternalQueuePriority = 10;
-  private readonly TimeSpan                  baseDelay_               = TimeSpan.FromMilliseconds(100);
-  private readonly ILogger<PushQueueStorage> logger_;
-  private readonly ObjectPool<Session>       sessionPool_;
+  private const    int                                                  MaxInternalQueuePriority = 10;
+  private readonly TimeSpan                                             baseDelay_               = TimeSpan.FromMilliseconds(100);
+  private readonly ILogger<PushQueueStorage>                            logger_;
+  private readonly int                                                  parallelismLimit_;
+  private readonly ConcurrentDictionary<string, ObjectPool<SenderLink>> senders_ = new();
 
   public PushQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -46,12 +48,8 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     : base(options,
            connectionAmqp)
   {
-    logger_ = logger;
-    sessionPool_ = new ObjectPool<Session>(200,
-                                           async token => new Session(await connectionAmqp.GetConnectionAsync(token)
-                                                                                          .ConfigureAwait(false)),
-                                           (session,
-                                            _) => new ValueTask<bool>(!session.IsClosed));
+    parallelismLimit_ = options.ParallelismLimit;
+    logger_           = logger;
   }
 
   /// <inheritdoc />
@@ -96,37 +94,31 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                      internalPriority);
 
 
-    await messages.ParallelForEach(new ParallelTaskOptions(cancellationToken),
+    await messages.ParallelForEach(new ParallelTaskOptions(parallelismLimit_,
+                                                           cancellationToken),
                                    async msgData =>
                                    {
                                      for (var retry = 0; retry < Options.MaxRetries; retry++)
                                      {
                                        try
                                        {
-                                         await using var session = await sessionPool_.GetAsync(cancellationToken)
-                                                                                     .ConfigureAwait(false);
+                                         var pool = GetPool($"{partitionId}###q{whichQueue}");
 
-                                         var sender = new SenderLink(session,
-                                                                     Guid.NewGuid()
-                                                                         .ToString(),
-                                                                     $"{partitionId}###q{whichQueue}");
+                                         await pool.WithInstanceAsync(sender => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
+                                                                                                 {
+                                                                                                   Header = new Header
+                                                                                                            {
+                                                                                                              Priority = (byte)internalPriority,
+                                                                                                            },
+                                                                                                   Properties = new Properties
+                                                                                                                {
+                                                                                                                  MessageId = Guid.NewGuid()
+                                                                                                                                  .ToString(),
+                                                                                                                },
+                                                                                                 }),
+                                                                      cancellationToken)
+                                                   .ConfigureAwait(false);
 
-                                         await sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
-                                                                {
-                                                                  Header = new Header
-                                                                           {
-                                                                             Priority = (byte)internalPriority,
-                                                                           },
-                                                                  Properties = new Properties
-                                                                               {
-                                                                                 MessageId = Guid.NewGuid()
-                                                                                                 .ToString(),
-                                                                               },
-                                                                })
-                                                     .ConfigureAwait(false);
-
-                                         await sender.CloseAsync()
-                                                     .ConfigureAwait(false);
                                          break;
                                        }
                                        catch (Exception e)
@@ -138,12 +130,12 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                      .ConfigureAwait(false);
 
                                            logger_.LogError(e,
-                                                            "Exception while receiving message; sender replaced");
+                                                            "Exception while sending message; sender replaced");
                                          }
                                          else
                                          {
                                            logger_.LogError(e,
-                                                            "Exception while receiving message");
+                                                            "Exception while sending message");
                                            throw;
                                          }
                                        }
@@ -151,4 +143,15 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                    })
                   .ConfigureAwait(false);
   }
+
+  private ObjectPool<SenderLink> GetPool(string address)
+    => senders_.GetOrAdd(address,
+                         s => new ObjectPool<SenderLink>(200,
+                                                         async token => new SenderLink(new Session(await ConnectionAmqp.GetConnectionAsync(token)
+                                                                                                                       .ConfigureAwait(false)),
+                                                                                       Guid.NewGuid()
+                                                                                           .ToString(),
+                                                                                       s),
+                                                         (link,
+                                                          _) => new ValueTask<bool>(!link.IsClosed && !link.Session.IsClosed)));
 }
