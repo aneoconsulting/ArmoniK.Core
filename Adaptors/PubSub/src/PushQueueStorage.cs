@@ -61,7 +61,36 @@ internal class PushQueueStorage : IPushQueueStorage
     var topic = $"a{options_.Prefix}-{partitionId}";
     var topicName = TopicName.FromProjectTopic(options_.ProjectId,
                                                topic);
+    foreach (var chunks in messages.Chunk(500))
+    {
+      await Publish(topicName,
+                    chunks)
+        .ConfigureAwait(false);
+    }
+  }
 
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
+
+  public Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      isInitialized_ = true;
+    }
+
+    return Task.CompletedTask;
+  }
+
+  public int MaxPriority
+    => int.MaxValue;
+
+
+  private async Task Publish(TopicName                topicName,
+                             ICollection<MessageData> messages)
+  {
     try
     {
       await publisher_.PublishAsync(topicName,
@@ -95,22 +124,4 @@ internal class PushQueueStorage : IPushQueueStorage
                       .ConfigureAwait(false);
     }
   }
-
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(isInitialized_
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
-
-  public Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      isInitialized_ = true;
-    }
-
-    return Task.CompletedTask;
-  }
-
-  public int MaxPriority
-    => int.MaxValue;
 }
