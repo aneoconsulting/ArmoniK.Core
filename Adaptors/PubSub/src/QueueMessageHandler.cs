@@ -58,7 +58,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
 
   public async ValueTask DisposeAsync()
   {
-    await autoExtendAckDeadline_.Stop();
+    await autoExtendAckDeadline_.Stop()
+                                .ConfigureAwait(false);
 
     switch (Status)
     {
@@ -72,7 +73,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
                                                                  {
                                                                    ackId_,
                                                                  },
-                                                                 0);
+                                                                 0)
+                                         .ConfigureAwait(false);
 
         break;
       case QueueMessageStatus.Cancelled:
@@ -81,7 +83,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
                                                            new[]
                                                            {
                                                              ackId_,
-                                                           });
+                                                           })
+                                         .ConfigureAwait(false);
 
 
         break;

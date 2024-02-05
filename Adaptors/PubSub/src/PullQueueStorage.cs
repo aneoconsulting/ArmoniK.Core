@@ -75,7 +75,8 @@ internal class PullQueueStorage : IPullQueueStorage
 
     var messages = await subscriber_.PullAsync(subscriptionName_,
                                                nbMessages,
-                                               cancellationToken);
+                                               cancellationToken)
+                                    .ConfigureAwait(false);
 
     foreach (var message in messages.ReceivedMessages)
     {
@@ -104,7 +105,8 @@ internal class PullQueueStorage : IPullQueueStorage
                                             MessageRetentionDuration = Duration.FromTimeSpan(messageRetention_),
                                             TopicName                = topicName_,
                                             KmsKeyName               = kmsKeyName_,
-                                          });
+                                          })
+                        .ConfigureAwait(false);
       }
       catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
       {
@@ -119,7 +121,8 @@ internal class PullQueueStorage : IPullQueueStorage
                                 };
       try
       {
-        await subscriber_.CreateSubscriptionAsync(subscriptionRequest);
+        await subscriber_.CreateSubscriptionAsync(subscriptionRequest)
+                         .ConfigureAwait(false);
       }
       catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
       {

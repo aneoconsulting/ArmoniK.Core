@@ -68,7 +68,8 @@ internal class PushQueueStorage : IPushQueueStorage
                                     messages.Select(msg => new PubsubMessage
                                                            {
                                                              Data = UnsafeByteOperations.UnsafeWrap(Encoding.UTF8.GetBytes(msg.TaskId)),
-                                                           }));
+                                                           }))
+                      .ConfigureAwait(false);
     }
     catch (RpcException e) when (e.StatusCode == StatusCode.NotFound)
     {
@@ -79,7 +80,8 @@ internal class PushQueueStorage : IPushQueueStorage
                                             MessageRetentionDuration = Duration.FromTimeSpan(options_.MessageRetention),
                                             TopicName                = topicName,
                                             KmsKeyName               = options_.KmsKeyName,
-                                          });
+                                          })
+                        .ConfigureAwait(false);
       }
       catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
       {
@@ -89,7 +91,8 @@ internal class PushQueueStorage : IPushQueueStorage
                                     messages.Select(msg => new PubsubMessage
                                                            {
                                                              Data = UnsafeByteOperations.UnsafeWrap(Encoding.UTF8.GetBytes(msg.TaskId)),
-                                                           }));
+                                                           }))
+                      .ConfigureAwait(false);
     }
   }
 
