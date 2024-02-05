@@ -69,27 +69,6 @@ public class SimpleTaskTable : ITaskTable
                           CancellationToken     cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<T> ReadTaskAsync<T>(string                        taskId,
-                                  Expression<Func<TaskData, T>> selector,
-                                  CancellationToken             cancellationToken = default)
-    => Task.FromResult(selector.Compile()
-                               .Invoke(new TaskData(SessionId,
-                                                    taskId,
-                                                    OwnerPodId,
-                                                    PodName,
-                                                    PayloadId,
-                                                    new List<string>(),
-                                                    new List<string>(),
-                                                    new List<string>
-                                                    {
-                                                      OutputId,
-                                                    },
-                                                    new List<string>(),
-                                                    TaskStatus.Completed,
-                                                    TaskOptions,
-                                                    new Output(true,
-                                                               ""))));
-
 
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                             CancellationToken                cancellationToken = default)
@@ -146,26 +125,26 @@ public class SimpleTaskTable : ITaskTable
                                                Expression<Func<TaskData, T>>    selector,
                                                CancellationToken                cancellationToken = default)
     => new List<TaskData>
-       {
-         new(SessionId,
-             TaskId,
-             OwnerPodId,
-             PodName,
-             PayloadId,
-             new List<string>(),
-             new List<string>(),
-             new List<string>
-             {
-               OutputId,
-             },
-             new List<string>(),
-             TaskStatus.Completed,
-             TaskOptions,
-             new Output(true,
-                        "")),
-       }.Where(filter.Compile())
-        .Select(selector.Compile())
-        .ToAsyncEnumerable();
+      {
+        new(SessionId,
+            TaskId,
+            OwnerPodId,
+            PodName,
+            PayloadId,
+            new List<string>(),
+            new List<string>(),
+            new List<string>
+            {
+              OutputId,
+            },
+            new List<string>(),
+            TaskStatus.Completed,
+            TaskOptions,
+            new Output(true,
+                       "")),
+      }.Where(filter.Compile())
+       .Select(selector.Compile())
+       .ToAsyncEnumerable();
 
   public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
                                     ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,

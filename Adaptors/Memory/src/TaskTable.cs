@@ -76,21 +76,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<T> ReadTaskAsync<T>(string                        taskId,
-                                  Expression<Func<TaskData, T>> selector,
-                                  CancellationToken             cancellationToken = default)
-  {
-    if (taskId2TaskData_.TryGetValue(taskId,
-                                     out var value))
-    {
-      return Task.FromResult(selector.Compile()
-                                     .Invoke(value));
-    }
-
-    throw new TaskNotFoundException($"Key '{taskId}' not found");
-  }
-
-  /// <inheritdoc />
   public Task<int> CountAllTasksAsync(TaskStatus        status,
                                       CancellationToken cancellationToken = default)
     => Task.FromResult(taskId2TaskData_.Count(pair => pair.Value.Status == status));

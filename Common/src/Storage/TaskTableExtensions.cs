@@ -302,6 +302,42 @@ public static class TaskTableExtensions
   /// <summary>
   ///   Retrieves a task from the data base
   /// </summary>
+  /// <param name="taskId">Id of the task to read</param>
+  /// <param name="selector">Expression to select part of the returned task data</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task metadata of the retrieved task
+  /// </returns>
+  public static async Task<T> ReadTaskAsync<T>(this ITaskTable               taskTable,
+                                               string                        taskId,
+                                               Expression<Func<TaskData, T>> selector,
+                                               CancellationToken             cancellationToken = default)
+  {
+    await using var taskEnumerator = taskTable.FindTasksAsync(task => task.TaskId == taskId,
+                                                              selector,
+                                                              cancellationToken)
+                                              .GetAsyncEnumerator(cancellationToken);
+
+    if (!await taskEnumerator.MoveNextAsync()
+                             .ConfigureAwait(false))
+    {
+      throw new TaskNotFoundException($"Task {taskId} not found");
+    }
+
+    var task = taskEnumerator.Current;
+
+    if (await taskEnumerator.MoveNextAsync()
+                            .ConfigureAwait(false))
+    {
+      throw new ArmoniKException($"Multiple Tasks {taskId} found");
+    }
+
+    return task;
+  }
+
+  /// <summary>
+  ///   Retrieves a task from the data base
+  /// </summary>
   /// <param name="taskTable">Interface to manage tasks lifecycle</param>
   /// <param name="taskId">Id of the task to read</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>

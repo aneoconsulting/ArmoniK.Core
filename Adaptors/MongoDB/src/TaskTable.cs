@@ -80,30 +80,6 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<T> ReadTaskAsync<T>(string                        taskId,
-                                        Expression<Func<TaskData, T>> selector,
-                                        CancellationToken             cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ReadTaskAsync)}");
-    activity?.SetTag("ReadTaskId",
-                     taskId);
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    try
-    {
-      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
-                                 .Project(selector)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException)
-    {
-      throw new TaskNotFoundException($"Task '{taskId}' not found.");
-    }
-  }
-
-  /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                                   CancellationToken                cancellationToken = default)
   {

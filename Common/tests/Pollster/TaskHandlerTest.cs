@@ -650,56 +650,6 @@ public class TaskHandlerTest
                             CancellationToken     cancellationToken = default)
       => Task.CompletedTask;
 
-    public async Task<T> ReadTaskAsync<T>(string                        taskId,
-                                          Expression<Func<TaskData, T>> selector,
-                                          CancellationToken             cancellationToken = default)
-    {
-      if (waitMethod_ == WaitMethod.Read)
-      {
-        await Task.Delay(delay_,
-                         cancellationToken)
-                  .ConfigureAwait(false);
-      }
-
-      return selector.Compile()
-                     .Invoke(new TaskData("SessionId",
-                                          "taskId",
-                                          "ownerpodid",
-                                          "ownerpodname",
-                                          "payload",
-                                          new List<string>(),
-                                          new List<string>(),
-                                          new Dictionary<string, bool>(),
-                                          new List<string>(),
-                                          "taskId",
-                                          new List<string>(),
-                                          TaskStatus.Submitted,
-                                          "",
-                                          new TaskOptions(new Dictionary<string, string>(),
-                                                          TimeSpan.FromMinutes(2),
-                                                          2,
-                                                          3,
-                                                          "part",
-                                                          "",
-                                                          "",
-                                                          "",
-                                                          "",
-                                                          ""),
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          DateTime.Now,
-                                          TimeSpan.FromSeconds(1),
-                                          TimeSpan.FromSeconds(2),
-                                          TimeSpan.FromSeconds(3),
-                                          new Output(false,
-                                                     "")));
-    }
-
     public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                               CancellationToken                cancellationToken = default)
       => throw new NotImplementedException();
@@ -845,10 +795,10 @@ public class TaskHandlerTest
                        cancellationToken)
                 .ConfigureAwait(false);
       var enumerable = new[]
-                       {
-                         sessionData_!,
-                       }.Select(selector.Compile())
-                        .ToAsyncEnumerable();
+        {
+          sessionData_!,
+        }.Select(selector.Compile())
+         .ToAsyncEnumerable();
 
       await foreach (var d in enumerable.ConfigureAwait(false))
       {
