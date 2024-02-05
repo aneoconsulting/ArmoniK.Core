@@ -10,6 +10,7 @@ locals {
     "InitWorker__WorkerCheckRetries=${var.polling_agent.worker_check_retries}",
     "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_delay}",
     "Amqp__PartitionId=TestPartition${local.partition_chooser}",
+    "PubSub__PartitionId=TestPartition${local.partition_chooser}",
   ]
   common_env = [
     "ComputePlane__WorkerChannel__SocketType=unixdomainsocket",

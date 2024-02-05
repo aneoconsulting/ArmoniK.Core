@@ -33,6 +33,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
 } else if queue == "activemq" {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
+} else if queue == "pubsub" {
+  '{ name = "pubsub", image = "gcr.io/google.com/cloudsdktool/google-cloud-cli:latest" }'
 } else {
   '{ name = "none" }'
 }
@@ -110,6 +112,8 @@ _usage:
         rabbitmq    :  for rabbitmq (1.0.0 protocol)
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
         artemis     :  for artemis  (1.0.0 protocol)
+        pubsub      :  for Google PubSub
+        none        :  for external queue configurations
 
       worker: allowed values below
         htcmock: for HtcMock V3 (default)
