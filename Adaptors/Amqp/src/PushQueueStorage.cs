@@ -102,19 +102,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                      {
                                        try
                                        {
-                                         var address = $"{partitionId}###q{whichQueue}";
-
-                                         var pool = senders_.GetOrAdd(address,
-                                                                      s => new ObjectPool<SenderLink>(parallelismLimit_,
-                                                                                                      async token => new SenderLink(new Session(await ConnectionAmqp
-                                                                                                                                                      .GetConnectionAsync(token)
-                                                                                                                                                      .ConfigureAwait(false)),
-                                                                                                                                    Guid.NewGuid()
-                                                                                                                                        .ToString(),
-                                                                                                                                    s),
-                                                                                                      (link,
-                                                                                                       _) => new ValueTask<bool>(!link.IsClosed &&
-                                                                                                                                 !link.Session.IsClosed)));
+                                         var pool = GetPool($"{partitionId}###q{whichQueue}");
 
                                          await pool.WithInstanceAsync(sender => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
                                                                                                  {
@@ -155,4 +143,15 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                    })
                   .ConfigureAwait(false);
   }
+
+  private ObjectPool<SenderLink> GetPool(string address)
+    => senders_.GetOrAdd(address,
+                         s => new ObjectPool<SenderLink>(200,
+                                                         async token => new SenderLink(new Session(await ConnectionAmqp.GetConnectionAsync(token)
+                                                                                                                       .ConfigureAwait(false)),
+                                                                                       Guid.NewGuid()
+                                                                                           .ToString(),
+                                                                                       s),
+                                                         (link,
+                                                          _) => new ValueTask<bool>(!link.IsClosed && !link.Session.IsClosed)));
 }
