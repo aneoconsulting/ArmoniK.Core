@@ -657,10 +657,6 @@ public class TaskHandlerTest
     public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<int> CountAllTasksAsync(TaskStatus        status,
-                                        CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-
     public Task DeleteTaskAsync(string            id,
                                 CancellationToken cancellationToken = default)
       => throw new NotImplementedException();

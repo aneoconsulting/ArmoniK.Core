@@ -32,8 +32,6 @@ using ArmoniK.Core.Utils;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
-
 namespace ArmoniK.Core.Adapters.Memory;
 
 public class TaskTable : ITaskTable
@@ -74,11 +72,6 @@ public class TaskTable : ITaskTable
 
     return Task.CompletedTask;
   }
-
-  /// <inheritdoc />
-  public Task<int> CountAllTasksAsync(TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.Count(pair => pair.Value.Status == status));
 
   /// <inheritdoc />
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,

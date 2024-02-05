@@ -84,17 +84,6 @@ public interface ITaskTable : IInitializable
   Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Count tasks matching a given status
-  /// </summary>
-  /// <param name="status">Status of the tasks to be counted</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The number of tasks that matched the status
-  /// </returns>
-  Task<int> CountAllTasksAsync(TaskStatus        status,
-                               CancellationToken cancellationToken = default);
-
-  /// <summary>
   ///   Remove a task from the data base given its id
   /// </summary>
   /// <param name="id">Id of the tasks to be deleted</param>

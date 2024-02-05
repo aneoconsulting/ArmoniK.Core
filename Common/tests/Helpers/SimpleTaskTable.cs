@@ -86,10 +86,6 @@ public class SimpleTaskTable : ITaskTable
                                                                     42),
                                                               });
 
-  public Task<int> CountAllTasksAsync(TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-    => Task.FromResult(42);
-
   public Task DeleteTaskAsync(string            id,
                               CancellationToken cancellationToken = default)
     => Task.CompletedTask;

@@ -36,8 +36,6 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
-
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 /// <inheritdoc />
@@ -353,20 +351,5 @@ public class TaskTable : ITaskTable
       taskCollectionProvider_.Get();
       isInitialized_ = true;
     }
-  }
-
-  /// <inheritdoc />
-  public Task<int> CountAllTasksAsync(TaskStatus        status,
-                                      CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CountAllTasksAsync)}");
-
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
-
-    var res = taskCollection.AsQueryable(sessionHandle)
-                            .Count(model => model.Status == status);
-
-    return Task.FromResult(res);
   }
 }

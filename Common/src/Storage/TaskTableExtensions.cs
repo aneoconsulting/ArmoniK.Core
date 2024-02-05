@@ -357,6 +357,31 @@ public static class TaskTableExtensions
     return task;
   }
 
+  /// <summary>
+  ///   Count tasks matching a given status
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="status">Status of the tasks to be counted</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of tasks that matched the status
+  /// </returns>
+  public static async Task<int> CountAllTasksAsync(this ITaskTable   taskTable,
+                                                   TaskStatus        status,
+                                                   CancellationToken cancellationToken = default)
+  {
+    var (_, count) = await taskTable.ListTasksAsync(task => task.Status == status,
+                                                    data => new ValueTuple(),
+                                                    data => new ValueTuple(),
+                                                    true,
+                                                    0,
+                                                    0,
+                                                    cancellationToken)
+                                    .ConfigureAwait(false);
+
+    return (int)count;
+  }
+
 
   /// <summary>
   ///   Retrieve a task's output
