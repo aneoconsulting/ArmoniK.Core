@@ -16,10 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -135,13 +133,14 @@ public static class SessionTableExtensions
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
                                                            data => data.Status != SessionStatus.Cancelled && data.Status != SessionStatus.Purged &&
                                                                    data.Status != SessionStatus.Deleted,
-                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                                           {
-                                                             (model => model.WorkerSubmission, false),
-                                                             (model => model.ClientSubmission, false),
-                                                             (model => model.Status, SessionStatus.Cancelled),
-                                                             (model => model.CancellationDate, DateTime.UtcNow),
-                                                           },
+                                                           new UpdateDefinition<SessionData>().Set(model => model.WorkerSubmission,
+                                                                                                   false)
+                                                                                              .Set(model => model.ClientSubmission,
+                                                                                                   false)
+                                                                                              .Set(model => model.Status,
+                                                                                                   SessionStatus.Cancelled)
+                                                                                              .Set(model => model.CancellationDate,
+                                                                                                   DateTime.UtcNow),
                                                            false,
                                                            cancellationToken)
                                     .ConfigureAwait(false);
@@ -187,10 +186,8 @@ public static class SessionTableExtensions
   {
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
                                                            data => data.Status == SessionStatus.Running,
-                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                                           {
-                                                             (model => model.Status, SessionStatus.Paused),
-                                                           },
+                                                           new UpdateDefinition<SessionData>().Set(model => model.Status,
+                                                                                                   SessionStatus.Paused),
                                                            false,
                                                            cancellationToken)
                                     .ConfigureAwait(false);
@@ -237,10 +234,8 @@ public static class SessionTableExtensions
   {
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
                                                            data => data.Status == SessionStatus.Paused,
-                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                                           {
-                                                             (model => model.Status, SessionStatus.Running),
-                                                           },
+                                                           new UpdateDefinition<SessionData>().Set(model => model.Status,
+                                                                                                   SessionStatus.Running),
                                                            false,
                                                            cancellationToken)
                                     .ConfigureAwait(false);
@@ -288,13 +283,14 @@ public static class SessionTableExtensions
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
                                                            data => data.Status == SessionStatus.Running || data.Status == SessionStatus.Paused ||
                                                                    data.Status == SessionStatus.Cancelled,
-                                                           new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                                           {
-                                                             (model => model.Status, SessionStatus.Purged),
-                                                             (model => model.PurgeDate, DateTime.UtcNow),
-                                                             (model => model.WorkerSubmission, false),
-                                                             (model => model.ClientSubmission, false),
-                                                           },
+                                                           new UpdateDefinition<SessionData>().Set(model => model.Status,
+                                                                                                   SessionStatus.Purged)
+                                                                                              .Set(model => model.PurgeDate,
+                                                                                                   DateTime.UtcNow)
+                                                                                              .Set(model => model.WorkerSubmission,
+                                                                                                   false)
+                                                                                              .Set(model => model.ClientSubmission,
+                                                                                                   false),
                                                            false,
                                                            cancellationToken)
                                     .ConfigureAwait(false);
@@ -342,19 +338,21 @@ public static class SessionTableExtensions
                                                             bool               worker,
                                                             CancellationToken  cancellationToken = default)
   {
-    var updates = new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>();
+    var updates = new UpdateDefinition<SessionData>();
 
     if (client)
     {
-      updates.Add((data => data.ClientSubmission, false));
+      updates.Set(data => data.ClientSubmission,
+                  false);
     }
 
     if (worker)
     {
-      updates.Add((data => data.WorkerSubmission, false));
+      updates.Set(data => data.WorkerSubmission,
+                  false);
     }
 
-    if (updates.Count > 0)
+    if (updates.Setters.Count > 0)
     {
       return await sessionTable.UpdateOneSessionAsync(sessionId,
                                                       null,

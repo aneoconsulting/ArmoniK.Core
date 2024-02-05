@@ -868,11 +868,11 @@ public class TaskHandlerTest
                                                                                         CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
-                                                    Expression<Func<SessionData, bool>>?                                             filter,
-                                                    ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
-                                                    bool                                                                             before            = false,
-                                                    CancellationToken                                                                cancellationToken = default)
+    public Task<SessionData?> UpdateOneSessionAsync(string                               sessionId,
+                                                    Expression<Func<SessionData, bool>>? filter,
+                                                    UpdateDefinition<SessionData>        updates,
+                                                    bool                                 before            = false,
+                                                    CancellationToken                    cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<SessionData> CancelSessionAsync(string            sessionId,
