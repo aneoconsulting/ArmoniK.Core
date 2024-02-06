@@ -189,6 +189,29 @@ public interface ITaskTable : IInitializable
                              CancellationToken                cancellationToken = default);
 
   /// <summary>
+  ///   Updates in bulk tasks
+  /// </summary>
+  /// <param name="bulkUpdates">Enumeration of updates with the filter they apply on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of task matched
+  /// </returns>
+  async Task<long> BulkUpdateTasks(IEnumerable<(Expression<Func<TaskData, bool>> filter, UpdateDefinition<TaskData> updates)> bulkUpdates,
+                                   CancellationToken                                                                          cancellationToken)
+  {
+    long n = 0;
+    foreach (var (filter, updates) in bulkUpdates)
+    {
+      n += await UpdateManyTasks(filter,
+                                 updates,
+                                 cancellationToken)
+             .ConfigureAwait(false);
+    }
+
+    return n;
+  }
+
+  /// <summary>
   ///   List all applications extracted from task metadata matching the given filter and ordering
   /// </summary>
   /// <param name="filter">Filter to select tasks</param>

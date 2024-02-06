@@ -29,6 +29,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -245,6 +246,39 @@ public class TaskTable : ITaskTable
                                      .ConfigureAwait(false);
 
     return result.MatchedCount;
+  }
+
+  /// <inheritdoc />
+  async Task<long> ITaskTable.BulkUpdateTasks(IEnumerable<(Expression<Func<TaskData, bool>> filter, Core.Common.Storage.UpdateDefinition<TaskData> updates)> bulkUpdates,
+                                              CancellationToken cancellationToken)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ITaskTable.BulkUpdateTasks)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var requests = bulkUpdates.Select(item =>
+                                      {
+                                        var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
+
+                                        foreach (var (selector, newValue) in item.updates.Setters)
+                                        {
+                                          updateDefinition = updateDefinition.Set(selector,
+                                                                                  newValue);
+                                        }
+
+                                        return new UpdateManyModel<TaskData>(Builders<TaskData>.Filter.Where(item.filter),
+                                                                             updateDefinition);
+                                      })
+                              .AsICollection();
+
+    var updateResult = await taskCollection.BulkWriteAsync(requests,
+                                                           new BulkWriteOptions
+                                                           {
+                                                             IsOrdered = false,
+                                                           },
+                                                           cancellationToken)
+                                           .ConfigureAwait(false);
+
+    return updateResult.MatchedCount;
   }
 
   /// <inheritdoc />

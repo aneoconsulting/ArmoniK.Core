@@ -603,6 +603,21 @@ public static class TaskTableExtensions
   }
 
   /// <summary>
+  ///   Updates in bulk tasks
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="bulkUpdates">Enumeration of updates with the taskId they apply on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of task matched
+  /// </returns>
+  public static Task<long> BulkUpdateTasks(this ITaskTable                                                  taskTable,
+                                           IEnumerable<(string taskId, UpdateDefinition<TaskData> updates)> bulkUpdates,
+                                           CancellationToken                                                cancellationToken)
+    => taskTable.BulkUpdateTasks(bulkUpdates.Select(item => ((Expression<Func<TaskData, bool>>)(task => task.TaskId == item.taskId), item.updates)),
+                                 cancellationToken);
+
+  /// <summary>
   ///   Update a task status to TaskStatus.Processing
   /// </summary>
   /// <remarks>

@@ -196,6 +196,30 @@ public interface IResultTable : IInitializable
                                UpdateDefinition<Result>       updates,
                                CancellationToken              cancellationToken = default);
 
+
+  /// <summary>
+  ///   Updates in bulk results
+  /// </summary>
+  /// <param name="bulkUpdates">Enumeration of updates with the filter they apply on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of task matched
+  /// </returns>
+  async Task<long> BulkUpdateResults(IEnumerable<(Expression<Func<Result, bool>> filter, UpdateDefinition<Result> updates)> bulkUpdates,
+                                     CancellationToken                                                                      cancellationToken)
+  {
+    long n = 0;
+    foreach (var (filter, updates) in bulkUpdates)
+    {
+      n += await UpdateManyResults(filter,
+                                   updates,
+                                   cancellationToken)
+             .ConfigureAwait(false);
+    }
+
+    return n;
+  }
+
   /// <summary>
   ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
   /// </summary>

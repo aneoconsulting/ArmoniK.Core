@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,6 +54,22 @@ public static class ResultTableExtensions
     resultTable.Logger.LogDebug("Abort results from {owner}",
                                 ownerTaskId);
   }
+
+
+  /// <summary>
+  ///   Updates in bulk results
+  /// </summary>
+  /// <param name="resultTable">Interface to manage result lifecycle</param>
+  /// <param name="bulkUpdates">Enumeration of updates with the resultId they apply on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of result matched
+  /// </returns>
+  public static Task<long> BulkUpdateResults(this IResultTable                                                resultTable,
+                                             IEnumerable<(string resultId, UpdateDefinition<Result> updates)> bulkUpdates,
+                                             CancellationToken                                                cancellationToken)
+    => resultTable.BulkUpdateResults(bulkUpdates.Select(item => ((Expression<Func<Result, bool>>)(task => task.ResultId == item.resultId), item.updates)),
+                                     cancellationToken);
 
   /// <summary>
   ///   Complete result
