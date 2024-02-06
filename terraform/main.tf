@@ -79,6 +79,14 @@ module "queue_artemis" {
   network    = docker_network.armonik.id
 }
 
+module "queue_pubsub" {
+  source     = "./modules/storage/queue/pubsub"
+  count      = var.queue_storage.name == "pubsub" ? 1 : 0
+  queue_envs = var.queue_env_vars
+  image      = var.queue_storage.image
+  network    = docker_network.armonik.id
+}
+
 module "queue_none" {
   source = "./modules/storage/queue/none"
   count  = var.queue_storage.name == "none" ? 1 : 0
