@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
@@ -41,6 +42,7 @@ using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
@@ -134,6 +136,8 @@ public class AgentTest
     public readonly  MyPushQueueStorage   QueueStorage;
     public readonly  IResultTable         ResultTable;
     public readonly  string               Session;
+    public readonly  ISessionTable        SessionTable;
+    public readonly  ISubmitter           Submitter;
     public readonly  TaskData             TaskData;
     public readonly  ITaskTable           TaskTable;
     public readonly  string               TaskWithDependencies1;
@@ -151,10 +155,10 @@ public class AgentTest
       TaskTable     = prov_.GetRequiredService<ITaskTable>();
       ObjectStorage = prov_.GetRequiredService<IObjectStorage>();
 
-      var sessionTable = prov_.GetRequiredService<ISessionTable>();
-      var submitter    = prov_.GetRequiredService<ISubmitter>();
+      SessionTable = prov_.GetRequiredService<ISessionTable>();
+      Submitter    = prov_.GetRequiredService<ISubmitter>();
 
-      Session = sessionTable.SetSessionDataAsync(new[]
+      Session = SessionTable.SetSessionDataAsync(new[]
                                                  {
                                                    Partition,
                                                  },
@@ -162,7 +166,7 @@ public class AgentTest
                                                  CancellationToken.None)
                             .Result;
 
-      var sessionData = sessionTable.GetSessionAsync(Session,
+      var sessionData = SessionTable.GetSessionAsync(Session,
                                                      CancellationToken.None)
                                     .Result;
 
@@ -212,7 +216,7 @@ public class AgentTest
                             "data");
       Directory.CreateDirectory(Folder);
 
-      var createdTasks = submitter.CreateTasks(Session,
+      var createdTasks = Submitter.CreateTasks(Session,
                                                Session,
                                                Options.ToTaskOptions(),
                                                new[]
@@ -232,7 +236,7 @@ public class AgentTest
                                                CancellationToken.None)
                                   .Result;
 
-      submitter.FinalizeTaskCreation(createdTasks,
+      Submitter.FinalizeTaskCreation(createdTasks,
                                      Session,
                                      Session,
                                      CancellationToken.None)
@@ -245,7 +249,7 @@ public class AgentTest
                                          CancellationToken.None)
                           .Result;
 
-      var createdTasks2 = submitter.CreateTasks(Session,
+      var createdTasks2 = Submitter.CreateTasks(Session,
                                                 Session,
                                                 Options.ToTaskOptions(),
                                                 new[]
@@ -284,7 +288,7 @@ public class AgentTest
       TaskWithDependencies2 = createdTasks2.Last()
                                            .TaskId;
 
-      submitter.FinalizeTaskCreation(createdTasks2,
+      Submitter.FinalizeTaskCreation(createdTasks2,
                                      Session,
                                      Session,
                                      CancellationToken.None)
@@ -293,7 +297,7 @@ public class AgentTest
       Token = Guid.NewGuid()
                   .ToString();
 
-      Agent = new Agent(submitter,
+      Agent = new Agent(Submitter,
                         ObjectStorage,
                         QueueStorage,
                         ResultTable,
@@ -677,6 +681,43 @@ public class AgentTest
     }
   }
 
+
+  [Test]
+  public async Task SubmitTaskWhileSubmissionIsClosedShouldThrow()
+  {
+    using var holder = new AgentHolder();
+
+    await holder.SessionTable.StopSubmissionAsync(holder.Session,
+                                                  false,
+                                                  true)
+                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(holder.Session)
+                                  .ConfigureAwait(false);
+
+    var agent = new Agent(holder.Submitter,
+                          holder.ObjectStorage,
+                          holder.QueueStorage,
+                          holder.ResultTable,
+                          holder.TaskTable,
+                          sessionData,
+                          holder.TaskData,
+                          holder.Folder,
+                          holder.Token,
+                          NullLogger.Instance);
+
+    Assert.ThrowsAsync<SubmissionClosed>(() => agent.SubmitTasks(new TaskSubmissionRequest[]
+                                                                 {
+                                                                   new("payload",
+                                                                       null,
+                                                                       new List<string>(),
+                                                                       new List<string>()),
+                                                                 },
+                                                                 null,
+                                                                 holder.Session,
+                                                                 holder.Token,
+                                                                 CancellationToken.None));
+  }
 
   [Test]
   [TestCase(false)]

@@ -229,31 +229,102 @@ public class GrpcTasksServiceTests
                                            HttpHandler = server.CreateHandler(),
                                          });
 
-    var session_id = new Sessions.SessionsClient(channel).CreateSession(new CreateSessionRequest
-                                                                        {
-                                                                          DefaultTaskOption = new TaskOptions
-                                                                                              {
-                                                                                                MaxRetries = 1,
-                                                                                                Priority   = 2,
-                                                                                                MaxDuration = new Duration
-                                                                                                              {
-                                                                                                                Seconds = 500,
-                                                                                                                Nanos   = 0,
-                                                                                                              },
-                                                                                              },
-                                                                        })
-                                                         .SessionId;
+    var sessionId = new Sessions.SessionsClient(channel).CreateSession(new CreateSessionRequest
+                                                                       {
+                                                                         DefaultTaskOption = new TaskOptions
+                                                                                             {
+                                                                                               MaxRetries = 1,
+                                                                                               Priority   = 2,
+                                                                                               MaxDuration = new Duration
+                                                                                                             {
+                                                                                                               Seconds = 500,
+                                                                                                               Nanos   = 0,
+                                                                                                             },
+                                                                                             },
+                                                                       })
+                                                        .SessionId;
 
     var client = new Tasks.TasksClient(channel);
     Assert.That(delegate
                 {
                   client.SubmitTasks(new SubmitTasksRequest
                                      {
-                                       SessionId = session_id,
+                                       SessionId = sessionId,
                                      });
                 },
                 Throws.InstanceOf<RpcException>()
-                      .With.Property("StatusCode")
+                      .With.Property(nameof(RpcException.StatusCode))
                       .EqualTo(StatusCode.InvalidArgument));
+  }
+
+  [Test]
+  public async Task SubmitTaskWithSubmissionClosedShouldFailWithRpcException()
+  {
+    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                  .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                  .AddSingleton<Injection.Options.Submitter>()
+                                                                  .AddHttpClient()
+                                                                  .AddGrpc(),
+                                          builder => builder.UseRouting()
+                                                            .UseAuthorization(),
+                                          builder =>
+                                          {
+                                            builder.MapGrpcService<GrpcTasksService>();
+                                            builder.MapGrpcService<GrpcSessionsService>();
+                                          },
+                                          true,
+                                          true);
+
+    await helper.App.StartAsync()
+                .ConfigureAwait(false);
+
+    var server = helper.App.GetTestServer();
+
+    var channel = GrpcChannel.ForAddress("http://localhost:9999",
+                                         new GrpcChannelOptions
+                                         {
+                                           HttpHandler = server.CreateHandler(),
+                                         });
+
+    var sessionId = new Sessions.SessionsClient(channel).CreateSession(new CreateSessionRequest
+                                                                       {
+                                                                         DefaultTaskOption = new TaskOptions
+                                                                                             {
+                                                                                               MaxRetries = 1,
+                                                                                               Priority   = 2,
+                                                                                               MaxDuration = new Duration
+                                                                                                             {
+                                                                                                               Seconds = 500,
+                                                                                                               Nanos   = 0,
+                                                                                                             },
+                                                                                             },
+                                                                       })
+                                                        .SessionId;
+
+    new Sessions.SessionsClient(channel).StopSubmission(new StopSubmissionRequest
+                                                        {
+                                                          Client    = true,
+                                                          SessionId = sessionId,
+                                                        });
+
+    var client = new Tasks.TasksClient(channel);
+    Assert.That(delegate
+                {
+                  client.SubmitTasks(new SubmitTasksRequest
+                                     {
+                                       SessionId = sessionId,
+                                       TaskCreations =
+                                       {
+                                         new SubmitTasksRequest.Types.TaskCreation
+                                         {
+                                           PayloadId = "payload",
+                                         },
+                                       },
+                                     });
+                },
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.FailedPrecondition));
   }
 }

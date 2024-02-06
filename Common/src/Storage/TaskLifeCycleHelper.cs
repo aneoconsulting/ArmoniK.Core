@@ -86,6 +86,18 @@ public static class TaskLifeCycleHelper
       throw exception;
     }
 
+    // we are on client side
+    if (sessionData.SessionId == parentTaskId && !sessionData.ClientSubmission)
+    {
+      throw new SubmissionClosed("Client submission is closed");
+    }
+
+    // we are on worker side
+    if (sessionData.SessionId != parentTaskId && !sessionData.WorkerSubmission)
+    {
+      throw new SubmissionClosed("Worker submission is closed");
+    }
+
     return localOptions;
   }
 

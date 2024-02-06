@@ -401,64 +401,74 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
                                                               ServerCallContext  context)
   {
-    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                          context.CancellationToken)
-                                         .ConfigureAwait(false);
+    try
+    {
+      var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                            context.CancellationToken)
+                                           .ConfigureAwait(false);
 
 
-    var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,
-                                                                request.TaskOptions.ToNullableTaskOptions(),
-                                                                request.SessionId,
-                                                                pushQueueStorage_.MaxPriority,
-                                                                logger_,
-                                                                context.CancellationToken);
+      var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,
+                                                                  request.TaskOptions.ToNullableTaskOptions(),
+                                                                  request.SessionId,
+                                                                  pushQueueStorage_.MaxPriority,
+                                                                  logger_,
+                                                                  context.CancellationToken);
 
-    var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
-                                                                                                .ToString(),
-                                                                                            creation.PayloadId,
-                                                                                            TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                              submissionOptions),
-                                                                                            creation.ExpectedOutputKeys,
-                                                                                            creation.DataDependencies))
-                                  .ToList();
+      var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
+                                                                                                  .ToString(),
+                                                                                              creation.PayloadId,
+                                                                                              TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                                submissionOptions),
+                                                                                              creation.ExpectedOutputKeys,
+                                                                                              creation.DataDependencies))
+                                    .ToList();
 
 
-    await TaskLifeCycleHelper.CreateTasks(taskTable_,
-                                          resultTable_,
-                                          request.SessionId,
-                                          request.SessionId,
-                                          creationRequests,
-                                          logger_,
-                                          context.CancellationToken)
-                             .ConfigureAwait(false);
+      await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                            resultTable_,
+                                            request.SessionId,
+                                            request.SessionId,
+                                            creationRequests,
+                                            logger_,
+                                            context.CancellationToken)
+                               .ConfigureAwait(false);
 
-    await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
-                                                   resultTable_,
-                                                   pushQueueStorage_,
-                                                   creationRequests,
-                                                   request.SessionId,
-                                                   request.SessionId,
-                                                   logger_,
-                                                   context.CancellationToken)
-                             .ConfigureAwait(false);
+      await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                     resultTable_,
+                                                     pushQueueStorage_,
+                                                     creationRequests,
+                                                     request.SessionId,
+                                                     request.SessionId,
+                                                     logger_,
+                                                     context.CancellationToken)
+                               .ConfigureAwait(false);
 
-    return new SubmitTasksResponse
-           {
-             TaskInfos =
+      return new SubmitTasksResponse
              {
-               creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
-                                                          {
-                                                            DataDependencies =
+               TaskInfos =
+               {
+                 creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
                                                             {
-                                                              creationRequest.DataDependencies,
-                                                            },
-                                                            ExpectedOutputIds =
-                                                            {
-                                                              creationRequest.ExpectedOutputKeys,
-                                                            },
-                                                            TaskId = creationRequest.TaskId,
-                                                          }),
-             },
-           };
+                                                              DataDependencies =
+                                                              {
+                                                                creationRequest.DataDependencies,
+                                                              },
+                                                              ExpectedOutputIds =
+                                                              {
+                                                                creationRequest.ExpectedOutputKeys,
+                                                              },
+                                                              TaskId = creationRequest.TaskId,
+                                                            }),
+               },
+             };
+    }
+    catch (SubmissionClosed e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Client submission is closed, no tasks can be submitted"));
+    }
   }
 }
