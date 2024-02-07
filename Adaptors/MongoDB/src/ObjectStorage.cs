@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -163,16 +164,18 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string            key,
-                                         CancellationToken cancellationToken = default)
+  public async Task TryDeleteAsync(IEnumerable<string> keys,
+                                   CancellationToken   cancellationToken = default)
+
   {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    using var _                = logger_.LogFunction(objectStorageName_);
     var       objectCollection = objectCollectionProvider_.Get();
 
-    var res = await objectCollection.DeleteManyAsync(odm => odm.Key == objectStorageName_ + key,
-                                                     cancellationToken)
-                                    .ConfigureAwait(false);
-    return res.DeletedCount > 0;
+    var names = keys.Select(key => objectStorageName_ + key);
+
+    await objectCollection.DeleteManyAsync(odm => names.Contains(odm.Key),
+                                           cancellationToken)
+                          .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

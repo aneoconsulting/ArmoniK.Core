@@ -53,5 +53,8 @@ public static class SessionDataExt
          PurgedAt = sessionData.PurgeDate is not null
                       ? Timestamp.FromDateTime(sessionData.PurgeDate.Value)
                       : null,
+         Duration = sessionData.Duration is not null
+                      ? Duration.FromTimeSpan(sessionData.Duration.Value)
+                      : null,
        };
 }

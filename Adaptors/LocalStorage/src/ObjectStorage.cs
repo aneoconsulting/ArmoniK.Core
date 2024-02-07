@@ -187,6 +187,21 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
+  public async Task TryDeleteAsync(IEnumerable<string> keys,
+                                   CancellationToken   cancellationToken = default)
+  {
+    foreach (var key in keys)
+    {
+      await TryDeleteAsync(key,
+                           cancellationToken)
+        .ConfigureAwait(false);
+    }
+  }
+
+  /// <inheritdoc />
+  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
+    => throw new NotImplementedException();
+
   public Task<bool> TryDeleteAsync(string            key,
                                    CancellationToken cancellationToken = default)
   {
@@ -199,8 +214,4 @@ public class ObjectStorage : IObjectStorage
 
     return Task.FromResult(true);
   }
-
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
 }

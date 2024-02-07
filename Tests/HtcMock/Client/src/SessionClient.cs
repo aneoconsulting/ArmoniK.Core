@@ -68,6 +68,11 @@ public sealed class SessionClient : ISessionClient
     channel_.LogStatsFromSessionAsync(sessionId_,
                                       logger_)
             .Wait();
+
+    sessionsClient_.PurgeSession(new PurgeSessionRequest
+                                 {
+                                   SessionId = sessionId_,
+                                 });
   }
 
   public byte[] GetResult(string id)

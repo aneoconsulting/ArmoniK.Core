@@ -56,6 +56,8 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.WorkerSubmission))
                                                      .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.Duration))
+                                                     .SetIsRequired(true);
                                                    cm.SetIgnoreExtraElements(true);
                                                    cm.MapCreator(model => new SessionData(model.SessionId,
                                                                                           model.Status,
@@ -66,6 +68,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                                                           model.PurgeDate,
                                                                                           model.DeletionDate,
                                                                                           model.DeletionTtl,
+                                                                                          model.Duration,
                                                                                           model.PartitionIds,
                                                                                           model.Options));
                                                  });

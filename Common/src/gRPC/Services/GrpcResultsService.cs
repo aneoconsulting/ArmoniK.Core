@@ -207,10 +207,9 @@ public class GrpcResultsService : Results.ResultsBase
   {
     try
     {
-      await request.ResultId.Select(resultId => objectStorage_.TryDeleteAsync(resultId,
-                                                                              context.CancellationToken))
-                   .WhenAll()
-                   .ConfigureAwait(false);
+      await objectStorage_.TryDeleteAsync(request.ResultId,
+                                          context.CancellationToken)
+                          .ConfigureAwait(false);
 
       return new DeleteResultsDataResponse
              {

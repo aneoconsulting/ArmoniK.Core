@@ -61,14 +61,14 @@ public interface IObjectStorage : IInitializable
   /// <summary>
   ///   Delete data in the object storage
   /// </summary>
-  /// <param name="key">Key representing the object to delete</param>
+  /// <param name="keys">Keys representing the object to delete</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   A bool representing the success of the deletion
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task<bool> TryDeleteAsync(string            key,
-                            CancellationToken cancellationToken = default);
+  Task TryDeleteAsync(IEnumerable<string> keys,
+                      CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   List data in the Object Storage

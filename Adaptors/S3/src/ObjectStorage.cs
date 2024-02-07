@@ -156,33 +156,15 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string            key,
-                                         CancellationToken cancellationToken = default)
+  public async Task TryDeleteAsync(IEnumerable<string> keys,
+                                   CancellationToken   cancellationToken = default)
   {
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
-    try
+    foreach (var key in keys)
     {
-      var objectDeleteRequest = new DeleteObjectRequest
-                                {
-                                  BucketName = options_.BucketName,
-                                  Key        = objectStorageFullName,
-                                };
-      await s3Client_.DeleteObjectAsync(objectDeleteRequest,
-                                        cancellationToken)
-                     .ConfigureAwait(false);
+      await TryDeleteAsync(key,
+                           cancellationToken)
+        .ConfigureAwait(false);
     }
-    catch (Exception ex)
-    {
-      logger_.LogError(ex,
-                       "Error deleting S3 bucket : {BucketName}",
-                       options_.BucketName);
-      return false;
-    }
-
-    return true;
   }
 
   /// <inheritdoc />
@@ -253,6 +235,35 @@ public class ObjectStorage : IObjectStorage
     }
 
     return sizeBox[0];
+  }
+
+  private async Task<bool> TryDeleteAsync(string            key,
+                                          CancellationToken cancellationToken = default)
+  {
+    var       objectStorageFullName = $"{objectStorageName_}{key}";
+    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
+    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
+                                                         ("@S3Options", options_.Confidential()));
+    try
+    {
+      var objectDeleteRequest = new DeleteObjectRequest
+                                {
+                                  BucketName = options_.BucketName,
+                                  Key        = objectStorageFullName,
+                                };
+      await s3Client_.DeleteObjectAsync(objectDeleteRequest,
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+    }
+    catch (Exception ex)
+    {
+      logger_.LogError(ex,
+                       "Error deleting S3 bucket : {BucketName}",
+                       options_.BucketName);
+      return false;
+    }
+
+    return true;
   }
 
   private async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     objectKey,

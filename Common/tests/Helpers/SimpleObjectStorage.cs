@@ -49,9 +49,9 @@ public class SimpleObjectStorage : IObjectStorage
          Encoding.UTF8.GetBytes(key),
        }.ToAsyncEnumerable();
 
-  public Task<bool> TryDeleteAsync(string            key,
-                                   CancellationToken cancellationToken = default)
-    => Task.FromResult(true);
+  public Task TryDeleteAsync(IEnumerable<string> keys,
+                             CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
 
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
     => new List<string>

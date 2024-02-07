@@ -30,4 +30,7 @@ public enum ResultStatus
 
   /// <summary>Result is aborted.</summary>
   Aborted,
+
+  /// <summary>Result data were deleted.</summary>
+  DeletedData,
 }

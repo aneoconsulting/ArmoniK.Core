@@ -508,7 +508,8 @@ public class SessionTableTestBase
       Assert.AreEqual(session.Status,
                       SessionStatus.Running);
 
-      session = await SessionTable.PurgeSessionAsync(sessionId)
+      session = await SessionTable.PurgeSessionAsync(sessionId,
+                                                     session.CreationDate)
                                   .ConfigureAwait(false);
 
       Assert.AreEqual(session.Status,
@@ -537,6 +538,7 @@ public class SessionTableTestBase
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
                                                      await SessionTable.PurgeSessionAsync(sessionId,
+                                                                                          session.CreationDate,
                                                                                           CancellationToken.None)
                                                                        .ConfigureAwait(false);
                                                    });
@@ -644,12 +646,17 @@ public class SessionTableTestBase
                                                               Options)
                                          .ConfigureAwait(false);
 
-      await SessionTable.PurgeSessionAsync(sessionId,
-                                           CancellationToken.None)
-                        .ConfigureAwait(false);
 
       var session = await SessionTable.GetSessionAsync(sessionId)
                                       .ConfigureAwait(false);
+
+      await SessionTable.PurgeSessionAsync(sessionId,
+                                           session.CreationDate,
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual(SessionStatus.Purged,
                       session.Status);

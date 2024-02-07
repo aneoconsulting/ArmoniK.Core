@@ -20,6 +20,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Utils;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -103,5 +105,30 @@ public static class ResultLifeCycleHelper
                                 cancellationToken)
         .ConfigureAwait(false);
     }
+  }
+
+  public static async Task PurgeResultsAsync(IResultTable      resultTable,
+                                             IObjectStorage    objectStorage,
+                                             string            sessionId,
+                                             CancellationToken cancellationToken)
+  {
+    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId,
+                                                     result => result.ResultId,
+                                                     cancellationToken)
+                                         .ToChunksAsync(500,
+                                                        TimeSpan.FromMilliseconds(100),
+                                                        cancellationToken)
+                                         .ConfigureAwait(false))
+    {
+      await objectStorage.TryDeleteAsync(ids,
+                                         cancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    await resultTable.UpdateManyResults(result => result.SessionId == sessionId,
+                                        new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                           ResultStatus.DeletedData),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
   }
 }
