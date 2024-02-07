@@ -176,6 +176,8 @@ public class ObjectStorage : IObjectStorage
     await objectCollection.DeleteManyAsync(odm => names.Contains(odm.Key),
                                            cancellationToken)
                           .ConfigureAwait(false);
+    logger_.LogInformation("Deleted data with {ids}",
+                           keys);
   }
 
   /// <inheritdoc />
