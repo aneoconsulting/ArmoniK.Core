@@ -199,7 +199,7 @@ public sealed class TaskHandler : IAsyncDisposable
   ///   Acquired when return is 0
   /// </returns>
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
-  public async Task<int> AcquireTask()
+  public async Task<AcquisitionStatus> AcquireTask()
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
     using var _ = logger_.BeginNamedScope("Acquiring task",
@@ -219,7 +219,7 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Task data read but execution cancellation requested");
-        return 1;
+        return AcquisitionStatus.CancelledAfterFirstRead;
       }
 
       /*
@@ -252,15 +252,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
 
-          return 2;
+          return AcquisitionStatus.TaskIsCancelling;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
           messageHandler_.Status = QueueMessageStatus.Processed;
-          return 3;
+          return AcquisitionStatus.TaskIsProcessed;
         case TaskStatus.Creating:
           logger_.LogInformation("Task is still creating");
           messageHandler_.Status = QueueMessageStatus.Postponed;
-          return 4;
+          return AcquisitionStatus.TaskIsCreating;
         case TaskStatus.Submitted:
           break;
         case TaskStatus.Dispatched:
@@ -273,7 +273,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           messageHandler_.TaskId,
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
-          return 5;
+          return AcquisitionStatus.TaskIsError;
         case TaskStatus.Timeout:
           logger_.LogInformation("Task was timeout elsewhere ; taking over here");
           break;
@@ -285,7 +285,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           messageHandler_.TaskId,
                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
-          return 6;
+          return AcquisitionStatus.TaskIsCancelled;
         case TaskStatus.Processing:
 
           // If OwnerPodId is empty, it means that task was partially started or released
@@ -301,7 +301,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
-            return 7;
+            return AcquisitionStatus.TaskIsProcessingPodIdEmpty;
           }
 
           // we check if the task was acquired by this pod
@@ -338,23 +338,23 @@ public sealed class TaskHandler : IAsyncDisposable
                                                    CancellationToken.None)
                                 .ConfigureAwait(false);
                 messageHandler_.Status = QueueMessageStatus.Processed;
-                return 8;
+                return AcquisitionStatus.TaskIsProcessingButSeemsCrashed;
               }
             }
             // task is processing elsewhere so message is duplicated
             else
             {
               messageHandler_.Status = QueueMessageStatus.Processed;
-              return 9;
+              return AcquisitionStatus.TaskIsProcessingElsewhere;
             }
           }
 
           logger_.LogWarning("Task already in processing on this pod. This scenario should be managed earlier. Message likely duplicated. Removing it from queue");
           messageHandler_.Status = QueueMessageStatus.Processed;
-          return 10;
+          return AcquisitionStatus.TaskIsProcessingHere;
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
-          return 11;
+          return AcquisitionStatus.TaskIsRetried;
         case TaskStatus.Unspecified:
         default:
           logger_.LogCritical("Task was in an unknown state {state}",
@@ -387,14 +387,14 @@ public sealed class TaskHandler : IAsyncDisposable
                                                         CancellationToken.None)
                                    .ConfigureAwait(false);
 
-        return 12;
+        return AcquisitionStatus.SessionCancelled;
       }
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Session running but execution cancellation requested");
-        return 13;
+        return AcquisitionStatus.CancelledAfterSessionAccess;
       }
 
       taskData_ = taskData_ with
@@ -415,7 +415,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
-        return 14;
+        return AcquisitionStatus.CancelledAfterAcquisition;
       }
 
       // empty OwnerPodId means that the task was not acquired because not ready
@@ -423,7 +423,7 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         logger_.LogDebug("Task acquired but not ready (empty owner pod id)");
         messageHandler_.Status = QueueMessageStatus.Postponed;
-        return 15;
+        return AcquisitionStatus.PodIdEmptyAfterAcquisition;
       }
 
       // we check if the task was acquired by this pod
@@ -454,7 +454,7 @@ public sealed class TaskHandler : IAsyncDisposable
           {
             messageHandler_.Status = QueueMessageStatus.Postponed;
             logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
-            return 16;
+            return AcquisitionStatus.AcquisitionFailedTimeoutNotExceeded;
           }
 
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
@@ -486,21 +486,21 @@ public sealed class TaskHandler : IAsyncDisposable
                                                             messageHandler_.TaskId,
                                                             CancellationToken.None)
                                        .ConfigureAwait(false);
-            return 17;
+            return AcquisitionStatus.AcquisitionFailedTaskCancelling;
           }
         }
 
         // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
         // and do not acquire the task
         messageHandler_.Status = QueueMessageStatus.Processed;
-        return 18;
+        return AcquisitionStatus.AcquisitionFailedMessageDuplicated;
       }
 
       if (taskData_.OwnerPodId == ownerPodId_ && taskData_.Status != TaskStatus.Dispatched)
       {
         logger_.LogInformation("Task is already managed by this agent; message likely to be duplicated");
         messageHandler_.Status = QueueMessageStatus.Processed;
-        return 19;
+        return AcquisitionStatus.AcquisitionFailedProcessingHere;
       }
 
       if (cancellationTokenSource_.IsCancellationRequested)
@@ -510,18 +510,18 @@ public sealed class TaskHandler : IAsyncDisposable
                                      CancellationToken.None)
                         .ConfigureAwait(false);
         messageHandler_.Status = QueueMessageStatus.Postponed;
-        return 20;
+        return AcquisitionStatus.CancelledAfterPreconditions;
       }
 
       logger_.LogDebug("Task preconditions are OK");
-      return 0;
+      return AcquisitionStatus.Acquired;
     }
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
                          "TaskId coming from message queue was not found, delete message from queue");
       messageHandler_.Status = QueueMessageStatus.Processed;
-      return 21;
+      return AcquisitionStatus.TaskNotFound;
     }
   }
 
