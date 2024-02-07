@@ -886,16 +886,16 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                          CancellationToken                 cancellationToken = default)
       => throw new T();
 
-    public Task<TaskData?> UpdateOneTask(string                                                                        taskId,
-                                         Expression<Func<TaskData, bool>>?                                             filter,
-                                         ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                         bool                                                                          before,
-                                         CancellationToken                                                             cancellationToken = default)
+    public Task<TaskData?> UpdateOneTask(string                            taskId,
+                                         Expression<Func<TaskData, bool>>? filter,
+                                         UpdateDefinition<TaskData>        updates,
+                                         bool                              before,
+                                         CancellationToken                 cancellationToken = default)
       => throw new T();
 
-    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
-                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                             cancellationToken = default)
+    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
+                                      UpdateDefinition<TaskData>       updates,
+                                      CancellationToken                cancellationToken = default)
       => throw new T();
 
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,

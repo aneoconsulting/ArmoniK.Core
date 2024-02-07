@@ -119,11 +119,11 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
-                                                  Expression<Func<SessionData, bool>>?                                             filter,
-                                                  ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
-                                                  bool                                                                             before            = false,
-                                                  CancellationToken                                                                cancellationToken = default)
+  public Task<SessionData?> UpdateOneSessionAsync(string                               sessionId,
+                                                  Expression<Func<SessionData, bool>>? filter,
+                                                  UpdateDefinition<SessionData>        updates,
+                                                  bool                                 before            = false,
+                                                  CancellationToken                    cancellationToken = default)
   {
     if (!storage_.TryGetValue(sessionId,
                               out var sessionData))

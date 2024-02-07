@@ -29,6 +29,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -278,9 +279,9 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<Result> UpdateOneResult(string                                                                      resultId,
-                                            ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                                            CancellationToken                                                           cancellationToken = default)
+  public async Task<Result> UpdateOneResult(string                                       resultId,
+                                            Core.Common.Storage.UpdateDefinition<Result> updates,
+                                            CancellationToken                            cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(UpdateOneResult)}");
     activity?.SetTag($"{nameof(DeleteResult)}_resultId",
@@ -289,7 +290,7 @@ public class ResultTable : IResultTable
 
     var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
 
-    foreach (var (selector, newValue) in updates)
+    foreach (var (selector, newValue) in updates.Setters)
     {
       updateDefinition = updateDefinition.Set(selector,
                                               newValue);
@@ -310,16 +311,16 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<long> UpdateManyResults(Expression<Func<Result, bool>>                                              filter,
-                                            ICollection<(Expression<Func<Result, object?>> selector, object? newValue)> updates,
-                                            CancellationToken                                                           cancellationToken = default)
+  public async Task<long> UpdateManyResults(Expression<Func<Result, bool>>               filter,
+                                            Core.Common.Storage.UpdateDefinition<Result> updates,
+                                            CancellationToken                            cancellationToken = default)
   {
     using var activity         = activitySource_.StartActivity($"{nameof(UpdateManyResults)}");
     var       resultCollection = resultCollectionProvider_.Get();
 
     var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
 
-    foreach (var (selector, newValue) in updates)
+    foreach (var (selector, newValue) in updates.Setters)
     {
       updateDefinition = updateDefinition.Set(selector,
                                               newValue);
@@ -331,6 +332,39 @@ public class ResultTable : IResultTable
                                        .ConfigureAwait(false);
 
     return result.MatchedCount;
+  }
+
+  /// <inheritdoc />
+  async Task<long> IResultTable.BulkUpdateResults(IEnumerable<(Expression<Func<Result, bool>> filter, Core.Common.Storage.UpdateDefinition<Result> updates)> bulkUpdates,
+                                                  CancellationToken cancellationToken)
+  {
+    using var activity         = activitySource_.StartActivity($"{nameof(IResultTable.BulkUpdateResults)}");
+    var       resultCollection = resultCollectionProvider_.Get();
+
+    var requests = bulkUpdates.Select(item =>
+                                      {
+                                        var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
+
+                                        foreach (var (selector, newValue) in item.updates.Setters)
+                                        {
+                                          updateDefinition = updateDefinition.Set(selector,
+                                                                                  newValue);
+                                        }
+
+                                        return new UpdateManyModel<Result>(Builders<Result>.Filter.Where(item.filter),
+                                                                           updateDefinition);
+                                      })
+                              .AsICollection();
+
+    var updateResult = await resultCollection.BulkWriteAsync(requests,
+                                                             new BulkWriteOptions
+                                                             {
+                                                               IsOrdered = false,
+                                                             },
+                                                             cancellationToken)
+                                             .ConfigureAwait(false);
+
+    return updateResult.MatchedCount;
   }
 
 

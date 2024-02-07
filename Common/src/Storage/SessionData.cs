@@ -17,11 +17,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 using ArmoniK.Core.Base.DataStructures;
-
-using FluentValidation.Internal;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -61,16 +58,8 @@ public record SessionData(string        SessionId,
   /// </summary>
   /// <param name="original">The object that will be copied</param>
   /// <param name="updates">A collection of field selector and their new values</param>
-  public SessionData(SessionData                                                                      original,
-                     IEnumerable<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates)
+  public SessionData(SessionData                   original,
+                     UpdateDefinition<SessionData> updates)
     : this(original)
-  {
-    foreach (var (selector, newValue) in updates)
-    {
-      GetType()
-        .GetProperty(selector.GetMember()
-                             .Name)!.SetValue(this,
-                                              newValue);
-    }
-  }
+    => updates.ApplyTo(this);
 }

@@ -18,12 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 
 using ArmoniK.Core.Base.DataStructures;
-
-using FluentValidation.Internal;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -165,18 +162,10 @@ public record TaskData(string        SessionId,
   /// </summary>
   /// <param name="original">The object that will be copied</param>
   /// <param name="updates">A collection of field selector and their new values</param>
-  public TaskData(TaskData                                                                      original,
-                  IEnumerable<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates)
+  public TaskData(TaskData                   original,
+                  UpdateDefinition<TaskData> updates)
     : this(original)
-  {
-    foreach (var (selector, newValue) in updates)
-    {
-      GetType()
-        .GetProperty(selector.GetMember()
-                             .Name)!.SetValue(this,
-                                              newValue);
-    }
-  }
+    => updates.ApplyTo(this);
 
   /// <summary>
   ///   ResultIds could contain dots (eg: it is the case in htcmock),

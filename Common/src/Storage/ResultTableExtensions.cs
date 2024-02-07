@@ -46,16 +46,30 @@ public static class ResultTableExtensions
                                             CancellationToken cancellationToken = default)
   {
     await resultTable.UpdateManyResults(result => result.OwnerTaskId == ownerTaskId,
-                                        new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                        {
-                                          (data => data.Status, ResultStatus.Aborted),
-                                        },
+                                        new UpdateDefinition<Result>().Set(data => data.Status,
+                                                                           ResultStatus.Aborted),
                                         cancellationToken)
                      .ConfigureAwait(false);
 
     resultTable.Logger.LogDebug("Abort results from {owner}",
                                 ownerTaskId);
   }
+
+
+  /// <summary>
+  ///   Updates in bulk results
+  /// </summary>
+  /// <param name="resultTable">Interface to manage result lifecycle</param>
+  /// <param name="bulkUpdates">Enumeration of updates with the resultId they apply on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of result matched
+  /// </returns>
+  public static Task<long> BulkUpdateResults(this IResultTable                                                resultTable,
+                                             IEnumerable<(string resultId, UpdateDefinition<Result> updates)> bulkUpdates,
+                                             CancellationToken                                                cancellationToken)
+    => resultTable.BulkUpdateResults(bulkUpdates.Select(item => ((Expression<Func<Result, bool>>)(task => task.ResultId == item.resultId), item.updates)),
+                                     cancellationToken);
 
   /// <summary>
   ///   Complete result
@@ -76,11 +90,10 @@ public static class ResultTableExtensions
                                                   CancellationToken cancellationToken = default)
   {
     var result = await resultTable.UpdateOneResult(resultId,
-                                                   new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                                   {
-                                                     (data => data.Status, ResultStatus.Completed),
-                                                     (data => data.Size, size),
-                                                   },
+                                                   new UpdateDefinition<Result>().Set(data => data.Status,
+                                                                                      ResultStatus.Completed)
+                                                                                 .Set(data => data.Size,
+                                                                                      size),
                                                    cancellationToken)
                                   .ConfigureAwait(false);
 
@@ -115,12 +128,12 @@ public static class ResultTableExtensions
                                      CancellationToken cancellationToken = default)
   {
     var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
-                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                                    {
-                                                      (result => result.Status, ResultStatus.Completed),
-                                                      (data => data.Size, (long)smallPayload.Length),
-                                                      (result => result.Data, smallPayload),
-                                                    },
+                                                    new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                       ResultStatus.Completed)
+                                                                                  .Set(data => data.Size,
+                                                                                       smallPayload.Length)
+                                                                                  .Set(result => result.Data,
+                                                                                       smallPayload),
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 
@@ -155,11 +168,10 @@ public static class ResultTableExtensions
                                      CancellationToken cancellationToken = default)
   {
     var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
-                                                    new (Expression<Func<Result, object?>> selector, object? newValue)[]
-                                                    {
-                                                      (result => result.Status, ResultStatus.Completed),
-                                                      (result => result.Size, size),
-                                                    },
+                                                    new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                       ResultStatus.Completed)
+                                                                                  .Set(result => result.Size,
+                                                                                       size),
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 

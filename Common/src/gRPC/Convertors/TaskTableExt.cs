@@ -15,9 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -86,10 +84,8 @@ public static class TaskTableExt
     }
 
     return await taskTable.UpdateManyTasks(filter.ToFilterExpression(),
-                                           new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                           {
-                                             (tdm => tdm.Status, status),
-                                           },
+                                           new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
+                                                                                status),
                                            cancellationToken)
                           .ConfigureAwait(false);
   }

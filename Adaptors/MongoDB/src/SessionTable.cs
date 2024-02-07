@@ -108,12 +108,12 @@ public class SessionTable : ISessionTable
 
     var session = await UpdateOneSessionAsync(sessionId,
                                               data => data.Status != SessionStatus.Deleted,
-                                              new List<(Expression<Func<SessionData, object?>> selector, object? newValue)>
-                                              {
-                                                (model => model.Status, SessionStatus.Deleted),
-                                                (model => model.DeletionDate, DateTime.UtcNow),
-                                                (model => model.DeletionTtl, DateTime.UtcNow),
-                                              },
+                                              new Core.Common.Storage.UpdateDefinition<SessionData>().Set(model => model.Status,
+                                                                                                          SessionStatus.Deleted)
+                                                                                                     .Set(model => model.DeletionDate,
+                                                                                                          DateTime.UtcNow)
+                                                                                                     .Set(model => model.DeletionTtl,
+                                                                                                          DateTime.UtcNow),
                                               false,
                                               cancellationToken)
                     .ConfigureAwait(false);
@@ -187,18 +187,18 @@ public class SessionTable : ISessionTable
                          : HealthCheckResult.Unhealthy());
 
   /// <inheritdoc />
-  public async Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
-                                                        Expression<Func<SessionData, bool>>?                                             filter,
-                                                        ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
-                                                        bool                                                                             before            = false,
-                                                        CancellationToken                                                                cancellationToken = default)
+  public async Task<SessionData?> UpdateOneSessionAsync(string                                            sessionId,
+                                                        Expression<Func<SessionData, bool>>?              filter,
+                                                        Core.Common.Storage.UpdateDefinition<SessionData> updates,
+                                                        bool                                              before            = false,
+                                                        CancellationToken                                 cancellationToken = default)
   {
     using var activity          = activitySource_.StartActivity($"{nameof(UpdateOneSessionAsync)}");
     var       sessionCollection = sessionCollectionProvider_.Get();
 
     var updateDefinition = new UpdateDefinitionBuilder<SessionData>().Combine();
 
-    foreach (var (selector, newValue) in updates)
+    foreach (var (selector, newValue) in updates.Setters)
     {
       updateDefinition = updateDefinition.Set(selector,
                                               newValue);
@@ -223,7 +223,7 @@ public class SessionTable : ISessionTable
                                                                     cancellationToken)
                                              .ConfigureAwait(false);
 
-    Logger.LogInformation("Update {session} with {updates}",
+    Logger.LogInformation("Update {session} with {@updates}",
                           sessionId,
                           updates);
 

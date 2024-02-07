@@ -729,11 +729,11 @@ public class TaskHandlerTest
                                                  CancellationToken                cancellationToken = default)
       => throw new NotImplementedException();
 
-    public async Task<TaskData?> UpdateOneTask(string                                                                        taskId,
-                                               Expression<Func<TaskData, bool>>?                                             filter,
-                                               ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                               bool                                                                          before,
-                                               CancellationToken                                                             cancellationToken = default)
+    public async Task<TaskData?> UpdateOneTask(string                            taskId,
+                                               Expression<Func<TaskData, bool>>? filter,
+                                               UpdateDefinition<TaskData>        updates,
+                                               bool                              before,
+                                               CancellationToken                 cancellationToken = default)
     {
       if (waitMethod_ == WaitMethod.Acquire)
       {
@@ -780,9 +780,9 @@ public class TaskHandlerTest
                                      ""));
     }
 
-    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>>                                              filter,
-                                      ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                      CancellationToken                                                             cancellationToken = default)
+    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
+                                      UpdateDefinition<TaskData>       updates,
+                                      CancellationToken                cancellationToken = default)
       => Task.FromResult<long>(1);
 
     public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
@@ -868,11 +868,11 @@ public class TaskHandlerTest
                                                                                         CancellationToken                      cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task<SessionData?> UpdateOneSessionAsync(string                                                                           sessionId,
-                                                    Expression<Func<SessionData, bool>>?                                             filter,
-                                                    ICollection<(Expression<Func<SessionData, object?>> selector, object? newValue)> updates,
-                                                    bool                                                                             before            = false,
-                                                    CancellationToken                                                                cancellationToken = default)
+    public Task<SessionData?> UpdateOneSessionAsync(string                               sessionId,
+                                                    Expression<Func<SessionData, bool>>? filter,
+                                                    UpdateDefinition<SessionData>        updates,
+                                                    bool                                 before            = false,
+                                                    CancellationToken                    cancellationToken = default)
       => throw new NotImplementedException();
 
     public Task<SessionData> CancelSessionAsync(string            sessionId,

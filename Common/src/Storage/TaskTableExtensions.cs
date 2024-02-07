@@ -63,17 +63,21 @@ public static class TaskTableExtensions
                                                 CancellationToken cancellationToken = default)
   {
     await taskTable.UpdateOneTask(taskData.TaskId,
-                                  new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                  {
-                                    (data => data.Output, new Output(Error: "",
-                                                                     Success: false)),
-                                    (data => data.Status, TaskStatus.Cancelled),
-                                    (tdm => tdm.EndDate, taskData.EndDate),
-                                    (tdm => tdm.ProcessedDate, taskData.ProcessedDate),
-                                    (tdm => tdm.ReceivedToEndDuration, taskData.ReceivedToEndDuration),
-                                    (tdm => tdm.CreationToEndDuration, taskData.CreationToEndDuration),
-                                    (tdm => tdm.ProcessingToEndDuration, taskData.ProcessingToEndDuration),
-                                  },
+                                  new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                       new Output(Error: "",
+                                                                                  Success: false))
+                                                                  .Set(data => data.Status,
+                                                                       TaskStatus.Cancelled)
+                                                                  .Set(tdm => tdm.EndDate,
+                                                                       taskData.EndDate)
+                                                                  .Set(tdm => tdm.ProcessedDate,
+                                                                       taskData.ProcessedDate)
+                                                                  .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                       taskData.ReceivedToEndDuration)
+                                                                  .Set(tdm => tdm.CreationToEndDuration,
+                                                                       taskData.CreationToEndDuration)
+                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                       taskData.ProcessingToEndDuration),
                                   cancellationToken)
                    .ConfigureAwait(false);
     taskTable.Logger.LogDebug("Update {task} to {status}",
@@ -106,17 +110,21 @@ public static class TaskTableExtensions
                                                    CancellationToken cancellationToken = default)
   {
     var task = await taskTable.UpdateOneTask(taskData.TaskId,
-                                             new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                             {
-                                               (data => data.Output, new Output(Error: errorDetail,
-                                                                                Success: false)),
-                                               (data => data.Status, TaskStatus.Error),
-                                               (tdm => tdm.EndDate, taskData.EndDate),
-                                               (tdm => tdm.ProcessedDate, taskData.ProcessedDate),
-                                               (tdm => tdm.ReceivedToEndDuration, taskData.ReceivedToEndDuration),
-                                               (tdm => tdm.CreationToEndDuration, taskData.CreationToEndDuration),
-                                               (tdm => tdm.ProcessingToEndDuration, taskData.ProcessingToEndDuration),
-                                             },
+                                             new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                                  new Output(Error: errorDetail,
+                                                                                             Success: false))
+                                                                             .Set(data => data.Status,
+                                                                                  TaskStatus.Error)
+                                                                             .Set(tdm => tdm.EndDate,
+                                                                                  taskData.EndDate)
+                                                                             .Set(tdm => tdm.ProcessedDate,
+                                                                                  taskData.ProcessedDate)
+                                                                             .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                                  taskData.ReceivedToEndDuration)
+                                                                             .Set(tdm => tdm.CreationToEndDuration,
+                                                                                  taskData.CreationToEndDuration)
+                                                                             .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                                  taskData.ProcessingToEndDuration),
                                              cancellationToken)
                               .ConfigureAwait(false);
 
@@ -149,17 +157,21 @@ public static class TaskTableExtensions
                                                CancellationToken cancellationToken = default)
   {
     await taskTable.UpdateOneTask(taskData.TaskId,
-                                  new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                  {
-                                    (data => data.Output, new Output(Error: "",
-                                                                     Success: true)),
-                                    (data => data.Status, TaskStatus.Completed),
-                                    (tdm => tdm.EndDate, taskData.EndDate),
-                                    (tdm => tdm.ProcessedDate, taskData.ProcessedDate),
-                                    (tdm => tdm.ReceivedToEndDuration, taskData.ReceivedToEndDuration),
-                                    (tdm => tdm.CreationToEndDuration, taskData.CreationToEndDuration),
-                                    (tdm => tdm.ProcessingToEndDuration, taskData.ProcessingToEndDuration),
-                                  },
+                                  new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                       new Output(Error: "",
+                                                                                  Success: true))
+                                                                  .Set(data => data.Status,
+                                                                       TaskStatus.Completed)
+                                                                  .Set(tdm => tdm.EndDate,
+                                                                       taskData.EndDate)
+                                                                  .Set(tdm => tdm.ProcessedDate,
+                                                                       taskData.ProcessedDate)
+                                                                  .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                       taskData.ReceivedToEndDuration)
+                                                                  .Set(tdm => tdm.CreationToEndDuration,
+                                                                       taskData.CreationToEndDuration)
+                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                       taskData.ProcessingToEndDuration),
                                   cancellationToken)
                    .ConfigureAwait(false);
     taskTable.Logger.LogDebug("Update {task} to {status}",
@@ -192,17 +204,21 @@ public static class TaskTableExtensions
                                                    CancellationToken cancellationToken = default)
   {
     var task = await taskTable.UpdateOneTask(taskData.TaskId,
-                                             new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                             {
-                                               (data => data.Output, new Output(Error: errorDetail,
-                                                                                Success: false)),
-                                               (data => data.Status, TaskStatus.Retried),
-                                               (tdm => tdm.EndDate, taskData.EndDate),
-                                               (tdm => tdm.ProcessedDate, taskData.ProcessedDate),
-                                               (tdm => tdm.ReceivedToEndDuration, taskData.ReceivedToEndDuration),
-                                               (tdm => tdm.CreationToEndDuration, taskData.CreationToEndDuration),
-                                               (tdm => tdm.ProcessingToEndDuration, taskData.ProcessingToEndDuration),
-                                             },
+                                             new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                                  new Output(Error: errorDetail,
+                                                                                             Success: false))
+                                                                             .Set(data => data.Status,
+                                                                                  TaskStatus.Retried)
+                                                                             .Set(tdm => tdm.EndDate,
+                                                                                  taskData.EndDate)
+                                                                             .Set(tdm => tdm.ProcessedDate,
+                                                                                  taskData.ProcessedDate)
+                                                                             .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                                  taskData.ReceivedToEndDuration)
+                                                                             .Set(tdm => tdm.CreationToEndDuration,
+                                                                                  taskData.CreationToEndDuration)
+                                                                             .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                                  taskData.ProcessingToEndDuration),
                                              cancellationToken)
                               .ConfigureAwait(false);
 
@@ -227,11 +243,10 @@ public static class TaskTableExtensions
                                               CancellationToken cancellationToken = default)
   {
     await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && !FinalStatus.Contains(data.Status),
-                                    new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                    {
-                                      (tdm => tdm.Status, TaskStatus.Cancelling),
-                                      (tdm => tdm.EndDate, DateTime.UtcNow),
-                                    },
+                                    new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
+                                                                         TaskStatus.Cancelling)
+                                                                    .Set(tdm => tdm.EndDate,
+                                                                         DateTime.UtcNow),
                                     cancellationToken)
                    .ConfigureAwait(false);
 
@@ -256,11 +271,10 @@ public static class TaskTableExtensions
     var res = await taskTable.UpdateManyTasks(data => taskIds.Contains(data.TaskId) &&
                                                       !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
                                                         data.Status == TaskStatus.Completed || data.Status == TaskStatus.Retried),
-                                              new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                              {
-                                                (tdm => tdm.Status, TaskStatus.Cancelling),
-                                                (tdm => tdm.EndDate, DateTime.UtcNow),
-                                              },
+                                              new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
+                                                                                   TaskStatus.Cancelling)
+                                                                              .Set(tdm => tdm.EndDate,
+                                                                                   DateTime.UtcNow),
                                               cancellationToken)
                              .ConfigureAwait(false);
 
@@ -284,11 +298,10 @@ public static class TaskTableExtensions
                                                       CancellationToken   cancellationToken = default)
   {
     var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Creating,
-                                              new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                              {
-                                                (tdm => tdm.Status, TaskStatus.Submitted),
-                                                (tdm => tdm.SubmittedDate, DateTime.UtcNow),
-                                              },
+                                              new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
+                                                                                   TaskStatus.Submitted)
+                                                                              .Set(tdm => tdm.SubmittedDate,
+                                                                                   DateTime.UtcNow),
                                               cancellationToken)
                              .ConfigureAwait(false);
 
@@ -473,10 +486,10 @@ public static class TaskTableExtensions
   ///   The task metadata before the update
   /// </returns>
   /// <exception cref="TaskNotFoundException">task not found</exception>
-  private static async Task<TaskData> UpdateOneTask(this ITaskTable                                                               taskTable,
-                                                    string                                                                        taskId,
-                                                    ICollection<(Expression<Func<TaskData, object?>> selector, object? newValue)> updates,
-                                                    CancellationToken                                                             cancellationToken = default)
+  private static async Task<TaskData> UpdateOneTask(this ITaskTable            taskTable,
+                                                    string                     taskId,
+                                                    UpdateDefinition<TaskData> updates,
+                                                    CancellationToken          cancellationToken = default)
     => await taskTable.UpdateOneTask(taskId,
                                      null,
                                      updates,
@@ -509,14 +522,16 @@ public static class TaskTableExtensions
   {
     var res = await taskTable.UpdateOneTask(taskData.TaskId,
                                             x => x.OwnerPodId == "" && x.Status == TaskStatus.Submitted,
-                                            new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                            {
-                                              (tdm => tdm.OwnerPodId, taskData.OwnerPodId),
-                                              (tdm => tdm.OwnerPodName, taskData.OwnerPodName),
-                                              (tdm => tdm.ReceptionDate, taskData.ReceptionDate),
-                                              (tdm => tdm.AcquisitionDate, taskData.AcquisitionDate),
-                                              (tdm => tdm.Status, TaskStatus.Dispatched),
-                                            },
+                                            new UpdateDefinition<TaskData>().Set(tdm => tdm.OwnerPodId,
+                                                                                 taskData.OwnerPodId)
+                                                                            .Set(tdm => tdm.OwnerPodName,
+                                                                                 taskData.OwnerPodName)
+                                                                            .Set(tdm => tdm.ReceptionDate,
+                                                                                 taskData.ReceptionDate)
+                                                                            .Set(tdm => tdm.AcquisitionDate,
+                                                                                 taskData.AcquisitionDate)
+                                                                            .Set(tdm => tdm.Status,
+                                                                                 TaskStatus.Dispatched),
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
@@ -554,14 +569,16 @@ public static class TaskTableExtensions
   {
     var res = await taskTable.UpdateOneTask(taskData.TaskId,
                                             data => data.OwnerPodId == taskData.OwnerPodId,
-                                            new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                            {
-                                              (data => data.OwnerPodId, ""),
-                                              (data => data.OwnerPodName, ""),
-                                              (data => data.ReceptionDate, null),
-                                              (data => data.AcquisitionDate, null),
-                                              (data => data.Status, TaskStatus.Submitted),
-                                            },
+                                            new UpdateDefinition<TaskData>().Set(data => data.OwnerPodId,
+                                                                                 "")
+                                                                            .Set(data => data.OwnerPodName,
+                                                                                 "")
+                                                                            .Set(data => data.ReceptionDate,
+                                                                                 null)
+                                                                            .Set(data => data.AcquisitionDate,
+                                                                                 null)
+                                                                            .Set(data => data.Status,
+                                                                                 TaskStatus.Submitted),
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
@@ -586,6 +603,21 @@ public static class TaskTableExtensions
   }
 
   /// <summary>
+  ///   Updates in bulk tasks
+  /// </summary>
+  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
+  /// <param name="bulkUpdates">Enumeration of updates with the taskId they apply on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of task matched
+  /// </returns>
+  public static Task<long> BulkUpdateTasks(this ITaskTable                                                  taskTable,
+                                           IEnumerable<(string taskId, UpdateDefinition<TaskData> updates)> bulkUpdates,
+                                           CancellationToken                                                cancellationToken)
+    => taskTable.BulkUpdateTasks(bulkUpdates.Select(item => ((Expression<Func<TaskData, bool>>)(task => task.TaskId == item.taskId), item.updates)),
+                                 cancellationToken);
+
+  /// <summary>
   ///   Update a task status to TaskStatus.Processing
   /// </summary>
   /// <remarks>
@@ -606,12 +638,12 @@ public static class TaskTableExtensions
   {
     var res = await taskTable.UpdateOneTask(taskData.TaskId,
                                             data => data.Status == TaskStatus.Dispatched,
-                                            new List<(Expression<Func<TaskData, object?>> selector, object? newValue)>
-                                            {
-                                              (data => data.PodTtl, taskData.PodTtl),
-                                              (data => data.StartDate, taskData.StartDate),
-                                              (tdm => tdm.Status, TaskStatus.Processing),
-                                            },
+                                            new UpdateDefinition<TaskData>().Set(data => data.PodTtl,
+                                                                                 taskData.PodTtl)
+                                                                            .Set(data => data.StartDate,
+                                                                                 taskData.StartDate)
+                                                                            .Set(tdm => tdm.Status,
+                                                                                 TaskStatus.Processing),
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
