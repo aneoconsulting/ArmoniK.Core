@@ -254,7 +254,7 @@ public class ObjectStorage : IObjectStorage
       await s3Client_.DeleteObjectAsync(objectDeleteRequest,
                                         cancellationToken)
                      .ConfigureAwait(false);
-      logger_.LogInformation("Deleted data with {id}",
+      logger_.LogInformation("Deleted data with {resultId}",
                              key);
     }
     catch (Exception ex)

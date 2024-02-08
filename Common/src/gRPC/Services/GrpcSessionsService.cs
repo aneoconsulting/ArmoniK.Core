@@ -281,6 +281,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                     context.CancellationToken)
                                  .ConfigureAwait(false);
 
+      logger_.LogInformation("Purged data for {sessionId}",
+                             session);
+
       return new PurgeSessionResponse
              {
                Session = (await sessionTable_.PurgeSessionAsync(request.SessionId,

@@ -184,7 +184,7 @@ public class ObjectStorage : IObjectStorage
 
     var res = await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList))
                 .ConfigureAwait(false) == valuesCount + 1;
-    logger_.LogInformation("Deleted data with {id}",
+    logger_.LogInformation("Deleted data with {resultId}",
                            key);
     return res;
   }
