@@ -78,7 +78,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     }
 
     ConnectionRabbit.Channel!.ExchangeDeclare("ArmoniK.QueueExchange",
-                                              "direct");
+                                              ExchangeType.Direct);
 
 
     foreach (var msg in messages)

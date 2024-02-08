@@ -22,22 +22,21 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base;
 
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly IModel                channel_;
-  private readonly BasicDeliverEventArgs deliverEvent_;
+  private readonly BasicGetResult basicGetResult_;
+  private readonly IModel         channel_;
 
-  public QueueMessageHandler(IModel                channel,
-                             BasicDeliverEventArgs deliverEvent,
-                             string                taskId,
-                             CancellationToken     cancellationToken)
+  public QueueMessageHandler(IModel            channel,
+                             BasicGetResult    basicGetResult,
+                             string            taskId,
+                             CancellationToken cancellationToken)
   {
     TaskId            = taskId;
-    deliverEvent_     = deliverEvent;
+    basicGetResult_   = basicGetResult;
     CancellationToken = cancellationToken;
     channel_          = channel;
     ReceptionDateTime = DateTime.UtcNow;
@@ -48,7 +47,7 @@ public class QueueMessageHandler : IQueueMessageHandler
 
   /// <inheritdoc />
   public string MessageId
-    => deliverEvent_.BasicProperties.MessageId;
+    => basicGetResult_.BasicProperties.MessageId;
 
   /// <inheritdoc />
   public string TaskId { get; }
@@ -66,7 +65,7 @@ public class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Postponed:
         /* Negative acknowledging this message will send it
          to the retry exchange, see PullQueueStorage.cs */
-        channel_.BasicNack(deliverEvent_.DeliveryTag,
+        channel_.BasicNack(basicGetResult_.DeliveryTag,
                            false,
                            false);
         break;
@@ -83,7 +82,7 @@ public class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Poisonous:
         /* Failed, Processed and Poisonous messages are
          * acknowledged so they are not send to Retry exchange */
-        channel_.BasicAck(deliverEvent_.DeliveryTag,
+        channel_.BasicAck(basicGetResult_.DeliveryTag,
                           false);
         break;
       default:
