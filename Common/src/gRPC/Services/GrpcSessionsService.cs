@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -40,14 +41,18 @@ public class GrpcSessionsService : Sessions.SessionsBase
   private readonly ILogger<GrpcSessionsService> logger_;
   private readonly IObjectStorage               objectStorage_;
   private readonly IPartitionTable              partitionTable_;
+  private readonly IPushQueueStorage            pushQueueStorage_;
   private readonly IResultTable                 resultTable_;
   private readonly ISessionTable                sessionTable_;
   private readonly Injection.Options.Submitter  submitterOptions_;
+  private readonly ITaskTable                   taskTable_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
                              IPartitionTable              partitionTable,
                              IObjectStorage               objectStorage,
                              IResultTable                 resultTable,
+                             ITaskTable                   taskTable,
+                             IPushQueueStorage            pushQueueStorage,
                              Injection.Options.Submitter  submitterOptions,
                              ILogger<GrpcSessionsService> logger)
   {
@@ -56,6 +61,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
     partitionTable_   = partitionTable;
     objectStorage_    = objectStorage;
     resultTable_      = resultTable;
+    taskTable_        = taskTable;
+    pushQueueStorage_ = pushQueueStorage;
     submitterOptions_ = submitterOptions;
   }
 
@@ -371,11 +378,16 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
+      var session = await TaskLifeCycleHelper.ResumeAsync(taskTable_,
+                                                          sessionTable_,
+                                                          pushQueueStorage_,
+                                                          request.SessionId,
+                                                          context.CancellationToken)
+                                             .ConfigureAwait(false);
+
       return new ResumeSessionResponse
              {
-               Session = (await sessionTable_.ResumeSessionAsync(request.SessionId,
-                                                                 context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = session.ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)

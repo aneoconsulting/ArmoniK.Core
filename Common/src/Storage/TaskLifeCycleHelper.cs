@@ -469,4 +469,31 @@ public static class TaskLifeCycleHelper
                                          cancellationToken)
                    .ConfigureAwait(false);
   }
+
+  public static async Task<SessionData> ResumeAsync(ITaskTable        taskTable,
+                                                    ISessionTable     sessionTable,
+                                                    IPushQueueStorage pushQueueStorage,
+                                                    string            sessionId,
+                                                    CancellationToken cancellationToken = default)
+  {
+    await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Submitted,
+                                                            data => new MessageData(data.TaskId,
+                                                                                    data.SessionId,
+                                                                                    data.Options),
+                                                            cancellationToken)
+                                            .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority))
+                                            .WithCancellation(cancellationToken)
+                                            .ConfigureAwait(false))
+    {
+      await pushQueueStorage.PushMessagesAsync(await grouping.ToListAsync(cancellationToken)
+                                                             .ConfigureAwait(false),
+                                               grouping.Key.PartitionId,
+                                               cancellationToken)
+                            .ConfigureAwait(false);
+    }
+
+    return await sessionTable.ResumeSessionAsync(sessionId,
+                                                 cancellationToken)
+                             .ConfigureAwait(false);
+  }
 }
