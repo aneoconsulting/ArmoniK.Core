@@ -832,6 +832,7 @@ public class TaskHandlerTest
                                      null,
                                      null,
                                      null,
+                                     null,
                                      partitionIds.ToList(),
                                      defaultOptions);
       return Task.FromResult(sessionData_.SessionId);

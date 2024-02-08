@@ -521,7 +521,10 @@ public class Submitter : ISubmitter
 
 
       //Discard value is used to remove warnings CS4014 !!
-      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(taskData.TaskId,
+      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
+                                                                                {
+                                                                                  taskData.TaskId,
+                                                                                },
                                                                                 CancellationToken.None)
                                                                 .ConfigureAwait(false),
                                 cancellationToken);

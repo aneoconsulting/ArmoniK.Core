@@ -293,12 +293,47 @@ public class ObjectStorageTestBase
                       string.Join("",
                                   res.Select(chunk => Encoding.ASCII.GetString(chunk))));
 
-      await ObjectStorage!.TryDeleteAsync("dataKey")
+      await ObjectStorage!.TryDeleteAsync(new[]
+                                          {
+                                            "dataKey",
+                                          })
                           .ConfigureAwait(false);
 
       Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await ObjectStorage!.GetValuesAsync("dataKey")
                                                                                       .FirstAsync()
                                                                                       .ConfigureAwait(false));
+    }
+  }
+
+  [Test]
+  public async Task DeleteDeleteTwiceShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var listChunks = new List<ReadOnlyMemory<byte>>
+                       {
+                         Encoding.ASCII.GetBytes("Armonik Payload chunk"),
+                         Encoding.ASCII.GetBytes("Data 1"),
+                         Encoding.ASCII.GetBytes("Data 2"),
+                         Encoding.ASCII.GetBytes("Data 3"),
+                         Encoding.ASCII.GetBytes("Data 4"),
+                       };
+
+      await ObjectStorage!.AddOrUpdateAsync("dataKey",
+                                            listChunks.ToAsyncEnumerable())
+                          .ConfigureAwait(false);
+
+      await ObjectStorage!.TryDeleteAsync(new[]
+                                          {
+                                            "dataKey",
+                                          })
+                          .ConfigureAwait(false);
+
+      await ObjectStorage!.TryDeleteAsync(new[]
+                                          {
+                                            "dataKey",
+                                          })
+                          .ConfigureAwait(false);
     }
   }
 }

@@ -30,6 +30,7 @@ public static class ResultStatusExt
          Storage.ResultStatus.Created     => ResultStatus.Created,
          Storage.ResultStatus.Completed   => ResultStatus.Completed,
          Storage.ResultStatus.Aborted     => ResultStatus.Aborted,
+         Storage.ResultStatus.DeletedData => ResultStatus.Completed,
          _ => throw new ArgumentOutOfRangeException(nameof(status),
                                                     status,
                                                     null),

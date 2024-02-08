@@ -145,8 +145,18 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string            key,
-                                         CancellationToken cancellationToken = default)
+  public async Task TryDeleteAsync(IEnumerable<string> keys,
+                                   CancellationToken   cancellationToken = default)
+    => await keys.ParallelForEach(key => TryDeleteAsync(key,
+                                                        cancellationToken))
+                 .ConfigureAwait(false);
+
+  /// <inheritdoc />
+  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
+    => throw new NotImplementedException();
+
+  private async Task TryDeleteAsync(string            key,
+                                    CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
@@ -154,7 +164,7 @@ public class ObjectStorage : IObjectStorage
 
     if (!value.HasValue)
     {
-      throw new ObjectDataNotFoundException("Key not found");
+      return;
     }
 
     var valuesCount = int.Parse(value!);
@@ -167,14 +177,11 @@ public class ObjectStorage : IObjectStorage
                                     })
                             .ToArray();
 
-
-    return await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList))
-             .ConfigureAwait(false) == valuesCount + 1;
+    await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList))
+      .ConfigureAwait(false);
+    logger_.LogInformation("Deleted data with {resultId}",
+                           key);
   }
-
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
 
   private async Task<T> PerformActionWithRetry<T>(Func<Task<T>> action)
   {

@@ -38,18 +38,24 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcSessionsService : Sessions.SessionsBase
 {
   private readonly ILogger<GrpcSessionsService> logger_;
+  private readonly IObjectStorage               objectStorage_;
   private readonly IPartitionTable              partitionTable_;
+  private readonly IResultTable                 resultTable_;
   private readonly ISessionTable                sessionTable_;
   private readonly Injection.Options.Submitter  submitterOptions_;
 
   public GrpcSessionsService(ISessionTable                sessionTable,
                              IPartitionTable              partitionTable,
+                             IObjectStorage               objectStorage,
+                             IResultTable                 resultTable,
                              Injection.Options.Submitter  submitterOptions,
                              ILogger<GrpcSessionsService> logger)
   {
     logger_           = logger;
     sessionTable_     = sessionTable;
     partitionTable_   = partitionTable;
+    objectStorage_    = objectStorage;
+    resultTable_      = resultTable;
     submitterOptions_ = submitterOptions;
   }
 
@@ -265,9 +271,23 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
+      var session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                        context.CancellationToken)
+                                       .ConfigureAwait(false);
+
+      await ResultLifeCycleHelper.PurgeResultsAsync(resultTable_,
+                                                    objectStorage_,
+                                                    request.SessionId,
+                                                    context.CancellationToken)
+                                 .ConfigureAwait(false);
+
+      logger_.LogInformation("Purged data for {sessionId}",
+                             session);
+
       return new PurgeSessionResponse
              {
                Session = (await sessionTable_.PurgeSessionAsync(request.SessionId,
+                                                                session.CreationDate,
                                                                 context.CancellationToken)
                                              .ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
@@ -275,14 +295,14 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while purging session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while purging session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }

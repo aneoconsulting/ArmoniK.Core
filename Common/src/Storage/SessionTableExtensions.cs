@@ -270,6 +270,7 @@ public static class SessionTableExtensions
   /// </summary>
   /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
   /// <param name="sessionId">Id of the session to purge</param>
+  /// <param name="creationDateTime">Start of the session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The metadata of the purged session
@@ -278,19 +279,29 @@ public static class SessionTableExtensions
   /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
   public static async Task<SessionData> PurgeSessionAsync(this ISessionTable sessionTable,
                                                           string             sessionId,
+                                                          DateTime?          creationDateTime,
                                                           CancellationToken  cancellationToken = default)
   {
+    var now = DateTime.UtcNow;
+    var ud = new UpdateDefinition<SessionData>().Set(model => model.Status,
+                                                     SessionStatus.Purged)
+                                                .Set(model => model.PurgeDate,
+                                                     now)
+                                                .Set(model => model.WorkerSubmission,
+                                                     false)
+                                                .Set(model => model.ClientSubmission,
+                                                     false);
+
+    if (creationDateTime is not null)
+    {
+      ud = ud.Set(data => data.Duration,
+                  now - creationDateTime);
+    }
+
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
                                                            data => data.Status == SessionStatus.Running || data.Status == SessionStatus.Paused ||
                                                                    data.Status == SessionStatus.Cancelled,
-                                                           new UpdateDefinition<SessionData>().Set(model => model.Status,
-                                                                                                   SessionStatus.Purged)
-                                                                                              .Set(model => model.PurgeDate,
-                                                                                                   DateTime.UtcNow)
-                                                                                              .Set(model => model.WorkerSubmission,
-                                                                                                   false)
-                                                                                              .Set(model => model.ClientSubmission,
-                                                                                                   false),
+                                                           ud,
                                                            false,
                                                            cancellationToken)
                                     .ConfigureAwait(false);
