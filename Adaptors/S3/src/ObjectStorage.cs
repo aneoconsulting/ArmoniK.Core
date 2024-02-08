@@ -237,8 +237,8 @@ public class ObjectStorage : IObjectStorage
     return sizeBox[0];
   }
 
-  private async Task<bool> TryDeleteAsync(string            key,
-                                          CancellationToken cancellationToken = default)
+  private async Task TryDeleteAsync(string            key,
+                                    CancellationToken cancellationToken = default)
   {
     var       objectStorageFullName = $"{objectStorageName_}{key}";
     using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
@@ -262,10 +262,7 @@ public class ObjectStorage : IObjectStorage
       logger_.LogError(ex,
                        "Error deleting S3 bucket : {BucketName}",
                        options_.BucketName);
-      return false;
     }
-
-    return true;
   }
 
   private async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     objectKey,
