@@ -61,7 +61,7 @@ public interface IObjectStorage : IInitializable
   /// <summary>
   ///   Delete data in the object storage
   /// </summary>
-  /// <param name="keys">Keys representing the object to delete</param>
+  /// <param name="keys">Keys representing the objects to delete</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
