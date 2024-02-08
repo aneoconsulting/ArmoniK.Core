@@ -52,6 +52,27 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
     => ConnectionRabbit.Check(tag);
 
+  public override Task Init(CancellationToken cancellationToken)
+  {
+    var queueArgs = new Dictionary<string, object>
+                    {
+                      {
+                        "x-max-priority", Options!.MaxPriority
+                      },
+                      {
+                        "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
+                      },
+                    };
+
+    ConnectionRabbit.Channel!.QueueDeclare(Options!.PartitionId,
+                                           false, /* to survive broker restart */
+                                           true,  /* used only by a connection, deleted after connection closes */
+                                           false, /* deleted when last consumer unsubscribes (if it has had one) */
+                                           queueArgs);
+    IsInitialized = true;
+    return Task.CompletedTask;
+  }
+
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
                                                                         CancellationToken cancellationToken = default)
   {
