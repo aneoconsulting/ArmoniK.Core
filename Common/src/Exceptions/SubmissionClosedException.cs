@@ -20,19 +20,19 @@ using System;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class SubmissionClosed : ArmoniKException
+public class SubmissionClosedException : ArmoniKException
 {
-  public SubmissionClosed()
+  public SubmissionClosedException()
   {
   }
 
-  public SubmissionClosed(string message)
+  public SubmissionClosedException(string message)
     : base(message)
   {
   }
 
-  public SubmissionClosed(string    message,
-                          Exception innerException)
+  public SubmissionClosedException(string    message,
+                                   Exception innerException)
     : base(message,
            innerException)
   {

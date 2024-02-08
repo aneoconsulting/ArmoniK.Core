@@ -706,17 +706,17 @@ public class AgentTest
                           holder.Token,
                           NullLogger.Instance);
 
-    Assert.ThrowsAsync<SubmissionClosed>(() => agent.SubmitTasks(new TaskSubmissionRequest[]
-                                                                 {
-                                                                   new("payload",
-                                                                       null,
-                                                                       new List<string>(),
-                                                                       new List<string>()),
-                                                                 },
-                                                                 null,
-                                                                 holder.Session,
-                                                                 holder.Token,
-                                                                 CancellationToken.None));
+    Assert.ThrowsAsync<SubmissionClosedException>(() => agent.SubmitTasks(new TaskSubmissionRequest[]
+                                                                          {
+                                                                            new("payload",
+                                                                                null,
+                                                                                new List<string>(),
+                                                                                new List<string>()),
+                                                                          },
+                                                                          null,
+                                                                          holder.Session,
+                                                                          holder.Token,
+                                                                          CancellationToken.None));
   }
 
   [Test]

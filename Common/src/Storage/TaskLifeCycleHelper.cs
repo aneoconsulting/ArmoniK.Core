@@ -89,13 +89,13 @@ public static class TaskLifeCycleHelper
     // we are on client side
     if (sessionData.SessionId == parentTaskId && !sessionData.ClientSubmission)
     {
-      throw new SubmissionClosed("Client submission is closed");
+      throw new SubmissionClosedException("Client submission is closed");
     }
 
     // we are on worker side
     if (sessionData.SessionId != parentTaskId && !sessionData.WorkerSubmission)
     {
-      throw new SubmissionClosed("Worker submission is closed");
+      throw new SubmissionClosedException("Worker submission is closed");
     }
 
     return localOptions;

@@ -463,7 +463,7 @@ public class GrpcTasksService : Task.TasksBase
                },
              };
     }
-    catch (SubmissionClosed e)
+    catch (SubmissionClosedException e)
     {
       logger_.LogWarning(e,
                          "Error while submitting tasks");
