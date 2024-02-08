@@ -238,25 +238,16 @@ public class ObjectStorage : IObjectStorage
     using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
     using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
                                                          ("@S3Options", options_.Confidential()));
-    try
-    {
-      var objectDeleteRequest = new DeleteObjectRequest
-                                {
-                                  BucketName = options_.BucketName,
-                                  Key        = objectStorageFullName,
-                                };
-      await s3Client_.DeleteObjectAsync(objectDeleteRequest,
-                                        cancellationToken)
-                     .ConfigureAwait(false);
-      logger_.LogInformation("Deleted data with {resultId}",
-                             key);
-    }
-    catch (Exception ex)
-    {
-      logger_.LogError(ex,
-                       "Error deleting S3 bucket : {BucketName}",
-                       options_.BucketName);
-    }
+    var objectDeleteRequest = new DeleteObjectRequest
+                              {
+                                BucketName = options_.BucketName,
+                                Key        = objectStorageFullName,
+                              };
+    await s3Client_.DeleteObjectAsync(objectDeleteRequest,
+                                      cancellationToken)
+                   .ConfigureAwait(false);
+    logger_.LogInformation("Deleted data with {resultId}",
+                           key);
   }
 
   private async IAsyncEnumerable<UploadPartRequest> PreparePartRequestsAsync(string                                     objectKey,
