@@ -359,7 +359,7 @@ public class Pollster : IInitializable
             try
             {
               if (await taskHandler.AcquireTask()
-                                   .ConfigureAwait(false) != 0)
+                                   .ConfigureAwait(false) != AcquisitionStatus.Acquired)
               {
                 // TaskHandler is disposed automatically by `taskHandlerDispose`
                 continue;
