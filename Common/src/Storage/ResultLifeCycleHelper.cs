@@ -116,7 +116,7 @@ public static class ResultLifeCycleHelper
                                                      result => result.ResultId,
                                                      cancellationToken)
                                          .ToChunksAsync(500,
-                                                        TimeSpan.FromMilliseconds(100),
+                                                        Timeout.InfiniteTimeSpan,
                                                         cancellationToken)
                                          .ConfigureAwait(false))
     {
