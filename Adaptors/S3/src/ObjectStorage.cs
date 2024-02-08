@@ -65,7 +65,8 @@ public class ObjectStorage : IObjectStorage
     if (!isInitialized_)
     {
       await AmazonS3Util.DoesS3BucketExistV2Async(s3Client_,
-                                                  options_.BucketName);
+                                                  options_.BucketName)
+                        .ConfigureAwait(false);
     }
 
     logger_.LogInformation("ObjectStorage has correctly been initialized with options {@Options}",
@@ -100,7 +101,8 @@ public class ObjectStorage : IObjectStorage
     {
       await s3Client_.GetObjectAsync(options_.BucketName,
                                      objectStorageFullName,
-                                     cancellationToken);
+                                     cancellationToken)
+                     .ConfigureAwait(false);
     }
     catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
     {
@@ -115,7 +117,8 @@ public class ObjectStorage : IObjectStorage
                             BucketName = options_.BucketName,
                           };
     var objectMetaData = await s3Client_.GetObjectMetadataAsync(metaDataRequest,
-                                                                cancellationToken);
+                                                                cancellationToken)
+                                        .ConfigureAwait(false);
     var contentLength = objectMetaData.ContentLength;
 
     var getObjectRequest = new GetObjectRequest
@@ -124,7 +127,8 @@ public class ObjectStorage : IObjectStorage
                              Key        = objectStorageFullName,
                            };
     var objectResponse = await s3Client_.GetObjectAsync(getObjectRequest,
-                                                        cancellationToken);
+                                                        cancellationToken)
+                                        .ConfigureAwait(false);
     var  responseStream = objectResponse.ResponseStream;
     long totalBytesRead = 0;
     while (totalBytesRead < contentLength)
@@ -159,7 +163,8 @@ public class ObjectStorage : IObjectStorage
   public async Task TryDeleteAsync(IEnumerable<string> keys,
                                    CancellationToken   cancellationToken = default)
     => await keys.ParallelForEach(key => TryDeleteAsync(key,
-                                                        cancellationToken));
+                                                        cancellationToken))
+                 .ConfigureAwait(false);
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
@@ -224,7 +229,8 @@ public class ObjectStorage : IObjectStorage
                               UploadId   = initResponse.UploadId,
                             };
       await s3Client_.AbortMultipartUploadAsync(abortMpuRequest,
-                                                cancellationToken);
+                                                cancellationToken)
+                     .ConfigureAwait(false);
       throw;
     }
 
