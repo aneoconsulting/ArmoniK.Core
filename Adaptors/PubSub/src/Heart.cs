@@ -57,10 +57,9 @@ public class Heart
   public async Task Stop()
   {
     stoppedHeartCts_?.Cancel();
-    stoppedHeartCts_ = null;
     try
     {
-      if (runningTask_ != null)
+      if (runningTask_ is not null)
       {
         await runningTask_;
       }
@@ -71,6 +70,11 @@ public class Heart
     catch (AggregateException ae)
     {
       ae.Handle(exception => exception is not OperationCanceledException);
+    }
+    finally
+    {
+      stoppedHeartCts_?.Dispose();
+      stoppedHeartCts_ = null;
     }
   }
 
