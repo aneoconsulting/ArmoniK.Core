@@ -69,7 +69,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
     ConnectionRabbit.Channel!.QueueDeclare(Options!.PartitionId,
                                            false, /* to survive broker restart */
-                                           true,  /* used only by a connection, deleted after connection closes */
+                                           false, /* used by multiple connections */
                                            false, /* deleted when last consumer unsubscribes (if it has had one) */
                                            queueArgs);
     IsInitialized = true;
