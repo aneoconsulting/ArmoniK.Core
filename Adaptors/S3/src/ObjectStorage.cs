@@ -158,14 +158,8 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public async Task TryDeleteAsync(IEnumerable<string> keys,
                                    CancellationToken   cancellationToken = default)
-  {
-    foreach (var key in keys)
-    {
-      await TryDeleteAsync(key,
-                           cancellationToken)
-        .ConfigureAwait(false);
-    }
-  }
+    => await keys.ParallelForEach(key => TryDeleteAsync(key,
+                                                        cancellationToken));
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
