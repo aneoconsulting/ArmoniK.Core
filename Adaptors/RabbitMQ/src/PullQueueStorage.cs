@@ -52,8 +52,11 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
     => ConnectionRabbit.Check(tag);
 
-  public override Task Init(CancellationToken cancellationToken)
+  public override async Task Init(CancellationToken cancellationToken)
   {
+    await ConnectionRabbit.Init(cancellationToken)
+                          .ConfigureAwait(false);
+
     var queueArgs = new Dictionary<string, object>
                     {
                       {
@@ -70,7 +73,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                            false, /* deleted when last consumer unsubscribes (if it has had one) */
                                            queueArgs);
     IsInitialized = true;
-    return Task.CompletedTask;
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
