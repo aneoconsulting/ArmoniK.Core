@@ -146,20 +146,17 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   /// <param name="options">Options (See <see cref="AuthenticationHandler{TOptions}" />)</param>
   /// <param name="loggerFactory">Logger factory (See <see cref="AuthenticationHandler{TOptions}" />)</param>
   /// <param name="encoder">Url Encoder (See <see cref="AuthenticationHandler{TOptions}" />)</param>
-  /// <param name="clock">System clock (See <see cref="AuthenticationHandler{TOptions}" />)</param>
   /// <param name="authTable">Authentication table storage</param>
   /// <param name="cache">Authentication cache</param>
   /// <exception cref="ArmoniKException">Thrown if the authenticator is misconfigured (missing options)</exception>
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                        ILoggerFactory                        loggerFactory,
                        UrlEncoder                            encoder,
-                       ISystemClock                          clock,
                        IAuthenticationTable                  authTable,
                        AuthenticationCache                   cache)
     : base(options,
            loggerFactory,
-           encoder,
-           clock)
+           encoder)
   {
     requireAuthentication_ = options.CurrentValue.RequireAuthentication;
     fingerprintHeader_     = options.CurrentValue.FingerprintHeader;
@@ -211,7 +208,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     var identity = cache_.Get(cacheKey);
     if (identity?.Identity is not null)
     {
-      logger_.LogInformation("Found authenticated user {username} in cache. Authentication hashkey : {keyHash}.",
+      logger_.LogInformation("Found authenticated user {username} in cache. Authentication HashKey : {keyHash}",
                              identity.Identity.Name,
                              keyHash);
       return AuthenticateResult.Success(new AuthenticationTicket(identity,

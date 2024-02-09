@@ -232,9 +232,9 @@ public class SessionTableTestBase
       Assert.AreEqual(SessionStatus.Cancelled,
                       sessionData.Status);
 
-      var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(rootSessionId1_!,
-                                                                          CancellationToken.None)
-                                                 .ConfigureAwait(false);
+      var wasSessionCanceled = await SessionTable!.IsSessionCancelledAsync(rootSessionId1_!,
+                                                                           CancellationToken.None)
+                                                  .ConfigureAwait(false);
       Assert.IsTrue(wasSessionCanceled);
     }
   }

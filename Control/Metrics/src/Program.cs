@@ -91,22 +91,18 @@ public static class Program
       app.UseHttpsRedirection();
       app.UseAuthorization();
 
+      app.MapHealthChecks("/startup",
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                          });
 
-      app.UseEndpoints(endpoints =>
-                       {
-                         endpoints.MapHealthChecks("/startup",
-                                                   new HealthCheckOptions
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                                   });
-
-                         endpoints.MapHealthChecks("/liveness",
-                                                   new HealthCheckOptions
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                                   });
-                         endpoints.MapControllers();
-                       });
+      app.MapHealthChecks("/liveness",
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                          });
+      app.MapControllers();
 
       var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
       var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
@@ -132,7 +128,8 @@ public static class Program
     }
     finally
     {
-      Log.CloseAndFlush();
+      await Log.CloseAndFlushAsync()
+               .ConfigureAwait(false);
     }
   }
 }

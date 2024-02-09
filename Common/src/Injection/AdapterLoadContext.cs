@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -45,11 +44,11 @@ public class AdapterLoadContext : AssemblyLoadContext
   }
 
   /// <inheritdoc />
-  protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+  protected override nint LoadUnmanagedDll(string unmanagedDllName)
   {
     var libraryPath = resolver_.ResolveUnmanagedDllToPath(unmanagedDllName);
     return libraryPath is not null
              ? LoadUnmanagedDllFromPath(libraryPath)
-             : IntPtr.Zero;
+             : nint.Zero;
   }
 }

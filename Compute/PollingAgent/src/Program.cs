@@ -165,35 +165,32 @@ public static class Program
         app.UseDeveloperExceptionPage();
       }
 
-      app.UseEndpoints(endpoints =>
-                       {
-                         endpoints.MapHealthChecks("/startup",
-                                                   new HealthCheckOptions
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                                   });
+      app.MapHealthChecks("/startup",
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                          });
 
-                         endpoints.MapHealthChecks("/liveness",
-                                                   new HealthCheckOptions
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                                   });
+      app.MapHealthChecks("/liveness",
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                          });
 
-                         endpoints.MapHealthChecks("/readiness",
-                                                   new HealthCheckOptions
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                                   });
+      app.MapHealthChecks("/readiness",
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                          });
 
-                         endpoints.MapGet("/taskprocessing",
-                                          () => Task.FromResult(string.Join(",",
-                                                                            app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                                               .TaskProcessing)));
+      app.MapGet("/taskprocessing",
+                 () => Task.FromResult(string.Join(",",
+                                                   app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                                      .TaskProcessing)));
 
-                         endpoints.MapGet("/stopcancelledtask",
-                                          () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                                   .StopCancelledTask());
-                       });
+      app.MapGet("/stopcancelledtask",
+                 () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                          .StopCancelledTask());
 
       var pushQueueStorage = app.Services.GetRequiredService<IPushQueueStorage>();
       await pushQueueStorage.Init(CancellationToken.None)
@@ -212,7 +209,8 @@ public static class Program
     }
     finally
     {
-      Log.CloseAndFlush();
+      await Log.CloseAndFlushAsync()
+               .ConfigureAwait(false);
     }
   }
 }

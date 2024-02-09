@@ -471,18 +471,18 @@ public class TaskTableTestBase
       var resCreating = await TaskTable!.GetTaskStatus("TaskCreatingId",
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
-      var resProcessing = await TaskTable.GetTaskStatus("TaskProcessingId",
-                                                        CancellationToken.None)
-                                         .ConfigureAwait(false);
+      var resProcessing = await TaskTable!.GetTaskStatus("TaskProcessingId",
+                                                         CancellationToken.None)
+                                          .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Cancelling,
                       resCreating);
       Assert.AreEqual(TaskStatus.Cancelling,
                       resProcessing);
 
-      var resAnotherProcessing = await TaskTable.GetTaskStatus("TaskAnotherProcessingId",
-                                                               CancellationToken.None)
-                                                .ConfigureAwait(false);
+      var resAnotherProcessing = await TaskTable!.GetTaskStatus("TaskAnotherProcessingId",
+                                                                CancellationToken.None)
+                                                 .ConfigureAwait(false);
 
       Assert.AreNotEqual(TaskStatus.Cancelling,
                          resAnotherProcessing);
@@ -607,9 +607,9 @@ public class TaskTableTestBase
                         taskStatusCount.Count);
       }
 
-      result = await TaskTable.CountTasksAsync(data => data.SessionId == "SessionId" && (data.Status == TaskStatus.Completed || data.Status == TaskStatus.Creating),
-                                               CancellationToken.None)
-                              .ConfigureAwait(false);
+      result = await TaskTable!.CountTasksAsync(data => data.SessionId == "SessionId" && (data.Status == TaskStatus.Completed || data.Status == TaskStatus.Creating),
+                                                CancellationToken.None)
+                               .ConfigureAwait(false);
 
       foreach (var taskStatusCount in result)
       {
@@ -653,9 +653,9 @@ public class TaskTableTestBase
       Assert.AreEqual(TaskStatus.Completed,
                       resStatus);
 
-      var taskData = await TaskTable.ReadTaskAsync(taskProcessingData_.TaskId,
-                                                   CancellationToken.None)
-                                    .ConfigureAwait(false);
+      var taskData = await TaskTable!.ReadTaskAsync(taskProcessingData_.TaskId,
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Completed,
                       taskData.Status);
@@ -687,9 +687,9 @@ public class TaskTableTestBase
       Assert.AreEqual(TaskStatus.Error,
                       resStatus);
 
-      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
+      var output = await TaskTable!.GetTaskOutput("TaskProcessingId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
@@ -718,9 +718,9 @@ public class TaskTableTestBase
       Assert.AreEqual(TaskStatus.Cancelled,
                       resStatus);
 
-      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
+      var output = await TaskTable!.GetTaskOutput("TaskProcessingId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
 
       Assert.IsEmpty(output.Error);
       Assert.IsFalse(output.Success);
@@ -818,14 +818,14 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var ownerpodid    = LocalIpFinder.LocalIpv4Address();
-      var ownerpodname  = Dns.GetHostName();
+      var ownerPodId    = LocalIpFinder.LocalIpv4Address();
+      var ownerPodName  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
 
       var result = await TaskTable!.AcquireTask(taskSubmittedData_ with
                                                 {
-                                                  OwnerPodId = ownerpodid,
-                                                  OwnerPodName = ownerpodname,
+                                                  OwnerPodId = ownerPodId,
+                                                  OwnerPodName = ownerPodName,
                                                   ReceptionDate = receptionDate,
                                                   AcquisitionDate = DateTime.UtcNow,
                                                 },
@@ -834,9 +834,9 @@ public class TaskTableTestBase
 
       Assert.AreEqual("TaskSubmittedId",
                       result.TaskId);
-      Assert.AreEqual(ownerpodid,
+      Assert.AreEqual(ownerPodId,
                       result.OwnerPodId);
-      Assert.AreEqual(ownerpodname,
+      Assert.AreEqual(ownerPodName,
                       result.OwnerPodName);
       Assert.AreEqual(receptionDate,
                       result.ReceptionDate);
@@ -850,19 +850,19 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task AcquireUnknownTaskShouldThrow()
+  public void AcquireUnknownTaskShouldThrow()
   {
     if (RunTests)
     {
-      var ownerpodid    = LocalIpFinder.LocalIpv4Address();
-      var ownerpodname  = Dns.GetHostName();
+      var ownerPodId    = LocalIpFinder.LocalIpv4Address();
+      var ownerPodName  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
 
       Assert.ThrowsAsync<TaskNotFoundException>(() => TaskTable!.AcquireTask(taskSubmittedData_ with
                                                                              {
                                                                                TaskId = "Unknown",
-                                                                               OwnerPodId = ownerpodid,
-                                                                               OwnerPodName = ownerpodname,
+                                                                               OwnerPodId = ownerPodId,
+                                                                               OwnerPodName = ownerPodName,
                                                                                ReceptionDate = receptionDate,
                                                                                AcquisitionDate = DateTime.UtcNow,
                                                                              },
@@ -875,13 +875,13 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var ownerpodid    = LocalIpFinder.LocalIpv4Address();
-      var ownerpodname  = Dns.GetHostName();
+      var ownerPodId    = LocalIpFinder.LocalIpv4Address();
+      var ownerPodName  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
       var taskSubmitted = taskSubmittedData_ with
                           {
-                            OwnerPodId = ownerpodid,
-                            OwnerPodName = ownerpodname,
+                            OwnerPodId = ownerPodId,
+                            OwnerPodName = ownerPodName,
                             ReceptionDate = receptionDate,
                             AcquisitionDate = DateTime.UtcNow,
                           };
@@ -892,9 +892,9 @@ public class TaskTableTestBase
 
       Assert.AreEqual("TaskSubmittedId",
                       result.TaskId);
-      Assert.AreEqual(ownerpodid,
+      Assert.AreEqual(ownerPodId,
                       result.OwnerPodId);
-      Assert.AreEqual(ownerpodname,
+      Assert.AreEqual(ownerPodName,
                       result.OwnerPodName);
       Assert.AreEqual(receptionDate,
                       result.ReceptionDate);
@@ -943,9 +943,9 @@ public class TaskTableTestBase
       Assert.AreEqual(hostname,
                       result1.OwnerPodId);
 
-      var result2 = await TaskTable.AcquireTask(taskSubmitted,
-                                                CancellationToken.None)
-                                   .ConfigureAwait(false);
+      var result2 = await TaskTable!.AcquireTask(taskSubmitted,
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
       Assert.AreEqual(result1.Status,
                       result2.Status);
 
@@ -1079,9 +1079,9 @@ public class TaskTableTestBase
                                  CancellationToken.None)
                       .ConfigureAwait(false);
 
-      var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
-                                                   CancellationToken.None)
-                                    .ConfigureAwait(false);
+      var taskData = await TaskTable!.ReadTaskAsync("TaskSubmittedId",
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
 
       Assert.AreEqual(TaskStatus.Processing,
                       taskData.Status);
@@ -1258,9 +1258,9 @@ public class TaskTableTestBase
 
       var expectedNewId = taskToRetry.InitialTaskId + $"###{taskToRetry.RetryOfIds.Count + 1}";
 
-      var newTaskId = await TaskTable.RetryTask(taskToRetry,
-                                                CancellationToken.None)
-                                     .ConfigureAwait(false);
+      var newTaskId = await TaskTable!.RetryTask(taskToRetry,
+                                                 CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       Assert.AreEqual(expectedNewId,
                       newTaskId);
@@ -1277,13 +1277,13 @@ public class TaskTableTestBase
                                         .ConfigureAwait(false);
       for (var i = 0; i < 3; i++)
       {
-        var newTaskId = await TaskTable.RetryTask(taskToRetry,
-                                                  CancellationToken.None)
-                                       .ConfigureAwait(false);
+        var newTaskId = await TaskTable!.RetryTask(taskToRetry,
+                                                   CancellationToken.None)
+                                        .ConfigureAwait(false);
 
-        var retriedTask = await TaskTable.ReadTaskAsync(newTaskId,
-                                                        CancellationToken.None)
-                                         .ConfigureAwait(false);
+        var retriedTask = await TaskTable!.ReadTaskAsync(newTaskId,
+                                                         CancellationToken.None)
+                                          .ConfigureAwait(false);
 
         Assert.AreEqual(taskToRetry.PayloadId,
                         retriedTask.PayloadId);
@@ -1580,14 +1580,14 @@ public class TaskTableTestBase
       var mask = new TaskDataMask(Enum.GetValues<TaskDataFields>(),
                                   Enum.GetValues<TaskOptionsFields>());
 
-      var (results, totalCount) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
-                                                                  data => data.SessionId,
-                                                                  mask.GetProjection(),
-                                                                  false,
-                                                                  0,
-                                                                  20,
-                                                                  CancellationToken.None)
-                                                  .ConfigureAwait(false);
+      var (_, totalCount) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
+                                                            data => data.SessionId,
+                                                            mask.GetProjection(),
+                                                            false,
+                                                            0,
+                                                            20,
+                                                            CancellationToken.None)
+                                            .ConfigureAwait(false);
 
       Assert.AreEqual(6,
                       totalCount);

@@ -51,6 +51,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 namespace ArmoniK.Core.Common.Tests.Submitter;
 
 [TestFixture]
+[Obsolete]
 public class GrpcSubmitterServiceTests
 {
   [SetUp]

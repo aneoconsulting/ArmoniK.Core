@@ -25,10 +25,12 @@ using ArmoniK.Api.Client;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -65,7 +67,7 @@ internal class TaskSubmissionTests
                                             .AddEnvironmentVariables();
     var configuration = builder.Build();
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
-                               .Get<GrpcClient>();
+                               .Get<GrpcClient>()!;
 
     partition_ = configuration.GetValue<string>("Partition");
 
@@ -76,21 +78,21 @@ internal class TaskSubmissionTests
   [Test]
   public async Task SubmitTasksShouldSucceed()
   {
-    var submitterClient = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
+    var sessionClient = new Sessions.SessionsClient(channel_);
+    var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
+                                                                    {
+                                                                      DefaultTaskOption = new TaskOptions
+                                                                                          {
+                                                                                            Priority    = 1,
+                                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                                            MaxRetries  = 2,
+                                                                                            PartitionId = partition_,
+                                                                                          },
+                                                                      PartitionIds =
                                                                       {
-                                                                        DefaultTaskOption = new TaskOptions
-                                                                                            {
-                                                                                              Priority    = 1,
-                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                                              MaxRetries  = 2,
-                                                                                              PartitionId = partition_,
-                                                                                            },
-                                                                        PartitionIds =
-                                                                        {
-                                                                          partition_,
-                                                                        },
-                                                                      });
+                                                                        partition_,
+                                                                      },
+                                                                    });
 
     var resultsClient = new Results.ResultsClient(channel_);
 
@@ -163,15 +165,11 @@ internal class TaskSubmissionTests
                       TaskStatus.Processing,
                     });
 
-#pragma warning disable CS0612 // Type or member is obsolete
-    await submitterClient.WaitForAvailabilityAsync(new ResultRequest
-#pragma warning restore CS0612 // Type or member is obsolete
-                                                   {
-                                                     ResultId = results.Results.Single()
-                                                                       .ResultId,
-                                                     Session = createSessionReply.SessionId,
-                                                   })
-                         .ConfigureAwait(false);
+    var eventClient = new Events.EventsClient(channel_);
+    await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
+                                          results.Results.ViewSelect(result => result.ResultId),
+                                          CancellationToken.None)
+                     .ConfigureAwait(false);
 
     taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
                                               {
@@ -197,21 +195,21 @@ internal class TaskSubmissionTests
   [Test]
   public async Task SubmitTasksBeforePayloadShouldSucceed()
   {
-    var submitterClient = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
+    var sessionClient = new Sessions.SessionsClient(channel_);
+    var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
+                                                                    {
+                                                                      DefaultTaskOption = new TaskOptions
+                                                                                          {
+                                                                                            Priority    = 1,
+                                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                                            MaxRetries  = 2,
+                                                                                            PartitionId = partition_,
+                                                                                          },
+                                                                      PartitionIds =
                                                                       {
-                                                                        DefaultTaskOption = new TaskOptions
-                                                                                            {
-                                                                                              Priority    = 1,
-                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                                              MaxRetries  = 2,
-                                                                                              PartitionId = partition_,
-                                                                                            },
-                                                                        PartitionIds =
-                                                                        {
-                                                                          partition_,
-                                                                        },
-                                                                      });
+                                                                        partition_,
+                                                                      },
+                                                                    });
 
     var resultsClient = new Results.ResultsClient(channel_);
 
@@ -300,14 +298,14 @@ internal class TaskSubmissionTests
     Assert.AreEqual(ResultStatus.Completed,
                     uploadStreamResponse.Result.Status);
 
-#pragma warning disable CS0612 // Type or member is obsolete
-    await submitterClient.WaitForAvailabilityAsync(new ResultRequest
-#pragma warning restore CS0612 // Type or member is obsolete
-                                                   {
-                                                     ResultId = resultId,
-                                                     Session  = createSessionReply.SessionId,
-                                                   })
-                         .ConfigureAwait(false);
+    var eventClient = new Events.EventsClient(channel_);
+    await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
+                                          new[]
+                                          {
+                                            resultId,
+                                          },
+                                          CancellationToken.None)
+                     .ConfigureAwait(false);
 
     taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
                                               {

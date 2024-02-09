@@ -22,7 +22,7 @@ using System.IO;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Core.Utils;
 
 using Grpc.Core;
@@ -130,7 +130,7 @@ internal class ConnectionTest
     TestContext.Progress.WriteLine($"CertP12 : {options.CertP12}");
     TestContext.Progress.WriteLine($"CaCert : {options.CaCert}");
     channel_ = GrpcChannelFactory.CreateChannel(options);
-    var client = new Submitter.SubmitterClient(channel_);
+    var client = new Results.ResultsClient(channel_);
     TestContext.Progress.WriteLine("Client created");
 
     Assert.DoesNotThrow(() => client.GetServiceConfiguration(new Empty()));

@@ -978,16 +978,16 @@ public class SubmitterTests
                                                   "This error should be propagated to other tasks"))
                     .ConfigureAwait(false);
 
-    taskData = await taskTable_.ReadTaskAsync(abortedTask,
-                                              CancellationToken.None)
-                               .ConfigureAwait(false);
+    taskData = await taskTable_!.ReadTaskAsync(abortedTask,
+                                               CancellationToken.None)
+                                .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Error,
                     taskData.Status);
 
-    taskData = await taskTable_.ReadTaskAsync(taskWithDependencies,
-                                              CancellationToken.None)
-                               .ConfigureAwait(false);
+    taskData = await taskTable_!.ReadTaskAsync(taskWithDependencies,
+                                               CancellationToken.None)
+                                .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Error,
                     taskData.Status);

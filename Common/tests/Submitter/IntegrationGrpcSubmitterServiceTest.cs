@@ -58,6 +58,7 @@ namespace ArmoniK.Core.Common.Tests.Submitter;
 // this is an example of how to implement integrated tests for a gRPC server
 
 [TestFixture]
+[Obsolete]
 internal class IntegrationGrpcSubmitterServiceTest
 {
   [SetUp]

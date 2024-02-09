@@ -63,6 +63,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetServiceConfiguration))]
+  [Obsolete]
   public override async Task<Configuration> GetServiceConfiguration(Empty             request,
                                                                     ServerCallContext context)
   {
@@ -90,6 +91,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CancelSession))]
+  [Obsolete]
   public override async Task<Empty> CancelSession(Session           request,
                                                   ServerCallContext context)
   {
@@ -125,6 +127,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CancelTasks))]
+  [Obsolete]
   public override async Task<Empty> CancelTasks(TaskFilter        request,
                                                 ServerCallContext context)
   {
@@ -158,6 +161,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateSession))]
+  [Obsolete]
   public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                                ServerCallContext    context)
   {
@@ -193,6 +197,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateSmallTasks))]
+  [Obsolete]
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
   {
@@ -254,13 +259,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateLargeTasks))]
+  [Obsolete]
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
                                                                ServerCallContext                          context)
   {
     try
     {
-      var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
-                                    .GetAsyncEnumerator(context.CancellationToken);
+      await using var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
+                                                .GetAsyncEnumerator(context.CancellationToken);
 
       if (!await enumerator.MoveNextAsync(context.CancellationToken)
                            .ConfigureAwait(false))
@@ -342,6 +348,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CountTasks))]
+  [Obsolete]
   public override async Task<Count> CountTasks(TaskFilter        request,
                                                ServerCallContext context)
   {
@@ -376,6 +383,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(TryGetResultStream))]
+  [Obsolete]
   public override async Task TryGetResultStream(ResultRequest                    request,
                                                 IServerStreamWriter<ResultReply> responseStream,
                                                 ServerCallContext                context)
@@ -427,6 +435,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(WaitForCompletion))]
+  [Obsolete]
   public override async Task<Count> WaitForCompletion(WaitRequest       request,
                                                       ServerCallContext context)
   {
@@ -461,6 +470,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(TryGetTaskOutput))]
+  [Obsolete]
   public override async Task<Output> TryGetTaskOutput(TaskOutputRequest request,
                                                       ServerCallContext context)
   {
@@ -544,25 +554,26 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetTaskStatus))]
-  public override async Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
-                                                               ServerCallContext    context)
+  [Obsolete]
+  public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
+                                                         ServerCallContext    context)
   {
     try
     {
-      return new GetTaskStatusReply
-             {
-               IdStatuses =
-               {
-                 taskTable_.GetTaskStatus(request.TaskIds,
-                                          context.CancellationToken)
-                           .Select(status => new GetTaskStatusReply.Types.IdStatus
-                                             {
-                                               Status = status.Status.ToGrpcStatus(),
-                                               TaskId = status.TaskId,
-                                             })
-                           .ToEnumerable(),
-               },
-             };
+      return Task.FromResult(new GetTaskStatusReply
+                             {
+                               IdStatuses =
+                               {
+                                 taskTable_.GetTaskStatus(request.TaskIds,
+                                                          context.CancellationToken)
+                                           .Select(status => new GetTaskStatusReply.Types.IdStatus
+                                                             {
+                                                               Status = status.Status.ToGrpcStatus(),
+                                                               TaskId = status.TaskId,
+                                                             })
+                                           .ToEnumerable(),
+                               },
+                             });
     }
     catch (TaskNotFoundException e)
     {
@@ -635,6 +646,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(ListTasks))]
+  [Obsolete]
   public override async Task<TaskIdList> ListTasks(TaskFilter        request,
                                                    ServerCallContext context)
   {
@@ -676,6 +688,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(ListSessions))]
+  [Obsolete]
   public override async Task<SessionIdList> ListSessions(SessionFilter     request,
                                                          ServerCallContext context)
   {
