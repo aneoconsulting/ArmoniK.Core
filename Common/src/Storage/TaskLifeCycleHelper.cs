@@ -476,6 +476,10 @@ public static class TaskLifeCycleHelper
                                                     string            sessionId,
                                                     CancellationToken cancellationToken = default)
   {
+    var session = await sessionTable.ResumeSessionAsync(sessionId,
+                                                        cancellationToken)
+                                    .ConfigureAwait(false);
+
     await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Submitted,
                                                             data => new MessageData(data.TaskId,
                                                                                     data.SessionId,
@@ -492,8 +496,6 @@ public static class TaskLifeCycleHelper
                             .ConfigureAwait(false);
     }
 
-    return await sessionTable.ResumeSessionAsync(sessionId,
-                                                 cancellationToken)
-                             .ConfigureAwait(false);
+    return session;
   }
 }
