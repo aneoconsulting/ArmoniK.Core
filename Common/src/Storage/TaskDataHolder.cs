@@ -114,6 +114,9 @@ public record TaskDataHolder
   /// <inheritdoc cref="TaskData.ProcessedDate" />
   public DateTime? ProcessedDate { get; set; } = null;
 
+  /// <inheritdoc cref="TaskData.FetchedDate" />
+  public DateTime? FetchedDate { get; set; } = null;
+
   /// <inheritdoc cref="TaskData.Output" />
   public Output? Output { get; set; } = null;
 

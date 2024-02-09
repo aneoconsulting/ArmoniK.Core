@@ -463,6 +463,7 @@ public static class TaskTableExtensions
                                    null,
                                    null,
                                    null,
+                                   null,
                                    new Output(false,
                                               ""));
     await taskTable.CreateTasks(new[]
@@ -642,6 +643,8 @@ public static class TaskTableExtensions
                                                                                  taskData.PodTtl)
                                                                             .Set(data => data.StartDate,
                                                                                  taskData.StartDate)
+                                                                            .Set(data => data.FetchedDate,
+                                                                                 taskData.FetchedDate)
                                                                             .Set(tdm => tdm.Status,
                                                                                  TaskStatus.Processing),
                                             cancellationToken: cancellationToken)

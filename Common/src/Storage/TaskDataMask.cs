@@ -131,6 +131,8 @@ public class TaskDataMask
         return data => data.ProcessedDate;
       case TaskDataFields.ReceivedToEndDuration:
         return data => data.ReceivedToEndDuration;
+      case TaskDataFields.FetchedDate:
+        return data => data.FetchedDate;
       default:
         throw new ArgumentOutOfRangeException(nameof(field),
                                               field,
@@ -209,6 +211,8 @@ public class TaskDataMask
         return data => data.ProcessedDate;
       case TaskDataFields.ReceivedToEndDuration:
         return data => data.ReceivedToEndDuration;
+      case TaskDataFields.FetchedDate:
+        return data => data.FetchedDate;
       default:
         throw new ArgumentOutOfRangeException(nameof(field),
                                               field,

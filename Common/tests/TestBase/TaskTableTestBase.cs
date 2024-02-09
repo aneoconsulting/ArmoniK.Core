@@ -1815,6 +1815,9 @@ public class TaskTableTestBase
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.ProcessedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.FetchedAt,
+                                                                    FilterDateOperator.Equal,
+                                                                    null));
     yield return CaseTrue(new Api.gRPC.V1.Tasks.FilterField
                           {
                             Field = new TaskField

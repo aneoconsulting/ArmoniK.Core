@@ -49,6 +49,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Options">Task options</param>
 /// <param name="CreationDate">Date when the task is created</param>
 /// <param name="SubmittedDate">Date when the task is submitted</param>
+/// <param name="FetchedDate">Date when task data are fetched</param>
 /// <param name="StartDate">Date when the task execution begins</param>
 /// <param name="ProcessedDate">Date when the task execution ends</param>
 /// <param name="EndDate">Date when the task ends</param>
@@ -84,6 +85,7 @@ public record TaskData(string        SessionId,
                        DateTime?                 ReceptionDate,
                        DateTime?                 AcquisitionDate,
                        DateTime?                 ProcessedDate,
+                       DateTime?                 FetchedDate,
                        DateTime?                 PodTtl,
                        TimeSpan?                 ProcessingToEndDuration,
                        TimeSpan?                 CreationToEndDuration,
@@ -143,6 +145,7 @@ public record TaskData(string        SessionId,
            "",
            options,
            DateTime.UtcNow,
+           null,
            null,
            null,
            null,

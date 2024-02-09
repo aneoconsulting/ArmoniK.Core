@@ -420,6 +420,7 @@ public class TaskHandlerTest
                                   null,
                                   null,
                                   null,
+                                  null,
                                   new Output(false,
                                              ""));
 
@@ -693,6 +694,7 @@ public class TaskHandlerTest
                                           DateTime.Now,
                                           DateTime.Now,
                                           DateTime.Now,
+                                          DateTime.Now,
                                           TimeSpan.FromSeconds(1),
                                           TimeSpan.FromSeconds(2),
                                           TimeSpan.FromSeconds(3),
@@ -770,6 +772,7 @@ public class TaskHandlerTest
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.UtcNow,
+                          DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,
                           DateTime.Now,

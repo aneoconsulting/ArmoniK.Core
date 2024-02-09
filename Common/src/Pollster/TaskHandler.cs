@@ -60,6 +60,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly CancellationTokenSource       workerConnectionCts_;
   private readonly IWorkerStreamHandler          workerStreamHandler_;
   private          IAgent?                       agent_;
+  private          DateTime?                     fetchedDate_;
   private          Action?                       onDispose_;
   private          Output?                       output_;
   private          SessionData?                  sessionData_;
@@ -565,6 +566,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                               folder_,
                                               cancellationTokenSource_.Token)
                            .ConfigureAwait(false);
+      fetchedDate_ = DateTime.UtcNow;
     }
     catch (Exception e)
     {
@@ -613,6 +615,7 @@ public sealed class TaskHandler : IAsyncDisposable
                   {
                     StartDate = DateTime.UtcNow,
                     PodTtl = DateTime.UtcNow,
+                    FetchedDate = fetchedDate_,
                   };
       // Status update should not be cancelled
       // Task will be marked as processing then start
