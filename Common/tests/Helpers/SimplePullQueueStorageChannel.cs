@@ -30,7 +30,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class SimplePullQueueStorageChannel : IPullQueueStorage
+public class SimplePullQueueStorageChannel : IPullQueueStorage, IPushQueueStorage
 {
   public readonly Channel<IQueueMessageHandler> Channel = System.Threading.Channels.Channel.CreateUnbounded<IQueueMessageHandler>();
 
@@ -42,7 +42,6 @@ public class SimplePullQueueStorageChannel : IPullQueueStorage
 
   public int MaxPriority
     => 10;
-
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -68,6 +67,38 @@ public class SimplePullQueueStorageChannel : IPullQueueStorage
       }
 
       yield return msg;
+    }
+  }
+
+  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                      string                   partitionId,
+                                      CancellationToken        cancellationToken = default)
+  {
+    foreach (var message in messages)
+    {
+      await Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                      {
+                                        MessageId = Guid.NewGuid()
+                                                        .ToString(),
+                                        Status = QueueMessageStatus.Running,
+                                        TaskId = message.TaskId,
+                                      },
+                                      cancellationToken)
+                   .ConfigureAwait(false);
+    }
+  }
+
+  public async Task EmptyAsync(CancellationToken cancellationToken = default)
+  {
+    if (!Channel.Reader.CanCount)
+    {
+      throw new InvalidOperationException("Channel should be countable");
+    }
+
+    while (Channel.Reader.Count > 0)
+    {
+      await Channel.Reader.ReadAsync(cancellationToken)
+                   .ConfigureAwait(false);
     }
   }
 }

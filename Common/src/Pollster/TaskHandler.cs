@@ -366,9 +366,7 @@ public sealed class TaskHandler : IAsyncDisposable
       sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
                                                          CancellationToken.None)
                                         .ConfigureAwait(false);
-      var isSessionCancelled = sessionData_.Status == SessionStatus.Cancelled;
-
-      if (isSessionCancelled && taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
+      if (sessionData_.Status == SessionStatus.Cancelled && taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
       {
         logger_.LogInformation("Task is being cancelled because its session is cancelled");
 
@@ -389,6 +387,13 @@ public sealed class TaskHandler : IAsyncDisposable
                                    .ConfigureAwait(false);
 
         return AcquisitionStatus.SessionCancelled;
+      }
+
+      if (sessionData_.Status == SessionStatus.Paused)
+      {
+        logger_.LogDebug("Session paused; message deleted");
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        return AcquisitionStatus.SessionPaused;
       }
 
       if (cancellationTokenSource_.IsCancellationRequested)
