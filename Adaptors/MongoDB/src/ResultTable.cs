@@ -276,6 +276,9 @@ public class ResultTable : IResultTable
     await resultCollection.DeleteManyAsync(model => model.SessionId == sessionId,
                                            cancellationToken)
                           .ConfigureAwait(false);
+
+    Logger.LogInformation("Deleted results from {sessionId}",
+                          sessionId);
   }
 
   /// <inheritdoc />

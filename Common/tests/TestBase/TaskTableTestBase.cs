@@ -1180,6 +1180,43 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task DeleteTaskFromSessionShouldSucceed()
+  {
+    if (RunTests)
+    {
+      const string sessionId = "SessionId";
+      await TaskTable!.DeleteTasksAsync(sessionId,
+                                        CancellationToken.None)
+                      .ConfigureAwait(false);
+
+      var count = await TaskTable.FindTasksAsync(data => data.SessionId == sessionId,
+                                                 data => data.TaskId,
+                                                 CancellationToken.None)
+                                 .CountAsync()
+                                 .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(0));
+    }
+  }
+
+  [Test]
+  public async Task DeleteTaskFromSessionTwiceShouldSucceed()
+  {
+    if (RunTests)
+    {
+      const string sessionId = "SessionId";
+      await TaskTable!.DeleteTasksAsync(sessionId,
+                                        CancellationToken.None)
+                      .ConfigureAwait(false);
+
+      Assert.That(() => TaskTable!.DeleteTasksAsync(sessionId,
+                                                    CancellationToken.None),
+                  Throws.Nothing);
+    }
+  }
+
+  [Test]
   public async Task ListTaskShouldSucceed()
   {
     if (RunTests)

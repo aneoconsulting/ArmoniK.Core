@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -329,9 +330,31 @@ public class GrpcSessionsService : Sessions.SessionsBase
   {
     try
     {
-      var session = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                        context.CancellationToken)
-                                       .ConfigureAwait(false);
+      var session = new SessionData(request.SessionId,
+                                    SessionStatus.Deleted,
+                                    Array.Empty<string>(),
+                                    new TaskOptions());
+
+      try
+      {
+        session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                      context.CancellationToken)
+                                     .ConfigureAwait(false);
+      }
+      catch (Exception)
+      {
+        // Session may not exist or be already deleted
+        logger_.LogDebug("Session {sessionId} not found; returning an empty one",
+                         request.SessionId);
+      }
+
+      await taskTable_.DeleteTasksAsync(request.SessionId,
+                                        context.CancellationToken)
+                      .ConfigureAwait(false);
+
+      await resultTable_.DeleteResults(request.SessionId,
+                                       context.CancellationToken)
+                        .ConfigureAwait(false);
 
       await sessionTable_.DeleteSessionAsync(request.SessionId,
                                              context.CancellationToken)

@@ -172,6 +172,22 @@ public class TaskTable : ITaskTable
     }
   }
 
+  public async Task DeleteTasksAsync(string            sessionId,
+                                     CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(DeleteTasksAsync)}");
+    activity?.SetTag($"{nameof(DeleteTaskAsync)}_SessionId",
+                     sessionId);
+    var taskCollection = taskCollectionProvider_.Get();
+
+    await taskCollection.DeleteManyAsync(tdm => tdm.SessionId == sessionId,
+                                         cancellationToken)
+                        .ConfigureAwait(false);
+
+    Logger.LogInformation("Deleted Tasks from {sessionId}",
+                          sessionId);
+  }
+
   /// <inheritdoc />
   public async Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                                Expression<Func<TaskData, object?>> orderField,
