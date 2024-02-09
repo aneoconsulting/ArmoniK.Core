@@ -90,7 +90,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     ConnectionRabbit.Channel!.QueueDeclare(partitionId,
                                            false, /* to survive broker restart */
                                            false, /* used by multiple connections */
-                                           false, /* deleted when last consumer unsubscribes (if it has had one) */
+                                           false, /* not deleted when last consumer unsubscribes (if it has had one) */
                                            queueArgs);
 
     foreach (var msg in messages)
