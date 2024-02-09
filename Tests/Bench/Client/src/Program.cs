@@ -590,8 +590,9 @@ internal static class Program
     logger.LogInformation("executions stats {@stats}",
                           stats);
 
-    await channelPool.WithInstanceAsync(async channel => await channel.LogStatsFromSessionAsync(createSessionReply.SessionId,
-                                                                                                logger)
+    await channelPool.WithInstanceAsync(async channel => await channel.ComputeThroughput(createSessionReply.SessionId,
+                                                                                         logger,
+                                                                                         CancellationToken.None)
                                                                       .ConfigureAwait(false),
                                         CancellationToken.None)
                      .ConfigureAwait(false);
