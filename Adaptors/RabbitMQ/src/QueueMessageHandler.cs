@@ -67,7 +67,7 @@ public class QueueMessageHandler : IQueueMessageHandler
          to the retry exchange, see PullQueueStorage.cs */
         channel_.BasicNack(basicGetResult_.DeliveryTag,
                            false,
-                           false);
+                           true);
         break;
       case QueueMessageStatus.Failed:
 
