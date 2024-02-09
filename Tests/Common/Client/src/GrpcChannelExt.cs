@@ -536,7 +536,7 @@ public static class GrpcChannelExt
     var count           = end.Total;
     var sessionDuration = (last.EndedAt - first.CreatedAt).ToTimeSpan();
 
-    logger.LogInformation("Throughput during session {session} : {throughput} task/s ({nTasks} tasks in {timespan})",
+    logger.LogInformation("Throughput for session {session} : {sessionThroughput} task/s ({nTasks} tasks in {timespan})",
                           sessionId,
                           count / sessionDuration.TotalMilliseconds * 1000,
                           count,
