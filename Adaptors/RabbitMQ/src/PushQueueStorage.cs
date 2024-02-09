@@ -77,9 +77,21 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
       throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
-    ConnectionRabbit.Channel!.ExchangeDeclare("ArmoniK.QueueExchange",
-                                              ExchangeType.Direct);
+    var queueArgs = new Dictionary<string, object>
+                    {
+                      {
+                        "x-max-priority", Options!.MaxPriority
+                      },
+                      {
+                        "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
+                      },
+                    };
 
+    ConnectionRabbit.Channel!.QueueDeclare(partitionId,
+                                           false, /* to survive broker restart */
+                                           false, /* used by multiple connections */
+                                           false, /* deleted when last consumer unsubscribes (if it has had one) */
+                                           queueArgs);
 
     foreach (var msg in messages)
     {
@@ -87,7 +99,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
       basicProperties.Priority = Convert.ToByte(priority);
       basicProperties.MessageId = Guid.NewGuid()
                                       .ToString();
-      ConnectionRabbit.Channel.BasicPublish("ArmoniK.QueueExchange",
+      ConnectionRabbit.Channel.BasicPublish("",
                                             partitionId,
                                             basicProperties,
                                             Encoding.UTF8.GetBytes(msg.TaskId));
