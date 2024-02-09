@@ -94,6 +94,9 @@ public enum TaskDataFields
   /// <inheritdoc cref="TaskDataHolder.ProcessedDate" />
   ProcessedDate,
 
+  /// <inheritdoc cref="TaskDataHolder.FetchedDate" />
+  FetchedDate,
+
   /// <inheritdoc cref="TaskDataHolder.ProcessingToEndDuration" />
   ProcessingToEndDuration,
 

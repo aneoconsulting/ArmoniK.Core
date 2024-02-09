@@ -80,6 +80,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.ProcessedDate))
                                                   .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.FetchedDate))
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.PodTtl))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.ProcessingToEndDuration))
@@ -112,6 +114,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                     model.ReceptionDate,
                                                                                     model.AcquisitionDate,
                                                                                     model.ProcessedDate,
+                                                                                    model.FetchedDate,
                                                                                     model.PodTtl,
                                                                                     model.ProcessingToEndDuration,
                                                                                     model.CreationToEndDuration,

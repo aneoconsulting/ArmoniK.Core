@@ -100,6 +100,9 @@ public static class TaskDataHolderExt
          ProcessedAt = taskData.ProcessedDate is not null
                          ? FromDateTime(taskData.ProcessedDate.Value)
                          : null,
+         FetchedAt = taskData.FetchedDate is not null
+                       ? FromDateTime(taskData.FetchedDate.Value)
+                       : null,
        };
 
 
@@ -161,5 +164,8 @@ public static class TaskDataHolderExt
          ProcessedAt = taskDataSummary.ProcessedDate is not null
                          ? FromDateTime(taskDataSummary.ProcessedDate.Value)
                          : null,
+         FetchedAt = taskDataSummary.FetchedDate is not null
+                       ? FromDateTime(taskDataSummary.FetchedDate.Value)
+                       : null,
        };
 }

@@ -74,6 +74,7 @@ public static class EnumFieldExt
          TaskSummaryEnumField.Error                   => data => data.Output.Error,
          TaskSummaryEnumField.ReceivedToEndDuration   => data => data.ReceivedToEndDuration,
          TaskSummaryEnumField.ProcessedAt             => data => data.ProcessedDate,
+         TaskSummaryEnumField.FetchedAt               => data => data.FetchedDate,
          TaskSummaryEnumField.Unspecified             => throw new ArgumentOutOfRangeException(nameof(enumField)),
          _                                            => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };

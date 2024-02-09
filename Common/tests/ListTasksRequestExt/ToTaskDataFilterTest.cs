@@ -80,6 +80,7 @@ public class ToTaskDataFilterTest
                                             null,
                                             null,
                                             null,
+                                            null,
                                             TimeSpan.FromDays(1),
                                             TimeSpan.FromDays(2),
                                             TimeSpan.FromDays(3),
@@ -173,6 +174,9 @@ public class ToTaskDataFilterTest
                                                                     FilterDateOperator.Equal,
                                                                     null));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.ProcessedAt,
+                                                                    FilterDateOperator.Equal,
+                                                                    null));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterDate(TaskSummaryEnumField.FetchedAt,
                                                                     FilterDateOperator.Equal,
                                                                     null));
     yield return CaseTrue(new FilterField
