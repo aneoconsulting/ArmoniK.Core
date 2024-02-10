@@ -16,7 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,79 +34,119 @@ namespace ArmoniK.Core.Common.Storage;
 public static class ResultLifeCycleHelper
 {
   /// <summary>
-  ///   Recursively abort results and put task in error when their dependencies are aborted
+  ///   Abort all tasks and results that depend directly or indirectly of the specified tasks
   /// </summary>
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
-  /// <param name="taskId">The id of the task to process</param>
+  /// <param name="taskIds">Root tasks that must be aborted</param>
+  /// <param name="reason">Abortion message</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public static async Task AbortTaskAndResults(ITaskTable        taskTable,
-                                               IResultTable      resultTable,
-                                               string            taskId,
-                                               CancellationToken cancellationToken)
+  public static async Task AbortTasksAndResults(ITaskTable          taskTable,
+                                                IResultTable        resultTable,
+                                                ICollection<string> taskIds,
+                                                string?             reason,
+                                                CancellationToken   cancellationToken)
   {
-    var taskData = await taskTable.ReadTaskAsync(taskId,
-                                                 cancellationToken)
-                                  .ConfigureAwait(false);
-
-    if (taskData.Status is not (TaskStatus.Creating or TaskStatus.Cancelled or TaskStatus.Cancelling or TaskStatus.Error))
+    // Early exit if no task is requested for abortion
+    if (!taskIds.Any())
     {
       return;
     }
 
-    if (taskData.Status is TaskStatus.Creating)
+    reason ??= $"Tasks {string.Join(", ", taskIds)} have been explicitly aborted";
+
+    taskTable.Logger.LogInformation("Abort tasks {@tasks}: {reason}",
+                                    taskIds,
+                                    reason);
+
+    // Find all metadata about the tasks that must be aborted
+    var tasks = await taskTable.FindTasksAsync(task => taskIds.Contains(task.TaskId) &&
+                                                       (task.Status == TaskStatus.Creating   || task.Status == TaskStatus.Cancelled ||
+                                                        task.Status == TaskStatus.Cancelling || task.Status == TaskStatus.Error),
+                                               task => new
+                                                       {
+                                                         task.TaskId,
+                                                         task.Status,
+                                                         task.ExpectedOutputIds,
+                                                         task.CreationDate,
+                                                         task.ProcessedDate,
+                                                         task.ReceptionDate,
+                                                       },
+                                               cancellationToken)
+                               .ToListAsync(cancellationToken)
+                               .ConfigureAwait(false);
+
+    // No eligible task for abortion
+    if (!tasks.Any())
     {
-      await taskTable.SetTaskErrorAsync(taskData with
-                                        {
-                                          EndDate = DateTime.UtcNow,
-                                          CreationToEndDuration = DateTime.UtcNow - taskData.EndDate,
-                                          ProcessingToEndDuration = DateTime.Now  - taskData.StartDate,
-                                        },
-                                        "One of the input data is aborted.",
-                                        cancellationToken)
-                     .ConfigureAwait(false);
+      return;
     }
 
-    taskTable.Logger.LogInformation("Abort results from {taskId}",
-                                    taskData.TaskId);
+    // Abort all the eligible tasks
+    var now = DateTime.UtcNow;
+    await taskTable.BulkUpdateTasks(tasks.Select(task =>
+                                                 {
+                                                   Expression<Func<TaskData, bool>> filter = td => td.TaskId == task.TaskId && td.Status == TaskStatus.Creating;
+                                                   var updates = new UpdateDefinition<TaskData>().Set(td => td.Status,
+                                                                                                      TaskStatus.Error)
+                                                                                                 .Set(td => td.Output,
+                                                                                                      new Output(Error: reason,
+                                                                                                                 Success: false))
+                                                                                                 .Set(td => td.EndDate,
+                                                                                                      now)
+                                                                                                 .Set(td => td.CreationToEndDuration,
+                                                                                                      now - task.CreationDate)
+                                                                                                 .Set(td => td.ProcessingToEndDuration,
+                                                                                                      now - task.ProcessedDate)
+                                                                                                 .Set(td => td.ReceivedToEndDuration,
+                                                                                                      now - task.ReceptionDate);
+                                                   return (filter, updates);
+                                                 }),
+                                    cancellationToken)
+                   .ConfigureAwait(false);
 
-    var creatingResults = await resultTable.GetResults(taskData.SessionId,
-                                                       taskData.ExpectedOutputIds,
-                                                       cancellationToken)
-                                           .Where(result => result.OwnerTaskId == taskId)
-                                           .Select(result => result.ResultId)
-                                           .ToListAsync(cancellationToken)
-                                           .ConfigureAwait(false);
+    // All dependent results
+    var resultIds = tasks.SelectMany(task => task.ExpectedOutputIds)
+                         .ToHashSet();
 
-    await resultTable.AbortTaskResults(taskData.SessionId,
-                                       taskData.TaskId,
-                                       cancellationToken)
-                     .ConfigureAwait(false);
+    taskTable.Logger.LogInformation("Abort results {@results}: {reason}",
+                                    resultIds,
+                                    reason);
 
-    var dependentTasks = await resultTable.GetResults(taskData.SessionId,
-                                                      creatingResults,
-                                                      cancellationToken)
-                                          .Where(result => result.Status == ResultStatus.Aborted)
-                                          .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
-                                          .ToListAsync(cancellationToken)
-                                          .ConfigureAwait(false);
+    var count = await resultTable
+                      .UpdateManyResults(result => resultIds.Contains(result.ResultId) && taskIds.Contains(result.OwnerTaskId) && result.Status == ResultStatus.Created,
+                                         new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                            ResultStatus.Aborted),
+                                         cancellationToken)
+                      .ConfigureAwait(false);
 
-    await foreach (var task in taskTable.GetTaskStatus(dependentTasks,
-                                                       cancellationToken)
-                                        .Where(status => status.Status != TaskStatus.Error)
-                                        .Select(status => status.TaskId)
-                                        .WithCancellation(cancellationToken)
-                                        .ConfigureAwait(false))
+    // Early exit if no result has been aborted
+    if (count == 0)
     {
-      await AbortTaskAndResults(taskTable,
-                                resultTable,
-                                task,
-                                cancellationToken)
-        .ConfigureAwait(false);
+      return;
     }
+
+    // Find all the tasks that depend on the aborted results
+    var nextTasks = new HashSet<string>();
+    await foreach (var dependentTasks in resultTable.GetResults(result => resultIds.Contains(result.ResultId) && result.Status == ResultStatus.Aborted &&
+                                                                          taskIds.Contains(result.OwnerTaskId),
+                                                                result => result.DependentTasks,
+                                                                cancellationToken)
+                                                    .ConfigureAwait(false))
+    {
+      nextTasks.UnionWith(dependentTasks);
+    }
+
+    // Recursively abort the tasks that indirectly depend on the aborted tasks
+    await AbortTasksAndResults(taskTable,
+                               resultTable,
+                               nextTasks,
+                               reason,
+                               cancellationToken)
+      .ConfigureAwait(false);
   }
 
   public static async Task PurgeResultsAsync(IResultTable      resultTable,

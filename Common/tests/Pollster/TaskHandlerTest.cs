@@ -726,10 +726,15 @@ public class TaskHandlerTest
                                                                            CancellationToken                   cancellationToken = default)
       => throw new NotImplementedException();
 
-    public IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
-                                                 Expression<Func<TaskData, T>>    selector,
-                                                 CancellationToken                cancellationToken = default)
-      => throw new NotImplementedException();
+    public async IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>>           filter,
+                                                       Expression<Func<TaskData, T>>              selector,
+                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+      yield return await ReadTaskAsync("taskId",
+                                       selector,
+                                       cancellationToken)
+                     .ConfigureAwait(false);
+    }
 
     public async Task<TaskData?> UpdateOneTask(string                            taskId,
                                                Expression<Func<TaskData, bool>>? filter,
