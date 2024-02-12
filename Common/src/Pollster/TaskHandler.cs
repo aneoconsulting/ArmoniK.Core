@@ -247,10 +247,14 @@ public sealed class TaskHandler : IAsyncDisposable
           await taskTable_.SetTaskCanceledAsync(taskData_,
                                                 CancellationToken.None)
                           .ConfigureAwait(false);
-          await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                          resultTable_,
-                                                          messageHandler_.TaskId,
-                                                          CancellationToken.None)
+          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                           resultTable_,
+                                                           new[]
+                                                           {
+                                                             messageHandler_.TaskId,
+                                                           },
+                                                           $"Task {messageHandler_.TaskId} has been cancelled",
+                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
 
           return AcquisitionStatus.TaskIsCancelling;
@@ -269,10 +273,14 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                          resultTable_,
-                                                          messageHandler_.TaskId,
-                                                          CancellationToken.None)
+          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                           resultTable_,
+                                                           new[]
+                                                           {
+                                                             messageHandler_.TaskId,
+                                                           },
+                                                           $"Task {messageHandler_.TaskId} was on error",
+                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
           return AcquisitionStatus.TaskIsError;
         case TaskStatus.Timeout:
@@ -281,10 +289,14 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelled:
           logger_.LogInformation("Task has been cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                          resultTable_,
-                                                          messageHandler_.TaskId,
-                                                          CancellationToken.None)
+          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                           resultTable_,
+                                                           new[]
+                                                           {
+                                                             messageHandler_.TaskId,
+                                                           },
+                                                           $"Task {messageHandler_.TaskId} was cancelled",
+                                                           CancellationToken.None)
                                      .ConfigureAwait(false);
           return AcquisitionStatus.TaskIsCancelled;
         case TaskStatus.Processing:
@@ -380,10 +392,14 @@ public sealed class TaskHandler : IAsyncDisposable
                                               CancellationToken.None)
                         .ConfigureAwait(false);
 
-        await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                        resultTable_,
-                                                        messageHandler_.TaskId,
-                                                        CancellationToken.None)
+        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                         resultTable_,
+                                                         new[]
+                                                         {
+                                                           messageHandler_.TaskId,
+                                                         },
+                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is cancelled",
+                                                         CancellationToken.None)
                                    .ConfigureAwait(false);
 
         return AcquisitionStatus.SessionCancelled;
@@ -487,10 +503,14 @@ public sealed class TaskHandler : IAsyncDisposable
             await taskTable_.SetTaskCanceledAsync(taskData_,
                                                   CancellationToken.None)
                             .ConfigureAwait(false);
-            await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                            resultTable_,
-                                                            messageHandler_.TaskId,
-                                                            CancellationToken.None)
+            await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                             resultTable_,
+                                                             new[]
+                                                             {
+                                                               messageHandler_.TaskId,
+                                                             },
+                                                             $"Task {messageHandler_.TaskId} has been cancelled while acquired on another pod",
+                                                             CancellationToken.None)
                                        .ConfigureAwait(false);
             return AcquisitionStatus.AcquisitionFailedTaskCancelling;
           }

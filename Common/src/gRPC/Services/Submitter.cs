@@ -579,10 +579,14 @@ public class Submitter : ISubmitter
           return;
         }
 
-        await ResultLifeCycleHelper.AbortTaskAndResults(taskTable_,
-                                                        resultTable_,
-                                                        taskData.TaskId,
-                                                        CancellationToken.None)
+        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                         resultTable_,
+                                                         new[]
+                                                         {
+                                                           taskData.TaskId,
+                                                         },
+                                                         "One of the input data is aborted.",
+                                                         CancellationToken.None)
                                    .ConfigureAwait(false);
       }
     }
