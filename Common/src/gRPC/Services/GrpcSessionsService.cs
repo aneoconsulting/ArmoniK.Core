@@ -348,13 +348,11 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          request.SessionId);
       }
 
-      await taskTable_.DeleteTasksAsync(request.SessionId,
-                                        context.CancellationToken)
-                      .ConfigureAwait(false);
-
-      await resultTable_.DeleteResults(request.SessionId,
-                                       context.CancellationToken)
-                        .ConfigureAwait(false);
+      await Task.WhenAll(taskTable_.DeleteTasksAsync(request.SessionId,
+                                                     context.CancellationToken),
+                         resultTable_.DeleteResults(request.SessionId,
+                                                    context.CancellationToken))
+                .ConfigureAwait(false);
 
       await sessionTable_.DeleteSessionAsync(request.SessionId,
                                              context.CancellationToken)
