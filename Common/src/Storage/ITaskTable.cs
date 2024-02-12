@@ -120,6 +120,17 @@ public interface ITaskTable : IInitializable
                        CancellationToken cancellationToken = default);
 
   /// <summary>
+  ///   Remove tasks from the data base given their session id
+  /// </summary>
+  /// <param name="sessionId">Id of the session from which tasks should be deleted</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task DeleteTasksAsync(string            sessionId,
+                        CancellationToken cancellationToken = default);
+
+  /// <summary>
   ///   List all tasks matching the given filter and ordering
   /// </summary>
   /// <param name="filter">Filter to select tasks</param>

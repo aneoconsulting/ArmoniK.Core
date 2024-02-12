@@ -45,6 +45,23 @@ public record TaskOptions(IDictionary<string, string> Options,
                           string                      ApplicationService,
                           string                      EngineType)
 {
+  /// <summary>
+  ///   Creates a default <see cref="TaskOptions" /> with empty data
+  /// </summary>
+  public TaskOptions()
+    : this(new Dictionary<string, string>(),
+           TimeSpan.Zero,
+           0,
+           0,
+           "",
+           "",
+           "",
+           "",
+           "",
+           "")
+  {
+  }
+
   /// <inheritdoc />
   public virtual bool Equals(TaskOptions? other)
     => !ReferenceEquals(null,

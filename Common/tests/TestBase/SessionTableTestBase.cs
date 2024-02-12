@@ -286,16 +286,13 @@ public class SessionTableTestBase
   }
 
   [Test]
-  public void DeleteSessionAsyncShouldFail()
+  public async Task DeleteSessionAsyncShouldNotThrow()
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await SessionTable!.DeleteSessionAsync("BadSessionId",
-                                                                                            CancellationToken.None)
-                                                                        .ConfigureAwait(false);
-                                                   });
+      await SessionTable!.DeleteSessionAsync("BadSessionId",
+                                             CancellationToken.None)
+                         .ConfigureAwait(false);
     }
   }
 
@@ -527,13 +524,11 @@ public class SessionTableTestBase
       await SessionTable.DeleteSessionAsync(sessionId)
                         .ConfigureAwait(false);
 
-      // A session cannot be deleted twice
-      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                   {
-                                                     await SessionTable.DeleteSessionAsync(sessionId,
-                                                                                           CancellationToken.None)
-                                                                       .ConfigureAwait(false);
-                                                   });
+      // A session can be deleted twice
+
+      await SessionTable.DeleteSessionAsync(sessionId,
+                                            CancellationToken.None)
+                        .ConfigureAwait(false);
       // A deleted session cannot be purged
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {

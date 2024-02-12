@@ -24,7 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -88,13 +87,8 @@ public class SessionTable : ISessionTable
   public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
   {
-    if (!storage_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"No session with id '{sessionId}' found");
-    }
-
-    storage_.Remove(sessionId,
-                    out _);
+    storage_.TryRemove(sessionId,
+                       out _);
     return Task.CompletedTask;
   }
 

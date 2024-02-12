@@ -26,7 +26,6 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -105,22 +104,21 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(DeleteSessionAsync)}");
     activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
                      sessionId);
+    var sessionCollection = sessionCollectionProvider_.Get();
 
-    var session = await UpdateOneSessionAsync(sessionId,
-                                              data => data.Status != SessionStatus.Deleted,
-                                              new Core.Common.Storage.UpdateDefinition<SessionData>().Set(model => model.Status,
-                                                                                                          SessionStatus.Deleted)
-                                                                                                     .Set(model => model.DeletionDate,
-                                                                                                          DateTime.UtcNow)
-                                                                                                     .Set(model => model.DeletionTtl,
-                                                                                                          DateTime.UtcNow),
-                                              false,
-                                              cancellationToken)
-                    .ConfigureAwait(false);
+    var res = await sessionCollection.DeleteManyAsync(data => data.SessionId == sessionId,
+                                                      cancellationToken)
+                                     .ConfigureAwait(false);
 
-    if (session is null)
+    if (res.DeletedCount > 0)
     {
-      throw new SessionNotFoundException($"No open session with {sessionId} found.");
+      Logger.LogInformation("Deleted {sessionId}",
+                            sessionId);
+    }
+    else
+    {
+      Logger.LogInformation("Tried to delete {sessionId} but not found",
+                            sessionId);
     }
   }
 
