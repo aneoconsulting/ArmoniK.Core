@@ -33,6 +33,7 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
+  private const    int                       Delay = 20;
   private readonly ILogger<PullQueueStorage> logger_;
 
   public PullQueueStorage(Amqp                      options,
@@ -95,6 +96,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
       if (message is null)
       {
+        await Task.Delay(Delay,
+                         cancellationToken)
+                  .ConfigureAwait(false);
         continue;
       }
 
