@@ -590,11 +590,17 @@ internal static class Program
     logger.LogInformation("executions stats {@stats}",
                           stats);
 
-    await channelPool.WithInstanceAsync(async channel => await channel.LogStatsFromSessionAsync(createSessionReply.SessionId,
-                                                                                                logger)
-                                                                      .ConfigureAwait(false),
-                                        CancellationToken.None)
-                     .ConfigureAwait(false);
+    var sessionStats = await channelPool.WithInstanceAsync(async channel => await channel.ComputeThroughput(createSessionReply.SessionId,
+                                                                                                            CancellationToken.None)
+                                                                                         .ConfigureAwait(false),
+                                                           CancellationToken.None)
+                                        .ConfigureAwait(false);
+
+    logger.LogInformation("Throughput for session {session} : {sessionThroughput} task/s ({nTasks} tasks in {timespan})",
+                          createSessionReply.SessionId,
+                          sessionStats.TasksCount / sessionStats.Duration.TotalMilliseconds * 1000,
+                          sessionStats.TasksCount,
+                          sessionStats.Duration);
 
     if (benchOptions.ShowEvents)
     {

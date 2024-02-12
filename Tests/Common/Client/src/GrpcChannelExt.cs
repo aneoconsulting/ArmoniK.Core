@@ -339,6 +339,45 @@ public static class GrpcChannelExt
                                    },
                                  });
 
+  private static IEnumerable<FiltersAnd> FilterStatus(string              sessionId,
+                                                      params TaskStatus[] statuses)
+    => statuses.Select(status => new FiltersAnd
+                                 {
+                                   And =
+                                   {
+                                     new FilterField
+                                     {
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.SessionId,
+                                                                    },
+                                               },
+                                       FilterString = new FilterString
+                                                      {
+                                                        Operator = FilterStringOperator.Equal,
+                                                        Value    = sessionId,
+                                                      },
+                                     },
+                                     new FilterField
+                                     {
+                                       Field = new TaskField
+                                               {
+                                                 TaskSummaryField = new TaskSummaryField
+                                                                    {
+                                                                      Field = TaskSummaryEnumField.Status,
+                                                                    },
+                                               },
+                                       FilterStatus = new FilterStatus
+                                                      {
+                                                        Operator = FilterStatusOperator.Equal,
+                                                        Value    = status,
+                                                      },
+                                     },
+                                   },
+                                 });
+
   private static Api.gRPC.V1.Results.FiltersAnd ResultsFilter(string resultId)
     => new()
        {
@@ -427,5 +466,77 @@ public static class GrpcChannelExt
         }
       }
     }
+  }
+
+
+  public static async Task<SessionStats> ComputeThroughput(this ChannelBase  channel,
+                                                           string            sessionId,
+                                                           CancellationToken cancellationToken = default)
+  {
+    var client = new Tasks.TasksClient(channel);
+
+    var first = (await client.ListTasksAsync(new ListTasksRequest
+                                             {
+                                               Page     = 0,
+                                               PageSize = 1,
+                                               Filters = new Filters
+                                                         {
+                                                           Or =
+                                                           {
+                                                             FilterStatus(sessionId,
+                                                                          TaskStatus.Error,
+                                                                          TaskStatus.Completed,
+                                                                          TaskStatus.Retried),
+                                                           },
+                                                         },
+                                               Sort = new ListTasksRequest.Types.Sort
+                                                      {
+                                                        Direction = SortDirection.Asc,
+                                                        Field = new TaskField
+                                                                {
+                                                                  TaskSummaryField = new TaskSummaryField
+                                                                                     {
+                                                                                       Field = TaskSummaryEnumField.CreatedAt,
+                                                                                     },
+                                                                },
+                                                      },
+                                             },
+                                             cancellationToken: cancellationToken)).Tasks.Single();
+
+    var end = await client.ListTasksAsync(new ListTasksRequest
+                                          {
+                                            Page     = 0,
+                                            PageSize = 1,
+                                            Filters = new Filters
+                                                      {
+                                                        Or =
+                                                        {
+                                                          FilterStatus(sessionId,
+                                                                       TaskStatus.Error,
+                                                                       TaskStatus.Completed,
+                                                                       TaskStatus.Retried),
+                                                        },
+                                                      },
+                                            Sort = new ListTasksRequest.Types.Sort
+                                                   {
+                                                     Direction = SortDirection.Desc,
+                                                     Field = new TaskField
+                                                             {
+                                                               TaskSummaryField = new TaskSummaryField
+                                                                                  {
+                                                                                    Field = TaskSummaryEnumField.EndedAt,
+                                                                                  },
+                                                             },
+                                                   },
+                                          },
+                                          cancellationToken: cancellationToken);
+
+    var last = end.Tasks.Single();
+
+    return new SessionStats
+           {
+             Duration   = (last.EndedAt - first.CreatedAt).ToTimeSpan(),
+             TasksCount = end.Total,
+           };
   }
 }
