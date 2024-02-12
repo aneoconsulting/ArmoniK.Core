@@ -106,12 +106,20 @@ public class SessionTable : ISessionTable
                      sessionId);
     var sessionCollection = sessionCollectionProvider_.Get();
 
-    await sessionCollection.DeleteManyAsync(data => data.SessionId == sessionId,
-                                            cancellationToken)
-                           .ConfigureAwait(false);
+    var res = await sessionCollection.DeleteManyAsync(data => data.SessionId == sessionId,
+                                                      cancellationToken)
+                                     .ConfigureAwait(false);
 
-    Logger.LogInformation("Deleted {sessionId}",
-                          sessionId);
+    if (res.DeletedCount > 0)
+    {
+      Logger.LogInformation("Deleted {sessionId}",
+                            sessionId);
+    }
+    else
+    {
+      Logger.LogInformation("Tried to delete {sessionId} but not found",
+                            sessionId);
+    }
   }
 
   /// <inheritdoc />
