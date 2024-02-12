@@ -469,10 +469,9 @@ public static class GrpcChannelExt
   }
 
 
-  public static async Task<long> ComputeThroughput(this ChannelBase  channel,
-                                                   string            sessionId,
-                                                   ILogger           logger,
-                                                   CancellationToken cancellationToken = default)
+  public static async Task<SessionStats> ComputeThroughput(this ChannelBase  channel,
+                                                           string            sessionId,
+                                                           CancellationToken cancellationToken = default)
   {
     var client = new Tasks.TasksClient(channel);
 
@@ -532,16 +531,12 @@ public static class GrpcChannelExt
                                           },
                                           cancellationToken: cancellationToken);
 
-    var last            = end.Tasks.Single();
-    var count           = end.Total;
-    var sessionDuration = (last.EndedAt - first.CreatedAt).ToTimeSpan();
+    var last = end.Tasks.Single();
 
-    logger.LogInformation("Throughput for session {session} : {sessionThroughput} task/s ({nTasks} tasks in {timespan})",
-                          sessionId,
-                          count / sessionDuration.TotalMilliseconds * 1000,
-                          count,
-                          sessionDuration);
-
-    return (long)(sessionDuration.TotalMilliseconds * 1000 / count);
+    return new SessionStats
+           {
+             Duration   = (last.EndedAt - first.CreatedAt).ToTimeSpan(),
+             TasksCount = end.Total,
+           };
   }
 }

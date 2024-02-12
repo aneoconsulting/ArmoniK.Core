@@ -65,9 +65,14 @@ public sealed class SessionClient : ISessionClient
                                   {
                                     SessionId = sessionId_,
                                   });
-    channel_.ComputeThroughput(sessionId_,
-                               logger_)
-            .Wait();
+    var stats = channel_.ComputeThroughput(sessionId_)
+                        .Result;
+
+    logger_.LogInformation("Throughput for session {session} : {sessionThroughput} task/s ({nTasks} tasks in {timespan})",
+                           sessionId_,
+                           stats.TasksCount / stats.Duration.TotalMilliseconds * 1000,
+                           stats.TasksCount,
+                           stats.Duration);
 
     sessionsClient_.PurgeSession(new PurgeSessionRequest
                                  {
