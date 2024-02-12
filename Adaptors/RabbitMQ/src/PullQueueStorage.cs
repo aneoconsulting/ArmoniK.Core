@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,8 +76,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     IsInitialized = true;
   }
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
-                                                                        CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var nbPulledMessage = 0;
 
