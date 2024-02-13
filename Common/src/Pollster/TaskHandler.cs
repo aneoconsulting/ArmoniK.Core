@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -807,7 +808,20 @@ public sealed class TaskHandler : IAsyncDisposable
     }
     else
     {
-      var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode);
+      var connectionEnded = e is RpcException
+                                 {
+                                   StatusCode: StatusCode.Unavailable,
+                                   InnerException: HttpRequestException
+                                                   {
+                                                     InnerException: HttpIOException
+                                                                     {
+                                                                       HttpRequestError: HttpRequestError.ResponseEnded,
+                                                                     },
+                                                   },
+                                 };
+
+      var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode) && !connectionEnded;
+
 
       if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && isWorkerDown))
       {
