@@ -23,6 +23,8 @@ resource "docker_container" "worker" {
     fluentd-address = var.log_driver.address
   }
 
+  restart = "unless-stopped"
+
   ports {
     internal = 1080
     external = var.worker.port + var.replica_counter

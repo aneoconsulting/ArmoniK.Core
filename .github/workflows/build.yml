@@ -698,6 +698,80 @@ jobs:
           bash tools/export_mongodb.sh
           tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-database.tar.gz
 
+
+  runCrash:
+    needs:
+      - versionning
+      - images
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Install AWSCLI (the one in the Github runner does not work)
+        run: |
+          pip install awscli
+
+      - name: Setup just
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@a1502cd9e758c50496cc9ac5308c4843bcd56d36 # v3
+
+      - name: Deploy Core
+        run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
+          sleep 10
+          ls -la terraform/logs/*.json
+
+      - name: Build client
+        run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just tag=${VERSION} buildCrashingWorkerClient
+
+      - name: Run Crash test
+        timeout-minutes: 4
+        run: |
+          MONITOR_PREFIX="monitor/crash" tools/monitor.sh \
+            docker run --net armonik_network --rm \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_crashingworker_test_client:$VERSION
+
+      - name: Show logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.tar.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz
+      - name: Collect docker container logs
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+        if: always()
+        with:
+          dest: './container-logs'
+      - name: Upload docker container logs
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-container-logs.tar.gz
+      - name: Export and upload database
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-database.tar.gz
+
+
+
   defaultPartitionMock:
     needs:
       - versionning
@@ -921,6 +995,7 @@ jobs:
       - testStreamDC
       - images
       - runBench
+      - runCrash
       - healthCheckTest
       - testConnectivity
     runs-on: ubuntu-latest
