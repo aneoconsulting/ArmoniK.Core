@@ -30,7 +30,7 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Samples.Segfault.Client.Options;
+using ArmoniK.Samples.CrashingWorker.Client.Options;
 using ArmoniK.Utils;
 
 using Google.Protobuf;
@@ -49,7 +49,7 @@ using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Samples.Segfault.Client;
+namespace ArmoniK.Samples.CrashingWorker.Client;
 
 internal static class Program
 {
@@ -69,8 +69,8 @@ internal static class Program
                                .Get<GrpcClient>();
     logger.LogInformation("gRPC options : {@grpcOptions}",
                           options);
-    var testOptions = new SegfaultOptions();
-    configuration.GetSection(SegfaultOptions.SettingSection)
+    var testOptions = new CrashingWorkerOptions();
+    configuration.GetSection(CrashingWorkerOptions.SettingSection)
                  .Bind(testOptions);
     logger.LogInformation("options : {@options}",
                           testOptions);

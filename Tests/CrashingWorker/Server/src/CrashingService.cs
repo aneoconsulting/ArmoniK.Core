@@ -31,16 +31,16 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Samples.Segfault.Server;
+namespace ArmoniK.Samples.CrashingWorker.Server;
 
 [UsedImplicitly]
-public class SegfaultComputerService : WorkerStreamWrapper
+public class CrashingService : WorkerStreamWrapper
 {
-  public SegfaultComputerService(ILoggerFactory      loggerFactory,
-                                 GrpcChannelProvider provider)
+  public CrashingService(ILoggerFactory      loggerFactory,
+                         GrpcChannelProvider provider)
     : base(loggerFactory,
            provider)
-    => logger_ = loggerFactory.CreateLogger<SegfaultComputerService>();
+    => logger_ = loggerFactory.CreateLogger<CrashingService>();
 
   public override Task<Output> Process(ITaskHandler taskHandler)
   {

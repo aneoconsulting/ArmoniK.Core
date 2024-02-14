@@ -91,11 +91,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Utils", "Utils
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.PubSub", "Adaptors\PubSub\src\ArmoniK.Core.Adapters.PubSub.csproj", "{761BD231-ACB3-47EB-ABCB-9F78F0ECCBBA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Segfault", "Segfault", "{6EE499A5-760F-4823-8AB6-DBDE8C5B5F45}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CrashingWorker", "CrashingWorker", "{6EE499A5-760F-4823-8AB6-DBDE8C5B5F45}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Segfault.Client", "Tests\Segfault\Client\src\ArmoniK.Samples.Segfault.Client.csproj", "{ACFE1254-E0F4-42DF-ACAA-18E121173C27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.CrashingWorker.Client", "Tests\CrashingWorker\Client\src\ArmoniK.Samples.CrashingWorker.Client.csproj", "{ACFE1254-E0F4-42DF-ACAA-18E121173C27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Segfault.Server", "Tests\Segfault\Server\src\ArmoniK.Samples.Segfault.Server.csproj", "{9F19E6DD-D9CD-43EC-B5CC-0081997ED8B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.CrashingWorker.Server", "Tests\CrashingWorker\Server\src\ArmoniK.Samples.CrashingWorker.Server.csproj", "{9F19E6DD-D9CD-43EC-B5CC-0081997ED8B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

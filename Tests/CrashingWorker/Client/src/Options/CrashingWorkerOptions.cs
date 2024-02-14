@@ -15,17 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Samples.Segfault.Client.Options;
+namespace ArmoniK.Samples.CrashingWorker.Client.Options;
 
 /// <summary>
-///   Class containing options for SegfaultOptions
+///   Class containing options for CrashingWorkerOptions
 /// </summary>
-public class SegfaultOptions
+public class CrashingWorkerOptions
 {
   /// <summary>
   ///   Name of the section in dotnet options
   /// </summary>
-  public const string SettingSection = nameof(SegfaultOptions);
+  public const string SettingSection = nameof(CrashingWorkerOptions);
 
   /// <summary>
   ///   Partition in which to submit the tasks

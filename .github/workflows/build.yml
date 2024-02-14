@@ -727,14 +727,14 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=segfault replicas=4 partitions=1 build-deploy
+            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
           sleep 10
           ls -la terraform/logs/*.json
 
       - name: Build client
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
-            just tag=${VERSION} buildSegfaultClient
+            just tag=${VERSION} buildCrashingWorkerClient
 
       - name: Run Crash test
         timeout-minutes: 4
@@ -742,7 +742,7 @@ jobs:
           MONITOR_PREFIX="monitor/crash" tools/monitor.sh \
             docker run --net armonik_network --rm \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_segfault_test_client:$VERSION
+            dockerhubaneo/armonik_core_crashingworker_test_client:$VERSION
 
       - name: Show logs
         if: always()

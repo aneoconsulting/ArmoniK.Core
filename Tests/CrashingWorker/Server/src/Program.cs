@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Samples.Segfault.Server;
+using ArmoniK.Samples.CrashingWorker.Server;
 
-WorkerServer.Create<SegfaultComputerService>()
+WorkerServer.Create<CrashingService>()
             .Run();
