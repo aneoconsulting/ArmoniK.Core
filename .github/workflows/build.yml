@@ -727,7 +727,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=segfault build-deploy
+            just log_level=Information tag=${VERSION} queue=activemq worker=segfault replicas=4 partitions=1 build-deploy
           sleep 10
           ls -la terraform/logs/*.json
 
@@ -737,7 +737,7 @@ jobs:
             just tag=${VERSION} buildSegfaultClient
 
       - name: Run Crash test
-        timeout-minutes: 3
+        timeout-minutes: 4
         run: |
           MONITOR_PREFIX="monitor/crash" tools/monitor.sh \
             docker run --net armonik_network --rm \
