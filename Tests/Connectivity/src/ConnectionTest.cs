@@ -31,7 +31,7 @@ using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests.Client;
+namespace ArmoniK.Core.Tests.Connectivity;
 
 [TestFixture]
 internal class ConnectionTest
@@ -44,7 +44,7 @@ internal class ConnectionTest
     channel_ = null;
   }
 
-  private const string RootFolder = "../../../../../../../";
+  private const string RootFolder = "../../../../../../";
 
   private ChannelBase? channel_;
 

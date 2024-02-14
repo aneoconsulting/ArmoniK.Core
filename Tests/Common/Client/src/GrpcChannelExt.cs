@@ -39,7 +39,7 @@ using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
 using FilterStatus = ArmoniK.Api.gRPC.V1.Tasks.FilterStatus;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Common.Tests.Client;
+namespace ArmoniK.Core.Common.Client;
 
 public static class GrpcChannelExt
 {

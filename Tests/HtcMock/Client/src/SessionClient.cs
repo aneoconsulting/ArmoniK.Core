@@ -25,7 +25,7 @@ using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Core.Common.Tests.Client;
+using ArmoniK.Core.Common.Client;
 
 using Google.Protobuf;
 

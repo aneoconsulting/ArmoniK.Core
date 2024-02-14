@@ -17,7 +17,7 @@
 
 using System;
 
-namespace ArmoniK.Core.Common.Tests.Client;
+namespace ArmoniK.Core.Common.Client;
 
 /// <summary>
 ///   Statistics related to a session

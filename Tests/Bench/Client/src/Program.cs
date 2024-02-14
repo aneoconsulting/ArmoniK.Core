@@ -34,7 +34,7 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Core.Common.Tests.Client;
+using ArmoniK.Core.Common.Client;
 using ArmoniK.Samples.Bench.Client.Options;
 using ArmoniK.Utils;
 
