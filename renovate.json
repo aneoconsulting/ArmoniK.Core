@@ -28,7 +28,8 @@
       ],
       "matchDatasources": [
         "nuget"
-      ]
+      ],
+      "bumpVersion": "patch"
     },
     {
       "groupName": "ArmoniK.Api",
@@ -38,7 +39,8 @@
       ],
       "matchDatasources": [
         "nuget"
-      ]
+      ],
+      "bumpVersion": "patch"
     },
     {
       "groupName": "ArmoniK.Utils",
@@ -48,7 +50,8 @@
       ],
       "matchDatasources": [
         "nuget"
-      ]
+      ],
+      "bumpVersion": "patch"
     },
     {
       "groupName": "Htc.Mock",
