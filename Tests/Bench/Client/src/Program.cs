@@ -461,10 +461,10 @@ internal static class Program
 
     var taskCreated = Stopwatch.GetTimestamp();
 
-    await channelPool.WithInstanceAsync(async channel => await channel.WaitForResultsAsync(createSessionReply.SessionId,
-                                                                                           results,
-                                                                                           CancellationToken.None)
-                                                                      .ConfigureAwait(false),
+    await channelPool.WithInstanceAsync(async channel => await new Events.EventsClient(channel).WaitForResultsAsync(createSessionReply.SessionId,
+                                                                                                                    results,
+                                                                                                                    CancellationToken.None)
+                                                                                               .ConfigureAwait(false),
                                         CancellationToken.None)
                      .ConfigureAwait(false);
 
