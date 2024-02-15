@@ -40,6 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Client\src\ArmoniK.Core.Common.Tests.Client.csproj" />
+    <ProjectReference Include="..\..\..\Common\Client\src\ArmoniK.Core.Common.Client.csproj" />
   </ItemGroup>
 </Project>

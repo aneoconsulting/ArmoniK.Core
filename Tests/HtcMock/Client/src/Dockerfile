@@ -9,16 +9,10 @@ ARG VERSION=1.0.0.0
 
 WORKDIR /src
 COPY ["Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj", "Tests/HtcMock/Client/src/"]
-COPY ["Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj", "Tests/Common/Client/src/"]
-COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
-COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
-COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
+COPY ["Tests/Common/Client/src/ArmoniK.Core.Common.Client.csproj", "Tests/Common/Client/src/"]
 RUN dotnet restore -a "${TARGETARCH}" "Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj"
 COPY ["Tests/HtcMock/Client/src", "Tests/HtcMock/Client/src"]
 COPY ["Tests/Common/Client/src", "Tests/Common/Client/src"]
-COPY ["Utils/src/", "Utils/src/"]
-COPY ["Base/src/", "Base/src/"]
-COPY ["Common/src", "Common/src"]
 WORKDIR "/src/Tests/HtcMock/Client/src"
 RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Samples.HtcMock.Client.csproj" --no-restore -o /app/publish -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion="$VERSION" -p:Version="$VERSION"
 

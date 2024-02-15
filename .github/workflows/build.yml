@@ -552,14 +552,14 @@ jobs:
          sudo update-ca-certificates
 
       - name: Run connection test
-        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Common/Client/src/ArmoniK.Core.Common.Tests.Client.csproj --filter ArmoniK.Core.Common.Tests.Client.ConnectionTest --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Test - Connectivity CA ${{ matrix.ca }}
-          path: ./Tests/Common/Client/src/TestResults/test-results.trx
+          path: ./Tests/Connectivity/src/TestResults/test-results.trx
           reporter: dotnet-trx
 
       - name: Show logs
