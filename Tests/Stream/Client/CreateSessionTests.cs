@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.gRPC.V1.Sessions;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -35,8 +35,8 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 internal class CreateSessionTests
 {
-  private Submitter.SubmitterClient? client_;
-  private string?                    partition_;
+  private Sessions.SessionsClient? client_;
+  private string?                  partition_;
 
   [SetUp]
   public void SetUp()
@@ -55,13 +55,13 @@ internal class CreateSessionTests
                                             .AddEnvironmentVariables();
     var configuration = builder.Build();
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
-                               .Get<GrpcClient>();
+                               .Get<GrpcClient>()!;
 
     partition_ = configuration.GetValue<string>("Partition");
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
     var channel = GrpcChannelFactory.CreateChannel(options);
-    client_ = new Submitter.SubmitterClient(channel);
+    client_ = new Sessions.SessionsClient(channel);
     Console.WriteLine("Client created");
   }
 

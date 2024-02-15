@@ -80,6 +80,7 @@ internal class ExceptionInterceptorTests
   private GrpcSubmitterServiceHelper? helper_;
 
   [Test]
+  [Obsolete]
   public async Task TooManyExceptionUnaryCallShouldBeUnhealthy()
   {
     Exception? ex = null;
@@ -168,6 +169,7 @@ internal class ExceptionInterceptorTests
   }
 
   [Test]
+  [Obsolete]
   public async Task TooManyExceptionClientStreamShouldBeUnhealthy()
   {
     Exception? ex            = null;
@@ -381,6 +383,7 @@ internal class ExceptionInterceptorTests
   }
 
   [Test]
+  [Obsolete]
   public async Task TooManyExceptionServerStreamShouldBeUnhealthy()
   {
     Exception? ex         = null;

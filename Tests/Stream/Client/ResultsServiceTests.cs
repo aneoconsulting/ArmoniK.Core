@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +27,6 @@ using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Utils;
 
 using Google.Protobuf;
@@ -39,8 +37,6 @@ using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
-
-using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Submitter.CreateSessionRequest;
 
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
@@ -76,21 +72,21 @@ internal class ResultsServiceTests
   [Test]
   public async Task CreateResultsAndMetadataShouldSucceed()
   {
-    var submitterClient = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
+    var sessionClient = new Sessions.SessionsClient(channel_);
+    var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
+                                                                    {
+                                                                      DefaultTaskOption = new TaskOptions
+                                                                                          {
+                                                                                            Priority    = 1,
+                                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                                            MaxRetries  = 2,
+                                                                                            PartitionId = partition_,
+                                                                                          },
+                                                                      PartitionIds =
                                                                       {
-                                                                        DefaultTaskOption = new TaskOptions
-                                                                                            {
-                                                                                              Priority    = 1,
-                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                                              MaxRetries  = 2,
-                                                                                              PartitionId = partition_,
-                                                                                            },
-                                                                        PartitionIds =
-                                                                        {
-                                                                          partition_,
-                                                                        },
-                                                                      });
+                                                                        partition_,
+                                                                      },
+                                                                    });
 
     var resultsClient = new Results.ResultsClient(channel_);
     var results = await resultsClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
@@ -105,7 +101,7 @@ internal class ResultsServiceTests
                                                                    },
                                                                  });
 
-    var payloadBytes = Encoding.ASCII.GetBytes("Payload");
+    var payloadBytes = "Payload"u8.ToArray();
 
     await resultsClient.UploadResultData(createSessionReply.SessionId,
                                          results.Results.Single()
@@ -126,24 +122,24 @@ internal class ResultsServiceTests
   [Test]
   public async Task CreateResultsDirectlyShouldSucceed()
   {
-    var submitterClient = new Submitter.SubmitterClient(channel_);
-    var createSessionReply = await submitterClient.CreateSessionAsync(new CreateSessionRequest
+    var sessionClient = new Sessions.SessionsClient(channel_);
+    var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
+                                                                    {
+                                                                      DefaultTaskOption = new TaskOptions
+                                                                                          {
+                                                                                            Priority    = 1,
+                                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                                            MaxRetries  = 2,
+                                                                                            PartitionId = partition_,
+                                                                                          },
+                                                                      PartitionIds =
                                                                       {
-                                                                        DefaultTaskOption = new TaskOptions
-                                                                                            {
-                                                                                              Priority    = 1,
-                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                                              MaxRetries  = 2,
-                                                                                              PartitionId = partition_,
-                                                                                            },
-                                                                        PartitionIds =
-                                                                        {
-                                                                          partition_,
-                                                                        },
-                                                                      });
+                                                                        partition_,
+                                                                      },
+                                                                    });
 
     var resultsClient = new Results.ResultsClient(channel_);
-    var payloadBytes  = Encoding.ASCII.GetBytes("Payload");
+    var payloadBytes  = "Payload"u8.ToArray();
 
     var results = await resultsClient.CreateResultsAsync(new CreateResultsRequest
                                                          {
@@ -182,7 +178,7 @@ internal class ResultsServiceTests
   public async Task DownloadNotExistingResultShouldSucceed()
   {
     var sessionClient = new Sessions.SessionsClient(channel_);
-    var createSessionReply = await sessionClient.CreateSessionAsync(new Api.gRPC.V1.Sessions.CreateSessionRequest
+    var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
                                                                     {
                                                                       DefaultTaskOption = new TaskOptions
                                                                                           {

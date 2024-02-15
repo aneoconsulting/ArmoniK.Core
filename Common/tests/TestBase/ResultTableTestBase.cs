@@ -496,15 +496,15 @@ public class ResultTableTestBase
                         .ConfigureAwait(false);
 
 
-      var resultStatus = (await ResultTable.GetResultStatus(new[]
-                                                            {
-                                                              "ResultIsAvailable",
-                                                              "ResultIsNotAvailable",
-                                                              "ResultIsCreated",
-                                                            },
-                                                            "SessionId",
-                                                            CancellationToken.None)
-                                           .ConfigureAwait(false)).ToList();
+      var resultStatus = (await ResultTable!.GetResultStatus(new[]
+                                                             {
+                                                               "ResultIsAvailable",
+                                                               "ResultIsNotAvailable",
+                                                               "ResultIsCreated",
+                                                             },
+                                                             "SessionId",
+                                                             CancellationToken.None)
+                                            .ConfigureAwait(false)).ToList();
 
       Assert.AreEqual(3,
                       resultStatus.Count(status => status.Status == ResultStatus.Aborted));
@@ -524,15 +524,15 @@ public class ResultTableTestBase
                         .ConfigureAwait(false);
 
 
-      var resultStatus = (await ResultTable.GetResultStatus(new[]
-                                                            {
-                                                              "ResultIsAvailable",
-                                                              "ResultIsNotAvailable",
-                                                              "ResultIsCreated",
-                                                            },
-                                                            "SessionId",
-                                                            CancellationToken.None)
-                                           .ConfigureAwait(false)).ToList();
+      var resultStatus = (await ResultTable!.GetResultStatus(new[]
+                                                             {
+                                                               "ResultIsAvailable",
+                                                               "ResultIsNotAvailable",
+                                                               "ResultIsCreated",
+                                                             },
+                                                             "SessionId",
+                                                             CancellationToken.None)
+                                            .ConfigureAwait(false)).ToList();
 
       Assert.AreEqual(1,
                       resultStatus.Count(status => status.Status == ResultStatus.Aborted));

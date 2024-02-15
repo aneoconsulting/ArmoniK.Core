@@ -62,7 +62,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   public DateTime ReceptionDateTime { get; init; }
 
   /// <inheritdoc />
-  public async ValueTask DisposeAsync()
+  public ValueTask DisposeAsync()
   {
     switch (Status)
     {
@@ -86,5 +86,7 @@ public class QueueMessageHandler : IQueueMessageHandler
     }
 
     GC.SuppressFinalize(this);
+
+    return new ValueTask();
   }
 }

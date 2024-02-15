@@ -29,6 +29,7 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
+[Obsolete]
 public static class SubmitterExt
 {
   public static string CreateSessionAndCheckReply(this Submitter.SubmitterClient client,

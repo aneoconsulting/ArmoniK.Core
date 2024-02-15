@@ -41,6 +41,7 @@ using NUnit.Framework;
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 [TestFixture]
+[Obsolete]
 internal class StreamWrapperTests
 {
   [SetUp]
@@ -60,7 +61,7 @@ internal class StreamWrapperTests
                                             .AddEnvironmentVariables();
     var configuration = builder.Build();
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
-                               .Get<GrpcClient>();
+                               .Get<GrpcClient>()!;
 
     partition_ = configuration.GetValue<string>("Partition");
 
