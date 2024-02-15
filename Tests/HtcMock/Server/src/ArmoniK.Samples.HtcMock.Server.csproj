@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.16.0-edge.71.e66e34d" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.16.0-edge.82.46ef2b9" />
     <PackageReference Include="Htc.Mock" Version="3.0.0-alpha11" />
   </ItemGroup>
 
