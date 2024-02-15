@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Client;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -87,13 +88,13 @@ public sealed class SessionClient : ISessionClient
                      .Result;
 
   public async Task WaitSubtasksCompletion(string id)
-    => await channel_.WaitForResultsAsync(sessionId_,
-                                          new[]
-                                          {
-                                            id,
-                                          },
-                                          CancellationToken.None)
-                     .ConfigureAwait(false);
+    => await new Events.EventsClient(channel_).WaitForResultsAsync(sessionId_,
+                                                                   new[]
+                                                                   {
+                                                                     id,
+                                                                   },
+                                                                   CancellationToken.None)
+                                              .ConfigureAwait(false);
 
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
