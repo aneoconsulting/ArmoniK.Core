@@ -379,9 +379,11 @@ public sealed class TaskHandler : IAsyncDisposable
       sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
                                                          CancellationToken.None)
                                         .ConfigureAwait(false);
-      if (sessionData_.Status == SessionStatus.Cancelled && taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
+      if (sessionData_.Status is SessionStatus.Cancelled or SessionStatus.Deleted or SessionStatus.Closed or SessionStatus.Purged &&
+          taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
       {
-        logger_.LogInformation("Task is being cancelled because its session is cancelled");
+        logger_.LogInformation("Task is being cancelled because its session is {sessionStatus}",
+                               sessionData_.Status);
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
         taskData_ = taskData_ with
@@ -399,11 +401,11 @@ public sealed class TaskHandler : IAsyncDisposable
                                                          {
                                                            messageHandler_.TaskId,
                                                          },
-                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is cancelled",
+                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}",
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
 
-        return AcquisitionStatus.SessionCancelled;
+        return AcquisitionStatus.SessionNotExecutable;
       }
 
       if (sessionData_.Status == SessionStatus.Paused)

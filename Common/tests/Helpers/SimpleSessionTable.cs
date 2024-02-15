@@ -81,6 +81,7 @@ public class SimpleSessionTable : ISessionTable
              null,
              null,
              null,
+             null,
              new List<string>
              {
                PartitionId,
@@ -111,6 +112,7 @@ public class SimpleSessionTable : ISessionTable
                                                                                     null,
                                                                                     null,
                                                                                     null,
+                                                                                    null,
                                                                                     new List<string>
                                                                                     {
                                                                                       PartitionId,
@@ -128,6 +130,7 @@ public class SimpleSessionTable : ISessionTable
                                                      true,
                                                      true,
                                                      DateTime.Today.ToUniversalTime(),
+                                                     DateTime.Now.ToUniversalTime(),
                                                      DateTime.Now.ToUniversalTime(),
                                                      DateTime.Now.ToUniversalTime(),
                                                      DateTime.Now.ToUniversalTime(),

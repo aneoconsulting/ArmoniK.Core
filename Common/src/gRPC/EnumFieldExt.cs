@@ -119,7 +119,10 @@ public static class EnumFieldExt
          SessionRawEnumField.Options      => session => session.Options,
          SessionRawEnumField.CreatedAt    => session => session.CreationDate,
          SessionRawEnumField.CancelledAt  => session => session.CancellationDate,
-         SessionRawEnumField.Duration     => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         SessionRawEnumField.Duration     => session => session.Duration,
+         SessionRawEnumField.ClosedAt     => session => session.ClosureDate,
+         SessionRawEnumField.PurgedAt     => session => session.PurgeDate,
+         SessionRawEnumField.DeletedAt    => session => session.DeletionDate,
          SessionRawEnumField.Unspecified  => throw new ArgumentOutOfRangeException(nameof(enumField)),
          _                                => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };

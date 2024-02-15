@@ -58,6 +58,7 @@ public class ToSessionDataFilterTest
                                                   DateTime.UtcNow,
                                                   DateTime.UtcNow,
                                                   DateTime.UtcNow,
+                                                  DateTime.UtcNow,
                                                   TimeSpan.FromDays(2),
                                                   new List<string>(),
                                                   Options);

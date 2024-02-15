@@ -845,6 +845,7 @@ public class TaskHandlerTest
                                      null,
                                      null,
                                      null,
+                                     null,
                                      partitionIds.ToList(),
                                      defaultOptions);
       return Task.FromResult(sessionData_.SessionId);
@@ -940,7 +941,17 @@ public class TaskHandlerTest
   }
 
   [Test]
-  public async Task AcquireTaskFromCancelledSessionShouldFail()
+  [TestCase(SessionStatus.Cancelled,
+            ExpectedResult = AcquisitionStatus.SessionNotExecutable)]
+  [TestCase(SessionStatus.Paused,
+            ExpectedResult = AcquisitionStatus.SessionPaused)]
+  [TestCase(SessionStatus.Purged,
+            ExpectedResult = AcquisitionStatus.SessionNotExecutable)]
+  [TestCase(SessionStatus.Deleted,
+            ExpectedResult = AcquisitionStatus.SessionNotExecutable)]
+  [TestCase(SessionStatus.Closed,
+            ExpectedResult = AcquisitionStatus.SessionNotExecutable)]
+  public async Task<AcquisitionStatus> AcquireTaskFromSessionShouldFail(SessionStatus sessionStatus)
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -960,8 +971,10 @@ public class TaskHandlerTest
     var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
                                          .ConfigureAwait(false);
 
-    await testServiceProvider.SessionTable.CancelSessionAsync(sessionId,
-                                                              CancellationToken.None)
+    await testServiceProvider.SessionTable.UpdateOneSessionAsync(sessionId,
+                                                                 null,
+                                                                 new UpdateDefinition<SessionData>().Set(data => data.Status,
+                                                                                                         sessionStatus))
                              .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
@@ -969,48 +982,10 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.SessionCancelled,
-                    acquired);
     Assert.AreEqual(taskId,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
                                        .TaskId);
-  }
-
-  [Test]
-  public async Task AcquireTaskFromPausedSessionShouldFail()
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler  = new Mock<IAgentHandler>();
-    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
-                                                                mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
-
-    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                         .ConfigureAwait(false);
-
-    await testServiceProvider.SessionTable.PauseSessionAsync(sessionId,
-                                                             CancellationToken.None)
-                             .ConfigureAwait(false);
-
-    sqmh.TaskId = taskId;
-
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
-
-    Assert.AreEqual(AcquisitionStatus.SessionPaused,
-                    acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+    return acquired;
   }
 
   [Test]

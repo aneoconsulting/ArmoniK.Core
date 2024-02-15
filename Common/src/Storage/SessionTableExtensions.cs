@@ -266,6 +266,72 @@ public static class SessionTableExtensions
   }
 
   /// <summary>
+  ///   Close a session
+  /// </summary>
+  /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
+  /// <param name="sessionId">Id of the session to purge</param>
+  /// <param name="creationDateTime">Start of the session</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The metadata of the closed session
+  /// </returns>
+  /// <exception cref="SessionNotFoundException">if session was not found or deleted</exception>
+  /// <exception cref="InvalidSessionTransitionException">if session is in a status that cannot be cancelled</exception>
+  public static async Task<SessionData> CloseSessionAsync(this ISessionTable sessionTable,
+                                                          string             sessionId,
+                                                          DateTime?          creationDateTime,
+                                                          CancellationToken  cancellationToken = default)
+  {
+    var now = DateTime.UtcNow;
+    var ud = new UpdateDefinition<SessionData>().Set(model => model.Status,
+                                                     SessionStatus.Closed)
+                                                .Set(model => model.ClosureDate,
+                                                     now)
+                                                .Set(model => model.WorkerSubmission,
+                                                     false)
+                                                .Set(model => model.ClientSubmission,
+                                                     false);
+
+    if (creationDateTime is not null)
+    {
+      ud = ud.Set(data => data.Duration,
+                  now - creationDateTime);
+    }
+
+    var session = await sessionTable.UpdateOneSessionAsync(sessionId,
+                                                           data => data.Status == SessionStatus.Running || data.Status == SessionStatus.Paused,
+                                                           ud,
+                                                           false,
+                                                           cancellationToken)
+                                    .ConfigureAwait(false);
+
+    if (session is not null)
+    {
+      return session;
+    }
+
+    session = await sessionTable.GetSessionAsync(sessionId,
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    switch (session.Status)
+    {
+      case SessionStatus.Running:
+      case SessionStatus.Paused:
+      case SessionStatus.Purged:
+      case SessionStatus.Cancelled:
+        throw new UnreachableException($"Session status should be {SessionStatus.Closed} but is {session.Status}");
+      case SessionStatus.Closed:
+        throw new InvalidSessionTransitionException($"Cannot close a session with status {session.Status}");
+      case SessionStatus.Deleted:
+        throw new SessionNotFoundException($"Session {sessionId} was found but is deleted.",
+                                           true);
+      case SessionStatus.Unspecified:
+      default:
+        throw new InvalidOperationException($"Unknown session status {session.Status}");
+    }
+  }
+
+  /// <summary>
   ///   Purge a session
   /// </summary>
   /// <param name="sessionTable">Interface to manage sessions lifecycle</param>
@@ -292,15 +358,8 @@ public static class SessionTableExtensions
                                                 .Set(model => model.ClientSubmission,
                                                      false);
 
-    if (creationDateTime is not null)
-    {
-      ud = ud.Set(data => data.Duration,
-                  now - creationDateTime);
-    }
-
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
-                                                           data => data.Status == SessionStatus.Running || data.Status == SessionStatus.Paused ||
-                                                                   data.Status == SessionStatus.Cancelled,
+                                                           data => data.Status == SessionStatus.Closed || data.Status == SessionStatus.Cancelled,
                                                            ud,
                                                            false,
                                                            cancellationToken)
@@ -317,6 +376,7 @@ public static class SessionTableExtensions
     switch (session.Status)
     {
       case SessionStatus.Running:
+      case SessionStatus.Closed:
       case SessionStatus.Paused:
       case SessionStatus.Cancelled:
         throw new UnreachableException($"Session status should be {SessionStatus.Purged} but is {session.Status}");

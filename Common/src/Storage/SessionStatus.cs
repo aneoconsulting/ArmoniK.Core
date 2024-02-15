@@ -34,6 +34,9 @@ public enum SessionStatus
   /// <summary>Session is paused. No more tasks will be executed.</summary>
   Paused,
 
+  /// <summary>Session is closed. Submissions will fail.</summary>
+  Closed,
+
   /// <summary>Session is purged. Data will be deleted.</summary>
   Purged,
 

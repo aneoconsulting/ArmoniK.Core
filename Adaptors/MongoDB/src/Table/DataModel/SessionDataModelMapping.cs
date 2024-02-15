@@ -46,6 +46,8 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.CancellationDate))
                                                      .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.ClosureDate))
+                                                     .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.PurgeDate))
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.DeletionDate))
@@ -65,6 +67,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                                                           model.WorkerSubmission,
                                                                                           model.CreationDate,
                                                                                           model.CancellationDate,
+                                                                                          model.ClosureDate,
                                                                                           model.PurgeDate,
                                                                                           model.DeletionDate,
                                                                                           model.DeletionTtl,

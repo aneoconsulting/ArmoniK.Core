@@ -272,6 +272,54 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(CloseSession))]
+  public override async Task<CloseSessionResponse> CloseSession(CloseSessionRequest request,
+                                                                ServerCallContext   context)
+  {
+    try
+    {
+      var session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                        context.CancellationToken)
+                                       .ConfigureAwait(false);
+
+      session = await sessionTable_.CloseSessionAsync(request.SessionId,
+                                                      session.CreationDate,
+                                                      context.CancellationToken)
+                                   .ConfigureAwait(false);
+
+      logger_.LogInformation("Closed {sessionId}",
+                             session);
+
+      return new CloseSessionResponse
+             {
+               Session = session.ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while purging session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while purging session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(PurgeSession))]
   public override async Task<PurgeSessionResponse> PurgeSession(PurgeSessionRequest request,

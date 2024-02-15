@@ -86,7 +86,7 @@ public enum AcquisitionStatus
   /// <summary>
   ///   Task not acquired because the session has been cancelled
   /// </summary>
-  SessionCancelled,
+  SessionNotExecutable,
 
   /// <summary>
   ///   Task not acquired because the session has been paused
