@@ -256,6 +256,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while pausing session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be paused"));
+    }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
@@ -303,6 +310,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          "Error while closing session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
+    }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while closing session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be closed"));
     }
     catch (ArmoniKException e)
     {
@@ -354,6 +368,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          "Error while purging session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
+    }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while purging session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be purged"));
     }
     catch (ArmoniKException e)
     {
@@ -423,6 +444,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          "Error while deleting session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
+    }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while deleting session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be deleted"));
     }
     catch (ArmoniKException e)
     {
