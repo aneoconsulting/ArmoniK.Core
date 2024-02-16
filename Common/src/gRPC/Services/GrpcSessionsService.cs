@@ -252,21 +252,83 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while pausing session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
+    }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while pausing session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be paused"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while pausing session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while pausing session");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see application logs"));
+    }
+  }
+
+
+  [RequiresPermission(typeof(GrpcSessionsService),
+                      nameof(CloseSession))]
+  public override async Task<CloseSessionResponse> CloseSession(CloseSessionRequest request,
+                                                                ServerCallContext   context)
+  {
+    try
+    {
+      var session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                        context.CancellationToken)
+                                       .ConfigureAwait(false);
+
+      session = await sessionTable_.CloseSessionAsync(request.SessionId,
+                                                      session.CreationDate,
+                                                      context.CancellationToken)
+                                   .ConfigureAwait(false);
+
+      logger_.LogInformation("Closed {sessionId}",
+                             session);
+
+      return new CloseSessionResponse
+             {
+               Session = session.ToGrpcSessionRaw(),
+             };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while closing session");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while closing session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be closed"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while closing session");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see application logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while closing session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
@@ -307,6 +369,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while purging session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be purged"));
+    }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
@@ -317,7 +386,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while purging session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
@@ -372,21 +441,28 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while deleting session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
+    }
+    catch (InvalidSessionTransitionException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while deleting session");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session is in a state that cannot be deleted"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while deleting session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while deleting session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

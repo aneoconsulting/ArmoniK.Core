@@ -56,5 +56,8 @@ public static class SessionDataExt
          Duration = sessionData.Duration is not null
                       ? Duration.FromTimeSpan(sessionData.Duration.Value)
                       : null,
+         ClosedAt = sessionData.ClosureDate is not null
+                      ? Timestamp.FromDateTime(sessionData.ClosureDate.Value)
+                      : null,
        };
 }

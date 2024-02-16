@@ -499,11 +499,19 @@ public class SessionTableTestBase
       Assert.AreEqual(session.Status,
                       SessionStatus.Running);
 
+      session = await SessionTable.CloseSessionAsync(sessionId,
+                                                     session.CreationDate)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(session.Status,
+                      SessionStatus.Closed);
+      Assert.NotNull(session.ClosureDate);
+
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
       Assert.AreEqual(session.Status,
-                      SessionStatus.Running);
+                      SessionStatus.Closed);
 
       session = await SessionTable.PurgeSessionAsync(sessionId,
                                                      session.CreationDate)
@@ -645,6 +653,17 @@ public class SessionTableTestBase
       var session = await SessionTable.GetSessionAsync(sessionId)
                                       .ConfigureAwait(false);
 
+      await SessionTable.CloseSessionAsync(sessionId,
+                                           session.CreationDate,
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(SessionStatus.Closed,
+                      session.Status);
+
       await SessionTable.PurgeSessionAsync(sessionId,
                                            session.CreationDate,
                                            CancellationToken.None)
@@ -660,6 +679,43 @@ public class SessionTableTestBase
                                                             {
                                                               await SessionTable.CancelSessionAsync(sessionId,
                                                                                                     CancellationToken.None)
+                                                                                .ConfigureAwait(false);
+                                                            });
+    }
+  }
+
+  [Test]
+  public async Task CloseClosedSessionShouldThrow()
+  {
+    if (RunTests)
+    {
+      var sessionId = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "partition",
+                                                              },
+                                                              Options)
+                                         .ConfigureAwait(false);
+
+
+      var session = await SessionTable.GetSessionAsync(sessionId)
+                                      .ConfigureAwait(false);
+
+      await SessionTable.CloseSessionAsync(sessionId,
+                                           session.CreationDate,
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+      session = await SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(SessionStatus.Closed,
+                      session.Status);
+
+      Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
+                                                            {
+                                                              await SessionTable.CloseSessionAsync(sessionId,
+                                                                                                   session.CreationDate,
+                                                                                                   CancellationToken.None)
                                                                                 .ConfigureAwait(false);
                                                             });
     }
