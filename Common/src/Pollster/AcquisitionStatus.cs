@@ -84,7 +84,7 @@ public enum AcquisitionStatus
   TaskIsProcessingButSeemsCrashed,
 
   /// <summary>
-  ///   Task not acquired because the session has been cancelled
+  ///   Task not acquired because tasks from session should not be run anymore
   /// </summary>
   SessionNotExecutable,
 
