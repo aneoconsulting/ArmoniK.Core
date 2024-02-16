@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Client" Version="3.16.0-jgclose.84.d23a5f8" />
+    <PackageReference Include="ArmoniK.Api.Client" Version="3.16.0-edge.85.8d52f10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
