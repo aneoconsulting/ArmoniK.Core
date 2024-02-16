@@ -252,21 +252,21 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while pausing session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while pausing session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while pausing session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
@@ -300,21 +300,21 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while purging session");
+                         "Error while closing session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while purging session");
+                         "Error while closing session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while closing session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
@@ -365,7 +365,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while purging session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
@@ -420,21 +420,21 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while deleting session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while deleting session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while deleting session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
