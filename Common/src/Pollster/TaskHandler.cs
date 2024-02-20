@@ -41,6 +41,8 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public sealed class TaskHandler : IAsyncDisposable
 {
+  private readonly Activity?                     activity_;
+  private readonly ActivityContext               activityContext_;
   private readonly ActivitySource                activitySource_;
   private readonly IAgentHandler                 agentHandler_;
   private readonly CancellationTokenSource       cancellationTokenSource_;
@@ -100,6 +102,21 @@ public sealed class TaskHandler : IAsyncDisposable
     ownerPodName_          = ownerPodName;
     taskData_              = null;
     sessionData_           = null;
+
+    activity_ = activitySource.CreateActivity($"{nameof(TaskHandler)}",
+                                              ActivityKind.Internal);
+    activityContext_ = activity_?.Context ?? new ActivityContext();
+    activity_?.Start();
+    activity_?.Stop();
+    activity_?.SetTag("TaskId",
+                      messageHandler_.TaskId);
+    activity_?.SetTag("MessageId",
+                      messageHandler_.MessageId);
+    activity_?.SetTag("OwnerPodId",
+                      ownerPodId);
+    activity_?.SetTag("OwnerPodName",
+                      ownerPodName);
+
     token_ = Guid.NewGuid()
                  .ToString();
     folder_ = Path.Combine(pollsterOptions.SharedCacheFolder,
@@ -125,6 +142,10 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
+    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(DisposeAsync)}",
+                                                       ActivityKind.Internal,
+                                                       activityContext_,
+                                                       activity_?.TagObjects);
     using var _ = logger_.BeginNamedScope("DisposeAsync",
                                           ("taskId", messageHandler_.TaskId),
                                           ("messageHandler", messageHandler_.MessageId),
@@ -147,6 +168,8 @@ public sealed class TaskHandler : IAsyncDisposable
     catch (DirectoryNotFoundException)
     {
     }
+
+    activity_?.Dispose();
   }
 
   /// <summary>
@@ -173,6 +196,10 @@ public sealed class TaskHandler : IAsyncDisposable
   /// </returns>
   public async Task StopCancelledTask()
   {
+    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(StopCancelledTask)}",
+                                                       ActivityKind.Internal,
+                                                       activityContext_,
+                                                       activity_?.TagObjects);
     if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
@@ -203,7 +230,10 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
   public async Task<AcquisitionStatus> AcquireTask()
   {
-    using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
+    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(AcquireTask)}",
+                                                       ActivityKind.Internal,
+                                                       activityContext_,
+                                                       activity_?.TagObjects);
     using var _ = logger_.BeginNamedScope("Acquiring task",
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId));
@@ -214,6 +244,10 @@ public sealed class TaskHandler : IAsyncDisposable
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
 
+      activity_?.SetTag("SessionId",
+                        taskData_.SessionId);
+      activity?.SetTag("SessionId",
+                       taskData_.SessionId);
       using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData_.SessionId));
       logger_.LogInformation("Start task acquisition");
 
@@ -582,6 +616,10 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
+    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(PreProcessing)}",
+                                                       ActivityKind.Internal,
+                                                       activityContext_,
+                                                       activity_?.TagObjects);
     using var _ = logger_.BeginNamedScope("PreProcessing",
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
@@ -620,6 +658,10 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
+    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(ExecuteTask)}",
+                                                       ActivityKind.Internal,
+                                                       activityContext_,
+                                                       activity_?.TagObjects);
     using var _ = logger_.BeginNamedScope("TaskExecution",
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
@@ -629,6 +671,7 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       logger_.LogDebug("Create agent server to receive requests from worker");
 
+      activity?.AddEvent(new ActivityEvent("Start Handler"));
       // In theory we could create the server during dependencies checking and activate it only now
       agent_ = await agentHandler_.Start(token_,
                                          logger_,
@@ -638,6 +681,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                          cancellationTokenSource_.Token)
                                   .ConfigureAwait(false);
 
+      activity?.AddEvent(new ActivityEvent("Start status update"));
       logger_.LogInformation("Start executing task");
       taskData_ = taskData_ with
                   {
@@ -669,6 +713,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
     try
     {
+      activity?.AddEvent(new ActivityEvent("Start request"));
       // at this point worker requests should have ended
       logger_.LogDebug("Wait for task output");
       output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
@@ -681,10 +726,12 @@ public sealed class TaskHandler : IAsyncDisposable
                   {
                     ProcessedDate = DateTime.UtcNow,
                   };
+      activity?.AddEvent(new ActivityEvent("End request"));
 
       logger_.LogDebug("Stop agent server");
       await agentHandler_.Stop(workerConnectionCts_.Token)
                          .ConfigureAwait(false);
+      activity?.AddEvent(new ActivityEvent("Stopped Handler"));
     }
     catch (Exception e)
     {
@@ -708,6 +755,10 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing()
   {
+    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(PostProcessing)}",
+                                                       ActivityKind.Internal,
+                                                       activityContext_,
+                                                       activity_?.TagObjects);
     if (taskData_ is null)
     {
       throw new NullReferenceException(nameof(taskData_) + " is null.");
