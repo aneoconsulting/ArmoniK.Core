@@ -92,4 +92,9 @@ public class HtcMock
   ///   Partition in which to submit the tasks
   /// </summary>
   public string Partition { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Purge data from the created session
+  /// </summary>
+  public bool PurgeData { get; set; } = true;
 }

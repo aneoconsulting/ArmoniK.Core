@@ -306,6 +306,13 @@ internal static class Program
                                                      {
                                                        SessionId = createSessionReply.SessionId,
                                                      });
+                                if (benchOptions.PurgeData)
+                                {
+                                  client.PurgeSession(new PurgeSessionRequest
+                                                      {
+                                                        SessionId = createSessionReply.SessionId,
+                                                      });
+                                }
 
                                 Environment.Exit(0);
                               };

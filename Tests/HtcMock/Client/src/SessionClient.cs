@@ -42,6 +42,7 @@ public sealed class SessionClient : ISessionClient
 {
   private readonly ChannelBase             channel_;
   private readonly ILogger<GridClient>     logger_;
+  private readonly Options.HtcMock         optionsHtcMock_;
   private readonly Results.ResultsClient   resultsClient_;
   private readonly string                  sessionId_;
   private readonly Sessions.SessionsClient sessionsClient_;
@@ -49,6 +50,7 @@ public sealed class SessionClient : ISessionClient
 
   public SessionClient(ChannelBase         channel,
                        string              sessionId,
+                       Options.HtcMock     optionsHtcMock,
                        ILogger<GridClient> logger)
   {
     resultsClient_  = new Results.ResultsClient(channel);
@@ -57,6 +59,7 @@ public sealed class SessionClient : ISessionClient
     channel_        = channel;
     logger_         = logger;
     sessionId_      = sessionId;
+    optionsHtcMock_ = optionsHtcMock;
   }
 
 
@@ -75,10 +78,13 @@ public sealed class SessionClient : ISessionClient
                            stats.TasksCount,
                            stats.Duration);
 
-    sessionsClient_.PurgeSession(new PurgeSessionRequest
-                                 {
-                                   SessionId = sessionId_,
-                                 });
+    if (optionsHtcMock_.PurgeData)
+    {
+      sessionsClient_.PurgeSession(new PurgeSessionRequest
+                                   {
+                                     SessionId = sessionId_,
+                                   });
+    }
   }
 
   public byte[] GetResult(string id)

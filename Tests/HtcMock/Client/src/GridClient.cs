@@ -89,6 +89,7 @@ public class GridClient : IGridClient
 
     return new SessionClient(channel_,
                              createSessionReply.SessionId,
+                             optionsHtcMock_,
                              logger_);
   }
 }
