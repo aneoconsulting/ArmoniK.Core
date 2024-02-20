@@ -93,4 +93,10 @@ public class BenchOptions
   ///   Number of tasks to be used in parallel execution
   /// </summary>
   public int DegreeOfParallelism { get; set; } = 1;
+
+
+  /// <summary>
+  ///   Purge data from the created session
+  /// </summary>
+  public bool PurgeData { get; set; } = true;
 }
