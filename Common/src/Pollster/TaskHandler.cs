@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -116,6 +117,14 @@ public sealed class TaskHandler : IAsyncDisposable
                       ownerPodId);
     activity_?.SetTag("OwnerPodName",
                       ownerPodName);
+    activity_?.SetBaggage("TaskId",
+                          messageHandler_.TaskId);
+    activity_?.SetBaggage("MessageId",
+                          messageHandler_.MessageId);
+    activity_?.SetBaggage("OwnerPodId",
+                          ownerPodId);
+    activity_?.SetBaggage("OwnerPodName",
+                          ownerPodName);
 
     token_ = Guid.NewGuid()
                  .ToString();
@@ -142,10 +151,8 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(DisposeAsync)}",
-                                                       ActivityKind.Internal,
-                                                       activityContext_,
-                                                       activity_?.TagObjects);
+    using var activity = activitySource_.StartActivityFromParent(activityContext_,
+                                                                 activity_);
     using var _ = logger_.BeginNamedScope("DisposeAsync",
                                           ("taskId", messageHandler_.TaskId),
                                           ("messageHandler", messageHandler_.MessageId),
@@ -196,10 +203,9 @@ public sealed class TaskHandler : IAsyncDisposable
   /// </returns>
   public async Task StopCancelledTask()
   {
-    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(StopCancelledTask)}",
-                                                       ActivityKind.Internal,
-                                                       activityContext_,
-                                                       activity_?.TagObjects);
+    using var activity = activitySource_.StartActivityFromParent(activityContext_,
+                                                                 activity_);
+
     if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
@@ -230,10 +236,8 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
   public async Task<AcquisitionStatus> AcquireTask()
   {
-    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(AcquireTask)}",
-                                                       ActivityKind.Internal,
-                                                       activityContext_,
-                                                       activity_?.TagObjects);
+    using var activity = activitySource_.StartActivityFromParent(activityContext_,
+                                                                 activity_);
     using var _ = logger_.BeginNamedScope("Acquiring task",
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId));
@@ -246,8 +250,12 @@ public sealed class TaskHandler : IAsyncDisposable
 
       activity_?.SetTag("SessionId",
                         taskData_.SessionId);
+      activity_?.SetBaggage("SessionId",
+                            taskData_.SessionId);
       activity?.SetTag("SessionId",
                        taskData_.SessionId);
+      activity?.SetBaggage("SessionId",
+                           taskData_.SessionId);
       using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData_.SessionId));
       logger_.LogInformation("Start task acquisition");
 
@@ -616,10 +624,8 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
-    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(PreProcessing)}",
-                                                       ActivityKind.Internal,
-                                                       activityContext_,
-                                                       activity_?.TagObjects);
+    using var activity = activitySource_.StartActivityFromParent(activityContext_,
+                                                                 activity_);
     using var _ = logger_.BeginNamedScope("PreProcessing",
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
@@ -658,10 +664,8 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
-    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(ExecuteTask)}",
-                                                       ActivityKind.Internal,
-                                                       activityContext_,
-                                                       activity_?.TagObjects);
+    using var activity = activitySource_.StartActivityFromParent(activityContext_,
+                                                                 activity_);
     using var _ = logger_.BeginNamedScope("TaskExecution",
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
@@ -755,10 +759,8 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing()
   {
-    using var activity = activitySource_.StartActivity($"{nameof(TaskHandler)}.{nameof(PostProcessing)}",
-                                                       ActivityKind.Internal,
-                                                       activityContext_,
-                                                       activity_?.TagObjects);
+    using var activity = activitySource_.StartActivityFromParent(activityContext_,
+                                                                 activity_);
     if (taskData_ is null)
     {
       throw new NullReferenceException(nameof(taskData_) + " is null.");
