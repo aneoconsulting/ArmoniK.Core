@@ -67,5 +67,10 @@ internal class HealthChecksTests
                                .ConfigureAwait(false);
 
     Assert.IsNotNull(response);
+    foreach (var health in response.Services)
+    {
+      Assert.That(health.Healthy,
+                  Is.EqualTo(HealthStatusEnum.Healthy));
+    }
   }
 }
