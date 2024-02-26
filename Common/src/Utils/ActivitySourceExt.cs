@@ -22,6 +22,17 @@ namespace ArmoniK.Core.Common.Utils;
 
 public static class ActivitySourceExt
 {
+  /// <summary>
+  ///   Starts an activity with the given context while propagating tags and baggage from the parent
+  /// </summary>
+  /// <param name="source">Activity source from which create the new activity</param>
+  /// <param name="context">Context to pass to the created activity</param>
+  /// <param name="parent">Activity parent with tags and baggage to propagate</param>
+  /// <param name="kind">Activity kind</param>
+  /// <param name="name">Name of the created activity, defaults to caller name</param>
+  /// <returns>
+  ///   The started activity
+  /// </returns>
   public static Activity? StartActivityFromParent(this ActivitySource       source,
                                                   ActivityContext           context,
                                                   Activity?                 parent,

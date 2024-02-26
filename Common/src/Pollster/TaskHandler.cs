@@ -109,22 +109,14 @@ public sealed class TaskHandler : IAsyncDisposable
     activityContext_ = activity_?.Context ?? new ActivityContext();
     activity_?.Start();
     activity_?.Stop();
-    activity_?.SetTag("TaskId",
-                      messageHandler_.TaskId);
-    activity_?.SetTag("MessageId",
-                      messageHandler_.MessageId);
-    activity_?.SetTag("OwnerPodId",
-                      ownerPodId);
-    activity_?.SetTag("OwnerPodName",
-                      ownerPodName);
-    activity_?.SetBaggage("TaskId",
-                          messageHandler_.TaskId);
-    activity_?.SetBaggage("MessageId",
-                          messageHandler_.MessageId);
-    activity_?.SetBaggage("OwnerPodId",
-                          ownerPodId);
-    activity_?.SetBaggage("OwnerPodName",
-                          ownerPodName);
+    activity_?.SetTagAndBaggage("TaskId",
+                                messageHandler_.TaskId);
+    activity_?.SetTagAndBaggage("MessageId",
+                                messageHandler_.MessageId);
+    activity_?.SetTagAndBaggage("OwnerPodId",
+                                ownerPodId);
+    activity_?.SetTagAndBaggage("OwnerPodName",
+                                ownerPodName);
 
     token_ = Guid.NewGuid()
                  .ToString();
@@ -248,14 +240,10 @@ public sealed class TaskHandler : IAsyncDisposable
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      activity_?.SetTag("SessionId",
-                        taskData_.SessionId);
-      activity_?.SetBaggage("SessionId",
-                            taskData_.SessionId);
-      activity?.SetTag("SessionId",
-                       taskData_.SessionId);
-      activity?.SetBaggage("SessionId",
-                           taskData_.SessionId);
+      activity_?.SetTagAndBaggage("SessionId",
+                                  taskData_.SessionId);
+      activity?.SetTagAndBaggage("SessionId",
+                                 taskData_.SessionId);
       using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData_.SessionId));
       logger_.LogInformation("Start task acquisition");
 
