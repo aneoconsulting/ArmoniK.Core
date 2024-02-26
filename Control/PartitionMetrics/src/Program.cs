@@ -21,8 +21,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -106,13 +104,10 @@ public static class Program
                           });
       app.MapControllers();
 
-      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
-      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
 
-      await sessionProvider.Init(CancellationToken.None)
-                           .ConfigureAwait(false);
-      await partitionCollectionProvider.Init(CancellationToken.None)
-                                       .ConfigureAwait(false);
+      var partitionTable = app.Services.GetRequiredService<IPartitionTable>();
+      await partitionTable.Init(CancellationToken.None)
+                          .ConfigureAwait(false);
       await app.RunAsync()
                .ConfigureAwait(false);
 

@@ -67,5 +67,8 @@ internal class HealthChecksTests
                                .ConfigureAwait(false);
 
     Assert.IsNotNull(response);
+    Assert.That(response.Services,
+                Has.All.Property(nameof(CheckHealthResponse.Types.ServiceHealth.Healthy))
+                   .EqualTo(HealthStatusEnum.Healthy));
   }
 }
