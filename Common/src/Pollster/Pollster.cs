@@ -308,13 +308,6 @@ public class Pollster : IInitializable
                                                             ("taskId", message.TaskId),
                                                             ("ownerPodId", ownerPodId_));
 
-            // ReSharper disable once ExplicitCallerInfoArgument
-            using var activity = activitySource_.StartActivity("ProcessQueueMessage");
-            activity?.SetBaggage("TaskId",
-                                 message.TaskId);
-            activity?.SetBaggage("messageId",
-                                 message.MessageId);
-
             taskHandlerLogger.LogDebug("Start a new Task to process the messageHandler");
 
             // Propagate back the errors from the runningTaskProcessor
