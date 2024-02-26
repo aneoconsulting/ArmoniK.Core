@@ -24,8 +24,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Base;
@@ -222,26 +220,23 @@ public static class Program
         app.MapGrpcReflectionService();
       }
 
-      var sessionProvider             = app.Services.GetRequiredService<SessionProvider>();
-      var objectStorage               = app.Services.GetRequiredService<IObjectStorage>();
-      var pushQueueStorage            = app.Services.GetRequiredService<IPushQueueStorage>();
-      var partitionCollectionProvider = app.Services.GetRequiredService<MongoCollectionProvider<PartitionData, PartitionDataModelMapping>>();
-      var taskCollectionProvider      = app.Services.GetRequiredService<MongoCollectionProvider<TaskData, TaskDataModelMapping>>();
-      var sessionCollectionProvider   = app.Services.GetRequiredService<MongoCollectionProvider<SessionData, SessionDataModelMapping>>();
-      var resultCollectionProvider    = app.Services.GetRequiredService<MongoCollectionProvider<Result, ResultDataModelMapping>>();
-      var taskObjectFactory           = objectStorage.Init(CancellationToken.None);
-      var taskPushQueueStorage        = pushQueueStorage.Init(CancellationToken.None);
+      var objectStorage        = app.Services.GetRequiredService<IObjectStorage>();
+      var pushQueueStorage     = app.Services.GetRequiredService<IPushQueueStorage>();
+      var taskTable            = app.Services.GetRequiredService<ITaskTable>();
+      var resultTable          = app.Services.GetRequiredService<IResultTable>();
+      var partitionTable       = app.Services.GetRequiredService<IPartitionTable>();
+      var sessionTable         = app.Services.GetRequiredService<ISessionTable>();
+      var taskObjectFactory    = objectStorage.Init(CancellationToken.None);
+      var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
 
-      await sessionProvider.Init(CancellationToken.None)
-                           .ConfigureAwait(false);
-      await partitionCollectionProvider.Init(CancellationToken.None)
-                                       .ConfigureAwait(false);
-      await taskCollectionProvider.Init(CancellationToken.None)
-                                  .ConfigureAwait(false);
-      await sessionCollectionProvider.Init(CancellationToken.None)
-                                     .ConfigureAwait(false);
-      await resultCollectionProvider.Init(CancellationToken.None)
-                                    .ConfigureAwait(false);
+      await taskTable.Init(CancellationToken.None)
+                     .ConfigureAwait(false);
+      await resultTable.Init(CancellationToken.None)
+                       .ConfigureAwait(false);
+      await partitionTable.Init(CancellationToken.None)
+                          .ConfigureAwait(false);
+      await sessionTable.Init(CancellationToken.None)
+                        .ConfigureAwait(false);
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
