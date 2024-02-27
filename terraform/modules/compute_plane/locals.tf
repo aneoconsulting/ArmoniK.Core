@@ -19,4 +19,5 @@ locals {
     "ComputePlane__AgentChannel__Address=/cache/armonik_agent.sock",
   ]
   gen_env = [for k, v in var.generated_env_vars : "${k}=${v}"]
+  polling_agent_name = "${var.polling_agent.name}${var.replica_counter}"
 }

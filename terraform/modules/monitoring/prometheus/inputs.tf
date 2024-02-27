@@ -12,3 +12,8 @@ variable "exposed_port" {
   default = 9090
 
 }
+
+variable "polling_agent_names" {
+  type = list(string)
+  default = []
+}

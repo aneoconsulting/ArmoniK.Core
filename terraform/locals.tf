@@ -29,4 +29,5 @@ locals {
   submitter      = merge(var.submitter, { tag = var.core_tag })
   compute_plane  = merge(var.compute_plane, { tag = var.core_tag }, { worker = local.worker })
   partition_list = { for i in local.partitions : i => merge(var.partition_data, { _id = "${var.partition_data._id}${i}" }) }
+  polling_agent_names = toset([ for v in module.compute_plane: v.polling_agent_name ])
 }

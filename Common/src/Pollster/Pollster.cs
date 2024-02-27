@@ -31,6 +31,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
@@ -61,6 +62,7 @@ public class Pollster : IInitializable
   private readonly IPullQueueStorage                         pullQueueStorage_;
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
+  private readonly TaskHandlerMetrics                        taskHandlerMetrics_;
   private readonly ISessionTable                             sessionTable_;
   private readonly ISubmitter                                submitter_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
@@ -87,7 +89,7 @@ public class Pollster : IInitializable
                   ITaskProcessingChecker     taskProcessingChecker,
                   IWorkerStreamHandler       workerStreamHandler,
                   IAgentHandler              agentHandler,
-                  RunningTaskQueue           runningTaskQueue)
+                  RunningTaskQueue           runningTaskQueue, TaskHandlerMetrics taskHandlerMetrics)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -95,26 +97,27 @@ public class Pollster : IInitializable
                                             $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
-    logger_                = logger;
-    loggerFactory_         = loggerFactory;
-    activitySource_        = activitySource;
-    pullQueueStorage_      = pullQueueStorage;
-    lifeTime_              = lifeTime;
-    dataPrefetcher_        = dataPrefetcher;
-    pollsterOptions_       = pollsterOptions;
-    messageBatchSize_      = options.MessageBatchSize;
-    objectStorage_         = objectStorage;
-    resultTable_           = resultTable;
-    submitter_             = submitter;
-    sessionTable_          = sessionTable;
-    taskTable_             = taskTable;
-    taskProcessingChecker_ = taskProcessingChecker;
-    workerStreamHandler_   = workerStreamHandler;
-    agentHandler_          = agentHandler;
-    runningTaskQueue_      = runningTaskQueue;
-    ownerPodId_            = LocalIpFinder.LocalIpv4Address();
-    ownerPodName_          = Dns.GetHostName();
-    Failed                 = false;
+    logger_                  = logger;
+    loggerFactory_           = loggerFactory;
+    activitySource_          = activitySource;
+    pullQueueStorage_        = pullQueueStorage;
+    lifeTime_                = lifeTime;
+    dataPrefetcher_          = dataPrefetcher;
+    pollsterOptions_         = pollsterOptions;
+    messageBatchSize_        = options.MessageBatchSize;
+    objectStorage_           = objectStorage;
+    resultTable_             = resultTable;
+    submitter_               = submitter;
+    sessionTable_            = sessionTable;
+    taskTable_               = taskTable;
+    taskProcessingChecker_   = taskProcessingChecker;
+    workerStreamHandler_     = workerStreamHandler;
+    agentHandler_            = agentHandler;
+    runningTaskQueue_        = runningTaskQueue;
+    taskHandlerMetrics_ = taskHandlerMetrics;
+    ownerPodId_              = AgentIdentifier.OwnerPodId;
+    ownerPodName_            = AgentIdentifier.OwnerPodName;
+    Failed                   = false;
   }
 
   public ICollection<string> TaskProcessing
@@ -332,7 +335,7 @@ public class Pollster : IInitializable
                                               pollsterOptions_,
                                               () => taskProcessingDict_.TryRemove(message.TaskId,
                                                                                   out var _),
-                                              cts);
+                                              cts, taskHandlerMetrics_);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
             messageDispose.Reset();
 
