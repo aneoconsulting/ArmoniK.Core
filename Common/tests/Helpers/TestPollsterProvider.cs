@@ -160,6 +160,7 @@ public class TestPollsterProvider : IDisposable
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
            .AddSingleton<FunctionExecutionMetricsFactory>()
+           .AddSingleton<AgentIdentifier>()
            .AddSingleton(workerStreamHandler)
            .AddSingleton(agentHandler)
            .AddSingleton(pullQueueStorage);

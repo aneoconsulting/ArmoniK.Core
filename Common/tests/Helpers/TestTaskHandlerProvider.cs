@@ -154,6 +154,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                   Injection.Options.Pollster.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton<FunctionExecutionMetricsFactory>()
+           .AddSingleton<AgentIdentifier>()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),

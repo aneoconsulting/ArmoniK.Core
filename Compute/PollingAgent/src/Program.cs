@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -113,21 +112,13 @@ public static class Program
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<FunctionExecutionMetricsFactory>()
+             .AddSingleton<AgentIdentifier>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
 
       var otel = builder.Services.AddOpenTelemetry();
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                                                                      .AddService("ArmoniK.Core.Agent")
-                                                                      .AddAttributes(new KeyValuePair<string, object>[]
-                                                                                     {
-                                                                                       new(nameof(AgentIdentifier.OwnerPodId)
-                                                                                             .ToLower(),
-                                                                                           AgentIdentifier.OwnerPodId),
-                                                                                       new(nameof(AgentIdentifier.OwnerPodName)
-                                                                                             .ToLower(),
-                                                                                           AgentIdentifier.OwnerPodName),
-                                                                                     }))
+                                                                      .AddService("ArmoniK.Core.Agent"))
                                    .AddPrometheusExporter()
                                    .AddMeter(FunctionExecutionMetricsFactory.Name));
 

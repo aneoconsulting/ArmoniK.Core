@@ -31,14 +31,15 @@ public class FunctionExecutionMetricsFactory
   private readonly System.Diagnostics.Metrics.Meter meter_;
   private readonly KeyValuePair<string, object?>[]  tags_;
 
-  public FunctionExecutionMetricsFactory(IMeterFactory meterFactory)
+  public FunctionExecutionMetricsFactory(IMeterFactory   meterFactory,
+                                         AgentIdentifier identifier)
   {
     tags_ = new KeyValuePair<string, object?>[]
             {
               new($"{Name}.{nameof(AgentIdentifier.OwnerPodId)}".ToLower(),
-                  AgentIdentifier.OwnerPodId),
+                  identifier.OwnerPodId),
               new($"{Name}.{nameof(AgentIdentifier.OwnerPodName)}".ToLower(),
-                  AgentIdentifier.OwnerPodName),
+                  identifier.OwnerPodName),
             };
     meter_ = meterFactory.Create(Name,
                                  null,

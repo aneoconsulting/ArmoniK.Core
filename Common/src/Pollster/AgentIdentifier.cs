@@ -21,8 +21,8 @@ using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public static class AgentIdentifier
+public class AgentIdentifier
 {
-  public static readonly string OwnerPodId   = LocalIpFinder.LocalIpv4Address();
-  public static readonly string OwnerPodName = Dns.GetHostName();
+  public readonly string OwnerPodId   = LocalIpFinder.LocalIpv4Address();
+  public readonly string OwnerPodName = Dns.GetHostName();
 }
