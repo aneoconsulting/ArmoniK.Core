@@ -49,6 +49,7 @@ public class Pollster : IInitializable
   private readonly ActivitySource                            activitySource_;
   private readonly IAgentHandler                             agentHandler_;
   private readonly DataPrefetcher                            dataPrefetcher_;
+  private readonly FunctionExecutionMetrics                  functionExecutionMetrics_;
   private readonly IHostApplicationLifetime                  lifeTime_;
   private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
@@ -60,7 +61,6 @@ public class Pollster : IInitializable
   private readonly IPullQueueStorage                         pullQueueStorage_;
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
-  private readonly FunctionExecutionMetrics                        functionExecutionMetrics_;
   private readonly ISessionTable                             sessionTable_;
   private readonly ISubmitter                                submitter_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
@@ -71,23 +71,24 @@ public class Pollster : IInitializable
   private          HealthCheckResult?                        healthCheckFailedResult_;
 
 
-  public Pollster(IPullQueueStorage          pullQueueStorage,
-                  DataPrefetcher             dataPrefetcher,
-                  ComputePlane               options,
-                  Injection.Options.Pollster pollsterOptions,
-                  IHostApplicationLifetime   lifeTime,
-                  ActivitySource             activitySource,
-                  ILogger<Pollster>          logger,
-                  ILoggerFactory             loggerFactory,
-                  IObjectStorage             objectStorage,
-                  IResultTable               resultTable,
-                  ISubmitter                 submitter,
-                  ISessionTable              sessionTable,
-                  ITaskTable                 taskTable,
-                  ITaskProcessingChecker     taskProcessingChecker,
-                  IWorkerStreamHandler       workerStreamHandler,
-                  IAgentHandler              agentHandler,
-                  RunningTaskQueue           runningTaskQueue,
+  public Pollster(IPullQueueStorage               pullQueueStorage,
+                  DataPrefetcher                  dataPrefetcher,
+                  ComputePlane                    options,
+                  Injection.Options.Pollster      pollsterOptions,
+                  IHostApplicationLifetime        lifeTime,
+                  ActivitySource                  activitySource,
+                  ILogger<Pollster>               logger,
+                  ILoggerFactory                  loggerFactory,
+                  IObjectStorage                  objectStorage,
+                  IResultTable                    resultTable,
+                  ISubmitter                      submitter,
+                  ISessionTable                   sessionTable,
+                  ITaskTable                      taskTable,
+                  ITaskProcessingChecker          taskProcessingChecker,
+                  IWorkerStreamHandler            workerStreamHandler,
+                  IAgentHandler                   agentHandler,
+                  RunningTaskQueue                runningTaskQueue,
+                  AgentIdentifier                 identifier,
                   FunctionExecutionMetricsFactory meterFactory)
   {
     if (options.MessageBatchSize < 1)
@@ -96,27 +97,27 @@ public class Pollster : IInitializable
                                             $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
-    logger_                  = logger;
-    loggerFactory_           = loggerFactory;
-    activitySource_          = activitySource;
-    pullQueueStorage_        = pullQueueStorage;
-    lifeTime_                = lifeTime;
-    dataPrefetcher_          = dataPrefetcher;
-    pollsterOptions_         = pollsterOptions;
-    messageBatchSize_        = options.MessageBatchSize;
-    objectStorage_           = objectStorage;
-    resultTable_             = resultTable;
-    submitter_               = submitter;
-    sessionTable_            = sessionTable;
-    taskTable_               = taskTable;
-    taskProcessingChecker_   = taskProcessingChecker;
-    workerStreamHandler_     = workerStreamHandler;
-    agentHandler_            = agentHandler;
-    runningTaskQueue_        = runningTaskQueue;
+    logger_                   = logger;
+    loggerFactory_            = loggerFactory;
+    activitySource_           = activitySource;
+    pullQueueStorage_         = pullQueueStorage;
+    lifeTime_                 = lifeTime;
+    dataPrefetcher_           = dataPrefetcher;
+    pollsterOptions_          = pollsterOptions;
+    messageBatchSize_         = options.MessageBatchSize;
+    objectStorage_            = objectStorage;
+    resultTable_              = resultTable;
+    submitter_                = submitter;
+    sessionTable_             = sessionTable;
+    taskTable_                = taskTable;
+    taskProcessingChecker_    = taskProcessingChecker;
+    workerStreamHandler_      = workerStreamHandler;
+    agentHandler_             = agentHandler;
+    runningTaskQueue_         = runningTaskQueue;
     functionExecutionMetrics_ = meterFactory.Create(nameof(TaskHandler));
-    ownerPodId_              = AgentIdentifier.OwnerPodId;
-    ownerPodName_            = AgentIdentifier.OwnerPodName;
-    Failed                   = false;
+    ownerPodId_               = identifier.OwnerPodId;
+    ownerPodName_             = identifier.OwnerPodName;
+    Failed                    = false;
   }
 
   public ICollection<string> TaskProcessing
@@ -334,7 +335,8 @@ public class Pollster : IInitializable
                                               pollsterOptions_,
                                               () => taskProcessingDict_.TryRemove(message.TaskId,
                                                                                   out var _),
-                                              cts, functionExecutionMetrics_);
+                                              cts,
+                                              functionExecutionMetrics_);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
             messageDispose.Reset();
 
