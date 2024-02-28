@@ -67,7 +67,7 @@ resource "local_file" "config" {
               for v in var.polling_agent_names :
               "${v}:1080"],
               [for v in var.submitter_names :
-              "${v}:1080"
+                "${v}:1080"
             ])
           }
         ]
