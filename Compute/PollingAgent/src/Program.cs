@@ -112,7 +112,7 @@ public static class Program
              .AddSingleton(pollsterOptions)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
-             .AddSingleton<FunctionExecutionMetrics>()
+             .AddSingleton<FunctionExecutionMetricsFactory>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
 
