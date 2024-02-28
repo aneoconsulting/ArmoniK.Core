@@ -64,7 +64,7 @@ resource "local_file" "config" {
         static_configs = [
           {
             targets = [
-              for v in var.polling_agent_names:
+              for v in var.polling_agent_names :
               "${v}:1080"
             ]
           }
