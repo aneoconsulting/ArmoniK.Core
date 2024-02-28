@@ -15,10 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.HealthChecks;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
@@ -28,6 +31,17 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class GrpcHealthChecksServiceTest
 {
+  private class MyFactory : IMeterFactory
+  {
+    public void Dispose()
+    {
+    }
+
+    public System.Diagnostics.Metrics.Meter Create(MeterOptions options)
+      => new("");
+  }
+
+
   [Test]
   public async Task CheckHealthShouldSucceed()
   {
@@ -36,7 +50,9 @@ public class GrpcHealthChecksServiceTest
     var queueStorage  = new SimplePushQueueStorage();
     var service = new GrpcHealthChecksService(taskTable,
                                               objectStorage,
-                                              queueStorage);
+                                              queueStorage,
+                                              new FunctionExecutionMetricsFactory(new MyFactory(),
+                                                                                  new AgentIdentifier()));
     Assert.IsNotNull(service);
     var response = await service.CheckHealth(new CheckHealthRequest(),
                                              TestServerCallContext.Create())

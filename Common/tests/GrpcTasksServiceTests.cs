@@ -24,6 +24,8 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
@@ -47,6 +49,8 @@ public class GrpcTasksServiceTests
   public void Setup()
     => helper_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<AgentIdentifier>()
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
@@ -98,6 +102,8 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<IPartitionTable, SimplePartitionTable>()
                                                                   .AddSingleton<Injection.Options.Submitter>()
+                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<AgentIdentifier>()
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
@@ -206,6 +212,8 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<IPartitionTable, SimplePartitionTable>()
                                                                   .AddSingleton<Injection.Options.Submitter>()
+                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<AgentIdentifier>()
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
@@ -264,6 +272,8 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<IPartitionTable, SimplePartitionTable>()
                                                                   .AddSingleton<Injection.Options.Submitter>()
+                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<AgentIdentifier>()
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()

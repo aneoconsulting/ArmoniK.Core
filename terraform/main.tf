@@ -21,6 +21,7 @@ module "prometheus" {
   image               = var.prometheus_image
   network             = docker_network.armonik.id
   polling_agent_names = local.polling_agent_names
+  submitter_names     = [var.submitter.name]
 }
 
 module "database" {

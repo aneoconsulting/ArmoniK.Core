@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -35,22 +36,25 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcEventsService : Events.EventsBase
 {
   private readonly ILogger<GrpcEventsService> logger_;
+  private readonly FunctionExecutionMetrics   meter_;
   private readonly IResultTable               resultTable_;
   private readonly IResultWatcher             resultWatcher_;
   private readonly ITaskTable                 taskTable_;
   private readonly ITaskWatcher               taskWatcher_;
 
-  public GrpcEventsService(ITaskTable                 taskTable,
-                           ITaskWatcher               taskWatcher,
-                           IResultTable               resultTable,
-                           IResultWatcher             resultWatcher,
-                           ILogger<GrpcEventsService> logger)
+  public GrpcEventsService(ITaskTable                      taskTable,
+                           ITaskWatcher                    taskWatcher,
+                           IResultTable                    resultTable,
+                           IResultWatcher                  resultWatcher,
+                           FunctionExecutionMetricsFactory meterFactory,
+                           ILogger<GrpcEventsService>      logger)
   {
     logger_        = logger;
     taskTable_     = taskTable;
     taskWatcher_   = taskWatcher;
     resultTable_   = resultTable;
     resultWatcher_ = resultWatcher;
+    meter_         = meterFactory.Create(nameof(GrpcEventsService));
   }
 
   [RequiresPermission(typeof(GrpcEventsService),
@@ -59,6 +63,7 @@ public class GrpcEventsService : Events.EventsBase
                                        IServerStreamWriter<EventSubscriptionResponse> responseStream,
                                        ServerCallContext                              context)
   {
+    using var measure = meter_.CountAndTime();
     var wtg = new WatchToGrpc(taskTable_,
                               taskWatcher_,
                               resultTable_,

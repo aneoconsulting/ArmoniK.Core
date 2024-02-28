@@ -17,3 +17,8 @@ variable "polling_agent_names" {
   type    = set(string)
   default = []
 }
+
+variable "submitter_names" {
+  type    = set(string)
+  default = []
+}

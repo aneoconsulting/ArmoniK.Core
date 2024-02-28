@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -47,6 +48,7 @@ public class GrpcTasksService : Task.TasksBase
 {
   private readonly HttpClient                httpClient_;
   private readonly ILogger<GrpcTasksService> logger_;
+  private readonly FunctionExecutionMetrics  meter_;
   private readonly IPushQueueStorage         pushQueueStorage_;
   private readonly IResultTable              resultTable_;
   private readonly ISessionTable             sessionTable_;
@@ -54,12 +56,13 @@ public class GrpcTasksService : Task.TasksBase
   private readonly TaskDataMask              taskSummaryMask_;
   private readonly ITaskTable                taskTable_;
 
-  public GrpcTasksService(ITaskTable                taskTable,
-                          ISessionTable             sessionTable,
-                          IResultTable              resultTable,
-                          IPushQueueStorage         pushQueueStorage,
-                          ILogger<GrpcTasksService> logger,
-                          HttpClient                httpClient)
+  public GrpcTasksService(ITaskTable                      taskTable,
+                          ISessionTable                   sessionTable,
+                          IResultTable                    resultTable,
+                          IPushQueueStorage               pushQueueStorage,
+                          FunctionExecutionMetricsFactory meterFactory,
+                          ILogger<GrpcTasksService>       logger,
+                          HttpClient                      httpClient)
   {
     logger_           = logger;
     taskTable_        = taskTable;
@@ -67,6 +70,7 @@ public class GrpcTasksService : Task.TasksBase
     resultTable_      = resultTable;
     pushQueueStorage_ = pushQueueStorage;
     httpClient_       = httpClient;
+    meter_            = meterFactory.Create(nameof(GrpcTasksService));
 
     taskDetailedMask_ = new TaskDataMask(new List<TaskDataFields>
                                          {
@@ -133,6 +137,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<GetTaskResponse> GetTask(GetTaskRequest    request,
                                                       ServerCallContext context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       return new GetTaskResponse
@@ -171,6 +176,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<ListTasksResponse> ListTasks(ListTasksRequest  request,
                                                           ServerCallContext context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
@@ -224,6 +230,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<GetResultIdsResponse> GetResultIds(GetResultIdsRequest request,
                                                                 ServerCallContext   context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       return new GetResultIdsResponse
@@ -266,6 +273,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
                                                               ServerCallContext  context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       await taskTable_.CancelTaskAsync(request.TaskIds,
@@ -313,6 +321,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
                                                                             ServerCallContext         context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       return new CountTasksByStatusResponse
@@ -352,6 +361,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<ListTasksDetailedResponse> ListTasksDetailed(ListTasksRequest  request,
                                                                           ServerCallContext context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
@@ -405,6 +415,7 @@ public class GrpcTasksService : Task.TasksBase
   public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
                                                               ServerCallContext  context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,

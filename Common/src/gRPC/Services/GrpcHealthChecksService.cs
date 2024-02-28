@@ -24,6 +24,7 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -36,17 +37,20 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBase
 {
-  private readonly IObjectStorage    objectStorage_;
-  private readonly IPushQueueStorage queueStorage_;
-  private readonly ITaskTable        taskTable_;
+  private readonly FunctionExecutionMetrics meter_;
+  private readonly IObjectStorage           objectStorage_;
+  private readonly IPushQueueStorage        queueStorage_;
+  private readonly ITaskTable               taskTable_;
 
-  public GrpcHealthChecksService(ITaskTable        taskTable,
-                                 IObjectStorage    objectStorage,
-                                 IPushQueueStorage queueStorage)
+  public GrpcHealthChecksService(ITaskTable                      taskTable,
+                                 IObjectStorage                  objectStorage,
+                                 IPushQueueStorage               queueStorage,
+                                 FunctionExecutionMetricsFactory meterFactory)
   {
     taskTable_     = taskTable;
     objectStorage_ = objectStorage;
     queueStorage_  = queueStorage;
+    meter_         = meterFactory.Create(nameof(GrpcHealthChecksService));
   }
 
   [RequiresPermission(typeof(GrpcHealthChecksService),
@@ -54,6 +58,7 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
   public override async Task<CheckHealthResponse> CheckHealth(CheckHealthRequest request,
                                                               ServerCallContext  context)
   {
+    using var measure = meter_.CountAndTime();
     var checks = await new[]
                        {
                          ("database", taskTable_.Check(HealthCheckTag.Liveness)),

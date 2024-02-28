@@ -63,10 +63,12 @@ resource "local_file" "config" {
         job_name = "armonik.compute.polling_agent"
         static_configs = [
           {
-            targets = [
+            targets = concat([
               for v in var.polling_agent_names :
+              "${v}:1080"],
+              [for v in var.submitter_names :
               "${v}:1080"
-            ]
+            ])
           }
         ]
       }
