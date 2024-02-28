@@ -112,7 +112,7 @@ public static class Program
              .AddSingleton(pollsterOptions)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
-             .AddSingleton<TaskHandlerMetrics>()
+             .AddSingleton<FunctionExecutionMetrics>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
 
@@ -129,7 +129,7 @@ public static class Program
                                                                                            AgentIdentifier.OwnerPodName),
                                                                                      }))
                                    .AddPrometheusExporter()
-                                   .AddMeter(TaskHandlerMetrics.Name));
+                                   .AddMeter(FunctionExecutionMetricsFactory.Name));
 
       var endpoint = builder.Configuration["OTLP:Uri"];
       var token    = builder.Configuration["OTLP:AuthToken"];

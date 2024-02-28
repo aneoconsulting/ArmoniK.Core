@@ -22,51 +22,39 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 
-using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.Meter;
 
-public class TaskHandlerMetrics
+public class FunctionExecutionMetrics
 {
-  public const string Name = "ArmoniK.Core.TaskHandlerMetrics";
-
+  private readonly string                                                                          className_;
   private readonly ConcurrentDictionary<string, (Counter<int> counter, Histogram<long> histogram)> instruments_ = new();
   private readonly System.Diagnostics.Metrics.Meter                                                meter_;
   private readonly KeyValuePair<string, object?>[]                                                 tags_;
 
-  public TaskHandlerMetrics(IMeterFactory meterFactory)
+  public FunctionExecutionMetrics(System.Diagnostics.Metrics.Meter meter,
+                                  string                           className,
+                                  KeyValuePair<string, object?>[]  tags)
   {
-    tags_ = new KeyValuePair<string, object?>[]
-            {
-              new($"{Name}.{nameof(AgentIdentifier.OwnerPodId)}".ToLower(),
-                  AgentIdentifier.OwnerPodId),
-              new($"{Name}.{nameof(AgentIdentifier.OwnerPodName)}".ToLower(),
-                  AgentIdentifier.OwnerPodName),
-            };
-
-    var options = new MeterOptions(Name)
-                  {
-                    Tags    = tags_,
-                    Version = "1.0.0",
-                  };
-
-    meter_ = meterFactory.Create(options);
+    className_ = className;
+    meter_     = meter;
+    tags_      = tags;
   }
 
 
-  public IDisposable CountAndTime([CallerMemberName] string name = "")
+  public IDisposable CountAndTime([CallerMemberName] string callerName = "")
   {
-    var ins = instruments_.GetOrAdd(name,
+    var ins = instruments_.GetOrAdd(callerName,
                                     s =>
                                     {
-                                      var counter = meter_.CreateCounter<int>($"task-handler-{s}",
+                                      var counter = meter_.CreateCounter<int>($"{className_}-{s}",
                                                                               "Count",
-                                                                              $"Number of {nameof(TaskHandler)}.{s} execution",
+                                                                              $"Number of {className_}.{s} execution",
                                                                               tags_);
-                                      var histogram = meter_.CreateHistogram<long>($"task-handler-{s}",
+                                      var histogram = meter_.CreateHistogram<long>($"{className_}-{s}",
                                                                                    "milliseconds",
-                                                                                   $"Duration needed to execute {nameof(TaskHandler)}.{s}",
+                                                                                   $"Duration needed to execute {className_}.{s}",
                                                                                    tags_);
 
                                       return (counter, histogram);

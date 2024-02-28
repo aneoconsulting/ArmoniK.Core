@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +34,6 @@ using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Grpc.Core;
@@ -62,7 +60,7 @@ public class Pollster : IInitializable
   private readonly IPullQueueStorage                         pullQueueStorage_;
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
-  private readonly TaskHandlerMetrics                        taskHandlerMetrics_;
+  private readonly FunctionExecutionMetrics                        functionExecutionMetrics_;
   private readonly ISessionTable                             sessionTable_;
   private readonly ISubmitter                                submitter_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
@@ -89,7 +87,8 @@ public class Pollster : IInitializable
                   ITaskProcessingChecker     taskProcessingChecker,
                   IWorkerStreamHandler       workerStreamHandler,
                   IAgentHandler              agentHandler,
-                  RunningTaskQueue           runningTaskQueue, TaskHandlerMetrics taskHandlerMetrics)
+                  RunningTaskQueue           runningTaskQueue,
+                  FunctionExecutionMetricsFactory meterFactory)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -114,7 +113,7 @@ public class Pollster : IInitializable
     workerStreamHandler_     = workerStreamHandler;
     agentHandler_            = agentHandler;
     runningTaskQueue_        = runningTaskQueue;
-    taskHandlerMetrics_ = taskHandlerMetrics;
+    functionExecutionMetrics_ = meterFactory.Create(nameof(TaskHandler));
     ownerPodId_              = AgentIdentifier.OwnerPodId;
     ownerPodName_            = AgentIdentifier.OwnerPodName;
     Failed                   = false;
@@ -335,7 +334,7 @@ public class Pollster : IInitializable
                                               pollsterOptions_,
                                               () => taskProcessingDict_.TryRemove(message.TaskId,
                                                                                   out var _),
-                                              cts, taskHandlerMetrics_);
+                                              cts, functionExecutionMetrics_);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
             messageDispose.Reset();
 
