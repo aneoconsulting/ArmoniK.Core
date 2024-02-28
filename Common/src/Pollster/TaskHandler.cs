@@ -675,13 +675,17 @@ public sealed class TaskHandler : IAsyncDisposable
 
       activity?.AddEvent(new ActivityEvent("Start Handler"));
       // In theory we could create the server during dependencies checking and activate it only now
-      agent_ = await agentHandler_.Start(token_,
-                                         logger_,
-                                         sessionData_,
-                                         taskData_,
-                                         folder_,
-                                         cancellationTokenSource_.Token)
-                                  .ConfigureAwait(false);
+      // ReSharper disable once ExplicitCallerInfoArgument
+      using (functionExecutionMetrics_.CountAndTime("RequestExecution"))
+      {
+        agent_ = await agentHandler_.Start(token_,
+                                           logger_,
+                                           sessionData_,
+                                           taskData_,
+                                           folder_,
+                                           cancellationTokenSource_.Token)
+                                    .ConfigureAwait(false);
+      }
 
       activity?.AddEvent(new ActivityEvent("Start status update"));
       logger_.LogInformation("Start executing task");
