@@ -153,8 +153,9 @@ public class TestTaskHandlerProvider : IDisposable
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
-           .AddSingleton<FunctionExecutionMetricsFactory>()
+           .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
+           .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
@@ -173,8 +174,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      {
                                                      },
                                                      cancellationTokenSource,
-                                                     provider.GetRequiredService<FunctionExecutionMetricsFactory>()
-                                                             .Create(nameof(TaskHandler))))
+                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)

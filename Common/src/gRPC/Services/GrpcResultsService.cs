@@ -47,26 +47,26 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {
-  private readonly ILogger<GrpcResultsService> logger_;
-  private readonly FunctionExecutionMetrics    meter_;
-  private readonly IObjectStorage              objectStorage_;
-  private readonly IPushQueueStorage           pushQueueStorage_;
-  private readonly IResultTable                resultTable_;
-  private readonly ITaskTable                  taskTable_;
+  private readonly ILogger<GrpcResultsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcResultsService> meter_;
+  private readonly IObjectStorage                               objectStorage_;
+  private readonly IPushQueueStorage                            pushQueueStorage_;
+  private readonly IResultTable                                 resultTable_;
+  private readonly ITaskTable                                   taskTable_;
 
-  public GrpcResultsService(IResultTable                    resultTable,
-                            ITaskTable                      taskTable,
-                            IObjectStorage                  objectStorage,
-                            IPushQueueStorage               pushQueueStorage,
-                            FunctionExecutionMetricsFactory meterFactory,
-                            ILogger<GrpcResultsService>     logger)
+  public GrpcResultsService(IResultTable                                 resultTable,
+                            ITaskTable                                   taskTable,
+                            IObjectStorage                               objectStorage,
+                            IPushQueueStorage                            pushQueueStorage,
+                            FunctionExecutionMetrics<GrpcResultsService> meter,
+                            ILogger<GrpcResultsService>                  logger)
   {
     logger_           = logger;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
     objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
-    meter_            = meterFactory.Create(nameof(GrpcResultsService));
+    meter_            = meter;
   }
 
   [RequiresPermission(typeof(GrpcResultsService),

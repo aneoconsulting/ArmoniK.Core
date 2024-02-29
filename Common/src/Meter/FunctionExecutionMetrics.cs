@@ -26,20 +26,18 @@ using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.Meter;
 
-public class FunctionExecutionMetrics
+public class FunctionExecutionMetrics<TIns>
 {
   private readonly string                                                                          className_;
   private readonly ConcurrentDictionary<string, (Counter<int> counter, Histogram<long> histogram)> instruments_ = new();
   private readonly System.Diagnostics.Metrics.Meter                                                meter_;
   private readonly KeyValuePair<string, object?>[]                                                 tags_;
 
-  public FunctionExecutionMetrics(System.Diagnostics.Metrics.Meter meter,
-                                  string                           className,
-                                  KeyValuePair<string, object?>[]  tags)
+  public FunctionExecutionMetrics(MeterHolder holder)
   {
-    className_ = className;
-    meter_     = meter;
-    tags_      = tags;
+    className_ = typeof(TIns).Name;
+    meter_     = holder.Meter;
+    tags_      = holder.Tags;
   }
 
 

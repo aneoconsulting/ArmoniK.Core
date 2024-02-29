@@ -36,16 +36,16 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
-  private readonly FunctionExecutionMetrics meter_;
-  private readonly bool                     requireAuthentication_;
-  private readonly bool                     requireAuthorization_;
+  private readonly FunctionExecutionMetrics<GrpcAuthService> meter_;
+  private readonly bool                                      requireAuthentication_;
+  private readonly bool                                      requireAuthorization_;
 
-  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions> options,
-                         FunctionExecutionMetricsFactory       meterFactory)
+  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions>     options,
+                         FunctionExecutionMetrics<GrpcAuthService> meter)
   {
     requireAuthentication_ = options.CurrentValue.RequireAuthentication;
     requireAuthorization_  = requireAuthentication_ && options.CurrentValue.RequireAuthorization;
-    meter_                 = meterFactory.Create(nameof(GrpcAuthService));
+    meter_                 = meter;
   }
 
   [IgnoreAuthorization]

@@ -35,26 +35,26 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcEventsService : Events.EventsBase
 {
-  private readonly ILogger<GrpcEventsService> logger_;
-  private readonly FunctionExecutionMetrics   meter_;
-  private readonly IResultTable               resultTable_;
-  private readonly IResultWatcher             resultWatcher_;
-  private readonly ITaskTable                 taskTable_;
-  private readonly ITaskWatcher               taskWatcher_;
+  private readonly ILogger<GrpcEventsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcEventsService> meter_;
+  private readonly IResultTable                                resultTable_;
+  private readonly IResultWatcher                              resultWatcher_;
+  private readonly ITaskTable                                  taskTable_;
+  private readonly ITaskWatcher                                taskWatcher_;
 
-  public GrpcEventsService(ITaskTable                      taskTable,
-                           ITaskWatcher                    taskWatcher,
-                           IResultTable                    resultTable,
-                           IResultWatcher                  resultWatcher,
-                           FunctionExecutionMetricsFactory meterFactory,
-                           ILogger<GrpcEventsService>      logger)
+  public GrpcEventsService(ITaskTable                                  taskTable,
+                           ITaskWatcher                                taskWatcher,
+                           IResultTable                                resultTable,
+                           IResultWatcher                              resultWatcher,
+                           FunctionExecutionMetrics<GrpcEventsService> meter,
+                           ILogger<GrpcEventsService>                  logger)
   {
     logger_        = logger;
     taskTable_     = taskTable;
     taskWatcher_   = taskWatcher;
     resultTable_   = resultTable;
     resultWatcher_ = resultWatcher;
-    meter_         = meterFactory.Create(nameof(GrpcEventsService));
+    meter_         = meter;
   }
 
   [RequiresPermission(typeof(GrpcEventsService),

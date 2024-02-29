@@ -36,17 +36,17 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcPartitionsService : Partitions.PartitionsBase
 {
-  private readonly ILogger<GrpcPartitionsService> logger_;
-  private readonly FunctionExecutionMetrics       meter_;
-  private readonly IPartitionTable                partitionTable_;
+  private readonly ILogger<GrpcPartitionsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcPartitionsService> meter_;
+  private readonly IPartitionTable                                 partitionTable_;
 
-  public GrpcPartitionsService(IPartitionTable                 partitionTable,
-                               FunctionExecutionMetricsFactory meterFactory,
-                               ILogger<GrpcPartitionsService>  logger)
+  public GrpcPartitionsService(IPartitionTable                                 partitionTable,
+                               FunctionExecutionMetrics<GrpcPartitionsService> meter,
+                               ILogger<GrpcPartitionsService>                  logger)
   {
     partitionTable_ = partitionTable;
     logger_         = logger;
-    meter_          = meterFactory.Create(nameof(GrpcPartitionsService));
+    meter_          = meter;
   }
 
   [RequiresPermission(typeof(GrpcPartitionsService),

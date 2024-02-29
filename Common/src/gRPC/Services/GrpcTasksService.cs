@@ -46,23 +46,23 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {
-  private readonly HttpClient                httpClient_;
-  private readonly ILogger<GrpcTasksService> logger_;
-  private readonly FunctionExecutionMetrics  meter_;
-  private readonly IPushQueueStorage         pushQueueStorage_;
-  private readonly IResultTable              resultTable_;
-  private readonly ISessionTable             sessionTable_;
-  private readonly TaskDataMask              taskDetailedMask_;
-  private readonly TaskDataMask              taskSummaryMask_;
-  private readonly ITaskTable                taskTable_;
+  private readonly HttpClient                                 httpClient_;
+  private readonly ILogger<GrpcTasksService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcTasksService> meter_;
+  private readonly IPushQueueStorage                          pushQueueStorage_;
+  private readonly IResultTable                               resultTable_;
+  private readonly ISessionTable                              sessionTable_;
+  private readonly TaskDataMask                               taskDetailedMask_;
+  private readonly TaskDataMask                               taskSummaryMask_;
+  private readonly ITaskTable                                 taskTable_;
 
-  public GrpcTasksService(ITaskTable                      taskTable,
-                          ISessionTable                   sessionTable,
-                          IResultTable                    resultTable,
-                          IPushQueueStorage               pushQueueStorage,
-                          FunctionExecutionMetricsFactory meterFactory,
-                          ILogger<GrpcTasksService>       logger,
-                          HttpClient                      httpClient)
+  public GrpcTasksService(ITaskTable                                 taskTable,
+                          ISessionTable                              sessionTable,
+                          IResultTable                               resultTable,
+                          IPushQueueStorage                          pushQueueStorage,
+                          FunctionExecutionMetrics<GrpcTasksService> meter,
+                          ILogger<GrpcTasksService>                  logger,
+                          HttpClient                                 httpClient)
   {
     logger_           = logger;
     taskTable_        = taskTable;
@@ -70,7 +70,7 @@ public class GrpcTasksService : Task.TasksBase
     resultTable_      = resultTable;
     pushQueueStorage_ = pushQueueStorage;
     httpClient_       = httpClient;
-    meter_            = meterFactory.Create(nameof(GrpcTasksService));
+    meter_            = meter;
 
     taskDetailedMask_ = new TaskDataMask(new List<TaskDataFields>
                                          {

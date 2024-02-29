@@ -159,8 +159,9 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddSingleton<FunctionExecutionMetricsFactory>()
+           .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
+           .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton(workerStreamHandler)
            .AddSingleton(agentHandler)
            .AddSingleton(pullQueueStorage);

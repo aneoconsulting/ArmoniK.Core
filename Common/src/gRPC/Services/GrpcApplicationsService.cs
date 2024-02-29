@@ -38,17 +38,17 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcApplicationsService : Applications.ApplicationsBase
 {
-  private readonly ILogger<GrpcApplicationsService> logger_;
-  private readonly FunctionExecutionMetrics         meter_;
-  private readonly ITaskTable                       taskTable_;
+  private readonly ILogger<GrpcApplicationsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcApplicationsService> meter_;
+  private readonly ITaskTable                                        taskTable_;
 
-  public GrpcApplicationsService(ITaskTable                       taskTable,
-                                 FunctionExecutionMetricsFactory  meterFactory,
-                                 ILogger<GrpcApplicationsService> logger)
+  public GrpcApplicationsService(ITaskTable                                        taskTable,
+                                 FunctionExecutionMetrics<GrpcApplicationsService> meter,
+                                 ILogger<GrpcApplicationsService>                  logger)
   {
     logger_    = logger;
     taskTable_ = taskTable;
-    meter_     = meterFactory.Create(nameof(GrpcApplicationsService));
+    meter_     = meter;
   }
 
   [RequiresPermission(typeof(GrpcApplicationsService),

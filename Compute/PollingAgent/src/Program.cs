@@ -111,8 +111,9 @@ public static class Program
              .AddSingleton(pollsterOptions)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
-             .AddSingleton<FunctionExecutionMetricsFactory>()
+             .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()
+             .AddScoped(typeof(FunctionExecutionMetrics<>))
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
 
@@ -120,7 +121,7 @@ public static class Program
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()
                                                                       .AddService("ArmoniK.Core.Agent"))
                                    .AddPrometheusExporter()
-                                   .AddMeter(FunctionExecutionMetricsFactory.Name));
+                                   .AddMeter(MeterHolder.Name));
 
       var endpoint = builder.Configuration["OTLP:Uri"];
       var token    = builder.Configuration["OTLP:AuthToken"];

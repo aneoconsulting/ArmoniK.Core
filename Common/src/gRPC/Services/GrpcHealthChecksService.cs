@@ -37,20 +37,20 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBase
 {
-  private readonly FunctionExecutionMetrics meter_;
-  private readonly IObjectStorage           objectStorage_;
-  private readonly IPushQueueStorage        queueStorage_;
-  private readonly ITaskTable               taskTable_;
+  private readonly FunctionExecutionMetrics<GrpcHealthChecksService> meter_;
+  private readonly IObjectStorage                                    objectStorage_;
+  private readonly IPushQueueStorage                                 queueStorage_;
+  private readonly ITaskTable                                        taskTable_;
 
-  public GrpcHealthChecksService(ITaskTable                      taskTable,
-                                 IObjectStorage                  objectStorage,
-                                 IPushQueueStorage               queueStorage,
-                                 FunctionExecutionMetricsFactory meterFactory)
+  public GrpcHealthChecksService(ITaskTable                                        taskTable,
+                                 IObjectStorage                                    objectStorage,
+                                 IPushQueueStorage                                 queueStorage,
+                                 FunctionExecutionMetrics<GrpcHealthChecksService> meter)
   {
     taskTable_     = taskTable;
     objectStorage_ = objectStorage;
     queueStorage_  = queueStorage;
-    meter_         = meterFactory.Create(nameof(GrpcHealthChecksService));
+    meter_         = meter;
   }
 
   [RequiresPermission(typeof(GrpcHealthChecksService),

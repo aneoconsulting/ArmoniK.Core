@@ -25,29 +25,24 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Common.Meter;
 
 [UsedImplicitly]
-public class FunctionExecutionMetricsFactory
+public class MeterHolder
 {
-  public const     string                           Name = $"ArmoniK.Core.{nameof(FunctionExecutionMetrics)}";
-  private readonly System.Diagnostics.Metrics.Meter meter_;
-  private readonly KeyValuePair<string, object?>[]  tags_;
+  public const    string                           Name = $"ArmoniK.Core.{nameof(MeterHolder)}";
+  public readonly System.Diagnostics.Metrics.Meter Meter;
+  public readonly KeyValuePair<string, object?>[]  Tags;
 
-  public FunctionExecutionMetricsFactory(IMeterFactory   meterFactory,
-                                         AgentIdentifier identifier)
+  public MeterHolder(IMeterFactory   meterFactory,
+                     AgentIdentifier identifier)
   {
-    tags_ = new KeyValuePair<string, object?>[]
-            {
-              new($"{Name}.{nameof(AgentIdentifier.OwnerPodId)}".ToLower(),
-                  identifier.OwnerPodId),
-              new($"{Name}.{nameof(AgentIdentifier.OwnerPodName)}".ToLower(),
-                  identifier.OwnerPodName),
-            };
-    meter_ = meterFactory.Create(Name,
-                                 null,
-                                 tags_);
+    Tags = new KeyValuePair<string, object?>[]
+           {
+             new($"{Name}.{nameof(AgentIdentifier.OwnerPodId)}".ToLower(),
+                 identifier.OwnerPodId),
+             new($"{Name}.{nameof(AgentIdentifier.OwnerPodName)}".ToLower(),
+                 identifier.OwnerPodName),
+           };
+    Meter = meterFactory.Create(Name,
+                                null,
+                                Tags);
   }
-
-  public FunctionExecutionMetrics Create(string name)
-    => new(meter_,
-           name,
-           tags_);
 }

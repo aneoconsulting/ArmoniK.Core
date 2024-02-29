@@ -75,8 +75,9 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
            .AddHttpClient()
-           .AddSingleton<FunctionExecutionMetricsFactory>()
+           .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
+           .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                            _ =>

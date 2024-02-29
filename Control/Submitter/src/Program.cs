@@ -100,8 +100,9 @@ public static class Program
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
                                                             Common.Injection.Options.Submitter.SettingSection)
              .AddGrpcReflection()
-             .AddSingleton<FunctionExecutionMetricsFactory>()
+             .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()
+             .AddScoped(typeof(FunctionExecutionMetrics<>))
              .ValidateGrpcRequests();
 
       builder.Services.AddHealthChecks();
@@ -111,7 +112,7 @@ public static class Program
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()
                                                                       .AddService("ArmoniK.Core.Submitter"))
                                    .AddPrometheusExporter()
-                                   .AddMeter(FunctionExecutionMetricsFactory.Name));
+                                   .AddMeter(MeterHolder.Name));
 
       var endpoint = builder.Configuration["OTLP:Uri"];
       var token    = builder.Configuration["OTLP:AuthToken"];

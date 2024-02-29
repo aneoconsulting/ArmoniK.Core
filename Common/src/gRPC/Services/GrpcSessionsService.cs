@@ -40,25 +40,25 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSessionsService : Sessions.SessionsBase
 {
-  private readonly ILogger<GrpcSessionsService> logger_;
-  private readonly FunctionExecutionMetrics     meter_;
-  private readonly IObjectStorage               objectStorage_;
-  private readonly IPartitionTable              partitionTable_;
-  private readonly IPushQueueStorage            pushQueueStorage_;
-  private readonly IResultTable                 resultTable_;
-  private readonly ISessionTable                sessionTable_;
-  private readonly Injection.Options.Submitter  submitterOptions_;
-  private readonly ITaskTable                   taskTable_;
+  private readonly ILogger<GrpcSessionsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcSessionsService> meter_;
+  private readonly IObjectStorage                                objectStorage_;
+  private readonly IPartitionTable                               partitionTable_;
+  private readonly IPushQueueStorage                             pushQueueStorage_;
+  private readonly IResultTable                                  resultTable_;
+  private readonly ISessionTable                                 sessionTable_;
+  private readonly Injection.Options.Submitter                   submitterOptions_;
+  private readonly ITaskTable                                    taskTable_;
 
-  public GrpcSessionsService(ISessionTable                   sessionTable,
-                             IPartitionTable                 partitionTable,
-                             IObjectStorage                  objectStorage,
-                             IResultTable                    resultTable,
-                             ITaskTable                      taskTable,
-                             IPushQueueStorage               pushQueueStorage,
-                             Injection.Options.Submitter     submitterOptions,
-                             FunctionExecutionMetricsFactory meterFactory,
-                             ILogger<GrpcSessionsService>    logger)
+  public GrpcSessionsService(ISessionTable                                 sessionTable,
+                             IPartitionTable                               partitionTable,
+                             IObjectStorage                                objectStorage,
+                             IResultTable                                  resultTable,
+                             ITaskTable                                    taskTable,
+                             IPushQueueStorage                             pushQueueStorage,
+                             Injection.Options.Submitter                   submitterOptions,
+                             FunctionExecutionMetrics<GrpcSessionsService> meter,
+                             ILogger<GrpcSessionsService>                  logger)
   {
     logger_           = logger;
     sessionTable_     = sessionTable;
@@ -68,7 +68,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     taskTable_        = taskTable;
     pushQueueStorage_ = pushQueueStorage;
     submitterOptions_ = submitterOptions;
-    meter_            = meterFactory.Create(nameof(GrpcSessionsService));
+    meter_            = meter;
   }
 
   [RequiresPermission(typeof(GrpcSessionsService),

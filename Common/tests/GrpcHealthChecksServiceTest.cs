@@ -15,14 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.HealthChecks;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
@@ -31,28 +34,22 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class GrpcHealthChecksServiceTest
 {
-  private class MyFactory : IMeterFactory
-  {
-    public void Dispose()
-    {
-    }
-
-    public System.Diagnostics.Metrics.Meter Create(MeterOptions options)
-      => new("");
-  }
-
-
   [Test]
   public async Task CheckHealthShouldSucceed()
   {
-    var taskTable     = new SimpleTaskTable();
-    var objectStorage = new SimpleObjectStorage();
-    var queueStorage  = new SimplePushQueueStorage();
-    var service = new GrpcHealthChecksService(taskTable,
-                                              objectStorage,
-                                              queueStorage,
-                                              new FunctionExecutionMetricsFactory(new MyFactory(),
-                                                                                  new AgentIdentifier()));
+    var sc = new ServiceCollection();
+    sc.AddSingleton<ITaskTable, SimpleTaskTable>()
+      .AddSingleton<IObjectStorage, SimpleObjectStorage>()
+      .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+      .AddSingleton<GrpcHealthChecksService>()
+      .AddMetrics()
+      .AddSingleton<AgentIdentifier>()
+      .AddSingleton<MeterHolder>()
+      .AddScoped(typeof(FunctionExecutionMetrics<>));
+
+    var sp      = sc.BuildServiceProvider();
+    var service = sp.GetRequiredService<GrpcHealthChecksService>();
+
     Assert.IsNotNull(service);
     var response = await service.CheckHealth(new CheckHealthRequest(),
                                              TestServerCallContext.Create())

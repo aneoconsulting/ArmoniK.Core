@@ -49,8 +49,9 @@ public class GrpcTasksServiceTests
   public void Setup()
     => helper_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
-                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<MeterHolder>()
                                                                   .AddSingleton<AgentIdentifier>()
+                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
@@ -102,8 +103,9 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<IPartitionTable, SimplePartitionTable>()
                                                                   .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<MeterHolder>()
                                                                   .AddSingleton<AgentIdentifier>()
+                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
@@ -212,8 +214,9 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<IPartitionTable, SimplePartitionTable>()
                                                                   .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<MeterHolder>()
                                                                   .AddSingleton<AgentIdentifier>()
+                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
@@ -272,8 +275,9 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<IPartitionTable, SimplePartitionTable>()
                                                                   .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<FunctionExecutionMetricsFactory>()
+                                                                  .AddSingleton<MeterHolder>()
                                                                   .AddSingleton<AgentIdentifier>()
+                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
                                                                   .AddGrpc(),
                                           builder => builder.UseRouting()
