@@ -24,6 +24,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.Meter;
 
 using Grpc.Core;
 
@@ -35,20 +36,24 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
-  private readonly bool requireAuthentication_;
-  private readonly bool requireAuthorization_;
+  private readonly FunctionExecutionMetrics<GrpcAuthService> meter_;
+  private readonly bool                                      requireAuthentication_;
+  private readonly bool                                      requireAuthorization_;
 
-  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions> options)
+  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions>     options,
+                         FunctionExecutionMetrics<GrpcAuthService> meter)
   {
     requireAuthentication_ = options.CurrentValue.RequireAuthentication;
     requireAuthorization_  = requireAuthentication_ && options.CurrentValue.RequireAuthorization;
+    meter_                 = meter;
   }
 
   [IgnoreAuthorization]
   public override Task<GetCurrentUserResponse> GetCurrentUser(GetCurrentUserRequest request,
                                                               ServerCallContext     context)
   {
-    var user = new User();
+    using var measure = meter_.CountAndTime();
+    var       user    = new User();
 
     // No authentication required, anonymous user with all permissions
     if (!requireAuthentication_)

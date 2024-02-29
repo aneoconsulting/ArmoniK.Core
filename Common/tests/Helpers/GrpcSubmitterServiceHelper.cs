@@ -25,6 +25,8 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
 using ArmoniK.Utils;
@@ -73,6 +75,9 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
            .AddHttpClient()
+           .AddSingleton<MeterHolder>()
+           .AddSingleton<AgentIdentifier>()
+           .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                            _ =>

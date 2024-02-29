@@ -12,3 +12,13 @@ variable "exposed_port" {
   default = 9090
 
 }
+
+variable "polling_agent_names" {
+  type    = set(string)
+  default = []
+}
+
+variable "submitter_names" {
+  type    = set(string)
+  default = []
+}

@@ -25,6 +25,7 @@ using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -37,14 +38,17 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcApplicationsService : Applications.ApplicationsBase
 {
-  private readonly ILogger<GrpcApplicationsService> logger_;
-  private readonly ITaskTable                       taskTable_;
+  private readonly ILogger<GrpcApplicationsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcApplicationsService> meter_;
+  private readonly ITaskTable                                        taskTable_;
 
-  public GrpcApplicationsService(ITaskTable                       taskTable,
-                                 ILogger<GrpcApplicationsService> logger)
+  public GrpcApplicationsService(ITaskTable                                        taskTable,
+                                 FunctionExecutionMetrics<GrpcApplicationsService> meter,
+                                 ILogger<GrpcApplicationsService>                  logger)
   {
     logger_    = logger;
     taskTable_ = taskTable;
+    meter_     = meter;
   }
 
   [RequiresPermission(typeof(GrpcApplicationsService),
@@ -52,6 +56,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
+    using var measure = meter_.CountAndTime();
     var (applications, totalCount) = await taskTable_.ListApplicationsAsync(request.Filters is null
                                                                               ? data => true
                                                                               : request.Filters.ToApplicationFilter(),

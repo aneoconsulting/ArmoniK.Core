@@ -23,6 +23,7 @@ using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -35,14 +36,17 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcPartitionsService : Partitions.PartitionsBase
 {
-  private readonly ILogger<GrpcPartitionsService> logger_;
-  private readonly IPartitionTable                partitionTable_;
+  private readonly ILogger<GrpcPartitionsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcPartitionsService> meter_;
+  private readonly IPartitionTable                                 partitionTable_;
 
-  public GrpcPartitionsService(IPartitionTable                partitionTable,
-                               ILogger<GrpcPartitionsService> logger)
+  public GrpcPartitionsService(IPartitionTable                                 partitionTable,
+                               FunctionExecutionMetrics<GrpcPartitionsService> meter,
+                               ILogger<GrpcPartitionsService>                  logger)
   {
     partitionTable_ = partitionTable;
     logger_         = logger;
+    meter_          = meter;
   }
 
   [RequiresPermission(typeof(GrpcPartitionsService),
@@ -50,6 +54,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   public override async Task<GetPartitionResponse> GetPartition(GetPartitionRequest request,
                                                                 ServerCallContext   context)
   {
+    using var measure = meter_.CountAndTime();
     var partition = await partitionTable_.ReadPartitionAsync(request.Id,
                                                              context.CancellationToken)
                                          .ConfigureAwait(false);
@@ -80,6 +85,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   public override async Task<ListPartitionsResponse> ListPartitions(ListPartitionsRequest request,
                                                                     ServerCallContext     context)
   {
+    using var measure = meter_.CountAndTime();
     var partitions = await partitionTable_.ListPartitionsAsync(request.Filters is null
                                                                  ? data => true
                                                                  : request.Filters.ToPartitionFilter(),

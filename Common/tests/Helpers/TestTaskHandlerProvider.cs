@@ -26,6 +26,7 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -152,6 +153,9 @@ public class TestTaskHandlerProvider : IDisposable
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
+           .AddSingleton<MeterHolder>()
+           .AddSingleton<AgentIdentifier>()
+           .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
@@ -169,7 +173,8 @@ public class TestTaskHandlerProvider : IDisposable
                                                      () =>
                                                      {
                                                      },
-                                                     cancellationTokenSource))
+                                                     cancellationTokenSource,
+                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)

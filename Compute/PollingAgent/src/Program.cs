@@ -30,6 +30,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Utils;
@@ -42,6 +43,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 using Serilog;
@@ -108,8 +111,17 @@ public static class Program
              .AddSingleton(pollsterOptions)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
+             .AddSingleton<MeterHolder>()
+             .AddSingleton<AgentIdentifier>()
+             .AddScoped(typeof(FunctionExecutionMetrics<>))
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
+
+      var otel = builder.Services.AddOpenTelemetry();
+      otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                                                                      .AddService("ArmoniK.Core.Agent"))
+                                   .AddPrometheusExporter()
+                                   .AddMeter(MeterHolder.Name));
 
       var endpoint = builder.Configuration["OTLP:Uri"];
       var token    = builder.Configuration["OTLP:AuthToken"];
@@ -129,28 +141,27 @@ public static class Program
                                                                },
                                            });
 
-        builder.Services.AddSingleton(ActivitySource)
-               .AddOpenTelemetry()
-               .WithTracing(b =>
-                            {
-                              b.AddSource(ActivitySource.Name);
-                              b.AddMongoDBInstrumentation();
-                              b.AddOtlpExporter(options =>
-                                                {
-                                                  options.HttpClientFactory = () =>
-                                                                              {
-                                                                                var client = new HttpClient();
-                                                                                if (!string.IsNullOrEmpty(token))
-                                                                                {
-                                                                                  client.DefaultRequestHeaders.Add("Authorization",
-                                                                                                                   $"Bearer {token}");
-                                                                                }
+        builder.Services.AddSingleton(ActivitySource);
+        otel.WithTracing(b =>
+                         {
+                           b.AddSource(ActivitySource.Name);
+                           b.AddMongoDBInstrumentation();
+                           b.AddOtlpExporter(options =>
+                                             {
+                                               options.HttpClientFactory = () =>
+                                                                           {
+                                                                             var client = new HttpClient();
+                                                                             if (!string.IsNullOrEmpty(token))
+                                                                             {
+                                                                               client.DefaultRequestHeaders.Add("Authorization",
+                                                                                                                $"Bearer {token}");
+                                                                             }
 
-                                                                                return client;
-                                                                              };
-                                                  options.Endpoint = new Uri(endpoint);
-                                                });
-                            });
+                                                                             return client;
+                                                                           };
+                                               options.Endpoint = new Uri(endpoint);
+                                             });
+                         });
       }
 
       builder.Services.AddHealthChecks();
@@ -158,6 +169,7 @@ public static class Program
       var app = builder.Build();
 
       app.UseSerilogRequestLogging();
+      app.UseOpenTelemetryPrometheusScrapingEndpoint();
       app.UseRouting();
 
       if (app.Environment.IsDevelopment())

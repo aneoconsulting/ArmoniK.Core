@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -46,23 +47,26 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {
-  private readonly ILogger<GrpcResultsService> logger_;
-  private readonly IObjectStorage              objectStorage_;
-  private readonly IPushQueueStorage           pushQueueStorage_;
-  private readonly IResultTable                resultTable_;
-  private readonly ITaskTable                  taskTable_;
+  private readonly ILogger<GrpcResultsService>                  logger_;
+  private readonly FunctionExecutionMetrics<GrpcResultsService> meter_;
+  private readonly IObjectStorage                               objectStorage_;
+  private readonly IPushQueueStorage                            pushQueueStorage_;
+  private readonly IResultTable                                 resultTable_;
+  private readonly ITaskTable                                   taskTable_;
 
-  public GrpcResultsService(IResultTable                resultTable,
-                            ITaskTable                  taskTable,
-                            IObjectStorage              objectStorage,
-                            IPushQueueStorage           pushQueueStorage,
-                            ILogger<GrpcResultsService> logger)
+  public GrpcResultsService(IResultTable                                 resultTable,
+                            ITaskTable                                   taskTable,
+                            IObjectStorage                               objectStorage,
+                            IPushQueueStorage                            pushQueueStorage,
+                            FunctionExecutionMetrics<GrpcResultsService> meter,
+                            ILogger<GrpcResultsService>                  logger)
   {
     logger_           = logger;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
     objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
+    meter_            = meter;
   }
 
   [RequiresPermission(typeof(GrpcResultsService),
@@ -70,7 +74,8 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<GetOwnerTaskIdResponse> GetOwnerTaskId(GetOwnerTaskIdRequest request,
                                                                     ServerCallContext     context)
   {
-    using var _ = logger_.LogFunction();
+    using var measure = meter_.CountAndTime();
+    using var _       = logger_.LogFunction();
 
     return new GetOwnerTaskIdResponse
            {
@@ -96,6 +101,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
                                                               ServerCallContext  context)
   {
+    using var measure = meter_.CountAndTime();
     var results = await resultTable_.ListResultsAsync(request.Filters is null
                                                         ? data => true
                                                         : request.Filters.ToResultFilter(),
@@ -124,6 +130,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                                   ServerCallContext            context)
   {
+    using var measure = meter_.CountAndTime();
     var results = request.Results.Select(rc => new Result(request.SessionId,
                                                           Guid.NewGuid()
                                                               .ToString(),
@@ -154,6 +161,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                                   ServerCallContext    context)
   {
+    using var measure = meter_.CountAndTime();
     var results = await request.Results.Select(async rc =>
                                                {
                                                  var resultId = Guid.NewGuid()
@@ -205,6 +213,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<DeleteResultsDataResponse> DeleteResultsData(DeleteResultsDataRequest request,
                                                                           ServerCallContext        context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       await objectStorage_.TryDeleteAsync(request.ResultId,
@@ -234,6 +243,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                 IServerStreamWriter<DownloadResultDataResponse> responseStream,
                                                 ServerCallContext                               context)
   {
+    using var measure = meter_.CountAndTime();
     try
     {
       await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
@@ -260,10 +270,13 @@ public class GrpcResultsService : Results.ResultsBase
                       nameof(GetServiceConfiguration))]
   public override Task<ResultsServiceConfigurationResponse> GetServiceConfiguration(Empty             request,
                                                                                     ServerCallContext context)
-    => Task.FromResult(new ResultsServiceConfigurationResponse
-                       {
-                         DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
-                       });
+  {
+    using var measure = meter_.CountAndTime();
+    return Task.FromResult(new ResultsServiceConfigurationResponse
+                           {
+                             DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                           });
+  }
 
 
   [RequiresPermission(typeof(GrpcResultsService),
@@ -271,6 +284,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
                                                                         ServerCallContext                           context)
   {
+    using var measure = meter_.CountAndTime();
     if (!await requestStream.MoveNext(context.CancellationToken)
                             .ConfigureAwait(false))
     {
@@ -342,6 +356,7 @@ public class GrpcResultsService : Results.ResultsBase
   public override async Task<GetResultResponse> GetResult(GetResultRequest  request,
                                                           ServerCallContext context)
   {
+    using var measure = meter_.CountAndTime();
     var result = await resultTable_.GetResult(request.ResultId,
                                               context.CancellationToken)
                                    .ConfigureAwait(false);

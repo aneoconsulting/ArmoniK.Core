@@ -26,6 +26,7 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -158,6 +159,9 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
+           .AddSingleton<MeterHolder>()
+           .AddSingleton<AgentIdentifier>()
+           .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton(workerStreamHandler)
            .AddSingleton(agentHandler)
            .AddSingleton(pullQueueStorage);

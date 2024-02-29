@@ -27,6 +27,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
@@ -42,67 +43,70 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public sealed class TaskHandler : IAsyncDisposable
 {
-  private readonly Activity?                     activity_;
-  private readonly ActivityContext               activityContext_;
-  private readonly ActivitySource                activitySource_;
-  private readonly IAgentHandler                 agentHandler_;
-  private readonly CancellationTokenSource       cancellationTokenSource_;
-  private readonly DataPrefetcher                dataPrefetcher_;
-  private readonly TimeSpan                      delayBeforeAcquisition_;
-  private readonly string                        folder_;
-  private readonly ILogger                       logger_;
-  private readonly IQueueMessageHandler          messageHandler_;
-  private readonly string                        ownerPodId_;
-  private readonly string                        ownerPodName_;
-  private readonly CancellationTokenRegistration reg1_;
-  private readonly IResultTable                  resultTable_;
-  private readonly ISessionTable                 sessionTable_;
-  private readonly ISubmitter                    submitter_;
-  private readonly ITaskProcessingChecker        taskProcessingChecker_;
-  private readonly ITaskTable                    taskTable_;
-  private readonly string                        token_;
-  private readonly CancellationTokenSource       workerConnectionCts_;
-  private readonly IWorkerStreamHandler          workerStreamHandler_;
-  private          IAgent?                       agent_;
-  private          DateTime?                     fetchedDate_;
-  private          Action?                       onDispose_;
-  private          Output?                       output_;
-  private          SessionData?                  sessionData_;
-  private          TaskData?                     taskData_;
+  private readonly Activity?                             activity_;
+  private readonly ActivityContext                       activityContext_;
+  private readonly ActivitySource                        activitySource_;
+  private readonly IAgentHandler                         agentHandler_;
+  private readonly CancellationTokenSource               cancellationTokenSource_;
+  private readonly DataPrefetcher                        dataPrefetcher_;
+  private readonly TimeSpan                              delayBeforeAcquisition_;
+  private readonly string                                folder_;
+  private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
+  private readonly ILogger                               logger_;
+  private readonly IQueueMessageHandler                  messageHandler_;
+  private readonly string                                ownerPodId_;
+  private readonly string                                ownerPodName_;
+  private readonly CancellationTokenRegistration         reg1_;
+  private readonly IResultTable                          resultTable_;
+  private readonly ISessionTable                         sessionTable_;
+  private readonly ISubmitter                            submitter_;
+  private readonly ITaskProcessingChecker                taskProcessingChecker_;
+  private readonly ITaskTable                            taskTable_;
+  private readonly string                                token_;
+  private readonly CancellationTokenSource               workerConnectionCts_;
+  private readonly IWorkerStreamHandler                  workerStreamHandler_;
+  private          IAgent?                               agent_;
+  private          DateTime?                             fetchedDate_;
+  private          Action?                               onDispose_;
+  private          Output?                               output_;
+  private          SessionData?                          sessionData_;
+  private          TaskData?                             taskData_;
 
-  public TaskHandler(ISessionTable              sessionTable,
-                     ITaskTable                 taskTable,
-                     IResultTable               resultTable,
-                     ISubmitter                 submitter,
-                     DataPrefetcher             dataPrefetcher,
-                     IWorkerStreamHandler       workerStreamHandler,
-                     IQueueMessageHandler       messageHandler,
-                     ITaskProcessingChecker     taskProcessingChecker,
-                     string                     ownerPodId,
-                     string                     ownerPodName,
-                     ActivitySource             activitySource,
-                     IAgentHandler              agentHandler,
-                     ILogger                    logger,
-                     Injection.Options.Pollster pollsterOptions,
-                     Action                     onDispose,
-                     CancellationTokenSource    cancellationTokenSource)
+  public TaskHandler(ISessionTable                         sessionTable,
+                     ITaskTable                            taskTable,
+                     IResultTable                          resultTable,
+                     ISubmitter                            submitter,
+                     DataPrefetcher                        dataPrefetcher,
+                     IWorkerStreamHandler                  workerStreamHandler,
+                     IQueueMessageHandler                  messageHandler,
+                     ITaskProcessingChecker                taskProcessingChecker,
+                     string                                ownerPodId,
+                     string                                ownerPodName,
+                     ActivitySource                        activitySource,
+                     IAgentHandler                         agentHandler,
+                     ILogger                               logger,
+                     Injection.Options.Pollster            pollsterOptions,
+                     Action                                onDispose,
+                     CancellationTokenSource               cancellationTokenSource,
+                     FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics)
   {
-    sessionTable_          = sessionTable;
-    taskTable_             = taskTable;
-    resultTable_           = resultTable;
-    messageHandler_        = messageHandler;
-    taskProcessingChecker_ = taskProcessingChecker;
-    submitter_             = submitter;
-    dataPrefetcher_        = dataPrefetcher;
-    workerStreamHandler_   = workerStreamHandler;
-    activitySource_        = activitySource;
-    agentHandler_          = agentHandler;
-    logger_                = logger;
-    onDispose_             = onDispose;
-    ownerPodId_            = ownerPodId;
-    ownerPodName_          = ownerPodName;
-    taskData_              = null;
-    sessionData_           = null;
+    sessionTable_             = sessionTable;
+    taskTable_                = taskTable;
+    resultTable_              = resultTable;
+    messageHandler_           = messageHandler;
+    taskProcessingChecker_    = taskProcessingChecker;
+    submitter_                = submitter;
+    dataPrefetcher_           = dataPrefetcher;
+    workerStreamHandler_      = workerStreamHandler;
+    activitySource_           = activitySource;
+    agentHandler_             = agentHandler;
+    logger_                   = logger;
+    onDispose_                = onDispose;
+    functionExecutionMetrics_ = functionExecutionMetrics;
+    ownerPodId_               = ownerPodId;
+    ownerPodName_             = ownerPodName;
+    taskData_                 = null;
+    sessionData_              = null;
 
     activity_ = activitySource.CreateActivity($"{nameof(TaskHandler)}",
                                               ActivityKind.Internal);
@@ -143,6 +147,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
                                                                  activity_);
     using var _ = logger_.BeginNamedScope("DisposeAsync",
@@ -177,6 +182,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// </summary>
   private async ValueTask ReleaseTaskHandler()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     var onDispose = Interlocked.Exchange(ref onDispose_,
                                          null);
     onDispose?.Invoke();
@@ -195,6 +201,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// </returns>
   public async Task StopCancelledTask()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
                                                                  activity_);
 
@@ -228,6 +235,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
   public async Task<AcquisitionStatus> AcquireTask()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
                                                                  activity_);
     using var _ = logger_.BeginNamedScope("Acquiring task",
@@ -607,6 +615,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   public async Task PreProcessing()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     if (taskData_ is null)
     {
       throw new NullReferenceException();
@@ -647,6 +656,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
   public async Task ExecuteTask()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     if (taskData_ is null || sessionData_ is null)
     {
       throw new NullReferenceException();
@@ -665,6 +675,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
       activity?.AddEvent(new ActivityEvent("Start Handler"));
       // In theory we could create the server during dependencies checking and activate it only now
+
       agent_ = await agentHandler_.Start(token_,
                                          logger_,
                                          sessionData_,
@@ -672,6 +683,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                          folder_,
                                          cancellationTokenSource_.Token)
                                   .ConfigureAwait(false);
+
 
       activity?.AddEvent(new ActivityEvent("Start status update"));
       logger_.LogInformation("Start executing task");
@@ -706,14 +718,18 @@ public sealed class TaskHandler : IAsyncDisposable
     try
     {
       activity?.AddEvent(new ActivityEvent("Start request"));
-      // at this point worker requests should have ended
-      logger_.LogDebug("Wait for task output");
-      output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
-                                                               token_,
-                                                               folder_,
-                                                               workerConnectionCts_.Token)
-                                          .ConfigureAwait(false);
+      logger_.LogDebug("Send request to worker");
+      // ReSharper disable once ExplicitCallerInfoArgument
+      using (functionExecutionMetrics_.CountAndTime("RequestExecution"))
+      {
+        output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
+                                                                 token_,
+                                                                 folder_,
+                                                                 workerConnectionCts_.Token)
+                                            .ConfigureAwait(false);
+      }
 
+      // at this point worker requests should have ended
       taskData_ = taskData_ with
                   {
                     ProcessedDate = DateTime.UtcNow,
@@ -747,6 +763,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing()
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
                                                                  activity_);
     if (taskData_ is null)
@@ -840,6 +857,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                               bool              requeueIfUnavailable,
                                               CancellationToken cancellationToken)
   {
+    using var measure = functionExecutionMetrics_.CountAndTime();
     if (agent_ is null)
     {
       throw new NullReferenceException(nameof(agent_) + " is null.");
