@@ -20,6 +20,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -57,6 +58,7 @@ public class Pollster : IInitializable
   private readonly IObjectStorage                            objectStorage_;
   private readonly string                                    ownerPodId_;
   private readonly string                                    ownerPodName_;
+  private readonly Counter<int>                              pipeliningCounter_;
   private readonly Injection.Options.Pollster                pollsterOptions_;
   private readonly IPullQueueStorage                         pullQueueStorage_;
   private readonly IResultTable                              resultTable_;
@@ -118,6 +120,18 @@ public class Pollster : IInitializable
     ownerPodId_            = identifier.OwnerPodId;
     ownerPodName_          = identifier.OwnerPodName;
     Failed                 = false;
+
+    var started = DateTime.UtcNow;
+    meterHolder_.Meter.CreateObservableCounter("uptime",
+                                               () => (DateTime.UtcNow - started).TotalMilliseconds,
+                                               "Milliseconds",
+                                               "Duration from pollster start",
+                                               meterHolder_.Tags);
+
+    pipeliningCounter_ = meterHolder_.Meter.CreateCounter<int>("pipeline",
+                                                               "Tasks",
+                                                               "Number of tasks in the pipeline",
+                                                               meterHolder_.Tags);
   }
 
   public ICollection<string> TaskProcessing
@@ -333,10 +347,15 @@ public class Pollster : IInitializable
                                               agentHandler_,
                                               taskHandlerLogger,
                                               pollsterOptions_,
-                                              () => taskProcessingDict_.TryRemove(message.TaskId,
-                                                                                  out var _),
+                                              () =>
+                                              {
+                                                taskProcessingDict_.TryRemove(message.TaskId,
+                                                                              out var _);
+                                                pipeliningCounter_.Add(-1);
+                                              },
                                               cts,
                                               new FunctionExecutionMetrics<TaskHandler>(meterHolder_));
+            pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
             messageDispose.Reset();
 
