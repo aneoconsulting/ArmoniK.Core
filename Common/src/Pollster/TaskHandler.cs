@@ -675,17 +675,15 @@ public sealed class TaskHandler : IAsyncDisposable
 
       activity?.AddEvent(new ActivityEvent("Start Handler"));
       // In theory we could create the server during dependencies checking and activate it only now
-      // ReSharper disable once ExplicitCallerInfoArgument
-      using (functionExecutionMetrics_.CountAndTime("RequestExecution"))
-      {
-        agent_ = await agentHandler_.Start(token_,
-                                           logger_,
-                                           sessionData_,
-                                           taskData_,
-                                           folder_,
-                                           cancellationTokenSource_.Token)
-                                    .ConfigureAwait(false);
-      }
+
+      agent_ = await agentHandler_.Start(token_,
+                                         logger_,
+                                         sessionData_,
+                                         taskData_,
+                                         folder_,
+                                         cancellationTokenSource_.Token)
+                                  .ConfigureAwait(false);
+
 
       activity?.AddEvent(new ActivityEvent("Start status update"));
       logger_.LogInformation("Start executing task");
@@ -720,14 +718,18 @@ public sealed class TaskHandler : IAsyncDisposable
     try
     {
       activity?.AddEvent(new ActivityEvent("Start request"));
-      // at this point worker requests should have ended
-      logger_.LogDebug("Wait for task output");
-      output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
-                                                               token_,
-                                                               folder_,
-                                                               workerConnectionCts_.Token)
-                                          .ConfigureAwait(false);
+      logger_.LogDebug("Send request to worker");
+      // ReSharper disable once ExplicitCallerInfoArgument
+      using (functionExecutionMetrics_.CountAndTime("RequestExecution"))
+      {
+        output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
+                                                                 token_,
+                                                                 folder_,
+                                                                 workerConnectionCts_.Token)
+                                            .ConfigureAwait(false);
+      }
 
+      // at this point worker requests should have ended
       taskData_ = taskData_ with
                   {
                     ProcessedDate = DateTime.UtcNow,
