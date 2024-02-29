@@ -43,7 +43,7 @@ resource "docker_image" "polling_agent" {
 }
 
 resource "docker_container" "polling_agent" {
-  name  = local.polling_agent_name
+  name  = "${var.polling_agent.name}${var.replica_counter}"
   image = docker_image.polling_agent.image_id
 
   networks_advanced {
