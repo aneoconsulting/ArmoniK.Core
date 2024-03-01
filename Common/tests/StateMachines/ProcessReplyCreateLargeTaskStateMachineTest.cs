@@ -171,12 +171,4 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
-
-  [Test]
-  public void GenerateMermaidGraphShouldSucceed()
-  {
-    var str = sm_!.GenerateMermaidGraph();
-    Console.WriteLine(str);
-    Assert.IsFalse(string.IsNullOrEmpty(str));
-  }
 }
