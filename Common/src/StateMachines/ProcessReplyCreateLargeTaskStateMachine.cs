@@ -16,8 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
-using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -198,35 +196,6 @@ public class ProcessReplyCreateLargeTaskStateMachine
   /// </returns>
   public string GenerateGraph()
     => UmlDotGraph.Format(machine_.GetInfo());
-
-  /// <summary>
-  ///   Generate a Mermaid graph representing the Final State Machine
-  /// </summary>
-  /// <returns>
-  ///   A string containing the graph in Mermaid format
-  /// </returns>
-  public string GenerateMermaidGraph()
-  {
-    var str = UmlMermaidGraph.Format(machine_.GetInfo());
-
-    // Manually fix the footer; the last
-    // 3 lines should be disposed
-    var lines = str.Split(new[]
-                          {
-                            Environment.NewLine,
-                          },
-                          StringSplitOptions.None);
-    str = string.Join(Environment.NewLine,
-                      lines.Take(lines.Length - 3));
-
-    // Enclose in markers for markdown
-    var bld = new StringBuilder(str);
-    bld.Insert(0,
-               "```mermaid\n");
-    bld.Append("\n```\n");
-
-    return bld.ToString();
-  }
 
   /// <summary>
   ///   Get the current state of the Final State Machine
