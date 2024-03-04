@@ -27,19 +27,21 @@ namespace ArmoniK.Core.Common.Meter;
 [UsedImplicitly]
 public class MeterHolder
 {
-  public const    string                           Name = $"ArmoniK.Core.{nameof(MeterHolder)}";
-  public readonly System.Diagnostics.Metrics.Meter Meter;
-  public readonly KeyValuePair<string, object?>[]  Tags;
+  public const      string                               Name = $"ArmoniK.Core.{nameof(MeterHolder)}";
+  internal readonly System.Diagnostics.Metrics.Meter     Meter;
+  internal readonly IReadOnlyDictionary<string, object?> Tags;
 
   public MeterHolder(IMeterFactory   meterFactory,
                      AgentIdentifier identifier)
   {
-    Tags = new KeyValuePair<string, object?>[]
+    Tags = new Dictionary<string, object?>
            {
-             new($"{Name}.{nameof(AgentIdentifier.OwnerPodId)}".ToLower(),
-                 identifier.OwnerPodId),
-             new($"{Name}.{nameof(AgentIdentifier.OwnerPodName)}".ToLower(),
-                 identifier.OwnerPodName),
+             {
+               $"{Name}.{nameof(AgentIdentifier.OwnerPodId)}".ToLower(), identifier.OwnerPodId
+             },
+             {
+               $"{Name}.{nameof(AgentIdentifier.OwnerPodName)}".ToLower(), identifier.OwnerPodName
+             },
            };
     Meter = meterFactory.Create(Name,
                                 null,
