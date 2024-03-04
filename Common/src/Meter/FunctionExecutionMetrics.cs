@@ -31,7 +31,7 @@ public class FunctionExecutionMetrics<TIns>
   private readonly string                                                                          className_;
   private readonly ConcurrentDictionary<string, (Counter<int> counter, Histogram<long> histogram)> instruments_ = new();
   private readonly System.Diagnostics.Metrics.Meter                                                meter_;
-  private readonly KeyValuePair<string, object?>[]                                                 tags_;
+  private readonly IReadOnlyDictionary<string, object?>                                            tags_;
 
   public FunctionExecutionMetrics(MeterHolder holder)
   {
