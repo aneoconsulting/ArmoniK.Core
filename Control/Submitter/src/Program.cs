@@ -187,7 +187,7 @@ public static class Program
 
       app.UseRouting();
       app.UseGrpcWeb();
-      app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Connection.LocalPort == 1081);
+      app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Connection.LocalPort == 1081 && context.Request.Path == "/metrics");
 
       app.UseAuthorization();
       app.UseSerilogRequestLogging();
