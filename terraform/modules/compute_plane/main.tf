@@ -6,6 +6,11 @@ resource "docker_volume" "socket_vol" {
 
 resource "docker_volume" "comm_vol" {
   name = "comm_vol${var.replica_counter}"
+  driver_opts = {
+    o : "uid=3333"
+    device : "tmpfs"
+    type : "tmpfs"
+  }
 }
 
 resource "docker_image" "worker" {
@@ -64,6 +69,7 @@ resource "docker_container" "polling_agent" {
 
   env = concat(local.env, local.gen_env, local.common_env)
 
+  user       = 3333
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts
 
