@@ -7,7 +7,7 @@ resource "docker_volume" "socket_vol" {
 resource "docker_volume" "comm_vol" {
   name = "comm_vol${var.replica_counter}"
   driver_opts = {
-    o : "uid=3333"
+    o : "uid=3333,gid=3333,mode=0777"
     device : "tmpfs"
     type : "tmpfs"
   }

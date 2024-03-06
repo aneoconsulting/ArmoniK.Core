@@ -12,8 +12,6 @@ ARG VERSION=1.0.0.0
 ARG TARGETARCH
 ARG TARGETOS
 
-RUN mkdir /cache /local_storage /comm
-
 WORKDIR /src
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"%\\\", \\\"\$D/\\\"]"
 COPY ["Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj", "Adaptors/Amqp/src/"]
@@ -106,10 +104,6 @@ RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --
 
 
 FROM base-${TARGETOS} as polling_agent
-WORKDIR /
-COPY --from=build --chown=$APP_UID:$APP_UID /cache /cache
-COPY --from=build --chown=$APP_UID:$APP_UID /local_storage /local_storage
-COPY --from=build --chown=$APP_UID:$APP_UID /comm /comm
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -148,8 +142,6 @@ CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base-${TARGETOS} as submitter
-WORKDIR /
-COPY --from=build --chown=$APP_UID:$APP_UID /local_storage /local_storage
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
