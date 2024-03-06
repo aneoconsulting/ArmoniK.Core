@@ -4,8 +4,6 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION=1.0.0.0
 ARG TARGETARCH
 
-RUN mkdir /cache /local_storage
-
 WORKDIR /src
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"%\\\", \\\"\$D/\\\"]"
 COPY ["Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj", "Adaptors/Amqp/src/"]
@@ -73,9 +71,6 @@ WORKDIR /src/Control/Submitter/src
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a $TARGETARCH --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 FROM base as polling_agent
-WORKDIR /
-COPY --from=build --chown=$APP_UID:$APP_UID /cache /cache
-COPY --from=build --chown=$APP_UID:$APP_UID /local_storage /local_storage
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -115,8 +110,6 @@ ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base as submitter
-WORKDIR /
-COPY --from=build --chown=$APP_UID:$APP_UID /local_storage /local_storage
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
