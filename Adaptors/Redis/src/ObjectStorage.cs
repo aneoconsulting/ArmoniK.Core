@@ -197,14 +197,14 @@ public class ObjectStorage : IObjectStorage
         if (retryCount + 1 >= redisOptions_.MaxRetry)
         {
           logger_.LogError(ex,
-                           "A RedisTimeoutException occurred {MaxRetryCount} times for the same action",
+                           "A RedisTimeoutException occurred {retryCount} times for the same action",
                            redisOptions_.MaxRetry);
           throw;
         }
 
         var retryDelay = (retryCount + 1) * (retryCount + 1) * redisOptions_.MsAfterRetry;
         logger_.LogWarning(ex,
-                           "A RedisTimeoutException occurred {retryCount}/{redisOptions_.MaxRetry}, retry in {retryDelay} ms",
+                           "A RedisTimeoutException occurred {retryCount}/{MaxRetry}, retry in {retryDelay} ms",
                            retryCount,
                            redisOptions_.MaxRetry,
                            retryDelay);

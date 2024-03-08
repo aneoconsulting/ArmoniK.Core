@@ -87,7 +87,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                              ? priority % MaxInternalQueuePriority
                              : MaxInternalQueuePriority;
 
-    logger_.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internal priority}",
+    logger_.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internalPriority}",
                      priority,
                      partitionId,
                      whichQueue,
