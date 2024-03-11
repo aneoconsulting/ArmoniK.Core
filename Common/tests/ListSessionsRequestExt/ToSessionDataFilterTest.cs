@@ -181,6 +181,25 @@ public class ToSessionDataFilterTest
                        },
        };
 
+  public static FilterField CreateListSessionsFilterBoolean(SessionRawEnumField   field,
+                                                            FilterBooleanOperator op,
+                                                            bool                  value)
+    => new()
+       {
+         Field = new SessionField
+                 {
+                   SessionRawField = new SessionRawField
+                                     {
+                                       Field = field,
+                                     },
+                 },
+         FilterBoolean = new FilterBoolean
+                         {
+                           Operator = op,
+                           Value    = value,
+                         },
+       };
+
   public static FilterField CreateListSessionsFilterStatus(SessionRawEnumField       field,
                                                            FilterStatusOperator      op,
                                                            Api.gRPC.V1.SessionStatus value)
@@ -272,6 +291,13 @@ public class ToSessionDataFilterTest
     yield return CaseFalse(CreateListSessionsFilterStatus(SessionRawEnumField.Status,
                                                           FilterStatusOperator.Equal,
                                                           Api.gRPC.V1.SessionStatus.Cancelled));
+
+    yield return CaseTrue(CreateListSessionsFilterBoolean(SessionRawEnumField.WorkerSubmission,
+                                                          FilterBooleanOperator.Is,
+                                                          true));
+    yield return CaseTrue(CreateListSessionsFilterBoolean(SessionRawEnumField.ClientSubmission,
+                                                          FilterBooleanOperator.Is,
+                                                          true));
 
     yield return CaseTrue(CreateListSessionsFilterString(SessionRawEnumField.SessionId,
                                                          FilterStringOperator.Equal,
