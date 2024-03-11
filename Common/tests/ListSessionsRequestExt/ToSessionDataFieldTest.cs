@@ -58,7 +58,6 @@ public class ToSessionDataFieldTest
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    // TODO add Duration
     yield return Case(SessionRawEnumField.Status,
                       SessionData.Status);
     yield return Case(SessionRawEnumField.Options,
@@ -69,8 +68,20 @@ public class ToSessionDataFieldTest
                       SessionData.SessionId);
     yield return Case(SessionRawEnumField.CreatedAt,
                       SessionData.CreationDate);
+    yield return Case(SessionRawEnumField.DeletedAt,
+                      SessionData.DeletionDate);
+    yield return Case(SessionRawEnumField.ClosedAt,
+                      SessionData.ClosureDate);
+    yield return Case(SessionRawEnumField.PurgedAt,
+                      SessionData.PurgeDate);
     yield return Case(SessionRawEnumField.PartitionIds,
                       SessionData.PartitionIds);
+    yield return Case(SessionRawEnumField.ClientSubmission,
+                      SessionData.ClientSubmission);
+    yield return Case(SessionRawEnumField.WorkerSubmission,
+                      SessionData.WorkerSubmission);
+    yield return Case(SessionRawEnumField.Duration,
+                      SessionData.Duration);
   }
 
   private static TestCaseData Case(SessionRawEnumField field,

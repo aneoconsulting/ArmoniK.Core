@@ -113,18 +113,20 @@ public static class EnumFieldExt
   public static Expression<Func<SessionData, object?>> ToField(this SessionRawEnumField enumField)
     => enumField switch
        {
-         SessionRawEnumField.SessionId    => session => session.SessionId,
-         SessionRawEnumField.Status       => session => session.Status,
-         SessionRawEnumField.PartitionIds => session => session.PartitionIds,
-         SessionRawEnumField.Options      => session => session.Options,
-         SessionRawEnumField.CreatedAt    => session => session.CreationDate,
-         SessionRawEnumField.CancelledAt  => session => session.CancellationDate,
-         SessionRawEnumField.Duration     => session => session.Duration,
-         SessionRawEnumField.ClosedAt     => session => session.ClosureDate,
-         SessionRawEnumField.PurgedAt     => session => session.PurgeDate,
-         SessionRawEnumField.DeletedAt    => session => session.DeletionDate,
-         SessionRawEnumField.Unspecified  => throw new ArgumentOutOfRangeException(nameof(enumField)),
-         _                                => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         SessionRawEnumField.SessionId        => session => session.SessionId,
+         SessionRawEnumField.Status           => session => session.Status,
+         SessionRawEnumField.PartitionIds     => session => session.PartitionIds,
+         SessionRawEnumField.Options          => session => session.Options,
+         SessionRawEnumField.CreatedAt        => session => session.CreationDate,
+         SessionRawEnumField.CancelledAt      => session => session.CancellationDate,
+         SessionRawEnumField.Duration         => session => session.Duration,
+         SessionRawEnumField.ClosedAt         => session => session.ClosureDate,
+         SessionRawEnumField.PurgedAt         => session => session.PurgeDate,
+         SessionRawEnumField.DeletedAt        => session => session.DeletionDate,
+         SessionRawEnumField.WorkerSubmission => session => session.WorkerSubmission,
+         SessionRawEnumField.ClientSubmission => session => session.ClientSubmission,
+         SessionRawEnumField.Unspecified      => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                    => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>
