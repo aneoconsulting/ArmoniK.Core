@@ -32,19 +32,22 @@ public class PostProcessor : BackgroundService
 {
   private readonly ILogger<PostProcessor>  logger_;
   private readonly PostProcessingTaskQueue postProcessingTaskQueue_;
+  private readonly CancellationToken       token_;
 
-  public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue,
-                       ILogger<PostProcessor>  logger)
+  public PostProcessor(PostProcessingTaskQueue      postProcessingTaskQueue,
+                       GraceDelayCancellationSource graceDelayCancellationSource,
+                       ILogger<PostProcessor>       logger)
   {
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
+    token_                   = graceDelayCancellationSource.DelayedCancellationTokenSource.Token;
   }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-    while (!stoppingToken.IsCancellationRequested)
+    while (!token_.IsCancellationRequested)
     {
-      var taskHandler = await postProcessingTaskQueue_.ReadAsync(stoppingToken)
+      var taskHandler = await postProcessingTaskQueue_.ReadAsync(token_)
                                                       .ConfigureAwait(false);
       await using var taskHandlerDispose = new Deferrer(taskHandler);
 

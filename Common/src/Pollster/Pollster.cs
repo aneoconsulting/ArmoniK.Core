@@ -55,6 +55,7 @@ public class Pollster : IInitializable
   private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
   private readonly MeterHolder                               meterHolder_;
+  private readonly GraceDelayCancellationSource              graceDelayCancellationSource_;
   private readonly IObjectStorage                            objectStorage_;
   private readonly string                                    ownerPodId_;
   private readonly string                                    ownerPodName_;
@@ -91,7 +92,8 @@ public class Pollster : IInitializable
                   IAgentHandler              agentHandler,
                   RunningTaskQueue           runningTaskQueue,
                   AgentIdentifier            identifier,
-                  MeterHolder                meterHolder)
+                  MeterHolder                meterHolder,
+                  GraceDelayCancellationSource graceDelayCancellationSource)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -99,27 +101,28 @@ public class Pollster : IInitializable
                                             $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
-    logger_                = logger;
-    loggerFactory_         = loggerFactory;
-    activitySource_        = activitySource;
-    pullQueueStorage_      = pullQueueStorage;
-    lifeTime_              = lifeTime;
-    dataPrefetcher_        = dataPrefetcher;
-    pollsterOptions_       = pollsterOptions;
-    messageBatchSize_      = options.MessageBatchSize;
-    objectStorage_         = objectStorage;
-    resultTable_           = resultTable;
-    submitter_             = submitter;
-    sessionTable_          = sessionTable;
-    taskTable_             = taskTable;
-    taskProcessingChecker_ = taskProcessingChecker;
-    workerStreamHandler_   = workerStreamHandler;
-    agentHandler_          = agentHandler;
-    runningTaskQueue_      = runningTaskQueue;
-    meterHolder_           = meterHolder;
-    ownerPodId_            = identifier.OwnerPodId;
-    ownerPodName_          = identifier.OwnerPodName;
-    Failed                 = false;
+    logger_                            = logger;
+    loggerFactory_                     = loggerFactory;
+    activitySource_                    = activitySource;
+    pullQueueStorage_                  = pullQueueStorage;
+    lifeTime_                          = lifeTime;
+    dataPrefetcher_                    = dataPrefetcher;
+    pollsterOptions_                   = pollsterOptions;
+    messageBatchSize_                  = options.MessageBatchSize;
+    objectStorage_                     = objectStorage;
+    resultTable_                       = resultTable;
+    submitter_                         = submitter;
+    sessionTable_                      = sessionTable;
+    taskTable_                         = taskTable;
+    taskProcessingChecker_             = taskProcessingChecker;
+    workerStreamHandler_               = workerStreamHandler;
+    agentHandler_                      = agentHandler;
+    runningTaskQueue_                  = runningTaskQueue;
+    meterHolder_                       = meterHolder;
+    graceDelayCancellationSource_      = graceDelayCancellationSource;
+    ownerPodId_                        = identifier.OwnerPodId;
+    ownerPodName_                      = identifier.OwnerPodName;
+    Failed                             = false;
 
     var started = DateTime.UtcNow;
     meterHolder_.Meter.CreateObservableCounter("uptime",
@@ -353,7 +356,7 @@ public class Pollster : IInitializable
                                                                               out var _);
                                                 pipeliningCounter_.Add(-1);
                                               },
-                                              cts,
+                                              graceDelayCancellationSource_,
                                               new FunctionExecutionMetrics<TaskHandler>(meterHolder_));
             pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler

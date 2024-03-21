@@ -33,20 +33,23 @@ public class RunningTaskProcessor : BackgroundService
   private readonly ILogger<RunningTaskProcessor> logger_;
   private readonly PostProcessingTaskQueue       postProcessingTaskQueue_;
   private readonly RunningTaskQueue              runningTaskQueue_;
+  private readonly CancellationToken             token_;
 
   public RunningTaskProcessor(RunningTaskQueue              runningTaskQueue,
                               PostProcessingTaskQueue       postProcessingTaskQueue,
+                              GraceDelayCancellationSource  graceDelayCancellationSource,
                               ILogger<RunningTaskProcessor> logger)
   {
     runningTaskQueue_        = runningTaskQueue;
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
+    token_                   = graceDelayCancellationSource.DelayedCancellationTokenSource.Token;
   }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     logger_.LogDebug("Start running task processing service");
-    while (!stoppingToken.IsCancellationRequested)
+    while (!token_.IsCancellationRequested)
     {
       try
       {
@@ -55,7 +58,7 @@ public class RunningTaskProcessor : BackgroundService
           runningTaskQueue_.AddException(exception);
         }
 
-        var taskHandler = await runningTaskQueue_.ReadAsync(stoppingToken)
+        var taskHandler = await runningTaskQueue_.ReadAsync(token_)
                                                  .ConfigureAwait(false);
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
@@ -67,7 +70,7 @@ public class RunningTaskProcessor : BackgroundService
         await taskHandler.ExecuteTask()
                          .ConfigureAwait(false);
         await postProcessingTaskQueue_.WriteAsync(taskHandler,
-                                                  stoppingToken)
+                                                  token_)
                                       .ConfigureAwait(false);
 
         taskHandlerDispose.Reset();

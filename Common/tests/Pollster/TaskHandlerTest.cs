@@ -68,8 +68,7 @@ public class TaskHandlerTest
     var mockAgentHandler        = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
-                                                                mockQueueMessageHandler.Object,
-                                                                new CancellationTokenSource());
+                                                                mockQueueMessageHandler.Object);
     Assert.IsNotNull(testServiceProvider.TaskHandler);
   }
 
@@ -82,8 +81,7 @@ public class TaskHandlerTest
     var mockAgentHandler        = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
-                                                                mockQueueMessageHandler.Object,
-                                                                new CancellationTokenSource());
+                                                                mockQueueMessageHandler.Object);
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
@@ -324,8 +322,7 @@ public class TaskHandlerTest
     var mockAgentHandler  = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
                                          .ConfigureAwait(false);
@@ -359,17 +356,15 @@ public class TaskHandlerTest
 
     var mockStreamHandler = new Mock<IWorkerStreamHandler>();
     var mockAgentHandler  = new Mock<IAgentHandler>();
-    var cts               = new CancellationTokenSource();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
-                                                                sqmh,
-                                                                cts);
+                                                                sqmh);
 
     var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
                                          .ConfigureAwait(false);
 
     sqmh.TaskId = taskId;
-    cts.Cancel();
+    testServiceProvider.Lifetime.StopApplication();
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
@@ -588,7 +583,6 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 sqmh,
-                                                                new CancellationTokenSource(),
                                                                 taskProcessingChecker: mockTaskProcessingChecker.Object);
 
     var (_, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
@@ -922,7 +916,6 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 sqmh,
-                                                                cancellationTokenSource,
                                                                 new WaitTaskTable(waitMethod,
                                                                                   delayTaskTable),
                                                                 new WaitSessionTable(delaySessionTable));
@@ -932,6 +925,7 @@ public class TaskHandlerTest
 
     sqmh.TaskId = taskId;
 
+    cancellationTokenSource.Token.Register(() => testServiceProvider.Lifetime.StopApplication());
     cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(10));
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
@@ -965,8 +959,7 @@ public class TaskHandlerTest
     var mockAgentHandler  = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
                                          .ConfigureAwait(false);
@@ -1003,8 +996,7 @@ public class TaskHandlerTest
     var mockAgentHandler  = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (_, unresolvedDependenciesTask, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                                      .ConfigureAwait(false);
@@ -1094,7 +1086,6 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(workerStreamHandler,
                                                                 agentHandler,
                                                                 sqmh,
-                                                                cancellationTokenSource,
                                                                 graceDelay: TimeSpan.FromMilliseconds(10));
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
@@ -1111,6 +1102,7 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
+    cancellationTokenSource.Token.Register(() => testServiceProvider.Lifetime.StopApplication());
     cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(500));
 
     Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
@@ -1137,8 +1129,7 @@ public class TaskHandlerTest
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1196,8 +1187,7 @@ public class TaskHandlerTest
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1287,8 +1277,7 @@ public class TaskHandlerTest
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1340,8 +1329,7 @@ public class TaskHandlerTest
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1389,8 +1377,7 @@ public class TaskHandlerTest
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
-                                                                sqmh,
-                                                                new CancellationTokenSource());
+                                                                sqmh);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);

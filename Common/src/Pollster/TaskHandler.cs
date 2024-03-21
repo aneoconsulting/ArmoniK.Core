@@ -87,7 +87,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      ILogger                               logger,
                      Injection.Options.Pollster            pollsterOptions,
                      Action                                onDispose,
-                     CancellationTokenSource               cancellationTokenSource,
+                     GraceDelayCancellationSource          cancellationTokenSource,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics)
   {
     sessionTable_             = sessionTable;
@@ -129,18 +129,8 @@ public sealed class TaskHandler : IAsyncDisposable
     Directory.CreateDirectory(folder_);
     delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
-    workerConnectionCts_     = new CancellationTokenSource();
-    cancellationTokenSource_ = new CancellationTokenSource();
-
-    reg1_ = cancellationTokenSource.Token.Register(() => cancellationTokenSource_.Cancel());
-
-    cancellationTokenSource_.Token.Register(() =>
-                                            {
-                                              logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
-                                                                 pollsterOptions.GraceDelay);
-                                              workerConnectionCts_.CancelAfter(pollsterOptions.GraceDelay);
-                                            });
-    workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
+    workerConnectionCts_     = cancellationTokenSource.DelayedCancellationTokenSource;
+    cancellationTokenSource_ = cancellationTokenSource.LifetimeCancellationTokenSource;
   }
 
 
@@ -161,8 +151,6 @@ public sealed class TaskHandler : IAsyncDisposable
     reg1_.Unregister();
     await reg1_.DisposeAsync()
                .ConfigureAwait(false);
-    cancellationTokenSource_.Dispose();
-    workerConnectionCts_.Dispose();
     agent_?.Dispose();
     try
     {
