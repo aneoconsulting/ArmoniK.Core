@@ -77,8 +77,8 @@ public class RunningTaskProcessor : BackgroundService
       }
       catch (Exception e)
       {
-        logger_.LogError(e,
-                         "Error while executing task");
+        logger_.LogWarning(e,
+                           "Error while executing task");
         runningTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
                                                             .SourceException);
       }

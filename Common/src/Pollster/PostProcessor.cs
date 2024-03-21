@@ -64,8 +64,8 @@ public class PostProcessor : BackgroundService
       }
       catch (Exception e)
       {
-        logger_.LogError(e,
-                         "Error during task post processing");
+        logger_.LogWarning(e,
+                           "Error during task post processing");
         postProcessingTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
                                                                    .SourceException);
       }
