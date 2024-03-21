@@ -33,9 +33,9 @@ public class GraceDelayCancellationSource : IDisposable
   private readonly CancellationTokenRegistration registration_;
   private readonly CancellationTokenRegistration registration2_;
 
-  public GraceDelayCancellationSource(IHostApplicationLifetime              lifetime,
-                                      Injection.Options.Pollster            pollsterOptions,
-                                      ILogger<GraceDelayCancellationSource> logger)
+  public GraceDelayCancellationSource(IHostApplicationLifetime   lifetime,
+                                      Injection.Options.Pollster pollsterOptions,
+                                      ILogger                    logger)
   {
     LifetimeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(lifetime.ApplicationStopping);
     DelayedCancellationTokenSource  = new CancellationTokenSource();

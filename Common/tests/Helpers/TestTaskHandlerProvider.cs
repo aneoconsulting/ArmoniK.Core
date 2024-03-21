@@ -176,7 +176,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      () =>
                                                      {
                                                      },
-                                                     provider.GetRequiredService<GraceDelayCancellationSource>(),
+                                                     provider.GetRequiredService<IHostApplicationLifetime>(),
                                                      provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
            .AddSingleton<DataPrefetcher>();
 

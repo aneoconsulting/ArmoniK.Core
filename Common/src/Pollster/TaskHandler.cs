@@ -35,6 +35,7 @@ using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -52,11 +53,11 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly TimeSpan                              delayBeforeAcquisition_;
   private readonly string                                folder_;
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
+  private readonly GraceDelayCancellationSource          gdcs_;
   private readonly ILogger                               logger_;
   private readonly IQueueMessageHandler                  messageHandler_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
-  private readonly CancellationTokenRegistration         reg1_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
   private readonly ISubmitter                            submitter_;
@@ -87,7 +88,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      ILogger                               logger,
                      Injection.Options.Pollster            pollsterOptions,
                      Action                                onDispose,
-                     GraceDelayCancellationSource          cancellationTokenSource,
+                     IHostApplicationLifetime              lifetime,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics)
   {
     sessionTable_             = sessionTable;
@@ -129,8 +130,11 @@ public sealed class TaskHandler : IAsyncDisposable
     Directory.CreateDirectory(folder_);
     delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
-    workerConnectionCts_     = cancellationTokenSource.DelayedCancellationTokenSource;
-    cancellationTokenSource_ = cancellationTokenSource.LifetimeCancellationTokenSource;
+    gdcs_ = new GraceDelayCancellationSource(lifetime,
+                                             pollsterOptions,
+                                             logger_);
+    workerConnectionCts_     = gdcs_.DelayedCancellationTokenSource;
+    cancellationTokenSource_ = gdcs_.LifetimeCancellationTokenSource;
   }
 
 
@@ -148,9 +152,7 @@ public sealed class TaskHandler : IAsyncDisposable
     await ReleaseTaskHandler()
       .ConfigureAwait(false);
 
-    reg1_.Unregister();
-    await reg1_.DisposeAsync()
-               .ConfigureAwait(false);
+    gdcs_.Dispose();
     agent_?.Dispose();
     try
     {
