@@ -21,7 +21,6 @@ using System.Threading;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
@@ -31,28 +30,18 @@ public class GraceDelayCancellationSource : IDisposable
   public readonly  CancellationTokenSource       DelayedCancellationTokenSource;
   public readonly  CancellationTokenSource       LifetimeCancellationTokenSource;
   private readonly CancellationTokenRegistration registration_;
-  private readonly CancellationTokenRegistration registration2_;
 
   public GraceDelayCancellationSource(IHostApplicationLifetime   lifetime,
-                                      Injection.Options.Pollster pollsterOptions,
-                                      ILogger                    logger)
+                                      Injection.Options.Pollster pollsterOptions)
   {
     LifetimeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(lifetime.ApplicationStopping);
     DelayedCancellationTokenSource  = new CancellationTokenSource();
-    registration_ = LifetimeCancellationTokenSource.Token.Register(() =>
-                                                                   {
-                                                                     logger.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling operations",
-                                                                                       pollsterOptions.GraceDelay);
-                                                                     DelayedCancellationTokenSource.CancelAfter(pollsterOptions.GraceDelay);
-                                                                   });
-
-    registration2_ = DelayedCancellationTokenSource.Token.Register(() => logger.LogWarning("Cancellation triggered phase 2, cancel operations"));
+    registration_                   = LifetimeCancellationTokenSource.Token.Register(() => DelayedCancellationTokenSource.CancelAfter(pollsterOptions.GraceDelay));
   }
 
   public void Dispose()
   {
     registration_.Dispose();
-    registration2_.Dispose();
     LifetimeCancellationTokenSource.Dispose();
     DelayedCancellationTokenSource.Dispose();
   }

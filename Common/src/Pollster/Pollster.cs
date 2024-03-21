@@ -91,8 +91,7 @@ public class Pollster : IInitializable
                   IAgentHandler                agentHandler,
                   RunningTaskQueue             runningTaskQueue,
                   AgentIdentifier              identifier,
-                  MeterHolder                  meterHolder,
-                  GraceDelayCancellationSource graceDelayCancellationSource)
+                  MeterHolder                  meterHolder)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -118,7 +117,6 @@ public class Pollster : IInitializable
     agentHandler_                 = agentHandler;
     runningTaskQueue_             = runningTaskQueue;
     meterHolder_                  = meterHolder;
-    graceDelayCancellationSource_ = graceDelayCancellationSource;
     ownerPodId_                   = identifier.OwnerPodId;
     ownerPodName_                 = identifier.OwnerPodName;
     Failed                        = false;

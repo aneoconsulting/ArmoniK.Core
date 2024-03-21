@@ -131,10 +131,13 @@ public sealed class TaskHandler : IAsyncDisposable
     delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
     gdcs_ = new GraceDelayCancellationSource(lifetime,
-                                             pollsterOptions,
-                                             logger_);
+                                             pollsterOptions);
     workerConnectionCts_     = gdcs_.DelayedCancellationTokenSource;
     cancellationTokenSource_ = gdcs_.LifetimeCancellationTokenSource;
+
+    cancellationTokenSource_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
+                                                                     pollsterOptions.GraceDelay));
+    workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
   }
 
 
