@@ -58,6 +58,8 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IQueueMessageHandler                  messageHandler_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
+  private readonly CancellationTokenRegistration         registration_;
+  private readonly CancellationTokenRegistration         registration2_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
   private readonly ISubmitter                            submitter_;
@@ -135,9 +137,9 @@ public sealed class TaskHandler : IAsyncDisposable
     workerConnectionCts_     = gdcs_.DelayedCancellationTokenSource;
     cancellationTokenSource_ = gdcs_.LifetimeCancellationTokenSource;
 
-    cancellationTokenSource_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
-                                                                     pollsterOptions.GraceDelay));
-    workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
+    registration_ = cancellationTokenSource_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
+                                                                                     pollsterOptions.GraceDelay));
+    registration2_ = workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
   }
 
 
@@ -155,6 +157,10 @@ public sealed class TaskHandler : IAsyncDisposable
     await ReleaseTaskHandler()
       .ConfigureAwait(false);
 
+    await registration_.DisposeAsync()
+                       .ConfigureAwait(false);
+    await registration2_.DisposeAsync()
+                        .ConfigureAwait(false);
     gdcs_.Dispose();
     agent_?.Dispose();
     try

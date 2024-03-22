@@ -233,15 +233,12 @@ public class Pollster : IInitializable
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
-    await Init(cancellationToken)
+    var cts = CancellationTokenSource.CreateLinkedTokenSource(lifeTime_.ApplicationStopping,
+                                                              cancellationToken);
+
+    await Init(cts.Token)
       .ConfigureAwait(false);
 
-    var cts = new CancellationTokenSource();
-    cancellationToken.Register(() =>
-                               {
-                                 logger_.LogTrace("Global cancellation has been triggered");
-                                 cts.Cancel();
-                               });
     var recordedErrors = new Queue<Exception>();
 
     void RecordError(Exception e)
@@ -274,7 +271,7 @@ public class Pollster : IInitializable
     try
     {
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
-      while (!cancellationToken.IsCancellationRequested)
+      while (!cts.Token.IsCancellationRequested)
       {
         if (healthCheckFailedResult_ is not null)
         {
@@ -291,8 +288,8 @@ public class Pollster : IInitializable
         try
         {
           await using var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
-                                                                         cancellationToken)
-                                                      .GetAsyncEnumerator(cancellationToken);
+                                                                         cts.Token)
+                                                      .GetAsyncEnumerator(cts.Token);
 
           // `messagesDispose` is guaranteed to be disposed *before* `messages` because it is defined _after_
           await using var messagesDispose = new Deferrer([SuppressMessage("ReSharper",
@@ -385,7 +382,7 @@ public class Pollster : IInitializable
                                .ConfigureAwait(false);
 
               await runningTaskQueue_.WriteAsync(taskHandler,
-                                                 cancellationToken)
+                                                 cts.Token)
                                      .ConfigureAwait(false);
 
               // TaskHandler has been successfully sent to the next stage of the pipeline
@@ -393,7 +390,7 @@ public class Pollster : IInitializable
               taskHandlerDispose.Reset();
 
               await runningTaskQueue_.WaitForNextWriteAsync(pollsterOptions_.TimeoutBeforeNextAcquisition,
-                                                            cancellationToken)
+                                                            cts.Token)
                                      .ConfigureAwait(false);
 
               // If the task was successful, we can remove a failure
