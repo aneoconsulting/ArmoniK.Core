@@ -38,6 +38,7 @@ using EphemeralMongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -62,11 +63,12 @@ public class TestTaskHandlerProvider : IDisposable
   public readonly         TaskHandler     TaskHandler;
   public readonly         ITaskTable      TaskTable;
 
+  public IHostApplicationLifetime Lifetime;
+
 
   public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
                                  IAgentHandler           agentHandler,
                                  IQueueMessageHandler    queueStorage,
-                                 CancellationTokenSource cancellationTokenSource,
                                  ITaskTable?             inputTaskTable        = null,
                                  ISessionTable?          inputSessionTable     = null,
                                  ITaskProcessingChecker? taskProcessingChecker = null,
@@ -155,6 +157,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
+           .AddSingleton<GraceDelayCancellationSource>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
@@ -173,7 +176,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      () =>
                                                      {
                                                      },
-                                                     cancellationTokenSource,
+                                                     provider.GetRequiredService<IHostApplicationLifetime>(),
                                                      provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
            .AddSingleton<DataPrefetcher>();
 
@@ -207,6 +210,7 @@ public class TestTaskHandlerProvider : IDisposable
     SessionTable   = app_.Services.GetRequiredService<ISessionTable>();
     Submitter      = app_.Services.GetRequiredService<ISubmitter>();
     TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
+    Lifetime       = app_.Services.GetRequiredService<IHostApplicationLifetime>();
     objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
 
     ResultTable.Init(CancellationToken.None)

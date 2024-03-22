@@ -103,6 +103,7 @@ public static class Program
              .AddHostedService<PostProcessor>()
              .AddSingleton<RunningTaskQueue>()
              .AddSingleton<PostProcessingTaskQueue>()
+             .AddSingleton<GraceDelayCancellationSource>()
              .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()

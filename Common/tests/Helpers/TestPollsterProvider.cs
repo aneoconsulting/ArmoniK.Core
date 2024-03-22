@@ -155,6 +155,7 @@ public class TestPollsterProvider : IDisposable
            .AddHostedService<PostProcessor>()
            .AddSingleton<RunningTaskQueue>()
            .AddSingleton<PostProcessingTaskQueue>()
+           .AddSingleton<GraceDelayCancellationSource>()
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,

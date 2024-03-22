@@ -353,7 +353,7 @@ public class Pollster : IInitializable
                                                                               out var _);
                                                 pipeliningCounter_.Add(-1);
                                               },
-                                              cts,
+                                              lifeTime_,
                                               new FunctionExecutionMetrics<TaskHandler>(meterHolder_));
             pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
