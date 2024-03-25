@@ -436,6 +436,7 @@ public class Pollster : IInitializable
     finally
     {
       logger_.LogWarning("End of Pollster main loop");
+      runningTaskQueue_.Close();
       endLoopReached_ = true;
       lifeTime_.StopApplication();
     }
