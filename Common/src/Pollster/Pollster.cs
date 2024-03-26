@@ -236,7 +236,7 @@ public class Pollster : IInitializable
     await Init(cancellationToken)
       .ConfigureAwait(false);
 
-    var cts = new CancellationTokenSource();
+    using var cts = new CancellationTokenSource();
     cancellationToken.Register(() =>
                                {
                                  logger_.LogTrace("Global cancellation has been triggered");
