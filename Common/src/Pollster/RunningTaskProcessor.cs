@@ -18,6 +18,7 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
@@ -48,6 +49,8 @@ public class RunningTaskProcessor : BackgroundService
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    await using var close = new Deferrer(postProcessingTaskQueue_.Close);
+
     logger_.LogDebug("Start running task processing service");
     while (!token_.IsCancellationRequested)
     {
@@ -74,6 +77,10 @@ public class RunningTaskProcessor : BackgroundService
                                       .ConfigureAwait(false);
 
         taskHandlerDispose.Reset();
+      }
+      catch (ChannelClosedException)
+      {
+        break;
       }
       catch (Exception e)
       {

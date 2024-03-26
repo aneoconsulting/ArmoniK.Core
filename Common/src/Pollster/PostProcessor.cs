@@ -18,6 +18,7 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
@@ -47,20 +48,24 @@ public class PostProcessor : BackgroundService
   {
     while (!token_.IsCancellationRequested)
     {
-      var taskHandler = await postProcessingTaskQueue_.ReadAsync(token_)
-                                                      .ConfigureAwait(false);
-      await using var taskHandlerDispose = new Deferrer(taskHandler);
-
-      var taskInfo = taskHandler.GetAcquiredTaskInfo();
-
-      using var _ = logger_.BeginPropertyScope(("messageHandler", taskInfo.MessageId),
-                                               ("taskId", taskInfo.TaskId),
-                                               ("sessionId", taskInfo.SessionId));
-
       try
       {
+        var taskHandler = await postProcessingTaskQueue_.ReadAsync(token_)
+                                                        .ConfigureAwait(false);
+        await using var taskHandlerDispose = new Deferrer(taskHandler);
+
+        var taskInfo = taskHandler.GetAcquiredTaskInfo();
+
+        using var _ = logger_.BeginPropertyScope(("messageHandler", taskInfo.MessageId),
+                                                 ("taskId", taskInfo.TaskId),
+                                                 ("sessionId", taskInfo.SessionId));
+
         await taskHandler.PostProcessing()
                          .ConfigureAwait(false);
+      }
+      catch (ChannelClosedException)
+      {
+        break;
       }
       catch (Exception e)
       {

@@ -119,6 +119,12 @@ public abstract class TaskQueueBase
                      .ConfigureAwait(false);
 
   /// <summary>
+  ///   Close Queue
+  /// </summary>
+  public void Close()
+    => channel_.Writer.Complete();
+
+  /// <summary>
   ///   Add an exception in the internal exception list
   /// </summary>
   /// <param name="e">the exception to add</param>
