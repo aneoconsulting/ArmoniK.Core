@@ -233,11 +233,23 @@ public class Pollster : IInitializable
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
+    logger_.LogTrace("Start Main loop method");
+    await using var logStop = new Deferrer(() => logger_.LogTrace("Main loop method stopped"));
+
     var cts = CancellationTokenSource.CreateLinkedTokenSource(lifeTime_.ApplicationStopping,
                                                               cancellationToken);
 
-    await Init(cts.Token)
-      .ConfigureAwait(false);
+    try
+    {
+      await Init(cts.Token)
+        .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      logger_.LogError(e,
+                       "Could not initialize Pollster");
+      throw;
+    }
 
     var recordedErrors = new Queue<Exception>();
 

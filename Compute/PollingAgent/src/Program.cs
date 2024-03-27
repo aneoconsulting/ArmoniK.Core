@@ -209,8 +209,14 @@ public static class Program
       await pushQueueStorage.Init(CancellationToken.None)
                             .ConfigureAwait(false);
 
+
+      logger.GetLogger()
+            .LogTrace("Start Application");
+
       await app.RunAsync()
                .ConfigureAwait(false);
+      logger.GetLogger()
+            .LogTrace("Application Stopped");
       return 0;
     }
     catch (Exception ex)
