@@ -104,9 +104,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     {
       if (!isInitialized_)
       {
-        return tag == HealthCheckTag.Liveness
-                 ? HealthCheckResult.Unhealthy("Worker not yet initialized")
-                 : HealthCheckResult.Degraded("Worker not yet initialized");
+        return HealthCheckResult.Unhealthy("Worker not yet initialized");
       }
 
       retryCheck_++;
@@ -115,9 +113,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
       if (!check)
       {
-        return retryCheck_ > optionsInitWorker_.WorkerCheckRetries
-                 ? HealthCheckResult.Unhealthy("Health check on worker was not successful (too many retries)")
-                 : HealthCheckResult.Degraded("Health check on worker was not successful (too many retries)");
+        return HealthCheckResult.Unhealthy("Health check on worker was not successful (too many retries)");
       }
 
       retryCheck_ = 0;
