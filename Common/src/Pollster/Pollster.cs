@@ -236,9 +236,6 @@ public class Pollster : IInitializable
     var cts = CancellationTokenSource.CreateLinkedTokenSource(lifeTime_.ApplicationStopping,
                                                               cancellationToken);
 
-    await Init(cts.Token)
-      .ConfigureAwait(false);
-
     var recordedErrors = new Queue<Exception>();
 
     void RecordError(Exception e)
@@ -270,6 +267,9 @@ public class Pollster : IInitializable
 
     try
     {
+      await Init(cts.Token)
+        .ConfigureAwait(false);
+
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cts.Token.IsCancellationRequested)
       {
