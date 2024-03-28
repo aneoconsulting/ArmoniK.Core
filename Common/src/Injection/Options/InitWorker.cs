@@ -30,5 +30,5 @@ public class InitWorker
   public const string SettingSection = nameof(InitWorker);
 
   public int      WorkerCheckRetries { get; set; } = 10;
-  public TimeSpan WorkerCheckDelay   { get; set; } = TimeSpan.FromSeconds(30);
+  public TimeSpan WorkerCheckDelay   { get; set; } = TimeSpan.FromSeconds(2);
 }
