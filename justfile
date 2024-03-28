@@ -292,12 +292,12 @@ healthChecks:
   #!/usr/bin/env bash
   set -euo pipefail
   for (( i=0; i<{{replicas}}; i++ )); do
-    echo -e "\nHealth Checking PollingAggent${i}"
-    echo -n "  startup: " && curl -sSL localhost:998${i}/startup
-    echo -n "  liveness: " && curl -sSL localhost:998${i}/liveness
-    echo -n "  readiness: " && curl -sSL localhost:998${i}/readiness
+    echo -e "\nHealth Checking PollingAgent${i}"
+    echo -n "  startup: " && curl -sSL localhost:998${i}/startup 2>/dev/null || echo refused
+    echo -n "  liveness: " && curl -sSL localhost:998${i}/liveness 2>/dev/null || echo refused
+    echo -n "  readiness: " && curl -sSL localhost:998${i}/readiness 2>/dev/null || echo refused
   done
 
   echo -e "\nHealth Checking Submitter"
-  echo -n "  startup: " && curl -sSL localhost:5011/startup
-  echo -n "  liveness: " && curl -sSL localhost:5011/liveness
+  echo -n "  startup: " && curl -sSL localhost:5011/startup 2>/dev/null || echo refused
+  echo -n "  liveness: " && curl -sSL localhost:5011/liveness 2>/dev/null || echo refused
