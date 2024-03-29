@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 
@@ -33,6 +34,11 @@ public class HtcMock
   ///   Name of the section in dotnet options
   /// </summary>
   public const string SettingSection = nameof(HtcMock);
+
+  /// <summary>
+  ///   Dictionary to put into task options
+  /// </summary>
+  public Dictionary<string, string> Options { get; set; } = new();
 
   /// <summary>
   ///   Number of computing tasks (there are some supplementary aggregation tasks)

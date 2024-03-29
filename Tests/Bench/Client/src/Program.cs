@@ -256,6 +256,7 @@ internal static class Program
                                                                                                        {
                                                                                                          "ResultSize", benchOptions.ResultSize.ToString()
                                                                                                        },
+                                                                                                       benchOptions.Options,
                                                                                                      },
                                                                                                    },
                                                                                PartitionIds =
