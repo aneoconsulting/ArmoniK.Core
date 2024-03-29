@@ -76,6 +76,7 @@ public class GridClient : IGridClient
                                                                             {
                                                                               "TaskRpcException", optionsHtcMock_.TaskRpcException
                                                                             },
+                                                                            optionsHtcMock_.Options,
                                                                           },
                                                                         },
                                                     PartitionIds =
