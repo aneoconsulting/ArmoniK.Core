@@ -16,8 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using JetBrains.Annotations;
+
+using MongoDB.Driver.Core.Configuration;
 
 // ReSharper disable InconsistentNaming
 
@@ -36,11 +39,11 @@ public class MongoDB
 
   public string ReplicaSet { get; set; } = "";
 
-  public string Host { get; set; } = "";
-
-  public int Port { get; set; }
+  public List<string> Hosts { get; set; } = new();
 
   public string CAFile { get; set; } = "";
+
+  public List<string> ClientCertificateFiles { get; set; } = new();
 
   public string CredentialsPath { get; set; } = "";
 
@@ -60,6 +63,7 @@ public class MongoDB
 
   public QueueStorage QueueStorage { get; set; } = new();
 
-  public int      MaxConnectionPoolSize  { get; set; } = 500;
-  public TimeSpan ServerSelectionTimeout { get; set; } = TimeSpan.FromMinutes(2);
+  public int                    MaxConnectionPoolSize  { get; set; } = 500;
+  public TimeSpan               ServerSelectionTimeout { get; set; } = TimeSpan.FromMinutes(2);
+  public ConnectionStringScheme Scheme                 { get; set; } = ConnectionStringScheme.MongoDB;
 }
