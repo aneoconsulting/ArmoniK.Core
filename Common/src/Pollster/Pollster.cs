@@ -233,8 +233,8 @@ public class Pollster : IInitializable
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
-    var cts = CancellationTokenSource.CreateLinkedTokenSource(lifeTime_.ApplicationStopping,
-                                                              cancellationToken);
+    using var cts = CancellationTokenSource.CreateLinkedTokenSource(lifeTime_.ApplicationStopping,
+                                                                    cancellationToken);
 
     var recordedErrors = new Queue<Exception>();
 
