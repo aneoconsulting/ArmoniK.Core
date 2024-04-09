@@ -18,9 +18,22 @@
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-///   Record encoding if a task successfully produced an output
+///   Status of the execution of the task
 /// </summary>
-/// <param name="Status">Status returned by the task after its execution</param>
-/// <param name="Error">Error message if task is not successful</param>
-public record Output(OutputStatus Status,
-                     string       Error);
+public enum OutputStatus
+{
+  /// <summary>
+  ///   Task completed successfully
+  /// </summary>
+  Success,
+
+  /// <summary>
+  ///   Task completed with errors
+  /// </summary>
+  Error,
+
+  /// <summary>
+  ///   Task timed out
+  /// </summary>
+  Timeout,
+}

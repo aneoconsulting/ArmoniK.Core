@@ -117,7 +117,7 @@ public class DataPrefetcherTest
                                                                         "applicationNamespace",
                                                                         "applicationService",
                                                                         "engineType"),
-                                                        new Output(true,
+                                                        new Output(OutputStatus.Success,
                                                                    "")),
                                            sharedFolder,
                                            CancellationToken.None)
@@ -198,7 +198,7 @@ public class DataPrefetcherTest
                                                                         "applicationNamespace",
                                                                         "applicationService",
                                                                         "engineType"),
-                                                        new Output(true,
+                                                        new Output(OutputStatus.Success,
                                                                    "")),
                                            sharedFolder,
                                            CancellationToken.None)

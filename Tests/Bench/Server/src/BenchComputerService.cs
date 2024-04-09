@@ -50,6 +50,8 @@ public class BenchComputerService : WorkerStreamWrapper
     using var scopedLog = logger_.BeginNamedScope("Execute task",
                                                   ("sessionId", taskHandler.SessionId),
                                                   ("taskId", taskHandler.TaskId));
+    using var logFunction = logger_.LogFunction("ProcessBench",
+                                                LogLevel.Information);
     logger_.LogDebug("DataDependencies {DataDependencies}",
                      taskHandler.DataDependencies.Keys);
     logger_.LogDebug("ExpectedResults {ExpectedResults}",

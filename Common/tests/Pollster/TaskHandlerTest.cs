@@ -290,7 +290,7 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskErrorData,
                                                           false,
-                                                          new Output(false,
+                                                          new Output(OutputStatus.Error,
                                                                      "Created for testing tasks in error"))
                              .ConfigureAwait(false);
 
@@ -300,7 +300,7 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskRetriedData,
                                                           true,
-                                                          new Output(false,
+                                                          new Output(OutputStatus.Error,
                                                                      "Created for testing tasks in error"))
                              .ConfigureAwait(false);
 
@@ -416,7 +416,7 @@ public class TaskHandlerTest
                                   null,
                                   null,
                                   null,
-                                  new Output(false,
+                                  new Output(OutputStatus.Error,
                                              ""));
 
       yield return new TestCaseData(taskData with
@@ -692,7 +692,7 @@ public class TaskHandlerTest
                                           TimeSpan.FromSeconds(1),
                                           TimeSpan.FromSeconds(2),
                                           TimeSpan.FromSeconds(3),
-                                          new Output(false,
+                                          new Output(OutputStatus.Error,
                                                      "")));
     }
 
@@ -782,7 +782,7 @@ public class TaskHandlerTest
                           TimeSpan.FromSeconds(1),
                           TimeSpan.FromSeconds(2),
                           TimeSpan.FromSeconds(3),
-                          new Output(false,
+                          new Output(OutputStatus.Error,
                                      ""));
     }
 
@@ -1170,6 +1170,68 @@ public class TaskHandlerTest
                     sqmh.Status);
   }
 
+  [Test]
+  public async Task ExecuteTaskTimeoutShouldSucceed()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var mock = new Mock<IWorkerStreamHandler>();
+    mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<CancellationToken>()))
+        .Returns(() => Task.FromResult(new Output(OutputStatus.Timeout,
+                                                  "Deadline Exceeded")));
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(mock.Object,
+                                                                agentHandler,
+                                                                sqmh);
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    await testServiceProvider.TaskHandler.ExecuteTask()
+                             .ConfigureAwait(false);
+
+    await testServiceProvider.TaskHandler.PostProcessing()
+                             .ConfigureAwait(false);
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.AreEqual(TaskStatus.Timeout,
+                    taskData.Status);
+    Assert.IsNotNull(taskData.StartDate);
+    Assert.IsNotNull(taskData.EndDate);
+    Assert.IsNotNull(taskData.ProcessingToEndDuration);
+    Assert.IsNotNull(taskData.CreationToEndDuration);
+    Assert.Greater(taskData.CreationToEndDuration,
+                   taskData.ProcessingToEndDuration);
+
+    Assert.AreEqual(QueueMessageStatus.Processed,
+                    sqmh.Status);
+  }
 
   [Test]
   public async Task ExecuteTaskUntilErrorShouldSucceed()

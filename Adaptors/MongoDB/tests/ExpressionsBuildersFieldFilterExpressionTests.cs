@@ -71,7 +71,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -107,7 +107,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -144,7 +144,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -181,7 +181,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -218,7 +218,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -255,7 +255,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -292,7 +292,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -330,7 +330,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -366,7 +366,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -403,7 +403,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -440,7 +440,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -478,7 +478,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -514,7 +514,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -551,7 +551,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -588,7 +588,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -626,7 +626,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -662,7 +662,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -699,7 +699,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -736,7 +736,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -774,7 +774,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Array.Empty<string>(),
                              TaskStatus.Cancelled,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));

@@ -146,8 +146,8 @@ public static class TaskLifeCycleHelper
                                                                                     TaskStatus.Creating,
                                                                                     request.Options ??
                                                                                     throw new ArmoniKException("Task Options should not be null here"),
-                                                                                    new Output(false,
-                                                                                               ""))),
+                                                                                    new Output(OutputStatus.Error,
+                                                                                               "Task Options should not be null here"))),
                                 cancellationToken)
                    .ConfigureAwait(false);
 

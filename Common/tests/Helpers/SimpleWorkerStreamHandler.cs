@@ -42,6 +42,6 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
                                           string            token,
                                           string            dataFolder,
                                           CancellationToken cancellationToken)
-    => Task.FromResult(new Output(true,
+    => Task.FromResult(new Output(OutputStatus.Success,
                                   ""));
 }

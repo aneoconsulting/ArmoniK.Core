@@ -16,6 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Storage;
+
+using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
@@ -27,7 +30,7 @@ public static class OutputExt
   /// <param name="output">The object to convert</param>
   public static Output ToGrpcOutput(this Storage.Output output)
   {
-    if (output.Success)
+    if (output.Status == OutputStatus.Success)
     {
       return new Output
              {
@@ -51,9 +54,9 @@ public static class OutputExt
   public static Storage.Output ToInternalOutput(this Output output)
     => output.TypeCase switch
        {
-         Output.TypeOneofCase.Ok => new Storage.Output(true,
+         Output.TypeOneofCase.Ok => new Storage.Output(OutputStatus.Success,
                                                        ""),
-         _ => new Storage.Output(false,
+         _ => new Storage.Output(OutputStatus.Error,
                                  output.Error.Details),
        };
 }

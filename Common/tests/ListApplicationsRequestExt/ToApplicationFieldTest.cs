@@ -68,7 +68,7 @@ public class ToApplicationFieldTest
                                             Array.Empty<string>(),
                                             TaskStatus.Completed,
                                             Options,
-                                            new Output(true,
+                                            new Output(OutputStatus.Success,
                                                        ""));
 
 

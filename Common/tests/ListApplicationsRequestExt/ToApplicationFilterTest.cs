@@ -71,7 +71,7 @@ public class ToApplicationFilterTest
                                             Array.Empty<string>(),
                                             TaskStatus.Completed,
                                             Options,
-                                            new Output(true,
+                                            new Output(OutputStatus.Success,
                                                        ""));
 
   private static readonly ListApplicationsRequest.Types.Sort Sort = new()

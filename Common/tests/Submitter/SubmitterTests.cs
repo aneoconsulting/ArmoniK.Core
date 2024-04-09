@@ -412,7 +412,7 @@ public class SubmitterTests
                                 new List<string>(),
                                 TaskStatus.Completed,
                                 defaultTaskOptions.ToTaskOptions(),
-                                new Output(false,
+                                new Output(OutputStatus.Error,
                                            ""));
 
     await taskTable.AcquireTask(taskData,
@@ -436,7 +436,7 @@ public class SubmitterTests
 
     await submitter.CompleteTaskAsync(taskData,
                                       true,
-                                      new Output(true,
+                                      new Output(OutputStatus.Success,
                                                  string.Empty),
                                       token)
                    .ConfigureAwait(false);
@@ -727,6 +727,52 @@ public class SubmitterTests
   }
 
   [Test]
+  public async Task CompleteTimeoutTaskShouldSucceed()
+  {
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(submitter_!,
+                                                            partitionTable_!,
+                                                            resultTable_!,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    var taskData = await taskTable_!.ReadTaskAsync(taskSubmitted)
+                                    .ConfigureAwait(false);
+
+    await taskTable_!.AcquireTask(taskData,
+                                  CancellationToken.None)
+                     .ConfigureAwait(false);
+
+    taskData = await taskTable_!.ReadTaskAsync(taskSubmitted)
+                                .ConfigureAwait(false);
+
+    await taskTable_!.StartTask(taskData,
+                                CancellationToken.None)
+                     .ConfigureAwait(false);
+
+    taskData = await taskTable_!.ReadTaskAsync(taskSubmitted)
+                                .ConfigureAwait(false);
+
+    await submitter_!.CompleteTaskAsync(taskData,
+                                        false,
+                                        new Output(OutputStatus.Timeout,
+                                                   "deadline exceeded"),
+                                        CancellationToken.None)
+                     .ConfigureAwait(false);
+
+    taskData = await taskTable_!.ReadTaskAsync(taskSubmitted)
+                                .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Timeout,
+                    taskData.Status);
+
+    var result = await resultTable_!.GetResult(taskData.ExpectedOutputIds.First())
+                                    .ConfigureAwait(false);
+
+    Assert.AreEqual(ResultStatus.Aborted,
+                    result.Status);
+  }
+
+  [Test]
   public async Task FinalizeTaskCreationShouldSucceed()
   {
     var (_, _, taskSubmitted) = await InitSubmitter(submitter_!,
@@ -974,7 +1020,7 @@ public class SubmitterTests
 
     await submitter_.CompleteTaskAsync(taskData,
                                        false,
-                                       new Output(false,
+                                       new Output(OutputStatus.Error,
                                                   "This error should be propagated to other tasks"))
                     .ConfigureAwait(false);
 

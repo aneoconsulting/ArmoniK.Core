@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
@@ -106,4 +107,9 @@ public class BenchOptions
   ///   Dictionary to put into task options
   /// </summary>
   public Dictionary<string, string> Options { get; set; } = new();
+
+  /// <summary>
+  ///   Task Max Duration given to Task Options
+  /// </summary>
+  public TimeSpan MaxDuration { get; set; } = TimeSpan.FromHours(1);
 }

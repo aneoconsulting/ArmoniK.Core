@@ -84,7 +84,7 @@ public class ToTaskDataFilterTest
                                             TimeSpan.FromDays(1),
                                             TimeSpan.FromDays(2),
                                             TimeSpan.FromDays(3),
-                                            new Output(true,
+                                            new Output(OutputStatus.Success,
                                                        ""));
 
   private static readonly DateTime DateToCompare = new DateTime(2020,

@@ -314,7 +314,7 @@ public class WatchToGrpcTests
                                                            {
                                                              PartitionId = "part2",
                                                            },
-                                                           new Output(false,
+                                                           new Output(OutputStatus.Error,
                                                                       ""));
 
   private static readonly TaskData TaskProcessingData = new("SessionId",
@@ -337,7 +337,7 @@ public class WatchToGrpcTests
                                                             Array.Empty<string>(),
                                                             TaskStatus.Processing,
                                                             Options,
-                                                            new Output(false,
+                                                            new Output(OutputStatus.Error,
                                                                        ""));
 
   private readonly TaskData taskProcessingData2_ = new("SessionId",
@@ -360,7 +360,7 @@ public class WatchToGrpcTests
                                                        Array.Empty<string>(),
                                                        TaskStatus.Processing,
                                                        Options,
-                                                       new Output(false,
+                                                       new Output(OutputStatus.Error,
                                                                   ""));
 
   private readonly TaskData taskFailedData_ = new("SessionId",
@@ -383,7 +383,7 @@ public class WatchToGrpcTests
                                                   Array.Empty<string>(),
                                                   TaskStatus.Error,
                                                   Options,
-                                                  new Output(false,
+                                                  new Output(OutputStatus.Error,
                                                              "sad task"));
 
   private readonly TaskData taskCompletedData_ = new("SessionId",
@@ -407,7 +407,7 @@ public class WatchToGrpcTests
                                                      Array.Empty<string>(),
                                                      TaskStatus.Completed,
                                                      Options,
-                                                     new Output(true,
+                                                     new Output(OutputStatus.Success,
                                                                 ""));
 
   private readonly TaskData taskCreatingData_ = new("SessionId",
@@ -430,6 +430,6 @@ public class WatchToGrpcTests
                                                     Array.Empty<string>(),
                                                     TaskStatus.Creating,
                                                     Options,
-                                                    new Output(false,
+                                                    new Output(OutputStatus.Error,
                                                                ""));
 }
