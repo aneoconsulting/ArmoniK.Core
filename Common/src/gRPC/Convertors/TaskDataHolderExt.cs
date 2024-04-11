@@ -42,7 +42,7 @@ public static class TaskDataHolderExt
                     ? new TaskDetailed.Types.Output
                       {
                         Error   = taskData.Output.Error,
-                        Success = taskData.Output.Success,
+                        Success = taskData.Output.Status == OutputStatus.Success,
                       }
                     : null,
          OwnerPodId = taskData.OwnerPodId,

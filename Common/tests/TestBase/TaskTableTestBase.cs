@@ -113,7 +113,7 @@ public class TaskTableTestBase
                                                      {
                                                        PartitionId = "part2",
                                                      },
-                                                     new Output(false,
+                                                     new Output(OutputStatus.Error,
                                                                 ""));
 
   private readonly TaskData taskCompletedData_ = new("SessionId",
@@ -137,7 +137,7 @@ public class TaskTableTestBase
                                                      Array.Empty<string>(),
                                                      TaskStatus.Completed,
                                                      Options,
-                                                     new Output(true,
+                                                     new Output(OutputStatus.Success,
                                                                 ""));
 
   private static readonly DateTime DateToCompare = new DateTime(2020,
@@ -164,7 +164,7 @@ public class TaskTableTestBase
                                                     Array.Empty<string>(),
                                                     TaskStatus.Creating,
                                                     Options,
-                                                    new Output(false,
+                                                    new Output(OutputStatus.Error,
                                                                ""));
 
   private readonly TaskData taskProcessingData_ = new("SessionId",
@@ -187,7 +187,7 @@ public class TaskTableTestBase
                                                       Array.Empty<string>(),
                                                       TaskStatus.Processing,
                                                       Options,
-                                                      new Output(false,
+                                                      new Output(OutputStatus.Error,
                                                                  ""));
 
   private readonly TaskData taskProcessingData2_ = new("SessionId",
@@ -210,7 +210,7 @@ public class TaskTableTestBase
                                                        Array.Empty<string>(),
                                                        TaskStatus.Processing,
                                                        Options,
-                                                       new Output(false,
+                                                       new Output(OutputStatus.Error,
                                                                   ""));
 
   private readonly TaskData taskFailedData_ = new("SessionId",
@@ -233,7 +233,7 @@ public class TaskTableTestBase
                                                   Array.Empty<string>(),
                                                   TaskStatus.Error,
                                                   Options,
-                                                  new Output(false,
+                                                  new Output(OutputStatus.Error,
                                                              "sad task"));
 
   private readonly TaskData taskSession2_ = new("SessionId2",
@@ -256,7 +256,7 @@ public class TaskTableTestBase
                                                 Array.Empty<string>(),
                                                 TaskStatus.Error,
                                                 Options,
-                                                new Output(false,
+                                                new Output(OutputStatus.Error,
                                                            "sad task"));
 
   private static bool CheckForSkipSetup()
@@ -659,7 +659,8 @@ public class TaskTableTestBase
 
       Assert.AreEqual(TaskStatus.Completed,
                       taskData.Status);
-      Assert.IsTrue(taskData.Output.Success);
+      Assert.AreEqual(OutputStatus.Success,
+                      taskData.Output.Status);
       Assert.AreEqual("",
                       taskData.Output.Error);
     }
@@ -693,7 +694,8 @@ public class TaskTableTestBase
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
-      Assert.IsFalse(output.Success);
+      Assert.AreEqual(OutputStatus.Error,
+                      output.Status);
     }
   }
 
@@ -723,7 +725,8 @@ public class TaskTableTestBase
                                    .ConfigureAwait(false);
 
       Assert.IsEmpty(output.Error);
-      Assert.IsFalse(output.Success);
+      Assert.AreEqual(OutputStatus.Error,
+                      output.Status);
     }
   }
 
@@ -732,7 +735,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var expectedOutput = new Output(true,
+      var expectedOutput = new Output(OutputStatus.Success,
                                       "");
       var result = await TaskTable!.GetTaskOutput("TaskCompletedId",
                                                   CancellationToken.None)
@@ -1130,7 +1133,7 @@ public class TaskTableTestBase
                                                   new List<string>(),
                                                   status,
                                                   Options,
-                                                  new Output(false,
+                                                  new Output(OutputStatus.Error,
                                                              "")),
                                    })
                       .ConfigureAwait(false);
@@ -1433,7 +1436,7 @@ public class TaskTableTestBase
                                    new List<string>(),
                                    TaskStatus.Completed,
                                    taskOptions1,
-                                   new Output(false,
+                                   new Output(OutputStatus.Error,
                                               ""));
 
       await TaskTable!.CreateTasks(new List<TaskData>
@@ -1964,7 +1967,7 @@ public class TaskTableTestBase
                                                   Array.Empty<string>(),
                                                   status,
                                                   Options,
-                                                  new Output(true,
+                                                  new Output(OutputStatus.Success,
                                                              "")),
                                    })
                       .ConfigureAwait(false);
@@ -2074,7 +2077,7 @@ public class TaskTableTestBase
                                                   Array.Empty<string>(),
                                                   TaskStatus.Creating,
                                                   Options,
-                                                  new Output(true,
+                                                  new Output(OutputStatus.Success,
                                                              "")),
                                    })
                       .ConfigureAwait(false);
@@ -2129,7 +2132,7 @@ public class TaskTableTestBase
                                                   Array.Empty<string>(),
                                                   TaskStatus.Creating,
                                                   Options,
-                                                  new Output(true,
+                                                  new Output(OutputStatus.Success,
                                                              "")),
                                    })
                       .ConfigureAwait(false);

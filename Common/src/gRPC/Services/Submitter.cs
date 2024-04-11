@@ -513,71 +513,101 @@ public class Submitter : ISubmitter
                         ReceivedToEndDuration = DateTime.UtcNow   - taskData.ReceptionDate,
                       };
 
-    if (output.Success)
+    switch (output.Status)
     {
-      await taskTable_.SetTaskSuccessAsync(taskDataEnd,
-                                           cancellationToken)
-                      .ConfigureAwait(false);
+      case OutputStatus.Success:
+        await taskTable_.SetTaskSuccessAsync(taskDataEnd,
+                                             cancellationToken)
+                        .ConfigureAwait(false);
 
 
-      //Discard value is used to remove warnings CS4014 !!
-      _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
-                                                                                {
-                                                                                  taskData.TaskId,
-                                                                                },
-                                                                                CancellationToken.None)
-                                                                .ConfigureAwait(false),
-                                cancellationToken);
+        //Discard value is used to remove warnings CS4014 !!
+        _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
+                                                                                  {
+                                                                                    taskData.TaskId,
+                                                                                  },
+                                                                                  CancellationToken.None)
+                                                                  .ConfigureAwait(false),
+                                  cancellationToken);
 
-      logger_.LogInformation("Remove input payload of {task}",
+        logger_.LogInformation("Remove input payload of {task}",
+                               taskData.TaskId);
+        break;
+      case OutputStatus.Error:
+        // TODO FIXME: nothing will resubmit the task if there is a crash there
+        if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
+        {
+          // not done means that another pod put this task in retry so we do not need to do it a second time
+          // so nothing to do
+          if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
+                                                  output.Error,
+                                                  cancellationToken)
+                               .ConfigureAwait(false))
+          {
+            return;
+          }
+
+          logger_.LogWarning("Resubmit {task}",
                              taskData.TaskId);
-    }
-    else
-    {
-      // TODO FIXME: nothing will resubmit the task if there is a crash there
-      if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
-      {
-        // not done means that another pod put this task in retry so we do not need to do it a second time
-        // so nothing to do
-        if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
-                                                output.Error,
-                                                cancellationToken)
-                             .ConfigureAwait(false))
+
+          var newTaskId = await taskTable_.RetryTask(taskData,
+                                                     cancellationToken)
+                                          .ConfigureAwait(false);
+
+          await FinalizeTaskCreation(new List<TaskCreationRequest>
+                                     {
+                                       new(newTaskId,
+                                           taskData.PayloadId,
+                                           taskData.Options,
+                                           taskData.ExpectedOutputIds,
+                                           taskData.DataDependencies),
+                                     },
+                                     taskData.SessionId,
+                                     taskData.TaskId,
+                                     cancellationToken)
+            .ConfigureAwait(false);
+        }
+        else
         {
-          return;
+          // not done means that another pod put this task in error so we do not need to do it a second time
+          // so nothing to do
+          if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
+                                                  output.Error,
+                                                  cancellationToken)
+                               .ConfigureAwait(false))
+          {
+            return;
+          }
+
+          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                           resultTable_,
+                                                           new[]
+                                                           {
+                                                             taskData.TaskId,
+                                                           },
+                                                           "One of the input data is aborted.",
+                                                           CancellationToken.None)
+                                     .ConfigureAwait(false);
         }
 
-        logger_.LogWarning("Resubmit {task}",
-                           taskData.TaskId);
+        break;
+      case OutputStatus.Timeout:
+        await taskTable_.SetTaskTimeoutAsync(taskDataEnd,
+                                             output,
+                                             cancellationToken)
+                        .ConfigureAwait(false);
 
-        var newTaskId = await taskTable_.RetryTask(taskData,
-                                                   cancellationToken)
-                                        .ConfigureAwait(false);
+        //Discard value is used to remove warnings CS4014 !!
+        _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
+                                                                                  {
+                                                                                    taskData.TaskId,
+                                                                                  },
+                                                                                  CancellationToken.None)
+                                                                  .ConfigureAwait(false),
+                                  cancellationToken);
 
-        await FinalizeTaskCreation(new List<TaskCreationRequest>
-                                   {
-                                     new(newTaskId,
-                                         taskData.PayloadId,
-                                         taskData.Options,
-                                         taskData.ExpectedOutputIds,
-                                         taskData.DataDependencies),
-                                   },
-                                   taskData.SessionId,
-                                   taskData.TaskId,
-                                   cancellationToken)
-          .ConfigureAwait(false);
-      }
-      else
-      {
-        // not done means that another pod put this task in error so we do not need to do it a second time
-        // so nothing to do
-        if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
-                                                output.Error,
-                                                cancellationToken)
-                             .ConfigureAwait(false))
-        {
-          return;
-        }
+        logger_.LogInformation("Remove input payload of {task}",
+                               taskData.TaskId);
 
         await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
                                                          resultTable_,
@@ -585,10 +615,12 @@ public class Submitter : ISubmitter
                                                          {
                                                            taskData.TaskId,
                                                          },
-                                                         "One of the input data is aborted.",
+                                                         "One of the dependent tasks timed out.",
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
-      }
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
     }
   }
 }

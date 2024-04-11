@@ -424,7 +424,7 @@ public class GrpcSubmitterServiceTests
     mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
                                                     It.IsAny<Expression<Func<TaskData, Output>>>(),
                                                     It.IsAny<CancellationToken>()))
-        .Returns(() => Task.FromResult(new Output(true,
+        .Returns(() => Task.FromResult(new Output(OutputStatus.Success,
                                                   "")));
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,
@@ -452,7 +452,7 @@ public class GrpcSubmitterServiceTests
     mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
                                                     It.IsAny<Expression<Func<TaskData, Output>>>(),
                                                     It.IsAny<CancellationToken>()))
-        .Returns(() => Task.FromResult(new Output(false,
+        .Returns(() => Task.FromResult(new Output(OutputStatus.Error,
                                                   "Test Error")));
 
     var service = new GrpcSubmitterService(mockSubmitter_.Object,

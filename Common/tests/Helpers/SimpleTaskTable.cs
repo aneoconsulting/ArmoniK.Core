@@ -87,7 +87,7 @@ public class SimpleTaskTable : ITaskTable
                                                     new List<string>(),
                                                     TaskStatus.Completed,
                                                     TaskOptions,
-                                                    new Output(true,
+                                                    new Output(OutputStatus.Success,
                                                                ""))));
 
 
@@ -142,7 +142,7 @@ public class SimpleTaskTable : ITaskTable
                                                                                 new List<string>(),
                                                                                 TaskStatus.Completed,
                                                                                 TaskOptions,
-                                                                                new Output(true,
+                                                                                new Output(OutputStatus.Success,
                                                                                            "")),
                                                                  }.Select(selector.Compile()), 1));
 
@@ -165,7 +165,7 @@ public class SimpleTaskTable : ITaskTable
              new List<string>(),
              TaskStatus.Completed,
              TaskOptions,
-             new Output(true,
+             new Output(OutputStatus.Success,
                         "")),
        }.Where(filter.Compile())
         .Select(selector.Compile())
@@ -214,6 +214,6 @@ public class SimpleTaskTable : ITaskTable
                                                new List<string>(),
                                                TaskStatus.Completed,
                                                TaskOptions,
-                                               new Output(true,
+                                               new Output(OutputStatus.Success,
                                                           "")));
 }

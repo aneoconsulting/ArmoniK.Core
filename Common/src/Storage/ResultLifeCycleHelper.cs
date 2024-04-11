@@ -65,7 +65,7 @@ public static class ResultLifeCycleHelper
     // Find all metadata about the tasks that must be aborted
     var tasks = await taskTable.FindTasksAsync(task => taskIds.Contains(task.TaskId) &&
                                                        (task.Status == TaskStatus.Creating   || task.Status == TaskStatus.Cancelled ||
-                                                        task.Status == TaskStatus.Cancelling || task.Status == TaskStatus.Error),
+                                                        task.Status == TaskStatus.Cancelling || task.Status == TaskStatus.Error || task.Status == TaskStatus.Timeout),
                                                task => new
                                                        {
                                                          task.TaskId,
@@ -94,7 +94,7 @@ public static class ResultLifeCycleHelper
                                                                                                       TaskStatus.Error)
                                                                                                  .Set(td => td.Output,
                                                                                                       new Output(Error: reason,
-                                                                                                                 Success: false))
+                                                                                                                 Status: OutputStatus.Error))
                                                                                                  .Set(td => td.EndDate,
                                                                                                       now)
                                                                                                  .Set(td => td.CreationToEndDuration,

@@ -139,30 +139,38 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       throw new ArmoniKException("Worker client should be initialized");
     }
 
-    return (await workerClient_.ProcessAsync(new ProcessRequest
-                                             {
-                                               CommunicationToken = token,
-                                               Configuration = new Configuration
-                                                               {
-                                                                 DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
-                                                               },
-                                               DataDependencies =
+    try
+    {
+      return (await workerClient_.ProcessAsync(new ProcessRequest
                                                {
-                                                 taskData.DataDependencies,
+                                                 CommunicationToken = token,
+                                                 Configuration = new Configuration
+                                                                 {
+                                                                   DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                                                                 },
+                                                 DataDependencies =
+                                                 {
+                                                   taskData.DataDependencies,
+                                                 },
+                                                 DataFolder = dataFolder,
+                                                 ExpectedOutputKeys =
+                                                 {
+                                                   taskData.ExpectedOutputIds,
+                                                 },
+                                                 PayloadId   = taskData.PayloadId,
+                                                 SessionId   = taskData.SessionId,
+                                                 TaskId      = taskData.TaskId,
+                                                 TaskOptions = taskData.Options.ToGrpcTaskOptions(),
                                                },
-                                               DataFolder = dataFolder,
-                                               ExpectedOutputKeys =
-                                               {
-                                                 taskData.ExpectedOutputIds,
-                                               },
-                                               PayloadId   = taskData.PayloadId,
-                                               SessionId   = taskData.SessionId,
-                                               TaskId      = taskData.TaskId,
-                                               TaskOptions = taskData.Options.ToGrpcTaskOptions(),
-                                             },
-                                             deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                             cancellationToken: cancellationToken)
-                               .ConfigureAwait(false)).Output.ToInternalOutput();
+                                               deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+                                               cancellationToken: cancellationToken)
+                                 .ConfigureAwait(false)).Output.ToInternalOutput();
+    }
+    catch (RpcException e) when (e.StatusCode is StatusCode.DeadlineExceeded)
+    {
+      return new Output(OutputStatus.Timeout,
+                        "Deadline Exceeded");
+    }
   }
 
   private Task<bool> CheckWorker(CancellationToken cancellationToken)

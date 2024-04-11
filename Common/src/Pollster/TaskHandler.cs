@@ -348,7 +348,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
             await submitter_.CompleteTaskAsync(taskData_,
                                                true,
-                                               new Output(false,
+                                               new Output(OutputStatus.Error,
                                                           $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
@@ -384,7 +384,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                  taskData_.TaskId);
                 await submitter_.CompleteTaskAsync(taskData_,
                                                    true,
-                                                   new Output(false,
+                                                   new Output(OutputStatus.Error,
                                                               "Other pod seems to have crashed, resubmitting task"),
                                                    CancellationToken.None)
                                 .ConfigureAwait(false);
@@ -525,7 +525,7 @@ public sealed class TaskHandler : IAsyncDisposable
                              taskData_.TaskId);
             await submitter_.CompleteTaskAsync(taskData_,
                                                true,
-                                               new Output(false,
+                                               new Output(OutputStatus.Error,
                                                           "Other pod seems to have crashed, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
@@ -788,9 +788,9 @@ public sealed class TaskHandler : IAsyncDisposable
     try
     {
       logger_.LogInformation("Process task output is {type}",
-                             output_.Success);
+                             output_.Status);
 
-      if (output_.Success)
+      if (output_.Status == OutputStatus.Success)
       {
         logger_.LogDebug("Complete processing of the request");
         await agent_.FinalizeTaskCreation(CancellationToken.None)
@@ -911,7 +911,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
         await submitter_.CompleteTaskAsync(taskData,
                                            resubmit,
-                                           new Output(false,
+                                           new Output(OutputStatus.Error,
                                                       e.Message),
                                            CancellationToken.None)
                         .ConfigureAwait(false);

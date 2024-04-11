@@ -427,7 +427,7 @@ public class PollsterTest
       await Task.Delay(TimeSpan.FromMilliseconds(delay_),
                        cancellationToken)
                 .ConfigureAwait(false);
-      return new Output(true,
+      return new Output(OutputStatus.Success,
                         "");
     }
   }

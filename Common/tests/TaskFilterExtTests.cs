@@ -76,7 +76,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -117,7 +117,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -166,7 +166,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -214,7 +214,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -263,7 +263,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -312,7 +312,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -360,7 +360,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Error,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -408,7 +408,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Error,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -457,7 +457,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Error,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -506,7 +506,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Error,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -548,7 +548,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -591,7 +591,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsTrue(func(model));
@@ -633,7 +633,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));
@@ -676,7 +676,7 @@ internal class TaskFilterExtTests
                              Array.Empty<string>(),
                              TaskStatus.Completed,
                              TaskOptions,
-                             new Output(true,
+                             new Output(OutputStatus.Success,
                                         ""));
 
     Assert.IsFalse(func(model));

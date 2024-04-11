@@ -74,7 +74,7 @@ public class ToTaskDataFieldTest
                                                   Array.Empty<string>(),
                                                   TaskStatus.Completed,
                                                   Options,
-                                                  new Output(true,
+                                                  new Output(OutputStatus.Success,
                                                              ""));
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()

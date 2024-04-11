@@ -185,7 +185,7 @@ internal class BsonSerializerTest
                            TimeSpan.FromSeconds(1),
                            TimeSpan.FromSeconds(2),
                            TimeSpan.FromSeconds(3),
-                           new Output(false,
+                           new Output(OutputStatus.Error,
                                       "Output Message"));
 
     var serialized = tdm.ToBson();

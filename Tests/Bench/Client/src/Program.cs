@@ -235,7 +235,7 @@ internal static class Program
                                                                              {
                                                                                DefaultTaskOption = new TaskOptions
                                                                                                    {
-                                                                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                                                                                     MaxDuration = Duration.FromTimeSpan(benchOptions.MaxDuration),
                                                                                                      MaxRetries  = 2,
                                                                                                      Priority    = 1,
                                                                                                      PartitionId = benchOptions.Partition,
