@@ -292,7 +292,7 @@ public class GrpcTasksService : Task.TasksBase
       await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
                                                        resultTable_,
                                                        request.TaskIds,
-                                                       "Client requested cancellation",
+                                                       $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
                                                        context.CancellationToken)
                                  .ConfigureAwait(false);
 
