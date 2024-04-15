@@ -288,6 +288,14 @@ public class GrpcTasksService : Task.TasksBase
                                                                      ? System.Threading.Tasks.Task.CompletedTask
                                                                      : httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false))
                        .ConfigureAwait(false);
+
+      await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                       resultTable_,
+                                                       request.TaskIds,
+                                                       $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
+                                                       context.CancellationToken)
+                                 .ConfigureAwait(false);
+
       return new CancelTasksResponse
              {
                Tasks =
