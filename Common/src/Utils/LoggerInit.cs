@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -33,12 +35,16 @@ public class LoggerInit
 
   public LoggerInit(IConfiguration configuration)
   {
+    var instanceId = Guid.NewGuid()
+                         .ToString();
     loggerConfiguration_ = new LoggerConfiguration().ReadFrom.Configuration(configuration)
                                                     .WriteTo.Console(new CompactJsonFormatter())
                                                     .Enrich.FromLogContext()
                                                     .Enrich.WithProperty("CoreVersion",
                                                                          typeof(LoggerInit).Assembly.GetName()
                                                                                            .Version?.ToString() ?? "Unknown")
+                                                    .Enrich.WithProperty("InstanceId",
+                                                                         instanceId)
                                                     .CreateLogger();
 
     logger_ = LoggerFactory.Create(builder => builder.AddSerilog(loggerConfiguration_))
