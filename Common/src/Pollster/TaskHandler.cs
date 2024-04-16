@@ -880,10 +880,11 @@ public sealed class TaskHandler : IAsyncDisposable
                                                    },
                                  };
 
-      var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode) && !connectionEnded;
+      var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode);
 
-
-      if (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && isWorkerDown))
+      // worker crash during cancellation should be treated as error meaning an explicit retry
+      // cancellation and worker down should be treated as implicit retry
+      if (!connectionEnded && (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && isWorkerDown)))
       {
         if (cancellationToken.IsCancellationRequested)
         {

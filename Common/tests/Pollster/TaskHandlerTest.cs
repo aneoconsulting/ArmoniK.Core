@@ -1051,6 +1051,12 @@ public class TaskHandlerTest
                                                                                    .SetArgDisplayNames("ExceptionError"); // error
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
                                                                                           .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(0))
+                   .Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                   .SetArgDisplayNames("CrashRpcExceptionResubmit"); // crash worker with resubmit
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
+                                                                                                     .SetArgDisplayNames("UnavailableWorkerWithoutCancellation"); // worker crashed before the execution of the task
+
 
       // trigger error after cancellation and therefore should be considered as cancelled task and resend into queue
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(1000,
@@ -1064,6 +1070,12 @@ public class TaskHandlerTest
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(1000,
                                                                                                   false)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                                          .SetArgDisplayNames("UnavailableAfterCancellation");
+
+      // If the worker crashes during the task execution after cancellation, the task should be put in error
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(1000,
+                                                                                                               false)).Returns((TaskStatus.Retried,
+                                                                                                                                QueueMessageStatus.Cancelled))
+                                                                                                                      .SetArgDisplayNames("CrashAfterCancellation");
     }
   }
 
