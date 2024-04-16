@@ -18,6 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Storage;
@@ -37,6 +41,23 @@ internal class InjectionTests
   [SetUp]
   public void SetUp()
   {
+    var certReq = new CertificateRequest(new X500DistinguishedName("CN=test"),
+                                         RSA.Create(2048),
+                                         HashAlgorithmName.SHA256,
+                                         RSASignaturePadding.Pkcs1);
+
+    var cert0 = certReq.CreateSelfSigned(DateTimeOffset.UtcNow,
+                                         DateTimeOffset.Now.AddDays(10));
+
+    var path0 = Path.Combine(Path.GetTempPath(),
+                             "file0.pem");
+    var path1 = Path.Combine(Path.GetTempPath(),
+                             "file1.pem");
+    File.WriteAllText(path0,
+                      cert0.ExportCertificatePem() + "\n" + cert0.GetRSAPrivateKey()!.ExportRSAPrivateKeyPem());
+    File.WriteAllText(path1,
+                      cert0.ExportCertificatePem() + "\n" + cert0.GetRSAPrivateKey()!.ExportRSAPrivateKeyPem());
+
     Dictionary<string, string?> baseConfig = new()
                                              {
                                                {
@@ -49,10 +70,7 @@ internal class InjectionTests
                                                  "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider"
                                                },
                                                {
-                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", "localhost"
-                                               },
-                                               {
-                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", "3232"
+                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Hosts)}:0", "localhost:3232"
                                                },
                                                {
                                                  $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Tls)}", "true"
@@ -89,6 +107,12 @@ internal class InjectionTests
                                                },
                                                {
                                                  $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000"
+                                               },
+                                               {
+                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ClientCertificateFiles)}:0", path0
+                                               },
+                                               {
+                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ClientCertificateFiles)}:1", path1
                                                },
                                              };
 
@@ -132,8 +156,17 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("localhost",
-                    options.Host);
+    Assert.AreEqual("localhost:3232",
+                    options.Hosts.Single());
+  }
+
+  [Test]
+  public void ReadClientCertificateFiles()
+  {
+    var options = provider_!.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual(2,
+                    options.ClientCertificateFiles.Count);
   }
 
   [Test]
@@ -170,15 +203,6 @@ internal class InjectionTests
 
     Assert.AreEqual("",
                     options.CAFile);
-  }
-
-  [Test]
-  public void ReadMongoDbPort()
-  {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
-
-    Assert.AreEqual(3232,
-                    options.Port);
   }
 
   [Test]
