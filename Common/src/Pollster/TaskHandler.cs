@@ -142,6 +142,11 @@ public sealed class TaskHandler : IAsyncDisposable
     registration2_ = workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
   }
 
+  /// <summary>
+  ///   Start date for the task handled by the current Task Handler
+  /// </summary>
+  public DateTime StartedAt { get; } = DateTime.UtcNow;
+
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()

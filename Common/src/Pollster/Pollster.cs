@@ -132,6 +132,28 @@ public class Pollster : IInitializable
                                                                "Tasks",
                                                                "Number of tasks in the pipeline",
                                                                meterHolder_.Tags);
+
+    meterHolder.Meter.CreateObservableGauge("TaskRunningTime",
+                                            () => taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
+                                                  {
+                                                    null => 0.0,
+                                                    // ReSharper disable once PatternAlwaysMatches
+                                                    TaskHandler taskHandler => (DateTime.UtcNow - taskHandler.StartedAt).TotalMilliseconds,
+                                                  },
+                                            "Milliseconds",
+                                            "Running time of the oldest task still processing by the Pollster",
+                                            meterHolder_.Tags);
+
+    meterHolder.Meter.CreateObservableGauge("TaskStartTime",
+                                            () => (taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
+                                                   {
+                                                     null => TimeSpan.MaxValue,
+                                                     // ReSharper disable once PatternAlwaysMatches
+                                                     TaskHandler taskHandler => taskHandler.StartedAt - DateTime.UnixEpoch,
+                                                   }).TotalSeconds,
+                                            "Seconds",
+                                            "Start time of the oldest task still processing by the Pollster",
+                                            meterHolder_.Tags);
   }
 
   public ICollection<string> TaskProcessing
