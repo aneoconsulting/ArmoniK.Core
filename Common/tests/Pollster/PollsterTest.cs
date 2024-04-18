@@ -297,7 +297,8 @@ public class PollsterTest
     Assert.AreEqual(HealthStatus.Healthy,
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
                                               .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Healthy,
+    // degraded because there are no tasks in queue
+    Assert.AreEqual(HealthStatus.Degraded,
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
                                               .ConfigureAwait(false)).Status);
     Assert.AreEqual(HealthStatus.Healthy,
