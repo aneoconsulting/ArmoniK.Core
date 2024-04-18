@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - run: npm i -g pnpm @antfu/ni
+      - run: npm install -g pnpm@^9.0.2
 
       - name: Setup Node
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4
@@ -27,13 +27,13 @@ jobs:
           cache-dependency-path: ".docs/pnpm-lock.yaml"
 
       - name: Install dependencies
-        run: cd .docs && nci
+        run: cd .docs && pnpm i
 
       - name: Use NODE_ENV=production
         run: echo "NODE_ENV=production" >> $GITHUB_ENV
 
       - name: Static HTML export with Nuxt
-        run: cd .docs && nr generate
+        run: cd .docs && pnpm generate
 
 
   lint-markdown:
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - run: npm i -g pnpm @antfu/ni
+      - run: npm install -g pnpm@^9.0.2
 
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4
         with:
@@ -50,9 +50,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: ".docs/pnpm-lock.yaml"
 
-      - run: cd .docs && nci
+      - run: cd .docs && pnpm i
 
-      - run: cd .docs && nr lint:md
+      - run: cd .docs && pnpm lint:md
 
   lint:
     name: Lint
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
-      - run: npm i -g pnpm @antfu/ni
+      - run: npm install -g pnpm@^9.0.2
 
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4
         with:
@@ -68,6 +68,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: ".docs/pnpm-lock.yaml"
 
-      - run: cd .docs && nci
+      - run: cd .docs && pnpm i
 
-      - run: cd .docs && nr lint
+      - run: cd .docs && pnpm lint
