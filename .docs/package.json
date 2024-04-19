@@ -18,7 +18,6 @@
     "mermaid": "^10.2.3",
     "nuxt": "^3.6.1"
   },
-  "packageManager": "pnpm@9.0.2",
   "devDependencies": {
     "@nuxt/eslint-config": "^0.3.8",
     "case-police": "^0.6.1",
