@@ -221,7 +221,7 @@ public class Pollster : IInitializable
 
     if (worstStatus == HealthStatus.Healthy && tag == HealthCheckTag.Readiness && taskProcessingDict_.IsEmpty)
     {
-      return HealthCheckResult.Degraded("No tasks to process");
+      return HealthCheckResult.Unhealthy("No tasks to process");
     }
 
     return result;
