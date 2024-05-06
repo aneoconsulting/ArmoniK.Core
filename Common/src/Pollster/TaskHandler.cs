@@ -328,6 +328,7 @@ public sealed class TaskHandler : IAsyncDisposable
           return AcquisitionStatus.TaskIsError;
         case TaskStatus.Timeout:
           logger_.LogInformation("Task was timeout elsewhere ; taking over here");
+          messageHandler_.Status = QueueMessageStatus.Poisonous;
           break;
         case TaskStatus.Cancelled:
           logger_.LogInformation("Task has been cancelled");
@@ -410,6 +411,7 @@ public sealed class TaskHandler : IAsyncDisposable
           return AcquisitionStatus.TaskIsProcessingHere;
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
+          messageHandler_.Status = QueueMessageStatus.Poisonous;
           return AcquisitionStatus.TaskIsRetried;
         case TaskStatus.Unspecified:
         default:
