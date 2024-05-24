@@ -18,7 +18,7 @@ docker run --net armonik_network --rm \
 	-e HtcMock__SubTasksLevels=4 \
 	-e HtcMock__EnableFastCompute=true \
 	-e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-	dockerhubaneo/armonik_core_htcmock_test_client:0.0.0.0-test
+	dockerhubaneo/armonik_core_htcmock_test_client:0.0.0.0-local
 
 
 for i in {0..6}
@@ -29,7 +29,7 @@ docker run --net armonik_network --rm \
 	-e HtcMock__SubTasksLevels=100 \
 	-e HtcMock__EnableFastCompute=true \
 	-e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-	dockerhubaneo/armonik_core_htcmock_test_client:0.0.0.0-test | tee "logs/$SHA/$DATE/mock$i.log"
+	dockerhubaneo/armonik_core_htcmock_test_client:0.0.0.0-local | tee "logs/$SHA/$DATE/mock$i.log"
 
 done
 
