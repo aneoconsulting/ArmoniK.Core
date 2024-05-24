@@ -214,6 +214,12 @@ internal class StreamWrapperTests
                                                                })
                                 .ConfigureAwait(false);
 
+    await client_!.WaitForAvailabilityAsync(new ResultRequest
+                                            {
+                                              ResultId = expectedOutput,
+                                              Session  = sessionId,
+                                            });
+
     var resultRequest = new TaskOutputRequest
                         {
                           TaskId  = taskIds.Single(),
@@ -273,6 +279,16 @@ internal class StreamWrapperTests
                                                                null,
                                                                taskRequests)
                                 .ConfigureAwait(false);
+
+    foreach (var request in taskRequests)
+    {
+      await client_!.WaitForAvailabilityAsync(new ResultRequest
+                                              {
+                                                ResultId = request.ExpectedOutputKeys.Single(),
+                                                Session  = sessionId,
+                                              })
+                    .ConfigureAwait(false);
+    }
 
     var taskOutput = taskIds.Select(id =>
                                     {
