@@ -29,8 +29,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.8.0-rc.1" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
+    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.9.0-alpha.2" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0-rc.1" />
   </ItemGroup>
 
   <ItemGroup>
