@@ -53,7 +53,7 @@ dotnet_naming_symbols.private_static_fields_symbols.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields_symbols.required_modifiers = static
 dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static,readonly
+dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static, readonly
 dotnet_separate_import_directive_groups = true
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:none
@@ -68,7 +68,7 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggest
 file_header_template = This file is part of the ArmoniK project\n\nCopyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.\n\nThis program is free software: you can redistribute it and/or modify\nit under the terms of the GNU Affero General Public License as published\nby the Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY, without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Affero General Public License for more details.\n\nYou should have received a copy of the GNU Affero General Public License\nalong with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # diagnostics
-dotnet_diagnostic.CA2213.severity = error
+dotnet_diagnostic.ca2213.severity = error
 
 # IDE0018: Inline variable declaration
 csharp_style_inlined_variable_declaration = false
@@ -133,12 +133,14 @@ resharper_protobuf_indent_size = 2
 resharper_protobuf_tab_width = 2
 resharper_protobuf_use_indent_from_vs = false
 resharper_trailing_comma_in_multiline_lists = true
+resharper_wrap_after_primary_constructor_declaration_lpar = false
 resharper_wrap_array_initializer_style = chop_always
 resharper_wrap_before_arrow_with_expressions = true
 resharper_wrap_before_binary_pattern_op = false
 resharper_wrap_before_linq_expression = true
 resharper_wrap_linq_expressions = chop_always
 resharper_wrap_object_and_collection_initializer_style = chop_always
+resharper_wrap_primary_constructor_parameters_style = chop_always
 resharper_wrap_property_pattern = chop_always
 resharper_xmldoc_indent_text = OneIndent
 resharper_xml_indent_size = 2
@@ -160,4 +162,3 @@ resharper_redundant_base_qualifier_highlighting = warning
 resharper_suggest_var_or_type_built_in_types_highlighting = hint
 resharper_suggest_var_or_type_elsewhere_highlighting = hint
 resharper_suggest_var_or_type_simple_types_highlighting = hint
-

@@ -23,6 +23,8 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="SessionId">Unique identifier of the session in which the task belongs</param>
 /// <param name="TaskId">Unique identifier of the task</param>
 /// <param name="MessageId">Unique identifier of the message associated to the current execution of the task</param>
-public record TaskInfo(string SessionId,
-                       string TaskId,
-                       string MessageId);
+/// <param name="MessageId">Status of the task</param>
+public record TaskInfo(string     SessionId,
+                       string     TaskId,
+                       string     MessageId,
+                       TaskStatus TaskStatus);
