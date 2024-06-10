@@ -112,4 +112,14 @@ public class BenchOptions
   ///   Task Max Duration given to Task Options
   /// </summary>
   public TimeSpan MaxDuration { get; set; } = TimeSpan.FromHours(1);
+
+  /// <summary>
+  ///   Wait the results after submission
+  /// </summary>
+  public bool WaitResult { get; set; } = true;
+
+  /// <summary>
+  ///   Download the results once they are ready
+  /// </summary>
+  public bool DownloadResult { get; set; } = true;
 }
