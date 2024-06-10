@@ -300,6 +300,12 @@ public sealed class TaskHandler : IAsyncDisposable
                                                            CancellationToken.None)
                                      .ConfigureAwait(false);
 
+          // Propagate cancelled status to TaskHandler
+          taskData_ = taskData_ with
+                      {
+                        Status = TaskStatus.Cancelled,
+                      };
+
           return AcquisitionStatus.TaskIsCancelling;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
@@ -351,6 +357,7 @@ public sealed class TaskHandler : IAsyncDisposable
           {
             logger_.LogDebug("Resubmitting task {task} on another pod",
                              taskData_.TaskId);
+            messageHandler_.Status = QueueMessageStatus.Cancelled;
 
             await submitter_.CompleteTaskAsync(taskData_,
                                                true,
@@ -358,6 +365,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
+
+            // Propagate retried status to TaskHandler
+            taskData_ = taskData_ with
+                        {
+                          Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
+                                     ? TaskStatus.Retried
+                                     : TaskStatus.Error,
+                        };
+
             return AcquisitionStatus.TaskIsProcessingPodIdEmpty;
           }
 
@@ -394,6 +410,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                                               "Other pod seems to have crashed, resubmitting task"),
                                                    CancellationToken.None)
                                 .ConfigureAwait(false);
+
+                // Propagate retried status to TaskHandler
+                taskData_ = taskData_ with
+                            {
+                              Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
+                                         ? TaskStatus.Retried
+                                         : TaskStatus.Error,
+                            };
+
                 messageHandler_.Status = QueueMessageStatus.Processed;
                 return AcquisitionStatus.TaskIsProcessingButSeemsCrashed;
               }
@@ -449,6 +474,12 @@ public sealed class TaskHandler : IAsyncDisposable
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
 
+        // Propagate cancelled status to TaskHandler
+        taskData_ = taskData_ with
+                    {
+                      Status = TaskStatus.Cancelled,
+                    };
+
         return AcquisitionStatus.SessionNotExecutable;
       }
 
@@ -483,6 +514,13 @@ public sealed class TaskHandler : IAsyncDisposable
         await taskTable_.ReleaseTask(taskData_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
+
+        // Propagate dispatched status to TaskHandler
+        taskData_ = taskData_ with
+                    {
+                      Status = TaskStatus.Dispatched,
+                    };
+
         messageHandler_.Status = QueueMessageStatus.Postponed;
         return AcquisitionStatus.CancelledAfterAcquisition;
       }
@@ -536,6 +574,14 @@ public sealed class TaskHandler : IAsyncDisposable
                                                           "Other pod seems to have crashed, resubmitting task"),
                                                CancellationToken.None)
                             .ConfigureAwait(false);
+
+            // Propagate retried status to TaskHandler
+            taskData_ = taskData_ with
+                        {
+                          Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
+                                     ? TaskStatus.Retried
+                                     : TaskStatus.Error,
+                        };
           }
 
 
@@ -582,6 +628,13 @@ public sealed class TaskHandler : IAsyncDisposable
         await taskTable_.ReleaseTask(taskData_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
+
+        // Propagate dispatched status to TaskHandler
+        taskData_ = taskData_ with
+                    {
+                      Status = TaskStatus.Dispatched,
+                    };
+
         messageHandler_.Status = QueueMessageStatus.Postponed;
         return AcquisitionStatus.CancelledAfterPreconditions;
       }
@@ -608,7 +661,8 @@ public sealed class TaskHandler : IAsyncDisposable
     => taskData_ is not null
          ? new TaskInfo(taskData_.SessionId,
                         taskData_.TaskId,
-                        messageHandler_.MessageId)
+                        messageHandler_.MessageId,
+                        taskData_.Status)
          : throw new ArmoniKException("TaskData should not be null after successful acquisition");
 
   /// <summary>
