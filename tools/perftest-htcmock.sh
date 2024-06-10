@@ -1,6 +1,6 @@
 #!/bin/bash
 
-just tag=0.0.0.0-test buildHtcmockClient
+just buildHtcmockClient
 
 just destroy
 
