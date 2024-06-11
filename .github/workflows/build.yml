@@ -216,7 +216,7 @@ jobs:
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         type:
           - build-core
@@ -245,7 +245,7 @@ jobs:
 
     - name: Build
       run: |
-        just tag=$VERSION platform=linux/arm64,linux/amd64 load=false push=true ${{ matrix.type }}
+        just tag=$VERSION platform=linux/arm64,linux/amd64,win/amd64 load=false push=true ${{ matrix.type }}
 
 
   testStreamDC:

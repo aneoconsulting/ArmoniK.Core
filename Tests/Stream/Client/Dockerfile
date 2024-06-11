@@ -1,10 +1,17 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base-linux
+RUN groupadd --gid 5000 armonikuser \
+ && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser \ 
+ && mkdir /app \
+ && chown -R armonikuser: /app
+USER armonikuser
+
+FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-ltsc2022 AS base-win
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
+ARG TARGETOS
 ARG VERSION=1.0.0.0
 
 WORKDIR /src
@@ -18,15 +25,10 @@ COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
 COPY ["Utils/src/", "Utils/src/"]
 COPY ["Base/src/", "Base/src/"]
 WORKDIR "/src/Tests/Stream/Client"
-RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -a "${TARGETARCH}" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
+RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -a "${TARGETARCH}" --os "${TARGETOS}" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 
-FROM base as final
+FROM base-${TARGETOS} as final
 WORKDIR /app
 COPY --from=build /app/build .
-RUN groupadd --gid 5000 armonikuser \
- && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser \ 
- && chown -R armonikuser: /app \
- && rm -rf /tmp/NuGetScratch
-USER armonikuser
 ENTRYPOINT ["dotnet", "test", "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.dll"]
