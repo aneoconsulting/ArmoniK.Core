@@ -41,7 +41,6 @@ resource "null_resource" "partitions_in_db" {
 
   for_each = var.partition_list
   provisioner "local-exec" {
-    command     = "docker run --net ${var.network} --rm rtsp/mongosh mongosh mongodb://database:27017/${docker_container.database.name} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
-    interpreter = ["/bin/sh", "-c"]
+    command = "docker run --net ${var.network} --rm rtsp/mongosh mongosh mongodb://database:27017/${docker_container.database.name} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
   }
 }
