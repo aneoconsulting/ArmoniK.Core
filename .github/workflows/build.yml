@@ -245,7 +245,7 @@ jobs:
 
     - name: Build
       run: |
-        just tag=$VERSION platform=linux/arm64,linux/amd64,win/amd64 load=false push=true ${{ matrix.type }}
+        just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true ${{ matrix.type }}
 
 
   testStreamDC:
@@ -529,6 +529,7 @@ jobs:
 
       - name: Deploy Core
         run: just -v tag=$env:VERSION object=local worker=htcmock deploy
+        shell: powershell
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3

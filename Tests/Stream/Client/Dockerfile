@@ -7,7 +7,7 @@ RUN groupadd --gid 5000 armonikuser \
  && chown -R armonikuser: /app
 USER armonikuser
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-ltsc2022 AS base-win
+FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-ltsc2022 AS base-windows
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
@@ -25,7 +25,7 @@ COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
 COPY ["Utils/src/", "Utils/src/"]
 COPY ["Base/src/", "Base/src/"]
 WORKDIR "/src/Tests/Stream/Client"
-RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -a "${TARGETARCH}" --os "${TARGETOS}" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
+RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -a "${TARGETARCH}" -c Release -o /app/build -p:RunAnalyzers=false -p:WarningLevel=0
 
 
 FROM base-${TARGETOS} as final
