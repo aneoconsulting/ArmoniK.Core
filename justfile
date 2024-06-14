@@ -1,8 +1,8 @@
-# Enable positional args
-set positional-arguments
-
 # Enable bash output
 set shell := ["bash", "-exc"]
+
+# use powershell on windows
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 # Default values for the deployment
 tag          := "0.0.0.0-local"
@@ -152,31 +152,31 @@ env:
 
 # Call terraform init
 init:
-  terraform -chdir=./terraform init -upgrade
+  terraform -chdir=terraform init -upgrade
 
 # Validate deployment
 validate:
-  terraform -chdir=./terraform validate
+  terraform -chdir=terraform validate
 
 # Invoke terraform console
 console:
-  terraform -chdir=./terraform console
+  terraform -chdir=terraform console
 
 # Plan ArmoniK Core deployment
 plan: (init)
-  terraform -chdir=./terraform plan -out=/dev/null
+  terraform -chdir=terraform plan
 
 # Deploy ArmoniK Core
 deploy: (init)
-  terraform -chdir=./terraform apply -auto-approve
+  terraform -chdir=terraform apply -auto-approve
 
 # Deploy target: object standalone
 deployTargetObject: (init)
-  terraform -chdir=./terraform apply -target="module.object_{{object}}" -auto-approve
+  terraform -chdir=terraform apply -target="module.object_{{object}}" -auto-approve
 
 # Destroy target: queue standalone
 destroyTargetObject:
-  terraform -chdir=./terraform destroy -target="module.object_{{object}}" -auto-approve
+  terraform -chdir=terraform destroy -target="module.object_{{object}}" -auto-approve
 
 # Deploy target: queue standalone
 deployTargetQueue: (init)
@@ -185,7 +185,7 @@ deployTargetQueue: (init)
   if [ {{queue}} = "rabbitmq091" ]; then
     which_module="module.queue_rabbitmq"
   fi
-  terraform -chdir=./terraform apply -target="${which_module}" -auto-approve
+  terraform -chdir=terraform apply -target="${which_module}" -auto-approve
 
 # Destroy target: queue standalone
 destroyTargetQueue:
@@ -194,11 +194,11 @@ destroyTargetQueue:
   if [ {{queue}} = "rabbitmq091" ]; then
     which_module="module.queue_rabbitmq"
   fi
-  terraform -chdir=./terraform destroy -target="${which_module}" -auto-approve
+  terraform -chdir=terraform destroy -target="${which_module}" -auto-approve
 
 # Destroy ArmoniK Core
 destroy:
-  terraform -chdir=./terraform destroy -auto-approve
+  terraform -chdir=terraform destroy -auto-approve
 
 # Custom docker generic rule
 container *args:
