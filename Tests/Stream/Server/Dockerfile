@@ -8,7 +8,7 @@ ENV ASPNETCORE_URLS http://+:1080;https://+1443
 EXPOSE 1080
 EXPOSE 1443
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-ltsc2022 AS base-win
+FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-ltsc2022 AS base-windows
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
@@ -22,7 +22,7 @@ RUN dotnet restore -a "${TARGETARCH}" "Tests/Stream/Server/ArmoniK.Extensions.Co
 COPY ["Tests/Stream/Server", "Tests/Stream/Server"]
 COPY ["Tests/Stream/Common", "Tests/Stream/Common"]
 WORKDIR "/src/Tests/Stream/Server"
-RUN dotnet publish -a "${TARGETARCH}" --os "${TARGETOS}" "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" --no-restore -o /app/publish -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion="$VERSION" -p:Version="$VERSION"
+RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj" --no-restore -o /app/publish -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion="$VERSION" -p:Version="$VERSION"
 
 FROM base-${TARGETOS} AS final
 WORKDIR /app
