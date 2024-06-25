@@ -23,6 +23,7 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Channel.Utils;
+using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.Worker.Worker;
@@ -37,8 +38,10 @@ namespace ArmoniK.Samples.CrashingWorker.Server;
 public class CrashingService : WorkerStreamWrapper
 {
   public CrashingService(ILoggerFactory      loggerFactory,
+                         ComputePlane        options,
                          GrpcChannelProvider provider)
     : base(loggerFactory,
+           options,
            provider)
     => logger_ = loggerFactory.CreateLogger<CrashingService>();
 
