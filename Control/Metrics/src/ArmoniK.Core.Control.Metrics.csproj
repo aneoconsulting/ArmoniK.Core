@@ -29,6 +29,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.9.0-alpha.2" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0-rc.1" />
   </ItemGroup>
