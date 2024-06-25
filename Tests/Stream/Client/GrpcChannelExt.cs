@@ -17,12 +17,11 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Client.Submitter;
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
@@ -36,17 +35,14 @@ public static class GrpcChannelExt
                                                                 string           sessionId,
                                                                 string           resultId)
   {
-    var client = new Submitter.SubmitterClient(channel);
+    var resultClient = new Results.ResultsClient(channel);
 
-    var request = new ResultRequest
-                  {
-                    ResultId = resultId,
-                    Session  = sessionId,
-                  };
     try
     {
-      var bytes = await client.GetResultAsync(request)
-                              .ConfigureAwait(false);
+      var bytes = await resultClient.DownloadResultData(sessionId,
+                                                        resultId,
+                                                        CancellationToken.None)
+                                    .ConfigureAwait(false);
       if (bytes.Length == 0)
       {
         throw new Exception("Output data is empty");
@@ -56,7 +52,6 @@ public static class GrpcChannelExt
     }
     catch (Exception e)
     {
-      var resultClient = new Results.ResultsClient(channel);
       var res = await resultClient.GetOwnerTaskIdAsync(new GetOwnerTaskIdRequest
                                                        {
                                                          ResultId =
