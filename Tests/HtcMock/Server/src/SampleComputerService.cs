@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Channel.Utils;
+using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
@@ -40,8 +41,10 @@ namespace ArmoniK.Samples.HtcMock.Server;
 public class SampleComputerService : WorkerStreamWrapper
 {
   public SampleComputerService(ILoggerFactory      loggerFactory,
+                               ComputePlane        options,
                                GrpcChannelProvider provider)
     : base(loggerFactory,
+           options,
            provider)
     => logger_ = loggerFactory.CreateLogger<SampleComputerService>();
 

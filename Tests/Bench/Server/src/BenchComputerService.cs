@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Channel.Utils;
+using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.Worker.Worker;
@@ -40,8 +41,10 @@ namespace ArmoniK.Samples.Bench.Server;
 public class BenchComputerService : WorkerStreamWrapper
 {
   public BenchComputerService(ILoggerFactory      loggerFactory,
+                              ComputePlane        options,
                               GrpcChannelProvider provider)
     : base(loggerFactory,
+           options,
            provider)
     => logger_ = loggerFactory.CreateLogger<BenchComputerService>();
 

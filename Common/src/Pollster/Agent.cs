@@ -250,8 +250,8 @@ public sealed class Agent : IAgent
                                                                            creation.PayloadId,
                                                                            TaskOptions.Merge(creation.Options,
                                                                                              options),
-                                                                           creation.ExpectedOutputKeys.AsICollection(),
-                                                                           creation.DataDependencies.AsICollection()))
+                                                                           creation.ExpectedOutputKeys,
+                                                                           creation.DataDependencies))
                                .ToList();
 
     await TaskLifeCycleHelper.CreateTasks(taskTable_,

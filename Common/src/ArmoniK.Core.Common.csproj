@@ -27,6 +27,10 @@
 
   <ItemGroup>
     <PackageReference Include="ArmoniK.Api.Core" Version="3.18.0" />
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="8.0.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.62.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />

@@ -301,13 +301,13 @@ public class ObjectStorage : IObjectStorage
       {
         var partRequest = new UploadPartRequest
                           {
-                            BucketName       = options_.BucketName,
-                            Key              = objectKey,
-                            PartNumber       = partNumber,
-                            InputStream      = new MemoryStream(currentPartStream.ToArray()),
-                            UploadId         = uploadId,
-                            UseChunkEncoding = options_.UseChunkEncoding,
-                            DisableMD5Stream = !options_.UseChecksum,
+                            BucketName                       = options_.BucketName,
+                            Key                              = objectKey,
+                            PartNumber                       = partNumber,
+                            InputStream                      = new MemoryStream(currentPartStream.ToArray()),
+                            UploadId                         = uploadId,
+                            UseChunkEncoding                 = options_.UseChunkEncoding,
+                            DisableDefaultChecksumValidation = !options_.UseChecksum,
                           };
         yield return partRequest;
         currentPartStream = new MemoryStream();
@@ -332,13 +332,13 @@ public class ObjectStorage : IObjectStorage
     {
       var partRequest = new UploadPartRequest
                         {
-                          BucketName       = options_.BucketName,
-                          Key              = objectKey,
-                          PartNumber       = partNumber,
-                          InputStream      = new MemoryStream(currentPartStream.ToArray()),
-                          UploadId         = uploadId,
-                          UseChunkEncoding = options_.UseChunkEncoding,
-                          DisableMD5Stream = !options_.UseChecksum,
+                          BucketName                       = options_.BucketName,
+                          Key                              = objectKey,
+                          PartNumber                       = partNumber,
+                          InputStream                      = new MemoryStream(currentPartStream.ToArray()),
+                          UploadId                         = uploadId,
+                          UseChunkEncoding                 = options_.UseChunkEncoding,
+                          DisableDefaultChecksumValidation = !options_.UseChecksum,
                         };
       yield return partRequest;
     }
