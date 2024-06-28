@@ -35,7 +35,7 @@ jobs:
 
     - name: Generate Snapshot Version
       id: snapshot
-      uses: codacy/git-version@80c816f11db8dea5e3a81025f598193015b51832 # 2.8.0
+      uses: codacy/git-version@3123cdcf20ebcec76a7338fd3ef39817ad721cef # 2.0.0
       with:
         minor-identifier: "feat:"
         release-branch: ${{ github.ref_name }}-pre
