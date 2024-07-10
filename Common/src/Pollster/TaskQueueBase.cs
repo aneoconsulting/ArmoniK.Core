@@ -95,6 +95,8 @@ public abstract class TaskQueueBase
       // so we remove the handler from the channel and dispose it.
       if (channel_.Reader.TryRead(out var handler))
       {
+        await handler.ReleaseAndPostponeTask()
+                     .ConfigureAwait(false);
         await handler.DisposeAsync()
                      .ConfigureAwait(false);
       }
