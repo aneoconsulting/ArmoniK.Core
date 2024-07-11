@@ -511,17 +511,8 @@ public sealed class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         logger_.LogDebug("Task acquired but execution cancellation requested");
-        await taskTable_.ReleaseTask(taskData_,
-                                     CancellationToken.None)
-                        .ConfigureAwait(false);
-
-        // Propagate dispatched status to TaskHandler
-        taskData_ = taskData_ with
-                    {
-                      Status = TaskStatus.Dispatched,
-                    };
-
-        messageHandler_.Status = QueueMessageStatus.Postponed;
+        await ReleaseAndPostponeTask()
+          .ConfigureAwait(false);
         return AcquisitionStatus.CancelledAfterAcquisition;
       }
 
@@ -625,17 +616,8 @@ public sealed class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         logger_.LogDebug("Task preconditions ok but execution cancellation requested");
-        await taskTable_.ReleaseTask(taskData_,
-                                     CancellationToken.None)
-                        .ConfigureAwait(false);
-
-        // Propagate dispatched status to TaskHandler
-        taskData_ = taskData_ with
-                    {
-                      Status = TaskStatus.Dispatched,
-                    };
-
-        messageHandler_.Status = QueueMessageStatus.Postponed;
+        await ReleaseAndPostponeTask()
+          .ConfigureAwait(false);
         return AcquisitionStatus.CancelledAfterPreconditions;
       }
 
@@ -664,6 +646,33 @@ public sealed class TaskHandler : IAsyncDisposable
                         messageHandler_.MessageId,
                         taskData_.Status)
          : throw new ArmoniKException("TaskData should not be null after successful acquisition");
+
+  /// <summary>
+  ///   Release task from the current agent and set message to <see cref="QueueMessageStatus.Postponed" />
+  /// </summary>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <exception cref="NullReferenceException">wrong order of execution</exception>
+  public async Task ReleaseAndPostponeTask()
+  {
+    if (taskData_ is null)
+    {
+      throw new NullReferenceException();
+    }
+
+    await taskTable_.ReleaseTask(taskData_,
+                                 CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    // Propagate submitted status to TaskHandler
+    taskData_ = taskData_ with
+                {
+                  Status = TaskStatus.Submitted,
+                };
+
+    messageHandler_.Status = QueueMessageStatus.Postponed;
+  }
 
   /// <summary>
   ///   Preprocessing (including the data prefetching) of the acquired task
@@ -958,10 +967,8 @@ public sealed class TaskHandler : IAsyncDisposable
                              "Worker not available, task cancelled here and re executed elsewhere");
         }
 
-        await taskTable_.ReleaseTask(taskData,
-                                     CancellationToken.None)
-                        .ConfigureAwait(false);
-        messageHandler_.Status = QueueMessageStatus.Postponed;
+        await ReleaseAndPostponeTask()
+          .ConfigureAwait(false);
       }
       else
       {

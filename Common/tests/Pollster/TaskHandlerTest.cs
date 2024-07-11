@@ -376,6 +376,60 @@ public class TaskHandlerTest
                                        .TaskId);
   }
 
+  [Test]
+  public async Task AcquireTaskThenReleaseShouldSucceed()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh);
+
+    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                         .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+    Assert.AreEqual(taskId,
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
+    Assert.AreEqual(TaskStatus.Dispatched,
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskStatus);
+
+
+    await testServiceProvider.TaskHandler.ReleaseAndPostponeTask()
+                             .ConfigureAwait(false);
+    Assert.AreEqual(TaskStatus.Submitted,
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskStatus);
+    Assert.AreEqual(QueueMessageStatus.Postponed,
+                    sqmh.Status);
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData.Status);
+    Assert.AreEqual(string.Empty,
+                    taskData.OwnerPodId);
+    Assert.AreEqual(string.Empty,
+                    taskData.OwnerPodName);
+  }
+
   public record struct AcquireTaskReturn(AcquisitionStatus  AcquisitionStatus,
                                          TaskStatus         TaskStatus,
                                          QueueMessageStatus MessageStatus);
