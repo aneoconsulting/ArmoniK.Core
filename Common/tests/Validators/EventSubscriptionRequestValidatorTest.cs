@@ -119,6 +119,9 @@ public class EventSubscriptionRequestValidatorTest
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.SessionId,
                                                                       FilterStringOperator.Equal,
                                                                       string.Empty));
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.PayloadId,
+                                                                      FilterStringOperator.Equal,
+                                                                      string.Empty));
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.PodHostname,
                                                                       FilterStringOperator.Equal,
                                                                       string.Empty));

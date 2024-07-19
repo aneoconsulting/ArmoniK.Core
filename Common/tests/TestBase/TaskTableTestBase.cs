@@ -1892,6 +1892,13 @@ public class TaskTableTestBase
                                                                        FilterStringOperator.Equal,
                                                                        "BadSessionId"));
 
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.PayloadId,
+                                                                      FilterStringOperator.Equal,
+                                                                      "PayloadId"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.PayloadId,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadPayloadId"));
+
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
                                                                       FilterStringOperator.Equal,
                                                                       "val1"));

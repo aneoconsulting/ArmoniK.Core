@@ -37,6 +37,7 @@ public static class TaskDataHolderExt
     => new()
        {
          SessionId = taskData.SessionId,
+         PayloadId = taskData.PayloadId,
          Status    = taskData.Status.ToGrpcStatus(),
          Output = taskData.Output is not null
                     ? new TaskDetailed.Types.Output
@@ -117,6 +118,7 @@ public static class TaskDataHolderExt
     => new()
        {
          SessionId  = taskDataSummary.SessionId,
+         PayloadId  = taskDataSummary.PayloadId,
          Status     = taskDataSummary.Status.ToGrpcStatus(),
          OwnerPodId = taskDataSummary.OwnerPodId,
          Options    = taskDataSummary.Options?.ToGrpcTaskOptions(),
