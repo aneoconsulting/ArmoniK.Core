@@ -94,6 +94,8 @@ public class ToTaskDataFieldTest
                              TaskData.TaskId);
     yield return CaseSummary(TaskSummaryEnumField.SessionId,
                              TaskData.SessionId);
+    yield return CaseSummary(TaskSummaryEnumField.PayloadId,
+                             TaskData.PayloadId);
     yield return CaseSummary(TaskSummaryEnumField.Status,
                              TaskData.Status);
     yield return CaseSummary(TaskSummaryEnumField.CreatedAt,

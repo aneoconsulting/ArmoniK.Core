@@ -93,6 +93,7 @@ public class EventSubscriptionRequestValidator : AbstractValidator<EventSubscrip
               {
                 case TaskSummaryEnumField.TaskId:
                 case TaskSummaryEnumField.SessionId:
+                case TaskSummaryEnumField.PayloadId:
                 case TaskSummaryEnumField.OwnerPodId:
                 case TaskSummaryEnumField.InitialTaskId:
                 case TaskSummaryEnumField.PodHostname:

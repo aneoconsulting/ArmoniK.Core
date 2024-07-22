@@ -106,6 +106,7 @@ public class GrpcTasksService : Task.TasksBase
                                         {
                                           TaskDataFields.SessionId,
                                           TaskDataFields.TaskId,
+                                          TaskDataFields.PayloadId,
                                           TaskDataFields.Status,
                                           TaskDataFields.InitialTaskId,
                                           TaskDataFields.Output,
@@ -481,7 +482,8 @@ public class GrpcTasksService : Task.TasksBase
                                                               {
                                                                 creationRequest.ExpectedOutputKeys,
                                                               },
-                                                              TaskId = creationRequest.TaskId,
+                                                              TaskId    = creationRequest.TaskId,
+                                                              PayloadId = creationRequest.PayloadId,
                                                             }),
                },
              };

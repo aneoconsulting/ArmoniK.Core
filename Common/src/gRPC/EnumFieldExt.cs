@@ -58,6 +58,7 @@ public static class EnumFieldExt
        {
          TaskSummaryEnumField.TaskId                  => data => data.TaskId,
          TaskSummaryEnumField.SessionId               => data => data.SessionId,
+         TaskSummaryEnumField.PayloadId               => data => data.PayloadId,
          TaskSummaryEnumField.OwnerPodId              => data => data.OwnerPodId,
          TaskSummaryEnumField.InitialTaskId           => data => data.InitialTaskId,
          TaskSummaryEnumField.Status                  => data => data.Status,
