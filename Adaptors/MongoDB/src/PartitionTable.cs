@@ -173,9 +173,10 @@ public class PartitionTable : IPartitionTable
                                                                                                  int                                      pageSize,
                                                                                                  CancellationToken                        cancellationToken = default)
   {
-    using var activity            = activitySource_.StartActivity($"{nameof(ListPartitionsAsync)}");
-    var       sessionHandle       = sessionProvider_.Get();
-    var       partitionCollection = partitionCollectionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(ListPartitionsAsync)}");
+    var       sessionHandle = sessionProvider_.Get();
+    var partitionCollection = partitionCollectionProvider_.Get()
+                                                          .WithReadPreference(ReadPreference.SecondaryPreferred);
 
     var partitionList = Task.FromResult(new List<PartitionData>());
     if (pageSize > 0)
