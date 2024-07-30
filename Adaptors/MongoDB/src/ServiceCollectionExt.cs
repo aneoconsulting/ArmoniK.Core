@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -37,7 +38,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -107,13 +107,12 @@ public static class ServiceCollectionExt
                        out mongoOptions);
 
     using var _ = logger.BeginNamedScope("MongoDB configuration",
-                                         ("host", mongoOptions.Host),
-                                         ("port", mongoOptions.Port));
+                                         ("host", mongoOptions.Hosts));
 
-    if (string.IsNullOrEmpty(mongoOptions.Host))
+    if (!mongoOptions.Hosts.Any())
     {
       throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                            $"{nameof(Options.MongoDB.Host)} is not defined.");
+                                            $"{nameof(Options.MongoDB.Hosts)} is not defined.");
     }
 
     if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
@@ -164,34 +163,29 @@ public static class ServiceCollectionExt
       }
     }
 
-    string connectionString;
-    if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+    var url = new MongoUrlBuilder
+              {
+                Servers = mongoOptions.Hosts.Select(MongoServerAddress.Parse),
+              };
+    if (!string.IsNullOrEmpty(mongoOptions.User))
     {
-      var template = "mongodb://{0}:{1}/{2}";
-      connectionString = string.Format(template,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
-    }
-    else
-    {
-      var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
-      connectionString = string.Format(template,
-                                       mongoOptions.User,
-                                       mongoOptions.Password,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
+      url.Username = mongoOptions.User;
     }
 
-    var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
-    settings.UseTls                 = mongoOptions.Tls;
-    settings.DirectConnection       = mongoOptions.DirectConnection;
-    settings.Scheme                 = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
-    settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    if (!string.IsNullOrEmpty(mongoOptions.Password))
+    {
+      url.Password = mongoOptions.Password;
+    }
+
+    url.Scheme                 = mongoOptions.Scheme;
+    url.DirectConnection       = mongoOptions.DirectConnection;
+    url.UseTls                 = mongoOptions.Tls;
+    url.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+    url.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+    url.ReplicaSetName         = mongoOptions.ReplicaSet;
+    url.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
+
+    var settings = MongoClientSettings.FromUrl(url.ToMongoUrl());
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
@@ -199,6 +193,13 @@ public static class ServiceCollectionExt
                                      //                                                       e.Command.ToJson()));
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                    };
+    if (mongoOptions.ClientCertificateFiles.Any())
+    {
+      settings.SslSettings = new SslSettings
+                             {
+                               ClientCertificates = mongoOptions.ClientCertificateFiles.Select(s => X509Certificate2.CreateFromPemFile(s)),
+                             };
+    }
 
     var client = new MongoClient(settings);
 
