@@ -17,6 +17,8 @@
 
 using System;
 
+using Destructurama;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -45,6 +47,7 @@ public class LoggerInit
                                                                                            .Version?.ToString() ?? "Unknown")
                                                     .Enrich.WithProperty("InstanceId",
                                                                          instanceId)
+                                                    .Destructure.UsingAttributes()
                                                     .CreateLogger();
 
     logger_ = LoggerFactory.Create(builder => builder.AddSerilog(loggerConfiguration_))

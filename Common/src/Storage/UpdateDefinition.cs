@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
+using Destructurama.Attributed;
+
 using FluentValidation.Internal;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -59,8 +61,11 @@ public class UpdateDefinition<T>
   public UpdateDefinition<T> Set<TProperty>(Expression<Func<T, TProperty>> property,
                                             TProperty                      value)
   {
-    Setters.Add(new PropertySet(RemovePropertyType(property),
-                                value));
+    Setters.Add(new PropertySet
+                {
+                  Value    = value,
+                  Property = RemovePropertyType(property),
+                });
     return this;
   }
 
@@ -79,11 +84,20 @@ public class UpdateDefinition<T>
   /// <summary>
   ///   Express the update of a property of an object.
   /// </summary>
-  /// <param name="Property">Property definition</param>
-  /// <param name="Value">New value</param>
-  public record PropertySet(Expression<Func<T, object?>> Property,
-                            object?                      Value)
+  [LogAsScalar]
+  public record PropertySet
   {
+    /// <summary>
+    ///   Property definition
+    /// </summary>
+    [LogAsScalar]
+    public required Expression<Func<T, object?>> Property { get; init; }
+
+    /// <summary>
+    ///   New value
+    /// </summary>
+    public required object? Value { get; init; }
+
     /// <summary>
     ///   Set the property from the object <paramref name="x" /> to the specified value
     /// </summary>
@@ -92,5 +106,17 @@ public class UpdateDefinition<T>
       => typeof(T).GetProperty(Property.GetMember()
                                        .Name)!.SetValue(x,
                                                         Value);
+
+    /// <summary>
+    ///   Deconstruct a <see cref="Property" /> in its components
+    /// </summary>
+    /// <param name="selector">Property definition</param>
+    /// <param name="newValue">New value</param>
+    public void Deconstruct(out Expression<Func<T, object?>> selector,
+                            out object?                      newValue)
+    {
+      selector = Property;
+      newValue = Value;
+    }
   }
 }
