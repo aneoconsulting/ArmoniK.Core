@@ -257,7 +257,8 @@ public sealed class TaskHandler : IAsyncDisposable
       activity?.SetTagAndBaggage("SessionId",
                                  taskData_.SessionId);
       using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData_.SessionId));
-      logger_.LogInformation("Start task acquisition");
+      logger_.LogInformation("Start task acquisition with {status}",
+                             taskData_.Status);
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
