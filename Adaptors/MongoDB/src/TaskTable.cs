@@ -400,7 +400,7 @@ public class TaskTable : ITaskTable
                                                           cancellationToken)
                                    .ConfigureAwait(false);
 
-    Logger.LogInformation("Update {task} with {condition} and {updates}",
+    Logger.LogInformation("Update {task} with {condition} and {@updates}",
                           taskId,
                           filter,
                           updates);
