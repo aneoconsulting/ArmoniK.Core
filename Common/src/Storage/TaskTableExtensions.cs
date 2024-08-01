@@ -196,7 +196,7 @@ public static class TaskTableExtensions
   /// <param name="errorDetail">Error message to be inserted in task's output</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   A boolean representing whether the status has been updated
   /// </returns>
   public static async Task<bool> SetTaskRetryAsync(this ITaskTable   taskTable,
                                                    TaskData          taskData,
@@ -245,7 +245,7 @@ public static class TaskTableExtensions
   /// <param name="output">Task Output</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   A boolean representing whether the status has been updated
   /// </returns>
   public static async Task<bool> SetTaskTimeoutAsync(this ITaskTable   taskTable,
                                                      TaskData          taskData,
