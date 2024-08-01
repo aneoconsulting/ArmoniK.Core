@@ -76,6 +76,7 @@ public class GrpcTasksService : Task.TasksBase
                                          {
                                            TaskDataFields.SessionId,
                                            TaskDataFields.TaskId,
+                                           TaskDataFields.PayloadId,
                                            TaskDataFields.Status,
                                            TaskDataFields.InitialTaskId,
                                            TaskDataFields.Output,
