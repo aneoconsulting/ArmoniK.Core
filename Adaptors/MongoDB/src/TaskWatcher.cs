@@ -96,6 +96,7 @@ public class TaskWatcher : ITaskWatcher
                                                                                 .Match(filter.ToChangeStreamDocumentExpression());
 
     var changeStreamCursor = await taskCollectionProvider_.Get()
+                                                          .WithReadPreference(ReadPreference.SecondaryPreferred)
                                                           .WatchAsync(sessionHandle,
                                                                       pipeline,
                                                                       cancellationToken: cancellationToken,
@@ -125,7 +126,8 @@ public class TaskWatcher : ITaskWatcher
     using var activity      = activitySource_.StartActivity($"{nameof(GetTaskStatusUpdates)}");
     var       sessionHandle = sessionProvider_.Get();
 
-    var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(taskCollectionProvider_.Get(),
+    var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(taskCollectionProvider_.Get()
+                                                                                        .WithReadPreference(ReadPreference.SecondaryPreferred),
                                                                  sessionHandle,
                                                                  filter,
                                                                  new[]

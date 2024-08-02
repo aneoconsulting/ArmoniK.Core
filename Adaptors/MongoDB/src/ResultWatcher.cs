@@ -97,6 +97,7 @@ public class ResultWatcher : IResultWatcher
                                                                               .Match(filter.ToChangeStreamDocumentExpression());
 
     var changeStreamCursor = await resultCollectionProvider_.Get()
+                                                            .WithReadPreference(ReadPreference.SecondaryPreferred)
                                                             .WatchAsync(sessionHandle,
                                                                         pipeline,
                                                                         cancellationToken: cancellationToken,
@@ -120,7 +121,8 @@ public class ResultWatcher : IResultWatcher
     using var activity      = activitySource_.StartActivity($"{nameof(GetResultOwnerUpdates)}");
     var       sessionHandle = sessionProvider_.Get();
 
-    var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get(),
+    var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get()
+                                                                                          .WithReadPreference(ReadPreference.SecondaryPreferred),
                                                                  sessionHandle,
                                                                  filter,
                                                                  new[]
@@ -144,7 +146,8 @@ public class ResultWatcher : IResultWatcher
     using var activity      = activitySource_.StartActivity($"{nameof(GetResultStatusUpdates)}");
     var       sessionHandle = sessionProvider_.Get();
 
-    var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get(),
+    var changeStreamCursor = await ChangeStreamUpdate.GetUpdates(resultCollectionProvider_.Get()
+                                                                                          .WithReadPreference(ReadPreference.SecondaryPreferred),
                                                                  sessionHandle,
                                                                  filter,
                                                                  new[]
