@@ -5,7 +5,7 @@ RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --cr
 USER armonikuser
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-windowsservercore-ltsc2022 AS base-windows
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-windowsservercore-ltsc2022 AS base-windows
 WORKDIR c:\\temp\\app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build

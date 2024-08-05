@@ -8,7 +8,7 @@ ENV ASPNETCORE_URLS http://+:1080;https://+1443
 EXPOSE 1080
 EXPOSE 1443
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-ltsc2022 AS base-windows
+FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS base-windows
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
