@@ -164,6 +164,11 @@ variable "seq_image" {
   default = "datalust/seq:latest"
 }
 
+variable "enable_seq" {
+  type    = bool
+  default = true
+}
+
 variable "zipkin_image" {
   type    = string
   default = "openzipkin/zipkin:latest"
@@ -174,9 +179,19 @@ variable "grafana_image" {
   default = "grafana/grafana:latest"
 }
 
+variable "enable_grafana" {
+  type    = bool
+  default = true
+}
+
 variable "prometheus_image" {
   type    = string
   default = "prom/prometheus:latest"
+}
+
+variable "enable_prometheus" {
+  type    = bool
+  default = true
 }
 
 variable "database_image" {

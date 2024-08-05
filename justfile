@@ -17,13 +17,20 @@ platform     := ""
 push         := "false"
 load         := "true"
 ingress      := "true"
+prometheus   := "true"
+grafana      := "true"
+seq          := "true"
 
 # Export them as terraform environment variables
-export TF_VAR_core_tag        := tag
-export TF_VAR_use_local_image := local_images
-export TF_VAR_serilog         := '{ loggin_level = "' + log_level + '" }'
-export TF_VAR_num_replicas    := replicas
-export TF_VAR_num_partitions  := partitions
+export TF_VAR_core_tag          := tag
+export TF_VAR_use_local_image   := local_images
+export TF_VAR_serilog           := '{ loggin_level = "' + log_level + '" }'
+export TF_VAR_num_replicas      := replicas
+export TF_VAR_num_partitions    := partitions
+export TF_VAR_enable_grafana    := grafana
+export TF_VAR_enable_seq        := seq
+export TF_VAR_enable_prometheus := prometheus
+
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
@@ -102,6 +109,12 @@ export TF_VAR_ingress:= if ingress == "false" {
   '{"configs": {} }'
 } else {
   '{}'
+}
+
+export TF_VAR_log_driver_image:= if os_family() == "windows" {
+  "fluent/fluent-bit:windows-2022-3.1.4"
+} else {
+  "fluent/fluent-bit:latest"
 }
 
 # List recipes and their usage
