@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 using JetBrains.Annotations;
@@ -28,11 +29,19 @@ namespace ArmoniK.Core.Common.Utils;
 
 public class ExceptionManager : IDisposable
 {
-  private readonly IList<IDisposable>      disposables_;
-  private readonly CancellationTokenSource graceCts_;
-  private readonly ILogger?                logger_;
-  private readonly int                     maxError_;
-  private          int                     nbError_;
+  private readonly IList<IDisposable> disposables_;
+
+  [SuppressMessage("Usage",
+                   "CA2213: Disposable fields must be disposed")]
+  private readonly CancellationTokenSource earlyCts_;
+
+  [SuppressMessage("Usage",
+                   "CA2213: Disposable fields must be disposed")]
+  private readonly CancellationTokenSource lateCts_;
+
+  private readonly ILogger? logger_;
+  private readonly int      maxError_;
+  private          int      nbError_;
 
   public ExceptionManager(IHostApplicationLifetime   applicationLifetime,
                           TimeSpan                   graceDelay,
@@ -40,12 +49,12 @@ public class ExceptionManager : IDisposable
                           int                        maxError = int.MaxValue / 2)
   {
     disposables_ = new List<IDisposable>();
-    graceCts_    = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopping);
-    var cts = graceCts_;
+    earlyCts_    = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopping);
+    lateCts_     = earlyCts_;
 
     disposables_.Add(applicationLifetime.ApplicationStopping.Register(() =>
                                                                       {
-                                                                        if (!graceCts_.IsCancellationRequested)
+                                                                        if (!earlyCts_.IsCancellationRequested)
                                                                         {
                                                                           logger_?.LogInformation("Application shut down has been triggered externally");
                                                                         }
@@ -53,31 +62,29 @@ public class ExceptionManager : IDisposable
 
     if (graceDelay.Ticks > 0)
     {
-      cts = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopped);
-      disposables_.Add(cts);
-      disposables_.Add(graceCts_.Token.Register(() => cts.CancelAfter(graceDelay)));
+      lateCts_ = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopped);
+      disposables_.Add(earlyCts_.Token.Register(() => lateCts_.CancelAfter(graceDelay)));
     }
 
-    CancellationToken = cts.Token;
-
-    disposables_.Add(cts.Token.Register(() =>
-                                        {
-                                          if (!applicationLifetime.ApplicationStopped.IsCancellationRequested)
-                                          {
-                                            logger_?.LogInformation("Grace delay has expired");
-                                            applicationLifetime.StopApplication();
-                                          }
-                                        }));
+    disposables_.Add(lateCts_.Token.Register(() =>
+                                             {
+                                               if (!applicationLifetime.ApplicationStopped.IsCancellationRequested)
+                                               {
+                                                 logger_?.LogInformation("Grace delay has expired");
+                                                 applicationLifetime.StopApplication();
+                                               }
+                                             }));
 
 
     maxError_ = maxError;
     logger_   = logger;
   }
 
-  public CancellationToken GraceCancellationToken
-    => graceCts_.Token;
+  public CancellationToken EarlyCancellationToken
+    => earlyCts_.Token;
 
-  public CancellationToken CancellationToken { get; }
+  public CancellationToken LateCancellationToken
+    => lateCts_.Token;
 
   public void Dispose()
   {
@@ -86,7 +93,11 @@ public class ExceptionManager : IDisposable
       disposable.Dispose();
     }
 
-    graceCts_.Dispose();
+    // Cts are just cancelled instead of disposed in case a background task is waiting on them.
+    // As the lifetime of this class is linked to the lifetime of the whole application,
+    // It is benign to leak those two Cts.
+    earlyCts_.Cancel();
+    lateCts_.Cancel();
   }
 
   public void RecordError(ILogger?                              logger,
@@ -116,7 +127,7 @@ public class ExceptionManager : IDisposable
     if (nbError == maxError_)
     {
       logger_?.LogCritical("Stop Application after too many errors");
-      graceCts_.Cancel();
+      earlyCts_.Cancel();
     }
   }
 
@@ -143,7 +154,7 @@ public class ExceptionManager : IDisposable
                  args);
     }
 
-    graceCts_.Cancel();
+    earlyCts_.Cancel();
   }
 
   public void RecordSuccess()
