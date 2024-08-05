@@ -16,6 +16,7 @@ partitions   := "2"
 platform     := ""
 push         := "false"
 load         := "true"
+ingress      := "true"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag        := tag
@@ -96,6 +97,12 @@ export TF_VAR_submitter                       := '{ image = "' + image_submitter
 export TF_VAR_compute_plane                   := '{ polling_agent = { image = "' + image_polling_agent + '" }, worker = {}}'
 export TF_VAR_armonik_metrics_image           := image_metrics
 export TF_VAR_armonik_partition_metrics_image := image_partition_metrics
+
+export TF_VAR_ingress:= if ingress == "false" {
+  '{"configs": {} }'
+} else {
+  '{}'
+}
 
 # List recipes and their usage
 @default:

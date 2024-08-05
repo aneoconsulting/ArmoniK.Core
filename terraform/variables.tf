@@ -194,26 +194,26 @@ variable "ingress" {
   type = object({
     image = optional(string, "nginxinc/nginx-unprivileged"),
     tag   = optional(string, "1.23.3"),
-    configs = map(object({
+    configs = optional(map(object({
       port = number,
       tls  = optional(bool, false),
       mtls = optional(bool, false),
-  })) })
-  default = {
-    configs = {
-      ingress = {
-        port = 5201
-      },
-      ingress_tls = {
-        port = 5202,
-        tls  = true
-      },
-      ingress_mtls = {
-        port = 5203,
-        tls  = true,
-        mtls = true
-      }
-  } }
+      })),
+      {
+        ingress = {
+          port = 5201
+        },
+        ingress_tls = {
+          port = 5202,
+          tls  = true
+        },
+        ingress_mtls = {
+          port = 5203,
+          tls  = true,
+          mtls = true
+      } }
+  ) })
+  default = {}
 }
 
 variable "custom_env_vars" {
