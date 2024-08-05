@@ -110,6 +110,9 @@ public static class Program
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
              .AddSingleton(pollsterOptions)
+             .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
+                                                        pollsterOptions.MaxErrorAllowed))
+             .AddSingleton<ExceptionManager>()
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<MeterHolder>()

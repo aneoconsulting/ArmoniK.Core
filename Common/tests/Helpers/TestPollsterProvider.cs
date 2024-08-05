@@ -31,6 +31,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
@@ -155,11 +156,15 @@ public class TestPollsterProvider : IDisposable
            .AddHostedService<PostProcessor>()
            .AddSingleton<RunningTaskQueue>()
            .AddSingleton<PostProcessingTaskQueue>()
-           .AddSingleton<GraceDelayCancellationSource>()
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
+           .AddSingleton(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
+                                                              .GraceDelay,
+                                                            sp.GetRequiredService<Injection.Options.Pollster>()
+                                                              .MaxErrorAllowed))
+           .AddSingleton<ExceptionManager>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))

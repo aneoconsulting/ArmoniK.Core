@@ -44,13 +44,13 @@ public class ExceptionManager : IDisposable
   private          int      nbError_;
 
   public ExceptionManager(IHostApplicationLifetime   applicationLifetime,
-                          TimeSpan                   graceDelay,
-                          ILogger<ExceptionManager>? logger   = null,
-                          int                        maxError = int.MaxValue / 2)
+                          ILogger<ExceptionManager>? logger  = null,
+                          Options?                   options = null)
   {
-    disposables_ = new List<IDisposable>();
-    earlyCts_    = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopping);
-    lateCts_     = earlyCts_;
+    options      ??= new Options();
+    disposables_ =   new List<IDisposable>();
+    earlyCts_    =   CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopping);
+    lateCts_     =   earlyCts_;
 
     disposables_.Add(applicationLifetime.ApplicationStopping.Register(() =>
                                                                       {
@@ -60,10 +60,10 @@ public class ExceptionManager : IDisposable
                                                                         }
                                                                       }));
 
-    if (graceDelay.Ticks > 0)
+    if (options.GraceDelay.Ticks > 0)
     {
       lateCts_ = CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopped);
-      disposables_.Add(earlyCts_.Token.Register(() => lateCts_.CancelAfter(graceDelay)));
+      disposables_.Add(earlyCts_.Token.Register(() => lateCts_.CancelAfter(options.GraceDelay)));
     }
 
     disposables_.Add(lateCts_.Token.Register(() =>
@@ -76,7 +76,7 @@ public class ExceptionManager : IDisposable
                                              }));
 
 
-    maxError_ = maxError;
+    maxError_ = options.MaxError ?? int.MaxValue / 2;
     logger_   = logger;
   }
 
@@ -173,4 +173,7 @@ public class ExceptionManager : IDisposable
 
     logger_?.LogTrace("Success has been recorded, decrementing number of errors");
   }
+
+  public record Options(TimeSpan GraceDelay = default,
+                        int?     MaxError   = null);
 }
