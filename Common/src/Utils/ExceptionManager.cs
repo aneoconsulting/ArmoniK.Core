@@ -101,7 +101,7 @@ public class ExceptionManager : IDisposable
   }
 
   public void RecordError(ILogger?                              logger,
-                          Exception                             e,
+                          Exception?                            e,
                           [StructuredMessageTemplate] string    message,
                           params                      object?[] args)
   {
@@ -132,7 +132,7 @@ public class ExceptionManager : IDisposable
   }
 
   public void FatalError(ILogger?                              logger,
-                         Exception                             e,
+                         Exception?                            e,
                          [StructuredMessageTemplate] string    message,
                          params                      object?[] args)
   {
