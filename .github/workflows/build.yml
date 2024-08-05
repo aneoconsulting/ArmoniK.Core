@@ -727,7 +727,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Run Bench test tasks - many tasks (400)
         timeout-minutes: 3
@@ -836,7 +835,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Build client
         run: |
@@ -909,7 +907,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 3
@@ -923,7 +920,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Show logs
         if: always()
@@ -981,7 +977,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just tag=${VERSION} object=redis deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 3
@@ -995,7 +990,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Health Check Test when database is down
         timeout-minutes: 10
@@ -1018,7 +1012,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Health Check Test when queue is down
         timeout-minutes: 10
@@ -1041,7 +1034,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Health Check Test when object is down
         timeout-minutes: 10
@@ -1064,7 +1056,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Show logs
         if: always()

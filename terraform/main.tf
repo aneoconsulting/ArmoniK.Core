@@ -1,7 +1,7 @@
 module "fluenbit" {
-  source  = "./modules/monitoring/fluentbit"
-  image   = var.log_driver_image
-  network = docker_network.armonik.id
+  source          = "./modules/monitoring/fluentbit"
+  image           = var.log_driver_image
+  network         = docker_network.armonik.id
 }
 
 module "seq" {

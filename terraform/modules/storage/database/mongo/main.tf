@@ -13,10 +13,9 @@ resource "docker_container" "database" {
     name = var.network
   }
 
-  mounts {
-    type   = "bind"
-    target = "/docker-entrypoint-initdb.d/"
-    source = abspath("${path.root}/mongodb")
+  upload {
+    file = "/mongo-init.js"
+    source = abspath("${path.root}/mongodb/mongo-init.js")
   }
 
   ports {
@@ -37,10 +36,16 @@ resource "docker_container" "database" {
 
 }
 
-resource "null_resource" "partitions_in_db" {
+resource "null_resource" "init_replica" {
+  provisioner "local-exec" {
+    command = "docker exec ${docker_container.database.name} mongosh mongodb://${docker_container.database.name}:27017/${var.mongodb_params.database_name} /mongo-init.js"
+  }
+}
 
+resource "null_resource" "partitions_in_db" {
   for_each = var.partition_list
   provisioner "local-exec" {
-    command = "docker run --net ${var.network} --rm rtsp/mongosh mongosh mongodb://database:27017/${docker_container.database.name} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
+    command = "docker run --net ${var.network} --rm rtsp/mongosh mongosh mongodb://${docker_container.database.name}:27017/${var.mongodb_params.database_name} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
   }
+  depends_on = [ null_resource.init_replica ]
 }
