@@ -6,8 +6,10 @@ RUN groupadd --gid 5000 armonikuser \
  && mkdir /app \
  && chown -R armonikuser: /app
 USER armonikuser
+ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS base-windows
+ENTRYPOINT [ "C:\Program Files\dotnet\dotnet.exe" ]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
@@ -31,4 +33,4 @@ RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -
 FROM base-${TARGETOS} as final
 WORKDIR /app
 COPY --from=build /app/build .
-ENTRYPOINT ["dotnet", "test", "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.dll"]
+CMD ["test", "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.dll"]

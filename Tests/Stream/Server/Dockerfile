@@ -7,8 +7,10 @@ USER armonikuser
 ENV ASPNETCORE_URLS http://+:1080;https://+1443
 EXPOSE 1080
 EXPOSE 1443
+ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS base-windows
+ENTRYPOINT [ "C:\Program Files\dotnet\dotnet.exe" ]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
@@ -27,4 +29,4 @@ RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Extensions.Common.StreamWrapper.T
 FROM base-${TARGETOS} AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.dll"]
+CMD ["ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.dll"]

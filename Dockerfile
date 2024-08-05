@@ -2,8 +2,10 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base-linux
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
 RUN mkdir /cache /local_storage && chown armonikuser: /cache /local_storage
 USER armonikuser
+ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
+ENTRYPOINT [ "C:\Program Files\dotnet\dotnet.exe" ]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION=1.0.0.0
@@ -88,7 +90,7 @@ WORKDIR /app
 COPY --from=build /app/publish/polling_agent .
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Compute.PollingAgent.dll"]
+CMD ["ArmoniK.Core.Compute.PollingAgent.dll"]
 
 
 FROM base-${TARGETOS} as metrics
@@ -96,7 +98,7 @@ WORKDIR /app
 COPY --from=build /app/publish/metrics .
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Metrics.dll"]
+CMD ["ArmoniK.Core.Control.Metrics.dll"]
 
 
 FROM base-${TARGETOS} as partition_metrics
@@ -104,7 +106,7 @@ WORKDIR /app
 COPY --from=build /app/publish/partition_metrics .
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.PartitionMetrics.dll"]
+CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base-${TARGETOS} as submitter
@@ -119,4 +121,4 @@ COPY --from=build /app/publish/submitter .
 ENV ASPNETCORE_URLS http://+:1080, http://+:1081
 EXPOSE 1080
 EXPOSE 1081
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Submitter.dll"]
+CMD ["ArmoniK.Core.Control.Submitter.dll"]

@@ -4,8 +4,10 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base-linux
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
 RUN mkdir /cache && chown armonikuser: /cache
 USER armonikuser
+ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
+ENTRYPOINT [ "C:\Program Files\dotnet\dotnet.exe" ]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
@@ -23,4 +25,4 @@ FROM base-${TARGETOS} AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 1080
-ENTRYPOINT ["dotnet", "ArmoniK.Samples.HtcMock.Server.dll"]
+CMD ["ArmoniK.Samples.HtcMock.Server.dll"]

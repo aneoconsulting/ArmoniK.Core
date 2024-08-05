@@ -3,8 +3,10 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base-linux
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
 USER armonikuser
+ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-windowsservercore-ltsc2022 AS base-windows
+ENTRYPOINT [ "C:\Program Files\dotnet\dotnet.exe" ]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
@@ -23,4 +25,4 @@ RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Samples.HtcMock.Client.csproj" --
 FROM base-${TARGETOS} AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "ArmoniK.Samples.HtcMock.Client.dll"]
+CMD ["ArmoniK.Samples.HtcMock.Client.dll"]
