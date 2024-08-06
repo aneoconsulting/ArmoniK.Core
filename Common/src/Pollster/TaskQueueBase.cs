@@ -26,26 +26,14 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public abstract class TaskQueueBase
 {
-  private readonly Channel<TaskHandler> channel_;
-
-
-  private readonly Queue<Exception> exceptions_ = new();
-  private readonly bool             singleReader_;
+  private readonly Queue<Exception>                                           exceptions_ = new();
+  private          TaskCompletionSource<(TaskHandler, TaskCompletionSource)>? tcs_        = new();
 
   /// <summary>
   ///   Create an instance
   /// </summary>
-  /// <param name="singleReader">whether only one reader can retrieve item from the queue</param>
-  public TaskQueueBase(bool singleReader)
+  public TaskQueueBase()
   {
-    singleReader_ = singleReader;
-    channel_ = Channel.CreateBounded<TaskHandler>(new BoundedChannelOptions(1)
-                                                  {
-                                                    Capacity     = 1,
-                                                    FullMode     = BoundedChannelFullMode.Wait,
-                                                    SingleReader = singleReader,
-                                                    SingleWriter = true,
-                                                  });
   }
 
   /// <summary>
@@ -57,55 +45,41 @@ public abstract class TaskQueueBase
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   public async Task WriteAsync(TaskHandler       handler,
+                               TimeSpan          timeout,
                                CancellationToken cancellationToken)
-    => await channel_.Writer.WriteAsync(handler,
-                                        cancellationToken)
-                     .ConfigureAwait(false);
-
-  /// <summary>
-  ///   Wait for the availability of the next write.
-  ///   Remove and dispose the current handler if timeout expires.
-  /// </summary>
-  /// <param name="timeout">Timeout before the handler is removed and disposed</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  /// <exception cref="InvalidOperationException">if this method is used when the queue is in single mode</exception>
-  public async Task WaitForNextWriteAsync(TimeSpan          timeout,
-                                          CancellationToken cancellationToken)
   {
-    if (singleReader_)
+    var tcs = tcs_;
+    if (tcs is null)
     {
-      throw new InvalidOperationException("Cannot use this method in single reader mode");
+      throw new ChannelClosedException("Reader has been closed");
     }
 
-    using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    cts.CancelAfter(timeout);
+    var returnTcs = new TaskCompletionSource();
+    tcs.SetResult((handler, returnTcs));
+
+    if (tcs_ is null)
+    {
+      throw new ChannelClosedException("Reader has been closed");
+    }
 
     try
     {
-      // block until handler is consumed or token is cancelled
-      await channel_.Writer.WaitToWriteAsync(cts.Token)
-                    .ConfigureAwait(false);
+      await returnTcs.Task.WaitAsync(timeout,
+                                     cancellationToken)
+                     .ConfigureAwait(false);
     }
-    catch (Exception e)
+    catch (OperationCanceledException)
     {
-      // Consumer took too long to retrieve the handler or there was an unrecoverable error
-      // so we remove the handler from the channel and dispose it.
-      if (channel_.Reader.TryRead(out var handler))
-      {
-        await handler.ReleaseAndPostponeTask()
-                     .ConfigureAwait(false);
-        await handler.DisposeAsync()
-                     .ConfigureAwait(false);
-      }
-
-      // if the wait was cancelled because it reached the timeout, we ignore the error
-      if (e is not OperationCanceledException || !cts.IsCancellationRequested)
+      var oldTcs = Interlocked.CompareExchange(ref tcs_,
+                                               new TaskCompletionSource<(TaskHandler, TaskCompletionSource)>(),
+                                               tcs);
+      if (ReferenceEquals(oldTcs,
+                          tcs))
       {
         throw;
       }
+
+      await returnTcs.Task.ConfigureAwait(false);
     }
   }
 
@@ -116,15 +90,56 @@ public abstract class TaskQueueBase
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public async Task<TaskHandler> ReadAsync(CancellationToken cancellationToken)
-    => await channel_.Reader.ReadAsync(cancellationToken)
-                     .ConfigureAwait(false);
+  public async Task<TaskHandler> ReadAsync(TimeSpan          timeout,
+                                           CancellationToken cancellationToken)
+  {
+    var tcs = tcs_;
+    if (tcs is null)
+    {
+      throw new ChannelClosedException("Writer has been closed");
+    }
+
+    var (handler, returnTcs) = await tcs.Task.WaitAsync(timeout,
+                                                        cancellationToken)
+                                        .ConfigureAwait(false);
+
+    Interlocked.CompareExchange(ref tcs_,
+                                new TaskCompletionSource<(TaskHandler, TaskCompletionSource)>(),
+                                tcs);
+
+    returnTcs.SetResult();
+
+    return handler;
+  }
 
   /// <summary>
   ///   Close Queue
   /// </summary>
-  public void Close()
-    => channel_.Writer.Complete();
+  public void CloseReader()
+  {
+    var task = Interlocked.Exchange(ref tcs_,
+                                    null)
+                          ?.Task;
+
+    if (task is not null && task.IsCompletedSuccessfully)
+    {
+      var (_, returnTcs) = task.GetAwaiter()
+                               .GetResult();
+
+      returnTcs.SetException(new ChannelClosedException("Writer has been closed"));
+    }
+  }
+
+  /// <summary>
+  ///   Close Queue
+  /// </summary>
+  public void CloseWriter()
+  {
+    var tcs = Interlocked.Exchange(ref tcs_,
+                                   null);
+
+    tcs?.SetException(new ChannelClosedException("Writer has been closed"));
+  }
 
   /// <summary>
   ///   Add an exception in the internal exception list
