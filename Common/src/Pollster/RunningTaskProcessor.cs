@@ -59,7 +59,7 @@ public class RunningTaskProcessor : BackgroundService
         TaskHandler taskHandler;
         try
         {
-          taskHandler = await runningTaskQueue_.ReadAsync(exceptionManager_.EarlyCancellationToken)
+          taskHandler = await runningTaskQueue_.ReadAsync(exceptionManager_.LateCancellationToken)
                                                .ConfigureAwait(false);
         }
         catch (OperationCanceledException)

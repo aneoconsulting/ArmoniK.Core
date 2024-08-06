@@ -1606,7 +1606,7 @@ public class TaskHandlerTest
                     await testServiceProvider.TaskTable.GetTaskStatus(taskId)
                                              .ConfigureAwait(false));
 
-    Assert.AreEqual(QueueMessageStatus.Processed,
+    Assert.AreEqual(QueueMessageStatus.Cancelled,
                     sqmh.Status);
   }
 }
