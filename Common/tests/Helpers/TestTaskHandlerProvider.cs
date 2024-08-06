@@ -31,6 +31,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
@@ -157,7 +158,8 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
-           .AddSingleton<GraceDelayCancellationSource>()
+           .AddSingleton<ExceptionManager.Options>()
+           .AddSingleton<ExceptionManager>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
@@ -176,7 +178,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      () =>
                                                      {
                                                      },
-                                                     provider.GetRequiredService<IHostApplicationLifetime>(),
+                                                     provider.GetRequiredService<ExceptionManager>(),
                                                      provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
            .AddSingleton<DataPrefetcher>();
 

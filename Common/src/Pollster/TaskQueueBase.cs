@@ -16,8 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -27,10 +25,7 @@ namespace ArmoniK.Core.Common.Pollster;
 public abstract class TaskQueueBase
 {
   private readonly Channel<TaskHandler> channel_;
-
-
-  private readonly Queue<Exception> exceptions_ = new();
-  private readonly bool             singleReader_;
+  private readonly bool                 singleReader_;
 
   /// <summary>
   ///   Create an instance
@@ -125,29 +120,4 @@ public abstract class TaskQueueBase
   /// </summary>
   public void Close()
     => channel_.Writer.Complete();
-
-  /// <summary>
-  ///   Add an exception in the internal exception list
-  /// </summary>
-  /// <param name="e">the exception to add</param>
-  public void AddException(Exception e)
-    => exceptions_.Enqueue(e);
-
-  /// <summary>
-  ///   Get and remove an exception from the internal list of exception
-  /// </summary>
-  /// <param name="e">the exception to return</param>
-  /// <returns>
-  ///   Whether there is an exception in the internal list
-  /// </returns>
-  public bool RemoveException([MaybeNullWhen(false)] out Exception e)
-  {
-    var r = exceptions_.Count > 0;
-
-    e = r
-          ? exceptions_.Dequeue()
-          : null;
-
-    return r;
-  }
 }

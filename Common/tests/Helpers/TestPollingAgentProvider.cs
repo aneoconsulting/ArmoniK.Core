@@ -52,10 +52,9 @@ public class TestPollingAgentProvider : IDisposable
   private readonly        WebApplication app_;
   private readonly        LoggerFactory  loggerFactory_;
 
-  private readonly CancellationTokenSource pollsterCancellationTokenSource_ = new();
-  private readonly Task                    pollsterRunningTask_;
-  private readonly IMongoRunner            runner_;
-  public readonly  ISubmitter              Submitter;
+  private readonly Task         pollsterRunningTask_;
+  private readonly IMongoRunner runner_;
+  public readonly  ISubmitter   Submitter;
 
 
   public TestPollingAgentProvider(IWorkerStreamHandler workerStreamHandler)
@@ -131,16 +130,14 @@ public class TestPollingAgentProvider : IDisposable
     sessionTable.Init(CancellationToken.None)
                 .Wait();
 
-    pollsterRunningTask_ = Task.Factory.StartNew(() => pollster.MainLoop(pollsterCancellationTokenSource_.Token),
+    pollsterRunningTask_ = Task.Factory.StartNew(() => pollster.MainLoop(),
                                                  TaskCreationOptions.LongRunning);
   }
 
   public void Dispose()
   {
-    pollsterCancellationTokenSource_?.Cancel(false);
     pollsterRunningTask_?.Wait();
     pollsterRunningTask_?.Dispose();
-    pollsterCancellationTokenSource_?.Dispose();
     (app_ as IDisposable)?.Dispose();
     loggerFactory_?.Dispose();
     runner_?.Dispose();
