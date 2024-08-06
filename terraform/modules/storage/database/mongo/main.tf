@@ -7,7 +7,7 @@ resource "docker_container" "database" {
   name  = var.mongodb_params.database_name
   image = docker_image.database.image_id
 
-  command = ["--replSet", var.mongodb_params.replica_set_name]
+  command = ["mongod", "--replSet", var.mongodb_params.replica_set_name]
 
   networks_advanced {
     name = var.network
