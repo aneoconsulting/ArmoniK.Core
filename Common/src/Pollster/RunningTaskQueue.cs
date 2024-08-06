@@ -19,8 +19,4 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public sealed class RunningTaskQueue : TaskQueueBase
 {
-  public RunningTaskQueue()
-    : base(false)
-  {
-  }
 }

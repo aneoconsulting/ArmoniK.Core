@@ -46,11 +46,14 @@ public class PostProcessor : BackgroundService
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    await using var closeReader = new Deferrer(postProcessingTaskQueue_.CloseReader);
+
     while (!token_.IsCancellationRequested)
     {
       try
       {
-        var taskHandler = await postProcessingTaskQueue_.ReadAsync(token_)
+        var taskHandler = await postProcessingTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
+                                                                   token_)
                                                         .ConfigureAwait(false);
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
