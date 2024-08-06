@@ -179,6 +179,7 @@ public class PollsterTest
 
 
   [Test]
+  [Timeout(15000)]
   public void InitializePollster()
   {
     var mockStreamHandler    = new Mock<IWorkerStreamHandler>();
@@ -272,6 +273,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(15000)]
   public async Task InitShouldSucceed()
   {
     var mockAgentHandler = new Mock<IAgentHandler>();
@@ -307,6 +309,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(10000)]
   public async Task InitShouldFail()
   {
     var mockAgentHandler = new Mock<IAgentHandler>();
@@ -370,6 +373,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(10000)]
   public async Task RunThenCancelPollster()
   {
     var mockStreamHandler    = new Mock<IWorkerStreamHandler>();
@@ -435,6 +439,7 @@ public class PollsterTest
 
 
   [Test]
+  [Timeout(10000)]
   public async Task ExecuteTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -477,6 +482,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(10000)]
   public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -525,6 +531,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(30000)]
   public async Task CancelLongTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -643,6 +650,7 @@ public class PollsterTest
 
   [Test]
   [TestCaseSource(nameof(ExecuteTooManyErrorShouldFailTestCase))]
+  [Timeout(10000)]
   public async Task ExecuteTooManyErrorShouldFail(Mock<IWorkerStreamHandler> mockStreamHandler,
                                                   Mock<IPullQueueStorage>    mockPullQueueStorage,
                                                   Mock<IAgentHandler>        mockAgentHandler)
@@ -668,6 +676,7 @@ public class PollsterTest
 
 
   [Test]
+  [Timeout(10000)]
   public async Task UnavailableWorkerShouldFail()
   {
     var mockPullQueueStorage = new SimplePullQueueStorageChannel();
