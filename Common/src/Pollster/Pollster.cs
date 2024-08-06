@@ -409,16 +409,13 @@ public class Pollster : IInitializable
                                .ConfigureAwait(false);
 
               await runningTaskQueue_.WriteAsync(taskHandler,
+                                                 pollsterOptions_.TimeoutBeforeNextAcquisition,
                                                  cts.Token)
                                      .ConfigureAwait(false);
 
               // TaskHandler has been successfully sent to the next stage of the pipeline
               // So remove the automatic dispose of the TaskHandler
               taskHandlerDispose.Reset();
-
-              await runningTaskQueue_.WaitForNextWriteAsync(pollsterOptions_.TimeoutBeforeNextAcquisition,
-                                                            cts.Token)
-                                     .ConfigureAwait(false);
 
               // If the task was successful, we can remove a failure
               if (recordedErrors.Count > 0)
@@ -463,7 +460,7 @@ public class Pollster : IInitializable
     finally
     {
       logger_.LogWarning("End of Pollster main loop");
-      runningTaskQueue_.Close();
+      runningTaskQueue_.CloseWriter();
       endLoopReached_ = true;
       lifeTime_.StopApplication();
     }

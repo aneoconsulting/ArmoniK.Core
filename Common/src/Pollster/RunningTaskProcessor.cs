@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -49,7 +49,8 @@ public class RunningTaskProcessor : BackgroundService
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-    await using var close = new Deferrer(postProcessingTaskQueue_.Close);
+    await using var closeWriter = new Deferrer(postProcessingTaskQueue_.CloseWriter);
+    await using var closeReader = new Deferrer(runningTaskQueue_.CloseReader);
 
     logger_.LogDebug("Start running task processing service");
     while (!token_.IsCancellationRequested)
@@ -61,7 +62,8 @@ public class RunningTaskProcessor : BackgroundService
           runningTaskQueue_.AddException(exception);
         }
 
-        var taskHandler = await runningTaskQueue_.ReadAsync(token_)
+        var taskHandler = await runningTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
+                                                            token_)
                                                  .ConfigureAwait(false);
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
@@ -73,6 +75,7 @@ public class RunningTaskProcessor : BackgroundService
         await taskHandler.ExecuteTask()
                          .ConfigureAwait(false);
         await postProcessingTaskQueue_.WriteAsync(taskHandler,
+                                                  Timeout.InfiniteTimeSpan,
                                                   token_)
                                       .ConfigureAwait(false);
 
