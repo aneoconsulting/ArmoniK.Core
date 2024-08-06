@@ -86,6 +86,8 @@ public class ExceptionManager : IDisposable
   public CancellationToken LateCancellationToken
     => lateCts_.Token;
 
+  public bool Failed { get; private set; }
+
   public void Dispose()
   {
     foreach (var disposable in disposables_)
@@ -114,9 +116,9 @@ public class ExceptionManager : IDisposable
       using var scope = logger.BeginScope("Exception #{NbError}/{MaxError}",
                                           nbError,
                                           maxError_);
-      Action<ILogger, Exception, string, object?[]> log = nbError <= maxError_
-                                                            ? LoggerExtensions.LogError
-                                                            : LoggerExtensions.LogDebug;
+      Action<ILogger, Exception?, string, object?[]> log = nbError <= maxError_
+                                                             ? LoggerExtensions.LogError
+                                                             : LoggerExtensions.LogDebug;
 
       log.Invoke(logger,
                  e,
@@ -127,6 +129,7 @@ public class ExceptionManager : IDisposable
     if (nbError == maxError_)
     {
       logger_?.LogCritical("Stop Application after too many errors");
+      Failed = true;
       earlyCts_.Cancel();
     }
   }
@@ -144,9 +147,9 @@ public class ExceptionManager : IDisposable
     if (logger is not null)
     {
       using var scope = logger.BeginScope("Fatal Exception");
-      Action<ILogger, Exception, string, object?[]> log = nbError <= maxError_
-                                                            ? LoggerExtensions.LogCritical
-                                                            : LoggerExtensions.LogDebug;
+      Action<ILogger, Exception?, string, object?[]> log = nbError <= maxError_
+                                                             ? LoggerExtensions.LogCritical
+                                                             : LoggerExtensions.LogDebug;
 
       log.Invoke(logger,
                  e,
@@ -154,6 +157,7 @@ public class ExceptionManager : IDisposable
                  args);
     }
 
+    Failed = true;
     earlyCts_.Cancel();
   }
 

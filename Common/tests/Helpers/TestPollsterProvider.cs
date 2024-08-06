@@ -18,8 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
@@ -50,19 +52,25 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
 {
-  private const           string                   DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
-  private readonly        WebApplication           app_;
-  private readonly        IMongoClient             client_;
-  private readonly        TimeSpan?                graceDelay_;
-  private readonly        IObjectStorage           objectStorage_;
-  public readonly         IPartitionTable          PartitionTable;
-  public readonly         Common.Pollster.Pollster Pollster;
-  public readonly         IResultTable             ResultTable;
-  private readonly        IMongoRunner             runner_;
-  private readonly        ISessionTable            sessionTable_;
-  public readonly         ISubmitter               Submitter;
-  public readonly         ITaskTable               TaskTable;
+  private const           string         DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
+  private readonly        WebApplication app_;
+  private readonly        IMongoClient   client_;
+
+  [SuppressMessage("Usage",
+                   "CA2213: Disposable fields must be disposed")]
+  public readonly ExceptionManager ExceptionManager;
+
+  private readonly TimeSpan?                graceDelay_;
+  public readonly  IHostApplicationLifetime Lifetime;
+  private readonly IObjectStorage           objectStorage_;
+  public readonly  IPartitionTable          PartitionTable;
+  public readonly  Common.Pollster.Pollster Pollster;
+  public readonly  IResultTable             ResultTable;
+  private readonly IMongoRunner             runner_;
+  private readonly ISessionTable            sessionTable_;
+  public readonly  ISubmitter               Submitter;
+  public readonly  ITaskTable               TaskTable;
 
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
@@ -178,13 +186,15 @@ public class TestPollsterProvider : IDisposable
     app_ = builder.Build();
     app_.Start();
 
-    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
-    Pollster       = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
-    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
+    ResultTable      = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable        = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable   = app_.Services.GetRequiredService<IPartitionTable>();
+    sessionTable_    = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter        = app_.Services.GetRequiredService<ISubmitter>();
+    Pollster         = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
+    objectStorage_   = app_.Services.GetRequiredService<IObjectStorage>();
+    ExceptionManager = app_.Services.GetRequiredService<ExceptionManager>();
+    Lifetime         = app_.Lifetime;
 
     ResultTable.Init(CancellationToken.None)
                .Wait();
@@ -206,4 +216,14 @@ public class TestPollsterProvider : IDisposable
     runner_?.Dispose();
     GC.SuppressFinalize(this);
   }
+
+  public Task StopApplicationAfter(TimeSpan delay = default)
+    => Task.Run(async () =>
+                {
+                  await Task.Delay(delay,
+                                   ExceptionManager.EarlyCancellationToken)
+                            .ConfigureAwait(false);
+
+                  Lifetime.StopApplication();
+                });
 }

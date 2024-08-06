@@ -56,8 +56,17 @@ public class RunningTaskProcessor : BackgroundService
     {
       try
       {
-        var taskHandler = await runningTaskQueue_.ReadAsync(exceptionManager_.EarlyCancellationToken)
-                                                 .ConfigureAwait(false);
+        TaskHandler taskHandler;
+        try
+        {
+          taskHandler = await runningTaskQueue_.ReadAsync(exceptionManager_.EarlyCancellationToken)
+                                               .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+          break;
+        }
+
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
         var taskInfo = taskHandler.GetAcquiredTaskInfo();

@@ -119,7 +119,6 @@ public class Pollster : IInitializable
     meterHolder_           = meterHolder;
     ownerPodId_            = identifier.OwnerPodId;
     ownerPodName_          = identifier.OwnerPodName;
-    Failed                 = false;
 
     var started = DateTime.UtcNow;
     meterHolder_.Meter.CreateObservableCounter("uptime",
@@ -158,12 +157,6 @@ public class Pollster : IInitializable
 
   public ICollection<string> TaskProcessing
     => taskProcessingDict_.Keys;
-
-  /// <summary>
-  ///   Is true when the MainLoop exited with an error
-  ///   Used in Unit tests
-  /// </summary>
-  public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
     => await Task.WhenAll(pullQueueStorage_.Init(cancellationToken),
@@ -258,7 +251,7 @@ public class Pollster : IInitializable
     }
   }
 
-  public async Task MainLoop(CancellationToken cancellationToken)
+  public async Task MainLoop()
   {
     try
     {
@@ -420,7 +413,6 @@ public class Pollster : IInitializable
     }
     catch (Exception e)
     {
-      Failed = true;
       exceptionManager_.FatalError(logger_,
                                    e,
                                    "Error in pollster");
