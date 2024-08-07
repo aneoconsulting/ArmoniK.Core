@@ -30,13 +30,11 @@ resource "docker_container" "fluentbit" {
   ports {
     internal = 24224
     external = var.exposed_port
-    ip       = var.mask
   }
 
   ports {
     internal = 24224
     external = var.exposed_port
     protocol = "udp"
-    ip       = var.mask
   }
 }
