@@ -525,7 +525,7 @@ jobs:
         uses: extractions/setup-just@v1
 
       - name: Setup Terraform
-        run: choco install terraform
+        run: choco install terraform mongodb-shell
 
       - name: Deploy Core
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=pubsub deploy

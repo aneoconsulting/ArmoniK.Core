@@ -117,6 +117,12 @@ export TF_VAR_log_driver_image:= if os_family() == "windows" {
   "fluent/fluent-bit:latest"
 }
 
+export TF_VAR_mongodb_params:= if os_family() == "windows" {
+  '{"windows": "true"}'
+} else {
+  '{}'
+}
+
 # List recipes and their usage
 @default:
   just --list

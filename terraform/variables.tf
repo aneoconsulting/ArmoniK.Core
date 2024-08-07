@@ -22,6 +22,7 @@ variable "mongodb_params" {
     use_direct_connection    = optional(bool, true)
     database_name            = optional(string, "database")
     exposed_port             = optional(number, 27017)
+    windows                  = optional(bool, false)
   })
   default = {}
 }
