@@ -467,6 +467,11 @@ internal static class Program
     var results = resultChunk.SelectMany(x => x)
                              .ToList();
 
+    if (benchOptions.ExitAfterSubmission)
+    {
+      return;
+    }
+
     var taskCreated = Stopwatch.GetTimestamp();
 
     await channelPool.WithInstanceAsync(async channel => await new Events.EventsClient(channel).WaitForResultsAsync(createSessionReply.SessionId,
