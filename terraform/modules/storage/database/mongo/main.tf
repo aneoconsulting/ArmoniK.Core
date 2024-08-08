@@ -41,7 +41,7 @@ resource "null_resource" "wait_linux" {
 
 resource "null_resource" "wait_windows" {
   provisioner "local-exec" {
-    command    = "timeout /t 5"
+    command    = "timeout /t 15"
     on_failure = continue
   }
   depends_on = [docker_container.database]
