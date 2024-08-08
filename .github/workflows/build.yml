@@ -521,11 +521,15 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Install just
-        uses: extractions/setup-just@v1
-
       - name: Setup Terraform
-        run: choco install terraform mongodb-shell rabbitmq
+        run: choco install terraform mongodb-shell rabbitmq 7zip just
+
+      - name: Setup AWS cli
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       - name: Put rabbitmq cli in env
         run: setx /M PATH "%PATH%;C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.6\sbin"
@@ -617,7 +621,18 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
-
+      - name: Collect docker container logs
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+        if: always()
+        with:
+          dest: 'container-logs'
+          shell: powershell
+      - name: Zip docker container logs
+        if: always()
+        run: 7z a logs.7z container-logs
+      - name: Upload docker container logs
+        if: always()
+        run: aws --debug s3 cp logs.7z s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-container-logs.zip
 
 
   testConnectivity:
