@@ -31,19 +31,8 @@ resource "docker_container" "database" {
   }
 }
 
-resource "null_resource" "wait_linux" {
-  provisioner "local-exec" {
-    command    = "echo ok"
-    on_failure = continue
-  }
-  depends_on = [docker_container.database]
-}
-
-resource "null_resource" "wait_windows" {
-  provisioner "local-exec" {
-    command    = "timeout /t 15"
-    on_failure = continue
-  }
+resource "time_sleep" "wait" {
+  create_duration = var.mongodb_params.windows ? "15s" : "0s"
   depends_on = [docker_container.database]
 }
 
@@ -58,7 +47,7 @@ resource "null_resource" "init_replica" {
   provisioner "local-exec" {
     command = "${local.prefix_run} --eval 'rs.initiate()'"
   }
-  depends_on = [null_resource.wait_linux, null_resource.wait_windows]
+  depends_on = [time_sleep.wait]
 }
 
 resource "null_resource" "partitions_in_db" {
