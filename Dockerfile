@@ -1,5 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base
-RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled as base
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION=1.0.0.0
@@ -80,8 +79,7 @@ WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
 WORKDIR /app
 COPY --from=build /app/publish/polling_agent .
-RUN mkdir /cache /local_storage && chown armonikuser: /cache /local_storage
-USER armonikuser
+USER $APP_UID
 
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
@@ -92,7 +90,7 @@ ENTRYPOINT ["dotnet", "ArmoniK.Core.Compute.PollingAgent.dll"]
 FROM base as metrics
 WORKDIR /app
 COPY --from=build /app/publish/metrics .
-USER armonikuser
+USER $APP_UID
 
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
@@ -103,7 +101,7 @@ ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Metrics.dll"]
 FROM base as partition_metrics
 WORKDIR /app
 COPY --from=build /app/publish/partition_metrics .
-USER armonikuser
+USER $APP_UID
 
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
@@ -120,8 +118,7 @@ WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
 WORKDIR /app
 COPY --from=build /app/publish/submitter .
-RUN mkdir /local_storage && chown armonikuser: /local_storage
-USER armonikuser
+USER $APP_UID
 
 ENV ASPNETCORE_URLS http://+:1080, http://+:1081
 EXPOSE 1080
