@@ -17,11 +17,23 @@ resource "docker_container" "database" {
     internal = 27017
     external = var.mongodb_params.exposed_port
   }
+
+  wait = !var.mongodb_params.windows
+
+  dynamic "healthcheck" {
+    for_each = var.mongodb_params.windows ? [] : [1]
+    content {
+      test = [ "CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok" ]
+      interval = "3s"
+      retries = "2"
+      timeout = "2s"
+    }
+  }
 }
 
 resource "null_resource" "wait_linux" {
   provisioner "local-exec" {
-    command    = "sleep 5"
+    command    = "echo ok"
     on_failure = continue
   }
   depends_on = [docker_container.database]
