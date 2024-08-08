@@ -1,7 +1,7 @@
 module "fluenbit" {
-  source          = "./modules/monitoring/fluentbit"
-  image           = var.log_driver_image
-  network         = docker_network.armonik.id
+  source  = "./modules/monitoring/fluentbit"
+  image   = var.log_driver_image
+  network = docker_network.armonik.id
 }
 
 module "seq" {
@@ -55,8 +55,9 @@ module "object_minio" {
 }
 
 module "object_local" {
-  source = "./modules/storage/object/local"
-  count  = var.object_storage.name == "local" ? 1 : 0
+  source     = "./modules/storage/object/local"
+  count      = var.object_storage.name == "local" ? 1 : 0
+  local_path = var.object_storage.local_storage_path
 }
 
 module "queue_rabbitmq" {

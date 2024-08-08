@@ -48,13 +48,15 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 }
 
 # Sets the object storage
-export TF_VAR_object_storage := if object == "redis" {
-  '{ name = "redis", image = "redis:bullseye" }'
+object_storage := if object == "redis" {
+  '{ name = "redis", image = "redis:bullseye" '
 } else if object == "minio" {
-  '{ name = "minio", image = "quay.io/minio/minio" }'
+  '{ name = "minio", image = "quay.io/minio/minio" '
 } else {
-  '{ name = "local", image = "" }'
+  '{ name = "local", image = "" '
 }
+
+export TF_VAR_object_storage := object_storage + if os_family() == "windows" { ', "local_storage_path" : "c:/local_storage" }' } else {  '}' }
 
 # Defines worker and environment variables for deployment
 image_worker := if worker == "stream" {
@@ -101,7 +103,6 @@ export BENCH_CLIENT_IMAGE          := image_client_bench + ":" + tag
 export CRASHINGWORKER_CLIENT_IMAGE := image_client_crashingworker + ":" + tag
 
 export TF_VAR_submitter                       := '{ image = "' + image_submitter + '" }'
-export TF_VAR_compute_plane                   := '{ polling_agent = { image = "' + image_polling_agent + '" }, worker = {}}'
 export TF_VAR_armonik_metrics_image           := image_metrics
 export TF_VAR_armonik_partition_metrics_image := image_partition_metrics
 
@@ -121,6 +122,12 @@ export TF_VAR_mongodb_params:= if os_family() == "windows" {
   '{"windows": "true"}'
 } else {
   '{}'
+}
+
+export TF_VAR_compute_plane:= if os_family() == "windows" {
+  '{ "polling_agent" : { "image" : "' + image_polling_agent + '", "shared_socket" : "c:/cache", "shared_data" : "c:/cache" }, "worker" = {}}'
+} else {
+  '{ "polling_agent" : { "image" : "' + image_polling_agent + '" }, "worker" = {}}'
 }
 
 # List recipes and their usage

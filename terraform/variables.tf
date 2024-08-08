@@ -54,12 +54,12 @@ variable "object_storage" {
     name  = optional(string, "local")
     image = optional(string, "")
     # used by minio :
-    host        = optional(string, "minio")
-    port        = optional(number, 9000)
-    login       = optional(string, "minioadmin")
-    password    = optional(string, "minioadmin")
-    bucket_name = optional(string, "miniobucket")
-
+    host               = optional(string, "minio")
+    port               = optional(number, 9000)
+    login              = optional(string, "minioadmin")
+    password           = optional(string, "minioadmin")
+    bucket_name        = optional(string, "miniobucket")
+    local_storage_path = optional(string, "/local_storage")
   })
   validation {
     condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
@@ -121,6 +121,11 @@ variable "compute_plane" {
       max_error_allowed    = optional(number, -1)
       worker_check_retries = optional(number, 10)
       worker_check_delay   = optional(string, "00:00:01")
+      // should also be a variable for the worker but there is no distinction between
+      // env for the agent and env for the worker
+      // They will be used for both
+      shared_socket = optional(string, "/cache")
+      shared_data   = optional(string, "/cache")
     })
   })
   default = {
