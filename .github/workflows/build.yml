@@ -525,11 +525,17 @@ jobs:
         uses: extractions/setup-just@v1
 
       - name: Setup Terraform
-        run: choco install terraform mongodb-shell
+        run: choco install terraform mongodb-shell rabbitmq
+
+      - name: Put rabbitmq cli in env
+        run: setx /M PATH "%PATH%;C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.6\sbin"
+        shell: powershell
 
       - name: Deploy Core
-        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=pubsub deploy
+        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=none deploy
         shell: powershell
+        env:
+          TF_VAR_custom_env_vars: '{ "Components__QueueAdaptorSettings__ClassName" : "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder", "Components__QueueAdaptorSettings__AdapterAbsolutePath" : "/adapters/queue/rabbit/ArmoniK.Core.Adapters.RabbitMQ.dll", "Amqp__PartitionId": "TestPartition0", "Amqp__User": "guest", "Amqp_Password": "guest", "Amqp_Host": "localhost", "Amqp_Port": "3672", "Amqp_Scheme": "AMQP" }'
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
@@ -542,7 +548,7 @@ jobs:
             -e HtcMock__SubTasksLevels=1 \
             -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+            dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
 
       - name: Run HtcMock test 100 tasks 4 levels
         timeout-minutes: 3
