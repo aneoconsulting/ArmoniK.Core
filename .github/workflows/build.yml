@@ -531,6 +531,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: pull
+        run: |
+            docker pull dockerhubaneo/armonik_control:$env:VERSION
+            docker inspect dockerhubaneo/armonik_control:$env:VERSION
+        shell: powershell
+
       - name: Put rabbitmq cli in env
         run: setx /M PATH "%PATH%;C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.6\sbin"
         shell: powershell
