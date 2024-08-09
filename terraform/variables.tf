@@ -22,6 +22,7 @@ variable "mongodb_params" {
     use_direct_connection    = optional(bool, true)
     database_name            = optional(string, "database")
     exposed_port             = optional(number, 27017)
+    windows                  = optional(bool, false)
   })
   default = {}
 }
@@ -53,12 +54,12 @@ variable "object_storage" {
     name  = optional(string, "local")
     image = optional(string, "")
     # used by minio :
-    host        = optional(string, "minio")
-    port        = optional(number, 9000)
-    login       = optional(string, "minioadmin")
-    password    = optional(string, "minioadmin")
-    bucket_name = optional(string, "miniobucket")
-
+    host               = optional(string, "minio")
+    port               = optional(number, 9000)
+    login              = optional(string, "minioadmin")
+    password           = optional(string, "minioadmin")
+    bucket_name        = optional(string, "miniobucket")
+    local_storage_path = optional(string, "/local_storage")
   })
   validation {
     condition     = can(regex("^(redis|local|minio)$", var.object_storage.name))
@@ -120,6 +121,11 @@ variable "compute_plane" {
       max_error_allowed    = optional(number, -1)
       worker_check_retries = optional(number, 10)
       worker_check_delay   = optional(string, "00:00:01")
+      // should also be a variable for the worker but there is no distinction between
+      // env for the agent and env for the worker
+      // They will be used for both
+      shared_socket = optional(string, "/cache")
+      shared_data   = optional(string, "/cache")
     })
   })
   default = {
@@ -164,6 +170,11 @@ variable "seq_image" {
   default = "datalust/seq:latest"
 }
 
+variable "enable_seq" {
+  type    = bool
+  default = true
+}
+
 variable "zipkin_image" {
   type    = string
   default = "openzipkin/zipkin:latest"
@@ -174,9 +185,19 @@ variable "grafana_image" {
   default = "grafana/grafana:latest"
 }
 
+variable "enable_grafana" {
+  type    = bool
+  default = true
+}
+
 variable "prometheus_image" {
   type    = string
   default = "prom/prometheus:latest"
+}
+
+variable "enable_prometheus" {
+  type    = bool
+  default = true
 }
 
 variable "database_image" {
@@ -194,26 +215,26 @@ variable "ingress" {
   type = object({
     image = optional(string, "nginxinc/nginx-unprivileged"),
     tag   = optional(string, "1.23.3"),
-    configs = map(object({
+    configs = optional(map(object({
       port = number,
       tls  = optional(bool, false),
       mtls = optional(bool, false),
-  })) })
-  default = {
-    configs = {
-      ingress = {
-        port = 5201
-      },
-      ingress_tls = {
-        port = 5202,
-        tls  = true
-      },
-      ingress_mtls = {
-        port = 5203,
-        tls  = true,
-        mtls = true
-      }
-  } }
+      })),
+      {
+        ingress = {
+          port = 5201
+        },
+        ingress_tls = {
+          port = 5202,
+          tls  = true
+        },
+        ingress_mtls = {
+          port = 5203,
+          tls  = true,
+          mtls = true
+      } }
+  ) })
+  default = {}
 }
 
 variable "custom_env_vars" {

@@ -5,18 +5,21 @@ module "fluenbit" {
 }
 
 module "seq" {
+  count   = var.enable_seq ? 1 : 0
   source  = "./modules/monitoring/seq"
   image   = var.seq_image
   network = docker_network.armonik.id
 }
 
 module "grafana" {
+  count   = var.enable_grafana ? 1 : 0
   source  = "./modules/monitoring/grafana"
   image   = var.grafana_image
   network = docker_network.armonik.id
 }
 
 module "prometheus" {
+  count               = var.enable_prometheus ? 1 : 0
   source              = "./modules/monitoring/prometheus"
   image               = var.prometheus_image
   network             = docker_network.armonik.id
@@ -52,8 +55,9 @@ module "object_minio" {
 }
 
 module "object_local" {
-  source = "./modules/storage/object/local"
-  count  = var.object_storage.name == "local" ? 1 : 0
+  source     = "./modules/storage/object/local"
+  count      = var.object_storage.name == "local" ? 1 : 0
+  local_path = var.object_storage.local_storage_path
 }
 
 module "queue_rabbitmq" {

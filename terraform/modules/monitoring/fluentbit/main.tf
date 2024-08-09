@@ -12,28 +12,29 @@ resource "docker_container" "fluentbit" {
     name = var.network
   }
 
-  mounts {
-    type   = "bind"
-    target = "/fluent-bit/etc"
-    source = abspath("${path.root}/fluent-bit/etc")
+  upload {
+    file   = "/fluent-bit/etc/fluent-bit.conf"
+    source = abspath("${path.root}/fluent-bit/etc/fluent-bit.conf")
   }
 
-  mounts {
-    type   = "bind"
-    target = "/logs"
-    source = abspath("${path.root}/logs")
+  upload {
+    file   = "/fluent-bit/etc/parsers.conf"
+    source = abspath("${path.root}/fluent-bit/etc/parsers.conf")
+  }
+
+  upload {
+    file   = "/fluent-bit/etc/append_time.lua"
+    source = abspath("${path.root}/fluent-bit/etc/append_time.lua")
   }
 
   ports {
     internal = 24224
     external = var.exposed_port
-    ip       = var.mask
   }
 
   ports {
     internal = 24224
     external = var.exposed_port
     protocol = "udp"
-    ip       = var.mask
   }
 }

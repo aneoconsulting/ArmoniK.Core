@@ -15,6 +15,7 @@ variable "mongodb_params" {
     use_direct_connection    = bool
     database_name            = string
     exposed_port             = number
+    windows                  = bool
   })
 }
 

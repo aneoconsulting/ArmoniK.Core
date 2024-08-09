@@ -10,6 +10,8 @@ variable "polling_agent" {
     max_error_allowed    = number,
     worker_check_retries = number,
     worker_check_delay   = string,
+    shared_socket        = string
+    shared_data          = string
   })
 }
 
@@ -44,7 +46,7 @@ variable "network" {
 
 variable "log_driver" {
   type = object({
-    name    = string,
-    address = string,
+    name     = string,
+    log_opts = map(string),
   })
 }
