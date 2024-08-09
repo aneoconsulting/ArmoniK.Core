@@ -632,8 +632,10 @@ jobs:
         run: 7z a logs.7z container-logs
       - name: Upload docker container logs
         if: always()
-        run: aws --debug s3 cp logs.7z s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-container-logs.zip
-
+        run: aws s3 cp logs.7z s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-container-logs.7z
+      - name: Upload armonik logs
+        if: always()
+        run: docker cp fluentd:/logs/armonik-logs.json - | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-armonik-logs.7z
 
   testConnectivity:
     needs:

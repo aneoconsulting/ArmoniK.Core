@@ -25,7 +25,7 @@ variable "metrics_env_vars" {
 
 variable "log_driver" {
   type = object({
-    name    = string,
-    address = string,
+    name     = string,
+    log_opts = map(string),
   })
 }
