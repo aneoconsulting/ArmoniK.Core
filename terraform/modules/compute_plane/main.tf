@@ -18,10 +18,7 @@ resource "docker_container" "worker" {
   env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env, local.common_env)
 
   log_driver = var.log_driver.name
-
-  log_opts = {
-    fluentd-address = var.log_driver.address
-  }
+  log_opts   = var.log_driver.log_opts
 
   restart = "unless-stopped"
 
@@ -53,10 +50,7 @@ resource "docker_container" "polling_agent" {
   env = concat(local.env, local.gen_env, local.common_env)
 
   log_driver = var.log_driver.name
-
-  log_opts = {
-    fluentd-address = var.log_driver.address
-  }
+  log_opts   = var.log_driver.log_opts
 
   ports {
     internal = 1080

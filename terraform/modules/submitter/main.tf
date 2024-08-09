@@ -14,10 +14,7 @@ resource "docker_container" "submitter" {
   env = concat(local.env, local.gen_env)
 
   log_driver = var.log_driver.name
-
-  log_opts = {
-    fluentd-address = var.log_driver.address
-  }
+  log_opts   = var.log_driver.log_opts
 
   ports {
     internal = 1080

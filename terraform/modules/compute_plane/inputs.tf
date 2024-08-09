@@ -46,7 +46,7 @@ variable "network" {
 
 variable "log_driver" {
   type = object({
-    name    = string,
-    address = string,
+    name     = string,
+    log_opts = map(string),
   })
 }
