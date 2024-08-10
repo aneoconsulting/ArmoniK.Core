@@ -10,7 +10,7 @@ EXPOSE 1443
 ENTRYPOINT [ "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022 AS base-windows
-ENTRYPOINT [ "C:\Program Files\dotnet\dotnet.exe" ]
+ENTRYPOINT ["C:\\Program Files\\dotnet\\dotnet.exe"]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG TARGETARCH
