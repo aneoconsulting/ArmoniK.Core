@@ -3,11 +3,6 @@ resource "docker_image" "queue" {
   keep_locally = true
 }
 
-resource "local_file" "plugins" {
-  content  = "[rabbitmq_management ,rabbitmq_management_agent ${local.plug}]."
-  filename = "${path.module}/plugins"
-}
-
 resource "docker_container" "queue" {
   name  = "queue"
   image = docker_image.queue.image_id
@@ -19,7 +14,6 @@ resource "docker_container" "queue" {
   ports {
     internal = 5672
     external = var.exposed_ports.amqp_connector
-    ip       = "127.0.0.1"
   }
 
   ports {
@@ -27,26 +21,13 @@ resource "docker_container" "queue" {
     external = var.exposed_ports.admin_interface
   }
 
-  wait         = true
-  wait_timeout = 30
-
-  healthcheck {
-    test         = ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
-    interval     = "10s"
-    timeout      = "5s"
-    start_period = "10s"
-    retries      = "10"
+  upload {
+    file    = "/etc/rabbitmq/enabled_plugins"
+    content = "[rabbitmq_management ,rabbitmq_management_agent ${local.plug}]."
   }
 
-  mounts {
-    type   = "bind"
-    target = "/etc/rabbitmq/enabled_plugins"
-    source = abspath("${local_file.plugins.filename}")
-  }
-
-  mounts {
-    type   = "bind"
-    target = "/etc/rabbitmq/conf.d/10-defaults.conf"
+  upload {
+    file   = "/etc/rabbitmq/conf.d/10-defaults.conf"
     source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
   }
 }

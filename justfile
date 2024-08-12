@@ -34,9 +34,17 @@ export TF_VAR_enable_prometheus := prometheus
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
-  '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
+  if os_family() == "windows" {
+    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12" }'
+  } else {
+    '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
+  }
 } else if queue == "rabbitmq091" {
-  '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+  if os_family() == "windows" {
+    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12", protocol = "amqp0_9_1" }'
+  } else {
+    '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+  }
 } else if queue == "artemis" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
 } else if queue == "activemq" {

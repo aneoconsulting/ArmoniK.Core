@@ -522,7 +522,7 @@ jobs:
           submodules: true
 
       - name: Setup Terraform
-        run: choco install terraform mongodb-shell rabbitmq 7zip just
+        run: choco install terraform mongodb-shell 7zip just
 
       - name: Setup AWS cli
         uses: aws-actions/configure-aws-credentials@v1
@@ -531,12 +531,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Put rabbitmq cli in env
-        run: setx /M PATH "%PATH%;C:\Program Files\RabbitMQ Server\rabbitmq_server-3.13.6\sbin"
-        shell: powershell
-
       - name: Deploy Core
-        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=none deploy
+        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq deploy
         shell: powershell
         env:
           TF_VAR_custom_env_vars: '{ "Components__QueueAdaptorSettings__ClassName" : "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder", "Components__QueueAdaptorSettings__AdapterAbsolutePath" : "/adapters/queue/rabbit/ArmoniK.Core.Adapters.RabbitMQ.dll", "Amqp__PartitionId": "TestPartition0", "Amqp__User": "guest", "Amqp_Password": "guest", "Amqp_Host": "localhost", "Amqp_Port": "3672", "Amqp_Scheme": "AMQP" }'
