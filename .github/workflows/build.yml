@@ -532,10 +532,8 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy Core
-        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq deploy
+        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq091 deploy
         shell: powershell
-        env:
-          TF_VAR_custom_env_vars: '{ "Components__QueueAdaptorSettings__ClassName" : "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder", "Components__QueueAdaptorSettings__AdapterAbsolutePath" : "/adapters/queue/rabbit/ArmoniK.Core.Adapters.RabbitMQ.dll", "Amqp__PartitionId": "TestPartition0", "Amqp__User": "guest", "Amqp_Password": "guest", "Amqp_Host": "localhost", "Amqp_Port": "3672", "Amqp_Scheme": "AMQP" }'
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
