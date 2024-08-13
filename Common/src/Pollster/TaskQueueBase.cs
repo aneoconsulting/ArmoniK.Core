@@ -15,17 +15,30 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#define ARMONIK_TEST_QUEUE
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+
+using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Pollster;
 
 public abstract class TaskQueueBase
 {
+#if ARMONIK_TEST_QUEUE
+  [PublicAPI]
+  public int MinDelay;
+
+  [PublicAPI]
+  public int MaxDelay;
+#endif
+
   private readonly Queue<Exception>                                           exceptions_ = new();
   private          TaskCompletionSource<(TaskHandler, TaskCompletionSource)>? tcs_        = new();
 
@@ -49,6 +62,9 @@ public abstract class TaskQueueBase
                                CancellationToken cancellationToken)
   {
     var tcs = tcs_;
+
+    await IntroduceRandomDelayInTestsAsync();
+
     if (tcs is null)
     {
       throw new ChannelClosedException("Reader has been closed");
@@ -57,10 +73,7 @@ public abstract class TaskQueueBase
     var returnTcs = new TaskCompletionSource();
     tcs.SetResult((handler, returnTcs));
 
-    if (tcs_ is null)
-    {
-      throw new ChannelClosedException("Reader has been closed");
-    }
+    await IntroduceRandomDelayInTestsAsync();
 
     try
     {
@@ -73,6 +86,8 @@ public abstract class TaskQueueBase
       var oldTcs = Interlocked.CompareExchange(ref tcs_,
                                                new TaskCompletionSource<(TaskHandler, TaskCompletionSource)>(),
                                                tcs);
+
+      await IntroduceRandomDelayInTestsAsync();
       if (ReferenceEquals(oldTcs,
                           tcs))
       {
@@ -94,6 +109,7 @@ public abstract class TaskQueueBase
                                            CancellationToken cancellationToken)
   {
     var tcs = tcs_;
+    await IntroduceRandomDelayInTestsAsync();
     if (tcs is null)
     {
       throw new ChannelClosedException("Writer has been closed");
@@ -106,6 +122,8 @@ public abstract class TaskQueueBase
     Interlocked.CompareExchange(ref tcs_,
                                 new TaskCompletionSource<(TaskHandler, TaskCompletionSource)>(),
                                 tcs);
+
+    await IntroduceRandomDelayInTestsAsync();
 
     returnTcs.SetResult();
 
@@ -120,6 +138,8 @@ public abstract class TaskQueueBase
     var task = Interlocked.Exchange(ref tcs_,
                                     null)
                           ?.Task;
+
+    IntroduceRandomDelayInTests();
 
     if (task is not null && task.IsCompletedSuccessfully)
     {
@@ -137,6 +157,8 @@ public abstract class TaskQueueBase
   {
     var tcs = Interlocked.Exchange(ref tcs_,
                                    null);
+
+    IntroduceRandomDelayInTests();
 
     tcs?.SetException(new ChannelClosedException("Writer has been closed"));
   }
@@ -164,5 +186,23 @@ public abstract class TaskQueueBase
           : null;
 
     return r;
+  }
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  private ConfiguredValueTaskAwaitable IntroduceRandomDelayInTestsAsync()
+#if ARMONIK_TEST_QUEUE
+    => new ValueTask(Task.Delay(Random.Shared.Next(MinDelay,
+                                                   MaxDelay))).ConfigureAwait(false);
+#else
+  => new ValueTask().ConfigureAwait(false);
+#endif
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  private void IntroduceRandomDelayInTests()
+  {
+#if ARMONIK_TEST_QUEUE
+    Thread.Sleep(Random.Shared.Next(MinDelay,
+                                    MaxDelay));
+#endif
   }
 }
