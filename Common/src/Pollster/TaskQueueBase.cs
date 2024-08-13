@@ -39,8 +39,9 @@ public abstract class TaskQueueBase
   public int MaxDelay;
 #endif
 
-  private readonly Queue<Exception>                                           exceptions_ = new();
-  private          TaskCompletionSource<(TaskHandler, TaskCompletionSource)>? tcs_        = new();
+  private readonly Queue<Exception>                  exceptions_ = new();
+  private          TaskCompletionSource<TaskHandler> sendTcs_    = new();
+  private          TaskCompletionSource              ackTcs_     = new();
 
   /// <summary>
   ///   Create an instance
@@ -61,41 +62,49 @@ public abstract class TaskQueueBase
                                TimeSpan          timeout,
                                CancellationToken cancellationToken)
   {
-    var tcs = tcs_;
+    var sendTcs = sendTcs_;
 
     await IntroduceRandomDelayInTestsAsync();
 
-    if (tcs is null)
-    {
-      throw new ChannelClosedException("Reader has been closed");
-    }
+    var ackTcs = ackTcs_;
 
-    var returnTcs = new TaskCompletionSource();
-    tcs.SetResult((handler, returnTcs));
+    await IntroduceRandomDelayInTestsAsync();
+
+    sendTcs.SetResult(handler);
 
     await IntroduceRandomDelayInTestsAsync();
 
     try
     {
-      await returnTcs.Task.WaitAsync(timeout,
-                                     cancellationToken)
-                     .ConfigureAwait(false);
+      await ackTcs.Task.WaitAsync(timeout,
+                                  cancellationToken)
+                  .ConfigureAwait(false);
     }
     catch (OperationCanceledException)
     {
-      var oldTcs = Interlocked.CompareExchange(ref tcs_,
-                                               new TaskCompletionSource<(TaskHandler, TaskCompletionSource)>(),
-                                               tcs);
+      // If CAS failed, it means the reader has already reset the TCS
+      // So we must wait for it to finish
+      var previousTcs = Interlocked.CompareExchange(ref sendTcs_,
+                                                    new TaskCompletionSource<TaskHandler>(),
+                                                    sendTcs);
 
       await IntroduceRandomDelayInTestsAsync();
-      if (ReferenceEquals(oldTcs,
-                          tcs))
+
+      if (ReferenceEquals(previousTcs,
+                          sendTcs))
       {
         throw;
       }
 
-      await returnTcs.Task.ConfigureAwait(false);
+      await ackTcs.Task.ConfigureAwait(false);
     }
+
+    await IntroduceRandomDelayInTestsAsync();
+
+    // If CAS fails, it means that Reader has been closed, so there is no need to replace it
+    Interlocked.CompareExchange(ref ackTcs_,
+                                new TaskCompletionSource(),
+                                ackTcs);
   }
 
   /// <summary>
@@ -108,26 +117,55 @@ public abstract class TaskQueueBase
   public async Task<TaskHandler> ReadAsync(TimeSpan          timeout,
                                            CancellationToken cancellationToken)
   {
-    var tcs = tcs_;
-    await IntroduceRandomDelayInTestsAsync();
-    if (tcs is null)
+    // Set up a timer to wait for maximum timeout, even if the writer times out just at the wrong moment
+    using var cts = timeout.Ticks switch
+                    {
+                      < 0 => null,
+                      0   => new CancellationTokenSource(0),
+                      _   => CancellationTokenSource.CreateLinkedTokenSource(cancellationToken),
+                    };
+
+    if (timeout.Ticks > 0)
     {
-      throw new ChannelClosedException("Writer has been closed");
+      cts?.CancelAfter(timeout);
     }
 
-    var (handler, returnTcs) = await tcs.Task.WaitAsync(timeout,
-                                                        cancellationToken)
-                                        .ConfigureAwait(false);
+    if (cts is not null)
+    {
+      cancellationToken = cts.Token;
+    }
 
-    Interlocked.CompareExchange(ref tcs_,
-                                new TaskCompletionSource<(TaskHandler, TaskCompletionSource)>(),
-                                tcs);
+    TaskCompletionSource<TaskHandler> sendTcs,
+                                      previousTcs = sendTcs_;
+    TaskHandler taskHandler;
+
+    do
+    {
+      sendTcs = previousTcs;
+      await IntroduceRandomDelayInTestsAsync();
+
+      taskHandler = await sendTcs.Task.WaitAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+
+      await IntroduceRandomDelayInTestsAsync();
+
+      // If CAS fails, it means that Writer has timed-out
+      // So we must continue to wait on the new TCS without resetting the timeout
+      previousTcs = Interlocked.CompareExchange(ref sendTcs_,
+                                                new TaskCompletionSource<TaskHandler>(),
+                                                sendTcs);
+    } while (!ReferenceEquals(sendTcs,
+                              previousTcs));
 
     await IntroduceRandomDelayInTestsAsync();
 
-    returnTcs.SetResult();
+    var ackTcs = ackTcs_;
 
-    return handler;
+    await IntroduceRandomDelayInTestsAsync();
+
+    ackTcs.SetResult();
+
+    return taskHandler;
   }
 
   /// <summary>
@@ -135,19 +173,16 @@ public abstract class TaskQueueBase
   /// </summary>
   public void CloseReader()
   {
-    var task = Interlocked.Exchange(ref tcs_,
-                                    null)
-                          ?.Task;
+    var ex  = new ChannelClosedException("Writer has been closed");
+    var tcs = new TaskCompletionSource();
+    tcs.SetException(ex);
+
+    tcs = Interlocked.Exchange(ref ackTcs_,
+                               tcs);
 
     IntroduceRandomDelayInTests();
 
-    if (task is not null && task.IsCompletedSuccessfully)
-    {
-      var (_, returnTcs) = task.GetAwaiter()
-                               .GetResult();
-
-      returnTcs.SetException(new ChannelClosedException("Writer has been closed"));
-    }
+    tcs.TrySetException(ex);
   }
 
   /// <summary>
@@ -155,12 +190,16 @@ public abstract class TaskQueueBase
   /// </summary>
   public void CloseWriter()
   {
-    var tcs = Interlocked.Exchange(ref tcs_,
-                                   null);
+    var ex  = new ChannelClosedException("Writer has been closed");
+    var tcs = new TaskCompletionSource<TaskHandler>();
+    tcs.SetException(ex);
+
+    tcs = Interlocked.Exchange(ref sendTcs_,
+                               tcs);
 
     IntroduceRandomDelayInTests();
 
-    tcs?.SetException(new ChannelClosedException("Writer has been closed"));
+    tcs.TrySetException(ex);
   }
 
   /// <summary>

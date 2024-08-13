@@ -52,8 +52,8 @@ public class TaskQueueTest
                           int nbWrite)
   {
     var queue = new TaskQueue();
-    queue.MinDelay = 1;
-    queue.MaxDelay = 1;
+    queue.MinDelay = 0;
+    queue.MaxDelay = 0;
 
     var reader = ReadAsync(queue,
                            nbRead)
