@@ -15,9 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -35,12 +37,30 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture(TestOf = typeof(TaskQueueBase))]
 public class TaskQueueTest
 {
-  public sealed class TaskQueue : TaskQueueBase;
+  public struct RandomDelayForTest : IRandomDelayForTest
+  {
+    public int MinDelay;
+    public int MaxDelay;
+
+
+    public ConfiguredValueTaskAwaitable WaitAsync()
+      => new ValueTask(Task.Delay(Random.Shared.Next(MinDelay,
+                                                     MaxDelay))).ConfigureAwait(false);
+
+    public void Wait()
+      => Thread.Sleep(Random.Shared.Next(MinDelay,
+                                         MaxDelay));
+  }
+
+  internal sealed class TaskQueue : TaskQueueBase<RandomDelayForTest>;
 
   [Test]
   [Timeout(1000)]
   [Repeat(100)]
-  public async Task Pouet([Values(0,
+  public async Task Pouet([Values(false,
+                                  true)]
+                          bool randomDelays,
+                          [Values(0,
                                   1,
                                   2,
                                   3)]
@@ -52,8 +72,11 @@ public class TaskQueueTest
                           int nbWrite)
   {
     var queue = new TaskQueue();
-    queue.MinDelay = 0;
-    queue.MaxDelay = 0;
+    if (randomDelays)
+    {
+      queue.RandomDelay.MinDelay = 1;
+      queue.RandomDelay.MaxDelay = 10;
+    }
 
     var reader = ReadAsync(queue,
                            nbRead)
@@ -101,8 +124,8 @@ public class TaskQueueTest
            new ApplicationLifetime(NullLogger<ApplicationLifetime>.Instance),
            null!);
 
-  private static async IAsyncEnumerable<TaskHandler> ReadAsync(TaskQueueBase queue,
-                                                               int           closeAfter)
+  private static async IAsyncEnumerable<TaskHandler> ReadAsync(TaskQueue queue,
+                                                               int       closeAfter)
   {
     var nbRead = 0;
     while (nbRead < closeAfter)
@@ -126,8 +149,8 @@ public class TaskQueueTest
     queue.CloseReader();
   }
 
-  private static async Task<int> WriteAsync(TaskQueueBase queue,
-                                            int           closeAfter)
+  private static async Task<int> WriteAsync(TaskQueue queue,
+                                            int       closeAfter)
   {
     var nbWritten = 0;
 

@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#define ARMONIK_TEST_QUEUE
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -25,23 +23,36 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-using JetBrains.Annotations;
+[assembly: InternalsVisibleTo("ArmoniK.Core.Common.Tests")]
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public abstract class TaskQueueBase
+internal interface IRandomDelayForTest
 {
-#if ARMONIK_TEST_QUEUE
-  [PublicAPI]
-  public int MinDelay;
+  public ConfiguredValueTaskAwaitable WaitAsync();
 
-  [PublicAPI]
-  public int MaxDelay;
-#endif
+  public void Wait();
+}
 
-  private readonly Queue<Exception>                  exceptions_ = new();
-  private          TaskCompletionSource<TaskHandler> sendTcs_    = new();
-  private          TaskCompletionSource              ackTcs_     = new();
+internal struct RandomDelayForTest : IRandomDelayForTest
+{
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public ConfiguredValueTaskAwaitable WaitAsync()
+    => new ValueTask().ConfigureAwait(false);
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public void Wait()
+  {
+  }
+}
+
+internal class TaskQueueBase<T>
+  where T : IRandomDelayForTest, new()
+{
+  private  TaskCompletionSource ackTcs_     = new();
+  internal T                    RandomDelay = new();
+
+  private TaskCompletionSource<TaskHandler> sendTcs_ = new();
 
   /// <summary>
   ///   Create an instance
@@ -64,15 +75,15 @@ public abstract class TaskQueueBase
   {
     var sendTcs = sendTcs_;
 
-    await IntroduceRandomDelayInTestsAsync();
+    await RandomDelay.WaitAsync();
 
     var ackTcs = ackTcs_;
 
-    await IntroduceRandomDelayInTestsAsync();
+    await RandomDelay.WaitAsync();
 
     sendTcs.SetResult(handler);
 
-    await IntroduceRandomDelayInTestsAsync();
+    await RandomDelay.WaitAsync();
 
     try
     {
@@ -88,7 +99,7 @@ public abstract class TaskQueueBase
                                                     new TaskCompletionSource<TaskHandler>(),
                                                     sendTcs);
 
-      await IntroduceRandomDelayInTestsAsync();
+      await RandomDelay.WaitAsync();
 
       if (ReferenceEquals(previousTcs,
                           sendTcs))
@@ -99,7 +110,7 @@ public abstract class TaskQueueBase
       await ackTcs.Task.ConfigureAwait(false);
     }
 
-    await IntroduceRandomDelayInTestsAsync();
+    await RandomDelay.WaitAsync();
 
     // If CAS fails, it means that Reader has been closed, so there is no need to replace it
     Interlocked.CompareExchange(ref ackTcs_,
@@ -142,12 +153,12 @@ public abstract class TaskQueueBase
     do
     {
       sendTcs = previousTcs;
-      await IntroduceRandomDelayInTestsAsync();
+      await RandomDelay.WaitAsync();
 
       taskHandler = await sendTcs.Task.WaitAsync(cancellationToken)
                                  .ConfigureAwait(false);
 
-      await IntroduceRandomDelayInTestsAsync();
+      await RandomDelay.WaitAsync();
 
       // If CAS fails, it means that Writer has timed-out
       // So we must continue to wait on the new TCS without resetting the timeout
@@ -157,11 +168,11 @@ public abstract class TaskQueueBase
     } while (!ReferenceEquals(sendTcs,
                               previousTcs));
 
-    await IntroduceRandomDelayInTestsAsync();
+    await RandomDelay.WaitAsync();
 
     var ackTcs = ackTcs_;
 
-    await IntroduceRandomDelayInTestsAsync();
+    await RandomDelay.WaitAsync();
 
     ackTcs.SetResult();
 
@@ -180,7 +191,7 @@ public abstract class TaskQueueBase
     tcs = Interlocked.Exchange(ref ackTcs_,
                                tcs);
 
-    IntroduceRandomDelayInTests();
+    RandomDelay.Wait();
 
     tcs.TrySetException(ex);
   }
@@ -197,10 +208,40 @@ public abstract class TaskQueueBase
     tcs = Interlocked.Exchange(ref sendTcs_,
                                tcs);
 
-    IntroduceRandomDelayInTests();
+    RandomDelay.Wait();
 
     tcs.TrySetException(ex);
   }
+}
+
+public abstract class TaskQueueBase
+{
+  private readonly TaskQueueBase<RandomDelayForTest> base_ = new();
+
+  private readonly Queue<Exception> exceptions_ = new();
+
+  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.WriteAsync" />
+  public Task WriteAsync(TaskHandler       handler,
+                         TimeSpan          timeout,
+                         CancellationToken cancellationToken)
+    => base_.WriteAsync(handler,
+                        timeout,
+                        cancellationToken);
+
+  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.ReadAsync" />
+  public Task<TaskHandler> ReadAsync(TimeSpan          timeout,
+                                     CancellationToken cancellationToken)
+    => base_.ReadAsync(timeout,
+                       cancellationToken);
+
+  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.CloseReader" />
+  public void CloseReader()
+    => base_.CloseReader();
+
+  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.CloseWriter" />
+  public void CloseWriter()
+    => base_.CloseWriter();
+
 
   /// <summary>
   ///   Add an exception in the internal exception list
@@ -225,23 +266,5 @@ public abstract class TaskQueueBase
           : null;
 
     return r;
-  }
-
-  [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  private ConfiguredValueTaskAwaitable IntroduceRandomDelayInTestsAsync()
-#if ARMONIK_TEST_QUEUE
-    => new ValueTask(Task.Delay(Random.Shared.Next(MinDelay,
-                                                   MaxDelay))).ConfigureAwait(false);
-#else
-  => new ValueTask().ConfigureAwait(false);
-#endif
-
-  [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  private void IntroduceRandomDelayInTests()
-  {
-#if ARMONIK_TEST_QUEUE
-    Thread.Sleep(Random.Shared.Next(MinDelay,
-                                    MaxDelay));
-#endif
   }
 }
