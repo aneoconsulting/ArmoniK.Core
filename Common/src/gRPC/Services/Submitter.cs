@@ -532,6 +532,10 @@ public class Submitter : ISubmitter
                                                                     .ConfigureAwait(false),
                                     cancellationToken);
 
+          await resultTable_.MarkAsDeleted(taskData.TaskId,
+                                           CancellationToken.None)
+                            .ConfigureAwait(false);
+
           logger_.LogInformation("Remove input payload of {task}",
                                  taskData.TaskId);
         }
