@@ -467,12 +467,15 @@ internal static class Program
     var results = resultChunk.SelectMany(x => x)
                              .ToList();
 
+    var taskCreated = Stopwatch.GetTimestamp();
+
+
     if (benchOptions.ExitAfterSubmission)
     {
+      logger.LogInformation("Tasks submitted in {Submitted}s",
+                            TimeSpan.FromTicks((taskCreated - sessionCreated) / 100));
       return;
     }
-
-    var taskCreated = Stopwatch.GetTimestamp();
 
     await channelPool.WithInstanceAsync(async channel => await new Events.EventsClient(channel).WaitForResultsAsync(createSessionReply.SessionId,
                                                                                                                     results,
