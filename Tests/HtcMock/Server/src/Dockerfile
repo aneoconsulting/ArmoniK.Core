@@ -1,6 +1,6 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS base
 WORKDIR /app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
@@ -17,8 +17,6 @@ RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Samples.HtcMock.Server.csproj" -o
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
-RUN mkdir /cache && chown armonikuser: /cache
-USER armonikuser
 EXPOSE 1080
+USER $APP_UID
 ENTRYPOINT ["dotnet", "ArmoniK.Samples.HtcMock.Server.dll"]
