@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -49,16 +50,20 @@ internal struct RandomDelayForTest : IRandomDelayForTest
 internal class TaskQueueBase<T>
   where T : IRandomDelayForTest, new()
 {
-  private  TaskCompletionSource ackTcs_     = new();
-  internal T                    RandomDelay = new();
-
-  private TaskCompletionSource<TaskHandler> sendTcs_ = new();
+  private readonly SemaphoreSlim readerSem_;
+  private readonly SemaphoreSlim writerSem_;
+  internal         T             RandomDelay = new();
+  private          bool          readerClosed_;
+  private          TaskHandler?  taskHandler_;
+  private          bool          writerClosed_;
 
   /// <summary>
   ///   Create an instance
   /// </summary>
   public TaskQueueBase()
   {
+    readerSem_ = new SemaphoreSlim(0);
+    writerSem_ = new SemaphoreSlim(0);
   }
 
   /// <summary>
@@ -73,49 +78,52 @@ internal class TaskQueueBase<T>
                                TimeSpan          timeout,
                                CancellationToken cancellationToken)
   {
-    var sendTcs = sendTcs_;
+    if (writerClosed_)
+    {
+      throw new ChannelClosedException("Writer has been closed");
+    }
+
+    taskHandler_ = handler;
 
     await RandomDelay.WaitAsync();
 
-    var ackTcs = ackTcs_;
-
-    await RandomDelay.WaitAsync();
-
-    sendTcs.SetResult(handler);
+    readerSem_.Release();
 
     await RandomDelay.WaitAsync();
 
     try
     {
-      await ackTcs.Task.WaitAsync(timeout,
-                                  cancellationToken)
-                  .ConfigureAwait(false);
-    }
-    catch (OperationCanceledException)
-    {
-      // If CAS failed, it means the reader has already reset the TCS
-      // So we must wait for it to finish
-      var previousTcs = Interlocked.CompareExchange(ref sendTcs_,
-                                                    new TaskCompletionSource<TaskHandler>(),
-                                                    sendTcs);
-
-      await RandomDelay.WaitAsync();
-
-      if (ReferenceEquals(previousTcs,
-                          sendTcs))
+      if (!await writerSem_.WaitAsync(timeout,
+                                      cancellationToken)
+                           .ConfigureAwait(false))
       {
+        throw new TimeoutException("No consumer in the allotted time");
+      }
+    }
+    catch
+    {
+      // Try to acquire the reader semaphore to reset the task handler
+      // If the acquire fails, it means the reader has acquired it after all
+      if (await readerSem_.WaitAsync(0,
+                                     CancellationToken.None)
+                          .ConfigureAwait(false))
+      {
+        // Writer semaphore will be released soon, if not already released
+        await writerSem_.WaitAsync(CancellationToken.None)
+                        .ConfigureAwait(false);
+        taskHandler_ = null;
         throw;
       }
-
-      await ackTcs.Task.ConfigureAwait(false);
     }
 
-    await RandomDelay.WaitAsync();
+    if (readerClosed_)
+    {
+      writerSem_.Release();
+      throw new ChannelClosedException("Reader has been closed");
+    }
 
-    // If CAS fails, it means that Reader has been closed, so there is no need to replace it
-    Interlocked.CompareExchange(ref ackTcs_,
-                                new TaskCompletionSource(),
-                                ackTcs);
+    // Acknowledge that write is complete
+    readerSem_.Release();
   }
 
   /// <summary>
@@ -128,55 +136,42 @@ internal class TaskQueueBase<T>
   public async Task<TaskHandler> ReadAsync(TimeSpan          timeout,
                                            CancellationToken cancellationToken)
   {
-    // Set up a timer to wait for maximum timeout, even if the writer times out just at the wrong moment
-    using var cts = timeout.Ticks switch
-                    {
-                      < 0 => null,
-                      0   => new CancellationTokenSource(0),
-                      _   => CancellationTokenSource.CreateLinkedTokenSource(cancellationToken),
-                    };
-
-    if (timeout.Ticks > 0)
+    if (readerClosed_)
     {
-      cts?.CancelAfter(timeout);
+      throw new ChannelClosedException("Reader has been closed");
     }
 
-    if (cts is not null)
+    if (!await readerSem_.WaitAsync(timeout,
+                                    cancellationToken)
+                         .ConfigureAwait(false))
     {
-      cancellationToken = cts.Token;
+      throw new TimeoutException("No producer in the allotted time");
     }
-
-    TaskCompletionSource<TaskHandler> sendTcs,
-                                      previousTcs = sendTcs_;
-    TaskHandler taskHandler;
-
-    do
-    {
-      sendTcs = previousTcs;
-      await RandomDelay.WaitAsync();
-
-      taskHandler = await sendTcs.Task.WaitAsync(cancellationToken)
-                                 .ConfigureAwait(false);
-
-      await RandomDelay.WaitAsync();
-
-      // If CAS fails, it means that Writer has timed-out
-      // So we must continue to wait on the new TCS without resetting the timeout
-      previousTcs = Interlocked.CompareExchange(ref sendTcs_,
-                                                new TaskCompletionSource<TaskHandler>(),
-                                                sendTcs);
-    } while (!ReferenceEquals(sendTcs,
-                              previousTcs));
 
     await RandomDelay.WaitAsync();
 
-    var ackTcs = ackTcs_;
+    var handler = taskHandler_!;
+    taskHandler_ = null;
 
     await RandomDelay.WaitAsync();
 
-    ackTcs.SetResult();
+    if (writerClosed_)
+    {
+      readerSem_.Release();
+      throw new ChannelClosedException("Writer has been closed");
+    }
 
-    return taskHandler;
+    writerSem_.Release();
+
+    await RandomDelay.WaitAsync();
+
+    // Without this wait, the reader thread could close the channel before
+    // the writer being notified that a read has occured.
+    // Reader semaphore will be released soon, if not already released
+    await readerSem_.WaitAsync(CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    return handler;
   }
 
   /// <summary>
@@ -184,16 +179,9 @@ internal class TaskQueueBase<T>
   /// </summary>
   public void CloseReader()
   {
-    var ex  = new ChannelClosedException("Writer has been closed");
-    var tcs = new TaskCompletionSource();
-    tcs.SetException(ex);
-
-    tcs = Interlocked.Exchange(ref ackTcs_,
-                               tcs);
-
-    RandomDelay.Wait();
-
-    tcs.TrySetException(ex);
+    Debug.Assert(!readerClosed_);
+    readerClosed_ = true;
+    writerSem_.Release();
   }
 
   /// <summary>
@@ -201,16 +189,9 @@ internal class TaskQueueBase<T>
   /// </summary>
   public void CloseWriter()
   {
-    var ex  = new ChannelClosedException("Writer has been closed");
-    var tcs = new TaskCompletionSource<TaskHandler>();
-    tcs.SetException(ex);
-
-    tcs = Interlocked.Exchange(ref sendTcs_,
-                               tcs);
-
-    RandomDelay.Wait();
-
-    tcs.TrySetException(ex);
+    Debug.Assert(!writerClosed_);
+    writerClosed_ = true;
+    readerSem_.Release();
   }
 }
 
