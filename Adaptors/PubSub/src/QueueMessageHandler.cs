@@ -67,7 +67,6 @@ internal class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Postponed:
-      case QueueMessageStatus.Poisonous:
         await subscriberServiceApiClient_.ModifyAckDeadlineAsync(subscriptionName_,
                                                                  new[]
                                                                  {
@@ -79,6 +78,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
         break;
       case QueueMessageStatus.Cancelled:
       case QueueMessageStatus.Processed:
+      case QueueMessageStatus.Poisonous:
         await subscriberServiceApiClient_.AcknowledgeAsync(subscriptionName_,
                                                            new[]
                                                            {
