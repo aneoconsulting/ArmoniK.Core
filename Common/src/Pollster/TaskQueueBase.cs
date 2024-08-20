@@ -19,40 +19,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-[assembly: InternalsVisibleTo("ArmoniK.Core.Common.Tests")]
-
 namespace ArmoniK.Core.Common.Pollster;
 
-internal interface IRandomDelayForTest
+public abstract class TaskQueueBase
 {
-  public ConfiguredValueTaskAwaitable WaitAsync();
+  private readonly Queue<Exception> exceptions_ = new();
 
-  public void Wait();
-}
-
-internal struct RandomDelayForTest : IRandomDelayForTest
-{
-  [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public ConfiguredValueTaskAwaitable WaitAsync()
-    => new ValueTask().ConfigureAwait(false);
-
-  [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public void Wait()
-  {
-  }
-}
-
-internal class TaskQueueBase<T>
-  where T : IRandomDelayForTest, new()
-{
   private readonly SemaphoreSlim readerSem_;
   private readonly SemaphoreSlim writerSem_;
-  internal         T             RandomDelay = new();
   private          bool          readerClosed_;
   private          TaskHandler?  taskHandler_;
   private          bool          writerClosed_;
@@ -85,11 +63,7 @@ internal class TaskQueueBase<T>
 
     taskHandler_ = handler;
 
-    await RandomDelay.WaitAsync();
-
     readerSem_.Release();
-
-    await RandomDelay.WaitAsync();
 
     try
     {
@@ -148,12 +122,8 @@ internal class TaskQueueBase<T>
       throw new TimeoutException("No producer in the allotted time");
     }
 
-    await RandomDelay.WaitAsync();
-
     var handler = taskHandler_!;
     taskHandler_ = null;
-
-    await RandomDelay.WaitAsync();
 
     if (writerClosed_)
     {
@@ -162,8 +132,6 @@ internal class TaskQueueBase<T>
     }
 
     writerSem_.Release();
-
-    await RandomDelay.WaitAsync();
 
     // Without this wait, the reader thread could close the channel before
     // the writer being notified that a read has occured.
@@ -193,35 +161,6 @@ internal class TaskQueueBase<T>
     writerClosed_ = true;
     readerSem_.Release();
   }
-}
-
-public abstract class TaskQueueBase
-{
-  private readonly TaskQueueBase<RandomDelayForTest> base_ = new();
-
-  private readonly Queue<Exception> exceptions_ = new();
-
-  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.WriteAsync" />
-  public Task WriteAsync(TaskHandler       handler,
-                         TimeSpan          timeout,
-                         CancellationToken cancellationToken)
-    => base_.WriteAsync(handler,
-                        timeout,
-                        cancellationToken);
-
-  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.ReadAsync" />
-  public Task<TaskHandler> ReadAsync(TimeSpan          timeout,
-                                     CancellationToken cancellationToken)
-    => base_.ReadAsync(timeout,
-                       cancellationToken);
-
-  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.CloseReader" />
-  public void CloseReader()
-    => base_.CloseReader();
-
-  /// <inheritdoc cref="TaskQueueBase{RandomDelayForTest}.CloseWriter" />
-  public void CloseWriter()
-    => base_.CloseWriter();
 
 
   /// <summary>
