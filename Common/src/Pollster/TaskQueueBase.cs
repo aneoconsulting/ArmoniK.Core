@@ -42,7 +42,7 @@ namespace ArmoniK.Core.Common.Pollster;
 ///     the poduced the task handler.
 ///   </para>
 /// </remarks>
-public abstract class TaskQueueBase : RendezVousChannel<TaskHandler>
+public abstract class TaskQueueBase : RendezvousChannel<TaskHandler>
 {
   private readonly Queue<Exception> exceptions_ = new();
 

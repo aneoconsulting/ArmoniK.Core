@@ -29,8 +29,8 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestFixture(TestOf = typeof(RendezVousChannel<>))]
-public class RendezVousChannelTest
+[TestFixture(TestOf = typeof(RendezvousChannel<>))]
+public class RendezvousChannelTest
 {
   [Test]
   [Timeout(1000)]
@@ -46,7 +46,7 @@ public class RendezVousChannelTest
                                             3)]
                                     int nbWrite)
   {
-    var queue = new RendezVousChannel<int>();
+    var queue = new RendezvousChannel<int>();
 
     var reader = ReadAsync(queue,
                            nbRead)
@@ -84,7 +84,7 @@ public class RendezVousChannelTest
                                            45)]
                                    int timeout)
   {
-    var queue = new RendezVousChannel<int>();
+    var queue = new RendezvousChannel<int>();
 
     var sw = Stopwatch.StartNew();
 
@@ -109,7 +109,7 @@ public class RendezVousChannelTest
                                           45)]
                                   int timeout)
   {
-    var queue = new RendezVousChannel<int>();
+    var queue = new RendezvousChannel<int>();
     var sw    = Stopwatch.StartNew();
 
     Assert.That(() => queue.ReadAsync(TimeSpan.FromMilliseconds(timeout)),
@@ -136,7 +136,7 @@ public class RendezVousChannelTest
                                          45)]
                                  int readWait)
   {
-    var queue = new RendezVousChannel<int>();
+    var queue = new RendezvousChannel<int>();
 
     var times = new TimeSpan[2];
     var tcs   = new TaskCompletionSource();
@@ -255,7 +255,7 @@ public class RendezVousChannelTest
                                         45)]
                                 int writeWait)
   {
-    var queue = new RendezVousChannel<int>();
+    var queue = new RendezvousChannel<int>();
 
     var times = new TimeSpan[2];
     var tcs   = new TaskCompletionSource();
@@ -363,7 +363,7 @@ public class RendezVousChannelTest
     }
   }
 
-  private static async IAsyncEnumerable<int> ReadAsync(RendezVousChannel<int> queue,
+  private static async IAsyncEnumerable<int> ReadAsync(RendezvousChannel<int> queue,
                                                        int                    closeAfter)
   {
     var nbRead = 0;
@@ -388,7 +388,7 @@ public class RendezVousChannelTest
     queue.CloseReader();
   }
 
-  private static async Task<int> WriteAsync(RendezVousChannel<int> queue,
+  private static async Task<int> WriteAsync(RendezvousChannel<int> queue,
                                             int                    closeAfter)
   {
     var nbWritten = 0;

@@ -42,7 +42,7 @@ namespace ArmoniK.Core.Common.Utils;
 ///   </para>
 /// </remarks>
 /// <typeparam name="T">Items to be sent through the channel</typeparam>
-public class RendezVousChannel<T>
+public class RendezvousChannel<T>
 {
   private readonly SemaphoreSlim readerSem_;
   private readonly SemaphoreSlim writerSem_;
@@ -51,7 +51,7 @@ public class RendezVousChannel<T>
   /// <summary>
   ///   Create an instance
   /// </summary>
-  public RendezVousChannel()
+  public RendezvousChannel()
   {
     readerSem_ = new SemaphoreSlim(0);
     writerSem_ = new SemaphoreSlim(0);
