@@ -253,6 +253,115 @@ public class RendezvousChannelTest
     }
   }
 
+
+  [Test]
+  [Timeout(1000)]
+  [Repeat(20)]
+  public async Task TimeoutClose([Values(0,
+                                         15,
+                                         45)]
+                                 int timeout,
+                                 [Values(0,
+                                         15,
+                                         45)]
+                                 int wait,
+                                 [Values] bool isReader)
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var times = new TimeSpan[2];
+    var reader = Task.Run(async () =>
+                          {
+                            var sw = Stopwatch.StartNew();
+                            try
+                            {
+                              if (!isReader)
+                              {
+                                await Task.Delay(TimeSpan.FromMilliseconds(wait))
+                                          .ConfigureAwait(false);
+                                queue.CloseReader();
+                              }
+                              else
+                              {
+                                await queue.ReadAsync(TimeSpan.FromMilliseconds(timeout))
+                                           .ConfigureAwait(false);
+                              }
+                            }
+                            catch (ChannelClosedException)
+                            {
+                              queue.CloseReader();
+                              throw;
+                            }
+                            finally
+                            {
+                              sw.Stop();
+                              times[0] = sw.Elapsed;
+                            }
+                          });
+    var writer = Task.Run(async () =>
+                          {
+                            var sw = Stopwatch.StartNew();
+                            try
+                            {
+                              if (isReader)
+                              {
+                                await Task.Delay(TimeSpan.FromMilliseconds(wait))
+                                          .ConfigureAwait(false);
+                                queue.CloseWriter();
+                              }
+                              else
+                              {
+                                await queue.WriteAsync(3,
+                                                       TimeSpan.FromMilliseconds(timeout))
+                                           .ConfigureAwait(false);
+                              }
+                            }
+                            catch (ChannelClosedException)
+                            {
+                              queue.CloseWriter();
+                              throw;
+                            }
+                            finally
+                            {
+                              sw.Stop();
+                              times[1] = sw.Elapsed;
+                            }
+                          });
+
+    try
+    {
+      await Task.WhenAll(reader,
+                         writer)
+                .ConfigureAwait(false);
+    }
+    catch
+    {
+    }
+
+    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {times[0].TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {times[1].TotalMilliseconds,-7} ms");
+
+    var task = isReader
+                 ? reader
+                 : writer;
+
+    switch (timeout - wait)
+    {
+      case < 0:
+        Assert.That(() => task,
+                    Throws.InstanceOf<TimeoutException>());
+        break;
+      case > 0:
+        Assert.That(() => task,
+                    Throws.InstanceOf<ChannelClosedException>());
+        break;
+      default:
+        Assert.That(() => task,
+                    Throws.InstanceOf<ChannelClosedException>()
+                          .Or.InstanceOf<TimeoutException>());
+        break;
+    }
+  }
+
   private static async IAsyncEnumerable<int> ReadAsync(RendezvousChannel<int> queue,
                                                        int                    closeAfter)
   {
